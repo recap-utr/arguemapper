@@ -18,31 +18,20 @@ export default function Header({
   toggleRight: () => void;
 }) {
   return (
-    <AppBar
-      sx={{
-        width: { md: `calc(100% - 2*${drawerWidth}px)` },
-        ml: { md: `${drawerWidth}px` },
-        mr: { md: `${drawerWidth}px` },
-      }}
-    >
+    <AppBar sx={{ position: "sticky" }}>
       <Toolbar>
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
           width="100%"
+          textAlign="center"
         >
-          <IconButton
-            onClick={toggleLeft}
-            // sx={{ display: { md: "none" } }}
-          >
+          <IconButton onClick={toggleLeft} sx={{ display: { md: "none" } }}>
             <Menu />
           </IconButton>
           <Typography variant="h6">{config.name}</Typography>
-          <IconButton
-            onClick={toggleRight}
-            // sx={{ display: { md: "none" } }}
-          >
+          <IconButton onClick={toggleRight} sx={{ display: { md: "none" } }}>
             <Menu />
           </IconButton>
         </Stack>

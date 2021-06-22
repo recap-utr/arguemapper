@@ -1,4 +1,4 @@
-import { Box, Toolbar } from "@material-ui/core";
+import { Box } from "@material-ui/core";
 import cytoscape from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
@@ -6,6 +6,7 @@ import edgehandles from "cytoscape-edgehandles";
 import { useEffect, useRef } from "react";
 import * as textMetrics from "text-metrics";
 import * as cytoModel from "../model/cytoModel";
+import demo from "../model/demo";
 
 cytoscape.use(dagre);
 cytoscape.use(edgehandles);
@@ -30,87 +31,6 @@ const defaultLayout = {
   nodeDimensionsIncludeLabels: true,
   rankDir: "BT",
   animate: true,
-};
-
-const demoGraph: cytoModel.Wrapper = {
-  elements: {
-    nodes: [
-      {
-        data: {
-          id: "a1",
-          kind: "atom",
-          metadata: {},
-          text: "Every person is going to die",
-          // resources: [],
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-      {
-        data: {
-          id: "a2",
-          kind: "atom",
-          metadata: {},
-          text: "This is a fact",
-          // resources: [],
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-      {
-        data: {
-          id: "a3",
-          kind: "atom",
-          metadata: {},
-          text: "Single node",
-          // resources: [],
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-      {
-        data: {
-          id: "s1",
-          kind: "scheme",
-          metadata: {},
-          type: cytoModel.node.Type.RA,
-          // scheme: null,
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-    ],
-    edges: [
-      {
-        data: {
-          id: "e1",
-          metadata: {},
-          source: "a2",
-          target: "s1",
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-      {
-        data: {
-          id: "e2",
-          metadata: {},
-          source: "s1",
-          target: "a1",
-          created: new Date(),
-          updated: new Date(),
-        },
-      },
-    ],
-  },
-  data: {
-    created: new Date(),
-    updated: new Date(),
-    // majorClaim: null,
-    id: "94a975db-25ae-4d25-93cc-1c07c932e2f9",
-    metadata: {},
-    resources: [],
-  },
 };
 
 function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
@@ -395,14 +315,14 @@ export default function Cytoscape() {
 
   useEffect(() => {
     if (containerRef.current !== null) {
-      initCytoscape(containerRef.current, demoGraph);
+      initCytoscape(containerRef.current, demo);
     }
   }, []);
 
   return (
-    <Box component="main" sx={{ flexGrow: 1 }}>
-      <Toolbar />
-      <Box ref={containerRef} sx={{ minHeight: "100vh" }} />
-    </Box>
+    <Box
+      ref={containerRef}
+      sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+    />
   );
 }

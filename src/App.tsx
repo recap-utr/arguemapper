@@ -61,12 +61,7 @@ export default function App() {
   const [activeTab, setActiveTab] = React.useState("1");
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Header
-        drawerWidth={drawerWidth}
-        toggleLeft={toggleLeft}
-        toggleRight={toggleRight}
-      />
+    <Stack direction="row">
       <Sidebar
         side="left"
         drawerWidth={drawerWidth}
@@ -79,7 +74,16 @@ export default function App() {
           setActiveTab={setActiveTab}
         />
       </Sidebar>
-      <Cytoscape />
+      <Stack sx={{ flexGrow: 1 }}>
+        <Header
+          drawerWidth={drawerWidth}
+          toggleLeft={toggleLeft}
+          toggleRight={toggleRight}
+        />
+        <Box sx={{ position: "relative", height: 1 }}>
+          <Cytoscape />
+        </Box>
+      </Stack>
       <Sidebar
         side="right"
         drawerWidth={drawerWidth}
@@ -87,6 +91,6 @@ export default function App() {
         isOpen={rightOpen}
         setIsOpen={setRightOpen}
       />
-    </Box>
+    </Stack>
   );
 }

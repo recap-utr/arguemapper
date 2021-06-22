@@ -10,7 +10,7 @@ const Sidebar: React.FC<{
 }> = ({ side, drawerWidth, isMobile, isOpen, setIsOpen, children }) => {
   return (
     <Drawer
-      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      sx={{ width: { md: drawerWidth }, height: "100vh" }}
       variant={isMobile ? "temporary" : "persistent"}
       open={isOpen || !isMobile}
       onClose={() => setIsOpen(false)}
