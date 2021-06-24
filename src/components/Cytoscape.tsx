@@ -1,30 +1,28 @@
-import { Box } from "@material-ui/core";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Palette,
+  Stack,
+  useTheme,
+} from "@material-ui/core";
 import cytoscape from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
-import { useEffect, useRef } from "react";
-import * as textMetrics from "text-metrics";
+import { useEffect, useRef, useState } from "react";
 import * as cytoModel from "../model/cytoModel";
 import demo from "../model/demo";
+import style from "../services/style";
 
 cytoscape.use(dagre);
+// @ts-ignore
 cytoscape.use(edgehandles);
 cytoscape.use(cxtmenu);
 cytoscape.use = () => {};
-
-const nodeFontSize = "16px";
-const nodeLineHeight = "18.4px";
-const nodeLineHeightFactor = 1.15;
-const nodeFontFamily = ["Roboto", "sans-serif"];
-const nodeMaxWidth = 160;
-
-const metrics = textMetrics.init({
-  fontSize: nodeFontSize,
-  lineHeight: nodeLineHeight,
-  fontFamily: nodeFontFamily.reduce((x, y) => `${x}, ${y}`),
-  width: nodeMaxWidth * 0.99,
-});
 
 const defaultLayout = {
   name: "dagre",
@@ -33,129 +31,23 @@ const defaultLayout = {
   animate: true,
 };
 
-function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
+function initCytoscape(
+  container: HTMLElement,
+  palette: Palette,
+  graph?: cytoModel.Wrapper,
+  handleClick?,
+  handleClose?
+) {
   if (!graph) {
     graph = cytoModel.init();
   }
+  console.log(palette);
 
   const cy = cytoscape({
     container: container,
     ...graph,
-    style: [
-      {
-        selector: 'node[kind="atom"], node[kind="scheme"]',
-        style: {
-          width: function (ele) {
-            const data = ele.data() as cytoModel.node.Data;
-            const label = cytoModel.node.label(data);
-            const lines: string[] = label.split(/\r?\n/);
-
-            const widths = lines.map(
-              (line) => metrics.width(line, { multiline: true }) as number
-            );
-            const width = Math.max(...widths);
-
-            return width;
-          },
-          height: function (ele) {
-            const data = ele.data() as cytoModel.node.Data;
-            const label = cytoModel.node.label(data);
-            const lines: string[] = label.split(/\r?\n/);
-            const heights = lines.map((line) => metrics.height(line) as number);
-            return heights.reduce((a, b) => a + b);
-          },
-          padding: 10,
-          "font-size": nodeFontSize,
-          "line-height": nodeLineHeightFactor,
-          "font-family": nodeFontFamily.join(", "),
-          "text-valign": "center",
-          "text-halign": "center",
-          "text-wrap": "wrap",
-          "text-max-width": `${nodeMaxWidth}px`,
-          "background-color": "gray",
-          shape: "round-rectangle",
-        },
-      },
-      {
-        selector: 'node[kind="atom"]',
-        style: {
-          content: "data(text)",
-        },
-      },
-      {
-        selector: 'node[kind="scheme"]',
-        style: {
-          content: "data(type)",
-          shape: "round-diamond",
-        },
-      },
-      {
-        selector: 'node[kind="scheme"][scheme]',
-        style: {
-          content: "data(scheme)",
-        },
-      },
-      {
-        selector: 'node[kind="scheme"][type="RA"]',
-        style: {
-          "background-color": "green",
-        },
-      },
-      {
-        selector: 'node[kind="scheme"][type="CA"]',
-        style: {
-          "background-color": "red",
-        },
-      },
-      {
-        selector: "edge",
-        style: {
-          "line-color": "gray",
-          "background-color": "gray",
-          "target-arrow-color": "gray",
-          "target-arrow-shape": "triangle",
-          "curve-style": "bezier",
-        },
-      },
-      {
-        selector: ":selected",
-        style: {
-          "background-color": "cyan",
-        },
-      },
-      {
-        selector: ".eh-handle",
-        style: {
-          "background-color": "red",
-          width: 6,
-          height: 6,
-          shape: "ellipse",
-          "overlay-opacity": 0,
-          "border-width": 3, // makes the handle easier to hit
-          "border-opacity": 0,
-        },
-      },
-      {
-        selector: ".eh-source, .eh-target",
-        style: {
-          "background-color": "blue",
-        },
-      },
-      {
-        selector: ".eh-preview, .eh-ghost-edge",
-        style: {
-          "line-color": "blue",
-          "target-arrow-color": "blue",
-          "source-arrow-color": "blue",
-        },
-      },
-      {
-        selector: ".eh-ghost-edge.eh-preview-active",
-        style: {
-          opacity: 0,
-        },
-      },
-    ],
+    // @ts-ignore
+    style: style(palette),
     layout: defaultLayout,
     boxSelectionEnabled: false,
     autounselectify: false,
@@ -172,21 +64,18 @@ function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
     //   // }
     //   return 'flat';
     // },
-    complete: function (_event, _source, edge) {
-      const sourceNode = edge.source();
-      const targetNode = edge.target();
+    complete: function (source, target, edges) {
+      const sourceData = source.data() as cytoModel.node.Data;
+      const targetData = target.data() as cytoModel.node.Data;
 
-      const sourceData = sourceNode.data() as cytoModel.node.Data;
-      const targetData = targetNode.data() as cytoModel.node.Data;
-
-      edge.remove();
+      edges.remove();
 
       if (
         cytoModel.node.isAtom(sourceData) &&
         cytoModel.node.isAtom(targetData)
       ) {
-        const sourcePos = sourceNode.position() as { x: number; y: number };
-        const targetPos = targetNode.position() as { x: number; y: number };
+        const sourcePos = source.position() as { x: number; y: number };
+        const targetPos = target.position() as { x: number; y: number };
 
         const position = {
           x: (sourcePos.x + targetPos.x) / 2,
@@ -224,14 +113,14 @@ function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
    *
    * */
   // const cxtmenuOptions = {
-  //   selector: '',
+  //   selector: "",
   //   commands: [],
   //   menuRadius: function (ele) {
   //     return 150 - 0.5 * ele.outerWidth() + 5;
   //     // radius - node size + 0.5 * spotlightRadius
   //   }, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
-  //   fillColor: 'rgba(0, 0, 0, 0.75)', // the background colour of the menu
-  //   activeFillColor: 'rgba(0, 0, 255, 0.75)', // the colour used to indicate the selected command
+  //   fillColor: "rgba(0, 0, 0, 0.75)", // the background colour of the menu
+  //   activeFillColor: "rgba(0, 0, 255, 0.75)", // the colour used to indicate the selected command
   //   activePadding: 0, // additional size in pixels for the active command
   //   indicatorSize: 25, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
   //   separatorWidth: 5, // the empty spacing in pixels between successive commands
@@ -239,9 +128,9 @@ function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
   //   adaptativeNodeSpotlightRadius: false, // specify whether the spotlight radius should adapt to the node size
   //   minSpotlightRadius: 10, // the minimum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
   //   maxSpotlightRadius: 10, // the maximum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
-  //   openMenuEvents: 'cxttap taphold', // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
-  //   itemColor: 'white', // the colour of text in the command's content
-  //   itemTextShadowColor: 'transparent', // the text shadow colour of the command's content
+  //   openMenuEvents: "cxttap taphold", // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
+  //   itemColor: "white", // the colour of text in the command's content
+  //   itemTextShadowColor: "transparent", // the text shadow colour of the command's content
   //   zIndex: 9999, // the z-index of the ui div
   //   atMouse: false, // draw menu at mouse position
   //   outsideMenuCancel: 0, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
@@ -307,22 +196,119 @@ function initCytoscape(container: HTMLDivElement, graph?: cytoModel.Wrapper) {
   //   ...nodeCommands,
   // ];
 
+  // const atomOptions = { ...cxtmenuOptions };
+  // atomOptions.selector = "node";
+  // atomOptions.commands = [
+  //   {
+  //     content: <FontAwesomeIcon icon={faPlus} />,
+  //     select: function (ele) {},
+  //     enabled: true,
+  //   },
+  // ];
+
+  // // @ts-ignore
   // cy.cxtmenu(atomOptions);
+
+  // @ts-ignore
+  // cy.navigator({
+  //   container: "#navigatorContainer",
+  //   //   viewLiveFramerate: 0, // set false to update graph pan only on drag end; set 0 to do it instantly; set a number (frames per second) to update not more than N times per second
+  //   //   thumbnailEventFramerate: 30, // max thumbnail's updates per second triggered by graph updates
+  //   //   thumbnailLiveFramerate: false, // max thumbnail's updates per second. Set false to disable
+  //   //   dblClickDelay: 200, // milliseconds
+  //   removeCustomContainer: false, // destroy the container specified by user on plugin destroy
+  //   rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
+  // });
+
+  cy.on("cxttap", handleClick);
+
+  return cy;
 }
 
+const initialCtxMenu = {
+  mouseX: null,
+  mouseY: null,
+};
+
 export default function Cytoscape() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [ctxMenu, setCtxMenu] = useState<{
+    mouseX: null | number;
+    mouseY: null | number;
+  }>(initialCtxMenu);
+  const containerRef = useRef<null | HTMLElement>(null);
+  const theme = useTheme();
+  const cy = useRef<null | cytoscape.Core>(null);
+
+  const handleClick = (event: cytoscape.EventObject) => {
+    setCtxMenu({
+      mouseX: event.originalEvent.clientX,
+      mouseY: event.originalEvent.clientY,
+    });
+  };
+
+  const handleClose = () => {
+    setCtxMenu(initialCtxMenu);
+  };
 
   useEffect(() => {
     if (containerRef.current !== null) {
-      initCytoscape(containerRef.current, demo);
+      cy.current = initCytoscape(
+        containerRef.current,
+        theme.palette,
+        demo,
+        handleClick,
+        handleClose
+      );
     }
-  }, []);
+  }, [theme]);
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-    />
+    <Box>
+      <Box
+        ref={containerRef}
+        sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <Box
+        id="navigatorContainer"
+        sx={{
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+          width: 200,
+          height: 200,
+        }}
+      />
+      <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
+        <Stack direction="column">
+          <IconButton>
+            <FontAwesomeIcon icon={faPlus} />
+          </IconButton>
+          <IconButton>
+            <FontAwesomeIcon icon={faPlus} />
+          </IconButton>
+          <IconButton>
+            <FontAwesomeIcon icon={faPlus} />
+          </IconButton>
+          <IconButton>
+            <FontAwesomeIcon icon={faPlus} />
+          </IconButton>
+        </Stack>
+      </Box>
+      <Menu
+        keepMounted
+        open={ctxMenu.mouseY !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          ctxMenu.mouseY !== null && ctxMenu.mouseX !== null
+            ? { top: ctxMenu.mouseY, left: ctxMenu.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem>Profile</MenuItem>
+        <MenuItem>My account</MenuItem>
+        <MenuItem>Logout</MenuItem>
+      </Menu>
+    </Box>
   );
 }

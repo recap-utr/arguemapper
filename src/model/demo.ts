@@ -81,4 +81,42 @@ const demoGraph: cytoModel.Wrapper = {
   },
 };
 
+// for (let i = 0; i < 1000; i = i + 2) {
+//   demoGraph.elements.nodes.push(
+//     {
+//       data: {
+//         id: `${i}`,
+//         kind: "atom",
+//         metadata: {},
+//         text: `Node ${i}`,
+//         // resources: [],
+//         created: new Date(),
+//         updated: new Date(),
+//       },
+//     },
+//     {
+//       data: {
+//         id: `${i + 1}`,
+//         kind: "scheme",
+//         metadata: {},
+//         type: cytoModel.node.Type.RA,
+//         // scheme: null,
+//         created: new Date(),
+//         updated: new Date(),
+//       },
+//     }
+//   );
+
+//   demoGraph.elements.edges.push({
+//     data: {
+//       id: `e${i}-${i + 1}`,
+//       metadata: {},
+//       source: `${i}`,
+//       target: `${i + 1}`,
+//       created: new Date(),
+//       updated: new Date(),
+//     },
+//   });
+// }
+
 export default demoGraph;

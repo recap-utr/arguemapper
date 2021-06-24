@@ -1,3 +1,5 @@
+import { faInfoCircle, faParagraph } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   AppBar,
   IconButton,
@@ -5,7 +7,6 @@ import {
   Toolbar,
   Typography,
 } from "@material-ui/core";
-import { Menu } from "@material-ui/icons";
 import config from "../config";
 
 export default function Header({
@@ -28,11 +29,11 @@ export default function Header({
           textAlign="center"
         >
           <IconButton onClick={toggleLeft} sx={{ display: { md: "none" } }}>
-            <Menu />
+            <FontAwesomeIcon icon={faParagraph} />
           </IconButton>
           <Typography variant="h6">{config.name}</Typography>
           <IconButton onClick={toggleRight} sx={{ display: { md: "none" } }}>
-            <Menu />
+            <FontAwesomeIcon icon={faInfoCircle} />
           </IconButton>
         </Stack>
       </Toolbar>

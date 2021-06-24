@@ -5,6 +5,10 @@
   "dependencies": {
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-regular-svg-icons": "^5.15.3",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "@material-ui/core": "^5.0.0-alpha.37",
     "@material-ui/icons": "^5.0.0-alpha.37",
     "@material-ui/lab": "^5.0.0-alpha.37",
@@ -20,8 +24,12 @@
     "cytoscape-cxtmenu": "^3.4.0",
     "cytoscape-dagre": "^2.3.2",
     "cytoscape-edgehandles": "^3.6.0",
+    "cytoscape-navigator": "^2.0.1",
+    "dagre": "^0.8.5",
+    "node-sass": "^6.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-flow-renderer": "^9.6.1",
     "react-scripts": "4.0.3",
     "text-metrics": "^2.0.9",
     "typescript": "^4.3.4",
@@ -50,5 +58,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/cytoscape": "^3.14.15",
+    "@types/cytoscape-edgehandles": "^3.6.0",
+    "@types/dagre": "^0.7.44"
   }
 }
