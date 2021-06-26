@@ -28,11 +28,11 @@ export default function Header({
           width="100%"
           textAlign="center"
         >
-          <IconButton onClick={toggleLeft} sx={{ display: { md: "none" } }}>
+          <IconButton onClick={toggleLeft}>
             <FontAwesomeIcon icon={faParagraph} />
           </IconButton>
           <Typography variant="h6">{config.name}</Typography>
-          <IconButton onClick={toggleRight} sx={{ display: { md: "none" } }}>
+          <IconButton onClick={toggleRight}>
             <FontAwesomeIcon icon={faInfoCircle} />
           </IconButton>
         </Stack>

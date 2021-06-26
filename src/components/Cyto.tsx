@@ -1,12 +1,12 @@
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSitemap } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
   IconButton,
   Menu,
   MenuItem,
-  Palette,
   Stack,
+  Theme,
   useTheme,
 } from "@material-ui/core";
 import cytoscape from "cytoscape";
@@ -33,7 +33,7 @@ const defaultLayout = {
 
 function initCytoscape(
   container: HTMLElement,
-  palette: Palette,
+  theme: Theme,
   graph?: cytoModel.Wrapper,
   handleClick?,
   handleClose?
@@ -41,19 +41,18 @@ function initCytoscape(
   if (!graph) {
     graph = cytoModel.init();
   }
-  console.log(palette);
 
   const cy = cytoscape({
     container: container,
     ...graph,
     // @ts-ignore
-    style: style(palette),
+    style: style(theme),
     layout: defaultLayout,
     boxSelectionEnabled: false,
     autounselectify: false,
     selectionType: "single",
     minZoom: 0.1,
-    maxZoom: 2.0,
+    maxZoom: 3.0,
   });
 
   cy.edgehandles({
@@ -230,7 +229,11 @@ const initialCtxMenu = {
   mouseY: null,
 };
 
-export default function Cytoscape() {
+export default function Cytoscape({
+  setCy,
+}: {
+  setCy: (instance: cytoscape.Core) => void;
+}) {
   const [ctxMenu, setCtxMenu] = useState<{
     mouseX: null | number;
     mouseY: null | number;
@@ -254,13 +257,15 @@ export default function Cytoscape() {
     if (containerRef.current !== null) {
       cy.current = initCytoscape(
         containerRef.current,
-        theme.palette,
+        theme,
         demo,
         handleClick,
         handleClose
       );
+
+      setCy(cy.current);
     }
-  }, [theme]);
+  }, [setCy, theme]);
 
   return (
     <Box>
@@ -280,8 +285,13 @@ export default function Cytoscape() {
       />
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
-          <IconButton>
-            <FontAwesomeIcon icon={faPlus} />
+          <IconButton
+            onClick={() =>
+              cy.current !== null && cy.current.layout(defaultLayout).run()
+            }
+            aria-label="Layout"
+          >
+            <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
           <IconButton>
             <FontAwesomeIcon icon={faPlus} />

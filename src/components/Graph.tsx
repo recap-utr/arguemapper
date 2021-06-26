@@ -75,7 +75,6 @@ const OverviewFlow = () => {
   // }, [setElements]);
   const addNode = () => {
     const [newElem, ...others] = elements;
-    console.log(elements);
     newElem.data.label = "Hello World!";
     setElements([newElem, ...others]);
   };

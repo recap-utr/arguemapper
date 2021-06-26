@@ -8,7 +8,7 @@ const demoGraph: cytoModel.Wrapper = {
           id: "a1",
           kind: "atom",
           metadata: {},
-          text: "Every person is going to die",
+          text: "Every person is going to die, plus additional text such that the node will have to wrap to the next line.",
           // resources: [],
           created: new Date(),
           updated: new Date(),
