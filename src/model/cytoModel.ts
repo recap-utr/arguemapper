@@ -1,7 +1,7 @@
-import * as graph from './graph';
-import * as node from './node';
-import * as edge from './edge';
-import * as common from './common';
+import * as common from "./common";
+import * as edge from "./edge";
+import * as graph from "./graph";
+import * as node from "./node";
 
 export interface Wrapper {
   data: graph.Data;

@@ -1,7 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import cytoscape from "cytoscape";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Cyto from "./components/Cyto";
 import Header from "./components/Header";
 import Inspector from "./components/Inspector";
@@ -16,11 +16,7 @@ export default function App() {
   const [rightOpen, setRightOpen] = useState(false);
   const toggleRight = () => setRightOpen(!rightOpen);
   const cy = useRef<null | cytoscape.Core>(null);
-  const setCy = useRef((instance) => (cy.current = instance));
-
-  useEffect(() => {
-    console.log(cy.current === null);
-  }, [cy]);
+  const setCy = useCallback((instance) => (cy.current = instance), []);
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
   const [activeResource, setActiveResource] = React.useState("1");
@@ -46,7 +42,7 @@ export default function App() {
           toggleRight={toggleRight}
         />
         <Box sx={{ position: "relative", height: 1 }}>
-          <Cyto setCy={setCy.current} />
+          <Cyto cyCallback={setCy} />
         </Box>
         {/* <Box sx={{ position: "relative", height: 1 }}>
           <ReactFlowProvider>

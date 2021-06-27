@@ -1,4 +1,9 @@
-import { faPlus, faSitemap } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faRedo,
+  faSitemap,
+  faUndo,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
@@ -13,9 +18,10 @@ import cytoscape from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
+import _ from "lodash";
 import { useEffect, useRef, useState } from "react";
 import * as cytoModel from "../model/cytoModel";
-import demo from "../model/demo";
+import useStore from "../model/state";
 import style from "../services/style";
 
 cytoscape.use(dagre);
@@ -34,17 +40,12 @@ const defaultLayout = {
 function initCytoscape(
   container: HTMLElement,
   theme: Theme,
-  graph?: cytoModel.Wrapper,
   handleClick?,
   handleClose?
 ) {
-  if (!graph) {
-    graph = cytoModel.init();
-  }
-
   const cy = cytoscape({
     container: container,
-    ...graph,
+    // ...store.getState().cyto,
     // @ts-ignore
     style: style(theme),
     layout: defaultLayout,
@@ -230,17 +231,29 @@ const initialCtxMenu = {
 };
 
 export default function Cytoscape({
-  setCy,
+  cyCallback,
 }: {
-  setCy: (instance: cytoscape.Core) => void;
+  cyCallback: (instance: cytoscape.Core) => void;
 }) {
   const [ctxMenu, setCtxMenu] = useState<{
     mouseX: null | number;
     mouseY: null | number;
   }>(initialCtxMenu);
-  const containerRef = useRef<null | HTMLElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const cy = useRef<null | cytoscape.Core>(null);
+  const {
+    cyto: cytoStore,
+    updateCyto,
+    clear: clearState,
+    undo: undoState,
+    redo: redoState,
+    getState,
+  } = useStore();
+  const cy = useRef<cytoscape.Core>(null);
+  // I used a boolean state here for performance reasons.
+  // The same results could be obtained with "useState<cytoscape.Core>(null)" above.
+  const [cyState, setCyState] = useState<cytoscape.Core>(null);
+  // const [cyRendered, setCyRendered] = useState(false);
 
   const handleClick = (event: cytoscape.EventObject) => {
     setCtxMenu({
@@ -258,14 +271,37 @@ export default function Cytoscape({
       cy.current = initCytoscape(
         containerRef.current,
         theme,
-        demo,
         handleClick,
         handleClose
       );
-
-      setCy(cy.current);
+      cyCallback(cy.current);
+      setCyState(cy.current);
     }
-  }, [setCy, theme]);
+  }, [theme, cyCallback, setCyState]);
+
+  useEffect(() => {
+    if (cyState !== null) {
+      cy.current.json(cytoStore);
+
+      console.log();
+
+      if (
+        cy.current
+          .elements()
+          // @ts-ignore
+          .map((e) => (_.has(e, "position") ? e.position() : null))
+          .every((e) => e === null)
+      ) {
+        cy.current.layout(defaultLayout).run();
+
+        // if (localStorage.getItem("arguemapper") === null) {
+        //   updateCyto(cy.current.json() as cytoModel.Wrapper);
+        // }
+      }
+    }
+  }, [cytoStore, updateCyto, cyState]);
+
+  // clearState?.();
 
   return (
     <Box>
@@ -286,21 +322,41 @@ export default function Cytoscape({
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
           <IconButton
-            onClick={() =>
-              cy.current !== null && cy.current.layout(defaultLayout).run()
-            }
+            onClick={() => {
+              cy.current.layout(defaultLayout).run();
+            }}
             aria-label="Layout"
           >
             <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
-          <IconButton>
+          <IconButton
+            onClick={() => {
+              cy.current.add({
+                data: {
+                  id: "e3",
+                  metadata: {},
+                  source: "a3",
+                  target: "s1",
+                  created: new Date(),
+                  updated: new Date(),
+                },
+              });
+              updateCyto(cy.current.json() as cytoModel.Wrapper);
+            }}
+          >
             <FontAwesomeIcon icon={faPlus} />
           </IconButton>
-          <IconButton>
-            <FontAwesomeIcon icon={faPlus} />
+          <IconButton
+            disabled={!getState || getState().prevStates.length === 0}
+            onClick={() => undoState()}
+          >
+            <FontAwesomeIcon icon={faUndo} />
           </IconButton>
-          <IconButton>
-            <FontAwesomeIcon icon={faPlus} />
+          <IconButton
+            disabled={!getState || getState().futureStates.length === 0}
+            onClick={() => redoState()}
+          >
+            <FontAwesomeIcon icon={faRedo} />
           </IconButton>
         </Stack>
       </Box>

@@ -26,6 +26,7 @@
     "cytoscape-edgehandles": "^3.6.0",
     "cytoscape-navigator": "^2.0.1",
     "dagre": "^0.8.5",
+    "lodash": "^4.17.21",
     "node-sass": "^6.0.1",
     "ramda": "^0.27.1",
     "react": "^17.0.2",
@@ -66,6 +67,7 @@
     "@types/cytoscape": "^3.14.15",
     "@types/cytoscape-edgehandles": "^3.6.0",
     "@types/dagre": "^0.7.44",
+    "@types/lodash": "^4.14.170",
     "@types/ramda": "^0.27.41"
   }
 }
