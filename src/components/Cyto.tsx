@@ -20,7 +20,7 @@ import edgehandles from "cytoscape-edgehandles";
 import _ from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as cytoModel from "../model/cytoModel";
-import useStore from "../model/state";
+import useStore from "../model/cytoStore";
 import style from "../services/style";
 
 cytoscape.use(dagre);

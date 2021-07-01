@@ -7,15 +7,18 @@ import Header from "./components/Header";
 import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
+import useStore from "./model/appStore";
 
 const drawerWidth = 300;
 
 export default function App() {
-  const [leftOpen, setLeftOpen] = useState(false);
-  const toggleLeft = () => setLeftOpen(!leftOpen);
-  const [rightOpen, setRightOpen] = useState(false);
-  const toggleRight = () => setRightOpen(!rightOpen);
   const [cy, setCy] = useState<cytoscape.Core>(null);
+  const {
+    leftSidebarOpen,
+    setLeftSidebarOpen,
+    rightSidebarOpen,
+    setRightSidebarOpen,
+  } = useStore();
   // const setCy = useCallback((instance) => (cy.current = instance), []);
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
@@ -27,8 +30,8 @@ export default function App() {
         side="left"
         drawerWidth={drawerWidth}
         isMobile={isMobile}
-        isOpen={leftOpen}
-        setIsOpen={setLeftOpen}
+        isOpen={leftSidebarOpen}
+        setIsOpen={setLeftSidebarOpen}
       >
         <Resources
           activeTab={activeResource}
@@ -38,8 +41,8 @@ export default function App() {
       <Stack sx={{ flexGrow: 1 }}>
         <Header
           drawerWidth={drawerWidth}
-          toggleLeft={toggleLeft}
-          toggleRight={toggleRight}
+          toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
+          toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
         />
         <Box sx={{ position: "relative", height: 1 }}>
           <Cyto cy={cy} setCy={setCy} />
@@ -54,8 +57,8 @@ export default function App() {
         side="right"
         drawerWidth={drawerWidth}
         isMobile={isMobile}
-        isOpen={rightOpen}
-        setIsOpen={setRightOpen}
+        isOpen={rightSidebarOpen}
+        setIsOpen={setRightSidebarOpen}
       >
         <Inspector cy={cy} />
       </Sidebar>

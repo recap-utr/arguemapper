@@ -38,12 +38,12 @@ export const store = vanillaCreate<StoreState>(
         },
       })),
       {
-        name: "arguemapper",
+        name: "cytoStore",
       }
     )
   )
 );
 
-const useStore = createHook(store);
+const useCytoStore = createHook(store);
 
-export default useStore;
+export default useCytoStore;

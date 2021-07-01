@@ -2,41 +2,27 @@ import { faBan, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Stack, TextField, Toolbar } from "@material-ui/core";
 import cytoscape from "cytoscape";
-import { set as _set } from "lodash";
+import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
-import useStore from "../model/state";
-
-// https://stackoverflow.com/a/44622467
-class DefaultDict {
-  constructor(defaultInit) {
-    return new Proxy(
-      {},
-      {
-        get: (target, name) =>
-          name in target
-            ? target[name]
-            : (target[name] =
-                typeof defaultInit === "function"
-                  ? new defaultInit().valueOf()
-                  : defaultInit),
-      }
-    );
-  }
-}
+import useStore from "../model/cytoStore";
 
 function Inspector({ cy }: { cy: cytoscape.Core }) {
   const { updateGraph } = useStore();
   // @ts-ignore
-  const [element, setElement] = useState(cy?.data());
+  const [element, setElement] = useState(_.cloneDeep(cy?.data()));
 
   useEffect(() => {
     if (cy) {
       cy.on("select", (e) => {
-        setElement(e.target.data());
+        setElement(_.cloneDeep(e.target.data()));
       });
       cy.on("unselect", (e) => {
-        // @ts-ignore
-        setElement(cy?.data());
+        if (cy) {
+          // @ts-ignore
+          setElement(_.cloneDeep(cy.data()));
+        } else {
+          setElement(null);
+        }
       });
     }
   }, [cy]);
@@ -48,8 +34,8 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
         cy.elements().unselectify();
 
         setElement((element) => {
-          const newElem = { ...element };
-          _set(newElem, attr, event.target.value);
+          const newElem = _.cloneDeep(element);
+          _.set(newElem, attr, event.target.value);
           return newElem;
         });
       };
@@ -102,7 +88,7 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
                 cytoElem.data(element);
               }
 
-              // TODO: Undo/redo does not work as expected
+              cy.elements().selectify();
               updateGraph(cy);
             }}
           >
