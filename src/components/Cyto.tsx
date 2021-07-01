@@ -11,7 +11,6 @@ import {
   Menu,
   MenuItem,
   Stack,
-  Theme,
   useTheme,
 } from "@material-ui/core";
 import cytoscape from "cytoscape";
@@ -19,7 +18,7 @@ import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
 import _ from "lodash";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as cytoModel from "../model/cytoModel";
 import useStore from "../model/state";
 import style from "../services/style";
@@ -28,34 +27,20 @@ cytoscape.use(dagre);
 // @ts-ignore
 cytoscape.use(edgehandles);
 cytoscape.use(cxtmenu);
+// Otherwise, react will throw errors when hot-reloading the module
 cytoscape.use = () => {};
 
 const defaultLayout = {
   name: "dagre",
   nodeDimensionsIncludeLabels: true,
   rankDir: "BT",
-  animate: true,
+  animate: false,
 };
 
-function initCytoscape(
-  container: HTMLElement,
-  theme: Theme,
-  handleClick?,
-  handleClose?
+function initEdgeHandles(
+  cy: cytoscape.Core,
+  updateGraph: (cy: cytoscape.Core) => void
 ) {
-  const cy = cytoscape({
-    container: container,
-    // ...store.getState().cyto,
-    // @ts-ignore
-    style: style(theme),
-    layout: defaultLayout,
-    boxSelectionEnabled: false,
-    autounselectify: false,
-    selectionType: "single",
-    minZoom: 0.1,
-    maxZoom: 3.0,
-  });
-
   cy.edgehandles({
     hoverDelay: 0,
     // edgeType: function (_source, edge) {
@@ -105,125 +90,126 @@ function initCytoscape(
           data: cytoModel.edge.init(sourceData.id, targetData.id),
         });
       }
+
+      updateGraph(cy);
     },
   });
-  /*
-   *
-   * Set up context menus
-   *
-   * */
-  // const cxtmenuOptions = {
-  //   selector: "",
-  //   commands: [],
-  //   menuRadius: function (ele) {
-  //     return 150 - 0.5 * ele.outerWidth() + 5;
-  //     // radius - node size + 0.5 * spotlightRadius
-  //   }, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
-  //   fillColor: "rgba(0, 0, 0, 0.75)", // the background colour of the menu
-  //   activeFillColor: "rgba(0, 0, 255, 0.75)", // the colour used to indicate the selected command
-  //   activePadding: 0, // additional size in pixels for the active command
-  //   indicatorSize: 25, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
-  //   separatorWidth: 5, // the empty spacing in pixels between successive commands
-  //   spotlightPadding: 10, // extra spacing in pixels between the element and the spotlight
-  //   adaptativeNodeSpotlightRadius: false, // specify whether the spotlight radius should adapt to the node size
-  //   minSpotlightRadius: 10, // the minimum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
-  //   maxSpotlightRadius: 10, // the maximum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
-  //   openMenuEvents: "cxttap taphold", // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
-  //   itemColor: "white", // the colour of text in the command's content
-  //   itemTextShadowColor: "transparent", // the text shadow colour of the command's content
-  //   zIndex: 9999, // the z-index of the ui div
-  //   atMouse: false, // draw menu at mouse position
-  //   outsideMenuCancel: 0, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
-  // };
-
-  // const nodeCommands = [
-  //   {
-  //     content: '<i class="fas fa-edit"></i>',
-  //     select: function (ele) {
-  //       if (selected.length !== 0) {
-  //         selected.forEach(function (node) {
-  //           delete_nodes(node);
-  //         });
-  //         selected = [];
-  //       } else {
-  //         if (ele.data().type == 'atom') {
-  //           delete_nodes(ele);
-  //           ele.remove();
-  //         } else if (ele.data().typeshape == 'diamond') {
-  //           delete_nodes(ele);
-  //           ele.remove();
-  //         } else {
-  //           sadface.delete_edge(ele.id());
-  //           update_local_storage();
-  //           ele.remove();
-  //         }
-  //       }
-  //     },
-  //     enabled: true,
-  //   },
-  // ];
-
-  // const atomOptions = { ...cxtmenuOptions };
-  // atomOptions.selector = 'node[type = "atom"]';
-  // atomOptions.commands = [
-  //   {
-  //     content: '<i class="fas fa-edit"></i> content',
-  //     select: function (ele) {
-  //       $('#editContentModal').modal('show');
-  //       $('#edit_atom_content').val(ele.data('content'));
-  //       edit_atom = ele;
-  //     },
-  //     enabled: true,
-  //   },
-  //   {
-  //     content: '<i class="fas fa-trash"></i> remove',
-  //     select: function (ele) {
-  //       $('#edit_metadata').empty();
-  //       var atom = sadface.get_atom(ele.id());
-  //       var textArea = $(
-  //         '<textarea id="' +
-  //           ele.id() +
-  //           '_metadata" class="form-control" rows="2" >' +
-  //           JSON.stringify(atom.metadata) +
-  //           '</textarea>'
-  //       );
-  //       $('#edit_metadata').append(textArea);
-  //       $('#editMetadataModal').modal('show');
-  //       edit_atom = ele;
-  //     },
-  //     enabled: true,
-  //   },
-  //   ...nodeCommands,
-  // ];
-
-  // const atomOptions = { ...cxtmenuOptions };
-  // atomOptions.selector = "node";
-  // atomOptions.commands = [
-  //   {
-  //     content: <FontAwesomeIcon icon={faPlus} />,
-  //     select: function (ele) {},
-  //     enabled: true,
-  //   },
-  // ];
-
-  // // @ts-ignore
-  // cy.cxtmenu(atomOptions);
-
-  // @ts-ignore
-  // cy.navigator({
-  //   container: "#navigatorContainer",
-  //   //   viewLiveFramerate: 0, // set false to update graph pan only on drag end; set 0 to do it instantly; set a number (frames per second) to update not more than N times per second
-  //   //   thumbnailEventFramerate: 30, // max thumbnail's updates per second triggered by graph updates
-  //   //   thumbnailLiveFramerate: false, // max thumbnail's updates per second. Set false to disable
-  //   //   dblClickDelay: 200, // milliseconds
-  //   removeCustomContainer: false, // destroy the container specified by user on plugin destroy
-  //   rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
-  // });
-
-  cy.on("cxttap", handleClick);
-
-  return cy;
 }
+
+/*
+ *
+ * Set up context menus
+ *
+ * */
+// const cxtmenuOptions = {
+//   selector: "",
+//   commands: [],
+//   menuRadius: function (ele) {
+//     return 150 - 0.5 * ele.outerWidth() + 5;
+//     // radius - node size + 0.5 * spotlightRadius
+//   }, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
+//   fillColor: "rgba(0, 0, 0, 0.75)", // the background colour of the menu
+//   activeFillColor: "rgba(0, 0, 255, 0.75)", // the colour used to indicate the selected command
+//   activePadding: 0, // additional size in pixels for the active command
+//   indicatorSize: 25, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
+//   separatorWidth: 5, // the empty spacing in pixels between successive commands
+//   spotlightPadding: 10, // extra spacing in pixels between the element and the spotlight
+//   adaptativeNodeSpotlightRadius: false, // specify whether the spotlight radius should adapt to the node size
+//   minSpotlightRadius: 10, // the minimum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+//   maxSpotlightRadius: 10, // the maximum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+//   openMenuEvents: "cxttap taphold", // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
+//   itemColor: "white", // the colour of text in the command's content
+//   itemTextShadowColor: "transparent", // the text shadow colour of the command's content
+//   zIndex: 9999, // the z-index of the ui div
+//   atMouse: false, // draw menu at mouse position
+//   outsideMenuCancel: 0, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+// };
+
+// const nodeCommands = [
+//   {
+//     content: '<i class="fas fa-edit"></i>',
+//     select: function (ele) {
+//       if (selected.length !== 0) {
+//         selected.forEach(function (node) {
+//           delete_nodes(node);
+//         });
+//         selected = [];
+//       } else {
+//         if (ele.data().type == 'atom') {
+//           delete_nodes(ele);
+//           ele.remove();
+//         } else if (ele.data().typeshape == 'diamond') {
+//           delete_nodes(ele);
+//           ele.remove();
+//         } else {
+//           sadface.delete_edge(ele.id());
+//           update_local_storage();
+//           ele.remove();
+//         }
+//       }
+//     },
+//     enabled: true,
+//   },
+// ];
+
+// const atomOptions = { ...cxtmenuOptions };
+// atomOptions.selector = 'node[type = "atom"]';
+// atomOptions.commands = [
+//   {
+//     content: '<i class="fas fa-edit"></i> content',
+//     select: function (ele) {
+//       $('#editContentModal').modal('show');
+//       $('#edit_atom_content').val(ele.data('content'));
+//       edit_atom = ele;
+//     },
+//     enabled: true,
+//   },
+//   {
+//     content: '<i class="fas fa-trash"></i> remove',
+//     select: function (ele) {
+//       $('#edit_metadata').empty();
+//       var atom = sadface.get_atom(ele.id());
+//       var textArea = $(
+//         '<textarea id="' +
+//           ele.id() +
+//           '_metadata" class="form-control" rows="2" >' +
+//           JSON.stringify(atom.metadata) +
+//           '</textarea>'
+//       );
+//       $('#edit_metadata').append(textArea);
+//       $('#editMetadataModal').modal('show');
+//       edit_atom = ele;
+//     },
+//     enabled: true,
+//   },
+//   ...nodeCommands,
+// ];
+
+// const atomOptions = { ...cxtmenuOptions };
+// atomOptions.selector = "node";
+// atomOptions.commands = [
+//   {
+//     content: <FontAwesomeIcon icon={faPlus} />,
+//     select: function (ele) {},
+//     enabled: true,
+//   },
+// ];
+
+// // @ts-ignore
+// cy.cxtmenu(atomOptions);
+
+// @ts-ignore
+// cy.navigator({
+//   container: "#navigatorContainer",
+//   //   viewLiveFramerate: 0, // set false to update graph pan only on drag end; set 0 to do it instantly; set a number (frames per second) to update not more than N times per second
+//   //   thumbnailEventFramerate: 30, // max thumbnail's updates per second triggered by graph updates
+//   //   thumbnailLiveFramerate: false, // max thumbnail's updates per second. Set false to disable
+//   //   dblClickDelay: 200, // milliseconds
+//   removeCustomContainer: false, // destroy the container specified by user on plugin destroy
+//   rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
+// });
+
+// cy.on("cxttap", handleClick);
 
 const initialCtxMenu = {
   mouseX: null,
@@ -231,9 +217,11 @@ const initialCtxMenu = {
 };
 
 export default function Cytoscape({
-  cyCallback,
+  cy,
+  setCy,
 }: {
-  cyCallback: (instance: cytoscape.Core) => void;
+  cy: cytoscape.Core;
+  setCy: (instance: cytoscape.Core) => void;
 }) {
   const [ctxMenu, setCtxMenu] = useState<{
     mouseX: null | number;
@@ -242,18 +230,13 @@ export default function Cytoscape({
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   const {
-    cyto: cytoStore,
-    updateCyto,
-    clear: clearState,
+    graph,
+    updateGraph,
     undo: undoState,
     redo: redoState,
     getState,
   } = useStore();
-  const cy = useRef<cytoscape.Core>(null);
-  // I used a boolean state here for performance reasons.
-  // The same results could be obtained with "useState<cytoscape.Core>(null)" above.
-  const [cyState, setCyState] = useState<cytoscape.Core>(null);
-  // const [cyRendered, setCyRendered] = useState(false);
+  const layout = useCallback(() => cy.layout(defaultLayout).run(), [cy]);
 
   const handleClick = (event: cytoscape.EventObject) => {
     setCtxMenu({
@@ -268,40 +251,43 @@ export default function Cytoscape({
 
   useEffect(() => {
     if (containerRef.current !== null) {
-      cy.current = initCytoscape(
-        containerRef.current,
-        theme,
-        handleClick,
-        handleClose
-      );
-      cyCallback(cy.current);
-      setCyState(cy.current);
+      const cy = cytoscape({
+        container: containerRef.current,
+        // ...store.getState().cyto,
+        // @ts-ignore
+        style: style(theme),
+        boxSelectionEnabled: false,
+        autounselectify: false,
+        selectionType: "single",
+        minZoom: 0.1,
+        maxZoom: 3.0,
+      });
+      setCy(cy);
+      initEdgeHandles(cy, updateGraph);
+
+      return () => cy.destroy();
     }
-  }, [theme, cyCallback, setCyState]);
+  }, [updateGraph, setCy, theme]);
 
   useEffect(() => {
-    if (cyState !== null) {
-      cy.current.json(cytoStore);
+    if (cy && !cy.destroyed()) {
+      const shouldLayout = cy.elements().size() === 0;
 
-      console.log();
+      cy.elements().remove();
+      // @ts-ignore
+      cy.removeData();
+      cy.json(graph);
 
+      // only run layout if some nodes are missing the position property
+      // this will only be the case for the initial state
       if (
-        cy.current
-          .elements()
-          // @ts-ignore
-          .map((e) => (_.has(e, "position") ? e.position() : null))
-          .every((e) => e === null)
+        shouldLayout ||
+        graph.elements.nodes.every((node) => !_.has(node, "position"))
       ) {
-        cy.current.layout(defaultLayout).run();
-
-        // if (localStorage.getItem("arguemapper") === null) {
-        //   updateCyto(cy.current.json() as cytoModel.Wrapper);
-        // }
+        layout();
       }
     }
-  }, [cytoStore, updateCyto, cyState]);
-
-  // clearState?.();
+  }, [graph, updateGraph, cy, layout]);
 
   return (
     <Box>
@@ -321,17 +307,12 @@ export default function Cytoscape({
       />
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
-          <IconButton
-            onClick={() => {
-              cy.current.layout(defaultLayout).run();
-            }}
-            aria-label="Layout"
-          >
+          <IconButton onClick={layout} aria-label="Layout">
             <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
           <IconButton
             onClick={() => {
-              cy.current.add({
+              cy.add({
                 data: {
                   id: "e3",
                   metadata: {},
@@ -341,7 +322,7 @@ export default function Cytoscape({
                   updated: new Date(),
                 },
               });
-              updateCyto(cy.current.json() as cytoModel.Wrapper);
+              updateGraph(cy);
             }}
           >
             <FontAwesomeIcon icon={faPlus} />

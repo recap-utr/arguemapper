@@ -1,3 +1,4 @@
+import cytoscape from "cytoscape";
 import { undoMiddleware, UndoState } from "zundo";
 import createHook from "zustand";
 import { devtools, persist } from "zustand/middleware";
@@ -8,8 +9,8 @@ import demoGraph from "./demo";
 // const createStore = pipe(persist, undoMiddleware, create);
 
 interface StoreState extends UndoState {
-  cyto: cytoModel.Wrapper;
-  updateCyto(json: cytoModel.Wrapper): void;
+  graph: cytoModel.Wrapper;
+  updateGraph(cy: cytoscape.Core): void;
 }
 
 export const store = vanillaCreate<StoreState>(
@@ -17,21 +18,23 @@ export const store = vanillaCreate<StoreState>(
     persist(
       undoMiddleware((set, get) => ({
         // cyto: cytoModel.init(),
-        cyto: demoGraph,
+        graph: demoGraph,
         // @ts-ignore
-        updateCyto: (json) => {
-          const { data, elements } = json;
-          const toSet = {
-            cyto: {
-              data: data as cytoModel.graph.Data,
+        updateGraph: (cy) => {
+          set({
+            graph: {
+              // @ts-ignore
+              data: cy.data(),
               elements: {
-                nodes: elements.nodes.map((node) => ({ data: node.data })),
-                edges: elements.edges.map((edge) => ({ data: edge.data })),
+                // @ts-ignore
+                nodes: cy
+                  .elements("node[kind='scheme'], node[kind='atom']")
+                  .jsons(),
+                // @ts-ignore
+                edges: cy.elements("edge").jsons(),
               },
             },
-          };
-          console.log(toSet);
-          set(toSet);
+          });
         },
       })),
       {

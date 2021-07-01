@@ -8,6 +8,8 @@ export interface Wrapper {
   elements: Elements;
 }
 
+// TODO: Make nodes/edges array an object with the id as the key
+
 export interface Elements {
   nodes: Array<{
     data: node.SchemeData | node.AtomData;

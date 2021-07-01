@@ -33,7 +33,6 @@ const Sidebar: React.FC<{
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
-          position: "sticky",
           width: drawerWidth,
         },
       }}
