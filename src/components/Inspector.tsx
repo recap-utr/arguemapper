@@ -1,26 +1,25 @@
 import { faBan, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Stack, TextField, Toolbar } from "@material-ui/core";
-import cytoscape from "cytoscape";
+import produce from "immer";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
-import useStore from "../model/cytoStore";
+import { useGraph } from "./GraphContext";
 
-function Inspector({ cy }: { cy: cytoscape.Core }) {
-  const { updateGraph } = useStore();
+function Inspector() {
+  const { cy, updateGraph } = useGraph();
   // @ts-ignore
-  const [element, setElement] = useState(_.cloneDeep(cy?.data()));
+  const [element, setElement] = useState(cy?.data());
 
   useEffect(() => {
     if (cy) {
       cy.on("select", (e) => {
-        // setElement(_.cloneDeep(e.target.data()));
-        setElement({ kind: "atom", text: "hello", id: "a1" });
+        setElement(e.target.data());
       });
       cy.on("unselect", (e) => {
         if (cy) {
           // @ts-ignore
-          setElement(_.cloneDeep(cy.data()));
+          setElement(cy.data());
         } else {
           setElement(null);
         }
@@ -35,13 +34,13 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
         cy.elements().unselectify();
 
         setElement((element) => {
-          const newElem = _.cloneDeep(element);
-          _.set(newElem, attr, event.target.value);
-          return newElem;
+          return produce(element, (draft) => {
+            _.set(draft, attr, event.target.value);
+          });
         });
       };
     },
-    [cy, setElement]
+    [cy]
   );
 
   let fields = null;
@@ -84,14 +83,12 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
               if (element) {
-                console.log(element);
                 const cytoElem = cy.$id(element.id);
-                cytoElem.removeData();
                 cytoElem.data(element);
+                updateGraph(cy);
               }
 
               cy.elements().selectify();
-              updateGraph(cy);
             }}
           >
             Save

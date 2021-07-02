@@ -17,11 +17,10 @@ import cytoscape from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
-import _ from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as cytoModel from "../model/cytoModel";
-import useStore from "../model/cytoStore";
 import style from "../services/style";
+import { useGraph } from "./GraphContext";
 
 cytoscape.use(dagre);
 // @ts-ignore
@@ -216,13 +215,7 @@ const initialCtxMenu = {
   mouseY: null,
 };
 
-export default function Cytoscape({
-  cy,
-  setCy,
-}: {
-  cy: cytoscape.Core;
-  setCy: (instance: cytoscape.Core) => void;
-}) {
+export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<{
     mouseX: null | number;
     mouseY: null | number;
@@ -230,13 +223,19 @@ export default function Cytoscape({
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   const {
+    cy,
+    setCy,
     graph,
     updateGraph,
-    undo: undoState,
-    redo: redoState,
-    getState,
-  } = useStore();
-  const layout = useCallback(() => cy.layout(defaultLayout).run(), [cy]);
+    undo,
+    redo,
+    undoable,
+    redoable,
+    reset,
+  } = useGraph();
+  const layout = useCallback(() => {
+    if (cy) cy.layout(defaultLayout).run();
+  }, [cy]);
 
   const handleClick = (event: cytoscape.EventObject) => {
     setCtxMenu({
@@ -251,9 +250,9 @@ export default function Cytoscape({
 
   useEffect(() => {
     if (containerRef.current !== null) {
-      const cy = cytoscape({
+      const _cy = cytoscape({
         container: containerRef.current,
-        // ...store.getState().cyto,
+        ...graph,
         // @ts-ignore
         style: style(theme),
         boxSelectionEnabled: false,
@@ -262,32 +261,24 @@ export default function Cytoscape({
         minZoom: 0.1,
         maxZoom: 3.0,
       });
-      setCy(cy);
-      initEdgeHandles(cy, updateGraph);
+      setCy(_cy);
+      _cy.elements().selectify();
+      _cy.elements().unselect();
+      initEdgeHandles(_cy, updateGraph);
 
-      return () => cy.destroy();
-    }
-  }, [updateGraph, setCy, theme]);
-
-  useEffect(() => {
-    if (cy && !cy.destroyed()) {
-      const shouldLayout = cy.elements().size() === 0;
-
-      cy.elements().remove();
-      // @ts-ignore
-      cy.removeData();
-      cy.json(graph);
-
-      // only run layout if some nodes are missing the position property
-      // this will only be the case for the initial state
       if (
-        shouldLayout ||
-        graph.elements.nodes.every((node) => !_.has(node, "position"))
+        // @ts-ignore
+        _cy.nodes().every((node) => !_.has(node.data(), "position"))
       ) {
-        layout();
+        _cy.layout(defaultLayout).run();
+        updateGraph(_cy);
+        reset();
       }
+
+      return () => _cy.destroy();
     }
-  }, [graph, updateGraph, cy, layout]);
+    // xeslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateGraph, setCy, reset, theme]);
 
   return (
     <Box>
@@ -327,16 +318,10 @@ export default function Cytoscape({
           >
             <FontAwesomeIcon icon={faPlus} />
           </IconButton>
-          <IconButton
-            disabled={!getState || getState().prevStates.length === 0}
-            onClick={() => undoState()}
-          >
+          <IconButton disabled={!undoable()} onClick={undo}>
             <FontAwesomeIcon icon={faUndo} />
           </IconButton>
-          <IconButton
-            disabled={!getState || getState().futureStates.length === 0}
-            onClick={() => redoState()}
-          >
+          <IconButton disabled={!redoable()} onClick={redo}>
             <FontAwesomeIcon icon={faRedo} />
           </IconButton>
         </Stack>
