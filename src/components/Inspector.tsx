@@ -14,7 +14,8 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
   useEffect(() => {
     if (cy) {
       cy.on("select", (e) => {
-        setElement(_.cloneDeep(e.target.data()));
+        // setElement(_.cloneDeep(e.target.data()));
+        setElement({ kind: "atom", text: "hello", id: "a1" });
       });
       cy.on("unselect", (e) => {
         if (cy) {
@@ -79,10 +80,11 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
       <Toolbar>
         <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
           <Button
-            variant="outlined"
+            variant="contained"
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
               if (element) {
+                console.log(element);
                 const cytoElem = cy.$id(element.id);
                 cytoElem.removeData();
                 cytoElem.data(element);
@@ -95,7 +97,7 @@ function Inspector({ cy }: { cy: cytoscape.Core }) {
             Save
           </Button>
           <Button
-            variant="outlined"
+            variant="contained"
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {

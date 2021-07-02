@@ -1,5 +1,5 @@
 import createHook from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import vanillaCreate from "zustand/vanilla";
 // import pipe from "ramda/es/pipe";
 // const createStore = pipe(persist, undoMiddleware, create);
@@ -12,22 +12,20 @@ interface StoreState {
 }
 
 export const store = vanillaCreate<StoreState>(
-  devtools(
-    persist(
-      (set, get) => ({
-        leftSidebarOpen: true,
-        setLeftSidebarOpen: (open) => {
-          set({ leftSidebarOpen: open });
-        },
-        rightSidebarOpen: true,
-        setRightSidebarOpen: (open) => {
-          set({ rightSidebarOpen: open });
-        },
-      }),
-      {
-        name: "appStore",
-      }
-    )
+  persist(
+    (set, get) => ({
+      leftSidebarOpen: true,
+      setLeftSidebarOpen: (open) => {
+        set({ leftSidebarOpen: open });
+      },
+      rightSidebarOpen: true,
+      setRightSidebarOpen: (open) => {
+        set({ rightSidebarOpen: open });
+      },
+    }),
+    {
+      name: "appStore",
+    }
   )
 );
 

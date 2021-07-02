@@ -2,24 +2,25 @@ import { Box, Stack, useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import cytoscape from "cytoscape";
 import React, { useState } from "react";
+import { useLocalStorage } from "react-use";
 import Cyto from "./components/Cyto";
 import Header from "./components/Header";
 import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
-import useStore from "./model/appStore";
 
 const drawerWidth = 300;
 
 export default function App() {
   const [cy, setCy] = useState<cytoscape.Core>(null);
-  const {
-    leftSidebarOpen,
-    setLeftSidebarOpen,
-    rightSidebarOpen,
-    setRightSidebarOpen,
-  } = useStore();
-  // const setCy = useCallback((instance) => (cy.current = instance), []);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useLocalStorage(
+    "leftSidebarOpen",
+    true
+  );
+  const [rightSidebarOpen, setRightSidebarOpen] = useLocalStorage(
+    "rightSidebarOpen",
+    true
+  );
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
   const [activeResource, setActiveResource] = React.useState("1");

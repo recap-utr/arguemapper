@@ -5,8 +5,6 @@ import { devtools, persist } from "zustand/middleware";
 import vanillaCreate from "zustand/vanilla";
 import * as cytoModel from "./cytoModel";
 import demoGraph from "./demo";
-// import pipe from "ramda/es/pipe";
-// const createStore = pipe(persist, undoMiddleware, create);
 
 interface StoreState extends UndoState {
   graph: cytoModel.Wrapper;
@@ -21,6 +19,7 @@ export const store = vanillaCreate<StoreState>(
         graph: demoGraph,
         // @ts-ignore
         updateGraph: (cy) => {
+          console.log(get().graph.elements.nodes[0].data);
           set({
             graph: {
               // @ts-ignore
@@ -35,6 +34,8 @@ export const store = vanillaCreate<StoreState>(
               },
             },
           });
+
+          console.log(get().graph.elements.nodes[0].data);
         },
       })),
       {
