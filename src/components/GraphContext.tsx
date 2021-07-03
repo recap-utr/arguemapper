@@ -13,8 +13,9 @@ import demoGraph from "../model/demo";
 const GraphContext = createContext<
   Partial<{
     cy: cytoscape.Core;
-    setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
+    _setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
     currentCy: () => cytoscape.Core;
+    _setCurrentCy: (instance: cytoscape.Core) => void;
     loadGraph: () => cytoModel.Wrapper;
     updateGraph: () => void;
     redo: () => void;
@@ -52,12 +53,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const currentStateRef = useRef<cytoModel.Wrapper>(null);
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
-  const [cy, setCy] = useState<cytoscape.Core>(null);
+  const [cy, _setCy] = useState<cytoscape.Core>(null);
   const cyRef = useRef<cytoscape.Core>(null);
-
-  useEffect(() => {
-    cyRef.current = cy;
-  }, [cy, cyRef]);
 
   useEffect(() => {
     localStorage.setItem(storageName, JSON.stringify(currentState));
@@ -111,13 +108,20 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const redoable = useCallback(() => futureStates.length > 0, [futureStates]);
 
   const currentCy = useCallback(() => cyRef.current, [cyRef]);
+  const _setCurrentCy = useCallback(
+    (instance: cytoscape.Core) => {
+      cyRef.current = instance;
+    },
+    [cyRef]
+  );
 
   return (
     <GraphContext.Provider
       value={{
         cy,
-        setCy,
+        _setCy,
         currentCy,
+        _setCurrentCy,
         loadGraph,
         updateGraph,
         undo,

@@ -2,7 +2,7 @@ import { Box, Stack, useMediaQuery } from "@material-ui/core";
 import { useTheme } from "@material-ui/core/styles";
 import React from "react";
 import { useLocalStorage } from "react-use";
-import Cyto from "./components/Cyto";
+import Graph from "./components/Graph";
 import { GraphProvider } from "./components/GraphContext";
 import Header from "./components/Header";
 import Inspector from "./components/Inspector";
@@ -46,7 +46,7 @@ export default function App() {
             toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
           />
           <Box sx={{ position: "relative", height: 1 }}>
-            <Cyto />
+            <Graph />
           </Box>
           {/* <Box sx={{ position: "relative", height: 1 }}>
           <ReactFlowProvider>

@@ -1,6 +1,6 @@
 import { Theme } from "@material-ui/core";
 import textMetrics from "text-metrics";
-import * as cytoModel from "../model/cytoModel";
+import * as cytoModel from "./cytoModel";
 
 const lineHeight = 1.15;
 const maxWidth = 160;
