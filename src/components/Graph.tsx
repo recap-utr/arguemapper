@@ -298,7 +298,7 @@ export default function Cytoscape() {
       _cy.elements().unselect();
       initEdgeHandles(_cy, updateGraph);
       _cy.on("cxttap", handleClick);
-      _cy.nodes("[metadata]").on("dragfree", () => {
+      _cy.on("dragfree", "node[metadata]", () => {
         updateGraph();
       });
 
@@ -332,7 +332,7 @@ export default function Cytoscape() {
         ref={containerRef}
         sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
       />
-      <Box
+      {/* <Box
         id="navigatorContainer"
         sx={{
           position: "absolute",
@@ -341,7 +341,7 @@ export default function Cytoscape() {
           width: 200,
           height: 200,
         }}
-      />
+      /> */}
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
           <IconButton onClick={layout} aria-label="Layout">
@@ -349,10 +349,21 @@ export default function Cytoscape() {
           </IconButton>
           <IconButton
             onClick={() => {
+              const pos = cy.elements().boundingBox({ includeLabels: false });
+              console.log(pos);
               cy.add({
                 // @ts-ignore
-                nodes: [{ data: cytoModel.node.initAtom("No Content") }],
+                nodes: [
+                  {
+                    data: cytoModel.node.initAtom("No Content"),
+                    position: {
+                      x: pos.w / 2,
+                      y: pos.h / 2,
+                    },
+                  },
+                ],
               });
+              cy.center();
               updateGraph();
             }}
           >
