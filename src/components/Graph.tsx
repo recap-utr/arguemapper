@@ -203,18 +203,24 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
 //   rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
 // });
 
-// cy.on("cxttap", handleClick);
+type ElementKind = null | "atom" | "scheme" | "edge" | "graph";
 
-const initialCtxMenu = {
+interface CtxMenuProps {
+  mouseX: null | number;
+  mouseY: null | number;
+  target: null | cytoscape.AbstractEventObject;
+  kind: ElementKind;
+}
+
+const initialCtxMenu: CtxMenuProps = {
   mouseX: null,
   mouseY: null,
+  target: null,
+  kind: null,
 };
 
 export default function Cytoscape() {
-  const [ctxMenu, setCtxMenu] = useState<{
-    mouseX: null | number;
-    mouseY: null | number;
-  }>(initialCtxMenu);
+  const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   const {
@@ -237,16 +243,39 @@ export default function Cytoscape() {
     }
   }, [cy, updateGraph]);
 
-  const handleClick = (event: cytoscape.EventObject) => {
+  const handleClick = useCallback((event: cytoscape.EventObject) => {
+    const data = event.target.data();
+
     setCtxMenu({
       mouseX: event.originalEvent.clientX,
       mouseY: event.originalEvent.clientY,
+      target: event.target,
+      kind: data.kind
+        ? data.kind
+        : data.source && data.target
+        ? "edge"
+        : "graph",
     });
-  };
+  }, []);
 
-  const handleClose = () => {
-    setCtxMenu(initialCtxMenu);
-  };
+  const handleClose = useCallback(() => {
+    setCtxMenu((menu) => ({ ...initialCtxMenu, kind: menu.kind }));
+  }, []);
+
+  const showFor = useCallback(
+    (kind: ElementKind | ElementKind[]) => {
+      if (Array.isArray(kind)) {
+        return {
+          sx: { display: kind.includes(ctxMenu.kind) ? "block" : "none" },
+        };
+      }
+
+      return {
+        sx: { display: kind === ctxMenu.kind ? "block" : "none" },
+      };
+    },
+    [ctxMenu.kind]
+  );
 
   useEffect(() => {
     if (containerRef.current !== null) {
@@ -268,6 +297,7 @@ export default function Cytoscape() {
       _cy.elements().selectify();
       _cy.elements().unselect();
       initEdgeHandles(_cy, updateGraph);
+      _cy.on("cxttap", handleClick);
       _cy.nodes("[metadata]").on("dragfree", () => {
         updateGraph();
       });
@@ -286,8 +316,15 @@ export default function Cytoscape() {
 
       return () => _cy.destroy();
     }
-    // xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateGraph, reset, theme, loadGraph, _setCy, _setCurrentCy]);
+  }, [
+    updateGraph,
+    reset,
+    theme,
+    loadGraph,
+    _setCy,
+    _setCurrentCy,
+    handleClick,
+  ]);
 
   return (
     <Box>
@@ -313,14 +350,8 @@ export default function Cytoscape() {
           <IconButton
             onClick={() => {
               cy.add({
-                data: {
-                  id: "e3",
-                  metadata: {},
-                  source: "a3",
-                  target: "s1",
-                  created: new Date(),
-                  updated: new Date(),
-                },
+                // @ts-ignore
+                nodes: [{ data: cytoModel.node.initAtom("No Content") }],
               });
               updateGraph();
             }}
@@ -335,9 +366,10 @@ export default function Cytoscape() {
           </IconButton>
         </Stack>
       </Box>
+      {/* TODO: Should be dismissed when switching dark/light mode */}
       <Menu
         keepMounted
-        open={ctxMenu.mouseY !== null}
+        open={ctxMenu.mouseY !== null && ctxMenu.mouseX !== null}
         onClose={handleClose}
         anchorReference="anchorPosition"
         anchorPosition={
@@ -346,9 +378,17 @@ export default function Cytoscape() {
             : undefined
         }
       >
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>My account</MenuItem>
-        <MenuItem>Logout</MenuItem>
+        <MenuItem
+          {...showFor(["atom", "scheme", "edge"])}
+          onClick={() => {
+            // @ts-ignore
+            ctxMenu.target.remove();
+            updateGraph();
+            handleClose();
+          }}
+        >
+          Delete
+        </MenuItem>
       </Menu>
     </Box>
   );

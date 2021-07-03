@@ -1,13 +1,22 @@
 import { faBan, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, Stack, TextField, Toolbar } from "@material-ui/core";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Toolbar,
+} from "@material-ui/core";
 import produce from "immer";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
+import * as cytoModel from "../model/cytoModel";
 import { useGraph } from "./GraphContext";
 
 function Inspector() {
-  // TODO: `graph` is not shown in debug console
   const { cy, updateGraph } = useGraph();
   // @ts-ignore
   const [element, setElement] = useState(cy?.data());
@@ -29,7 +38,15 @@ function Inspector() {
   const handleChange = useCallback(
     (attr: string | string[]) => {
       // We need to return a function here, thus the nested callbacks
-      return (event: React.ChangeEvent<HTMLInputElement>) => {
+      return (
+        event:
+          | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+          | React.ChangeEvent<{
+              name?: string;
+              value: any;
+              event: Event | React.SyntheticEvent<Element, Event>;
+            }>
+      ) => {
         if (cy) {
           cy.elements().unselectify();
 
@@ -47,10 +64,27 @@ function Inspector() {
   let fields = null;
 
   if (element) {
-    if (!element.kind) {
-      // edge
-    } else if (element.kind === "scheme") {
-      // s-node
+    if (element.kind === "scheme") {
+      fields = (
+        <>
+          <FormControl fullWidth>
+            <InputLabel>Scheme</InputLabel>
+            <Select
+              value={element.type}
+              label="Scheme"
+              onChange={handleChange("type")}
+            >
+              {Object.entries(cytoModel.node.Type).map(
+                ([menuValue, description]) => (
+                  <MenuItem key={description} value={menuValue}>
+                    {description}
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
+        </>
+      );
     } else if (element.kind === "atom") {
       fields = (
         <>
@@ -72,6 +106,10 @@ function Inspector() {
           />
         </>
       );
+    } else if (element.source && element.target) {
+      // edge
+    } else {
+      // graph
     }
   }
 
@@ -88,6 +126,7 @@ function Inspector() {
                 cytoElem.data(element);
                 updateGraph();
               }
+              cy.elements().selectify();
             }}
           >
             Save

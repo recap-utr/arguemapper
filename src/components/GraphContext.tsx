@@ -65,6 +65,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setPreviousStates((states) => [currentStateRef.current, ...states]);
     setFutureStates([]);
     setCurrentState({
+      // TODO: Include other metadata (e.g., zoom, panning position)
       // @ts-ignore
       data: cyRef.current.data(),
       elements: {
