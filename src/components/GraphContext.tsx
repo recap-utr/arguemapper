@@ -12,9 +12,9 @@ import demoGraph from "../model/demo";
 
 const GraphContext = createContext<
   Partial<{
-    cy: React.MutableRefObject<cytoscape.Core>;
-    cyHook: Date;
-    initializeCy: React.Dispatch<React.SetStateAction<Date>>;
+    cy: cytoscape.Core;
+    setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
+    currentCy: () => cytoscape.Core;
     loadGraph: () => cytoModel.Wrapper;
     updateGraph: () => void;
     redo: () => void;
@@ -47,53 +47,57 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     return demoGraph;
   }, [storageName]);
 
-  const stateRef = useRef<cytoModel.Wrapper>(null);
   const [currentState, setCurrentState] =
     useState<cytoModel.Wrapper>(loadGraph);
+  const currentStateRef = useRef<cytoModel.Wrapper>(null);
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
-  const cy = useRef<cytoscape.Core>(null);
-  const [cyHook, initializeCy] = useState<Date>(null);
+  const [cy, setCy] = useState<cytoscape.Core>(null);
+  const cyRef = useRef<cytoscape.Core>(null);
+
+  useEffect(() => {
+    cyRef.current = cy;
+  }, [cy, cyRef]);
 
   useEffect(() => {
     localStorage.setItem(storageName, JSON.stringify(currentState));
-    stateRef.current = currentState;
+    currentStateRef.current = currentState;
   }, [currentState, storageName]);
 
   const updateGraph = useCallback(() => {
-    setPreviousStates((states) => [stateRef.current, ...states]);
+    setPreviousStates((states) => [currentStateRef.current, ...states]);
     setFutureStates([]);
     setCurrentState({
       // @ts-ignore
-      data: cy.current.data(),
+      data: cyRef.current.data(),
       elements: {
         // @ts-ignore
-        nodes: cy.current.nodes("[metadata]").jsons(),
+        nodes: cyRef.current.nodes("[metadata]").jsons(),
         // @ts-ignore
-        edges: cy.current.edges("[metadata]").jsons(),
+        edges: cyRef.current.edges("[metadata]").jsons(),
       },
     });
   }, [setCurrentState]);
 
   const undo = useCallback(() => {
-    cy.current.json(previousStates[0]);
-    cy.current.elements().selectify();
-    cy.current.elements().unselect();
+    cy.json(previousStates[0]);
+    cy.elements().selectify();
+    cy.elements().unselect();
 
     setFutureStates((states) => [currentState, ...states]);
     setCurrentState(previousStates[0]);
     setPreviousStates((states) => states.slice(1));
-  }, [currentState, previousStates, setCurrentState]);
+  }, [cy, currentState, previousStates, setCurrentState]);
 
   const redo = useCallback(() => {
-    cy.current.json(futureStates[0]);
-    cy.current.elements().selectify();
-    cy.current.elements().unselect();
+    cy.json(futureStates[0]);
+    cy.elements().selectify();
+    cy.elements().unselect();
 
     setPreviousStates((states) => [currentState, ...states]);
     setCurrentState(futureStates[0]);
     setFutureStates((states) => states.slice(1));
-  }, [currentState, futureStates, setCurrentState]);
+  }, [cy, currentState, futureStates, setCurrentState]);
 
   const reset = useCallback(() => {
     setPreviousStates([]);
@@ -106,12 +110,14 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   );
   const redoable = useCallback(() => futureStates.length > 0, [futureStates]);
 
+  const currentCy = useCallback(() => cyRef.current, [cyRef]);
+
   return (
     <GraphContext.Provider
       value={{
         cy,
-        cyHook,
-        initializeCy,
+        setCy,
+        currentCy,
         loadGraph,
         updateGraph,
         undo,

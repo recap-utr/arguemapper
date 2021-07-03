@@ -219,7 +219,7 @@ export default function Cytoscape() {
   const theme = useTheme();
   const {
     cy,
-    initializeCy,
+    setCy,
     loadGraph,
     updateGraph,
     undo,
@@ -231,7 +231,7 @@ export default function Cytoscape() {
 
   const layout = useCallback(() => {
     if (cy) {
-      cy.current.layout(defaultLayout).run();
+      cy.layout(defaultLayout).run();
       updateGraph();
     }
   }, [cy, updateGraph]);
@@ -261,7 +261,7 @@ export default function Cytoscape() {
         minZoom: 0.1,
         maxZoom: 3.0,
       });
-      cy.current = _cy;
+      setCy(_cy);
 
       _cy.elements().selectify();
       _cy.elements().unselect();
@@ -277,18 +277,16 @@ export default function Cytoscape() {
         })
       ) {
         // layout() also calls updateGraph()
-        layout();
-      } else {
-        updateGraph();
+        cy.layout(defaultLayout).run();
       }
 
+      updateGraph();
       reset();
-      initializeCy(new Date());
 
       return () => _cy.destroy();
     }
     // xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, layout, updateGraph, reset, theme, loadGraph, initializeCy]);
+  }, [cy, layout, updateGraph, reset, theme, loadGraph, setCy]);
 
   return (
     <Box>
@@ -313,7 +311,7 @@ export default function Cytoscape() {
           </IconButton>
           <IconButton
             onClick={() => {
-              cy.current.add({
+              cy.add({
                 data: {
                   id: "e3",
                   metadata: {},

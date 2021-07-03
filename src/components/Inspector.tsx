@@ -8,34 +8,30 @@ import { useGraph } from "./GraphContext";
 
 function Inspector() {
   // TODO: `graph` is not shown in debug console
-  const { cy, updateGraph, cyHook } = useGraph();
+  const { cy, updateGraph } = useGraph();
   // @ts-ignore
-  const [element, setElement] = useState(cy.current?.data());
+  const [element, setElement] = useState(cy?.data());
 
   useEffect(() => {
     setElement(null);
 
-    if (cyHook && cy.current) {
-      cy.current.on("select", (e) => {
+    if (cy) {
+      cy.on("select", (e) => {
         setElement(e.target.data());
       });
-      cy.current.on("unselect", (e) => {
-        if (cy.current) {
-          // @ts-ignore
-          setElement(cy.current.data());
-        } else {
-          setElement(null);
-        }
+      cy.on("unselect", (e) => {
+        // @ts-ignore
+        setElement(cy.data());
       });
     }
-  }, [cy, cyHook]);
+  }, [cy]);
 
   const handleChange = useCallback(
     (attr: string | string[]) => {
       // We need to return a function here, thus the nested callbacks
       return (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (cy && cyHook) {
-          cy.current.elements().unselectify();
+        if (cy) {
+          cy.elements().unselectify();
 
           setElement((element) => {
             return produce(element, (draft) => {
@@ -45,7 +41,7 @@ function Inspector() {
         }
       };
     },
-    [cy, cyHook]
+    [cy]
   );
 
   let fields = null;
@@ -88,7 +84,7 @@ function Inspector() {
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
               if (element) {
-                const cytoElem = cy.current.$id(element.id);
+                const cytoElem = cy.$id(element.id);
                 cytoElem.data(element);
                 updateGraph();
               }
@@ -101,8 +97,8 @@ function Inspector() {
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {
-              cy.current.elements().selectify();
-              cy.current.elements().unselect();
+              cy.elements().selectify();
+              cy.elements().unselect();
             }}
           >
             Cancel
