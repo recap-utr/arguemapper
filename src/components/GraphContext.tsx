@@ -13,7 +13,7 @@ import demoGraph from "../model/demo";
 const GraphContext = createContext<
   Partial<{
     cy: React.MutableRefObject<cytoscape.Core>;
-    getGraph: () => cytoModel.Wrapper;
+    loadGraph: () => cytoModel.Wrapper;
     updateGraph: () => void;
     redo: () => void;
     undo: () => void;
@@ -35,8 +35,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   //   "cytoGraph",
   //   demoGraph
   // );
-  const stateRef = useRef<cytoModel.Wrapper>(null);
-  const [currentState, setCurrentState] = useState<cytoModel.Wrapper>(() => {
+  const loadGraph = useCallback(() => {
     const storedGraph = localStorage.getItem(storageName);
 
     if (storedGraph) {
@@ -44,7 +43,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     }
 
     return demoGraph;
-  });
+  }, [storageName]);
+
+  const stateRef = useRef<cytoModel.Wrapper>(null);
+  const [currentState, setCurrentState] =
+    useState<cytoModel.Wrapper>(loadGraph);
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
   const cy = useRef<cytoscape.Core>(null);
@@ -62,18 +65,14 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       data: cy.current.data(),
       elements: {
         // @ts-ignore
-        nodes: cy.current
-          .elements("node[kind='scheme'], node[kind='atom']")
-          .jsons(),
+        nodes: cy.current.nodes("[metadata]").jsons(),
         // @ts-ignore
-        edges: cy.current.elements("edge").jsons(),
+        edges: cy.current.edges("[metadata]").jsons(),
       },
     });
   }, [setCurrentState]);
 
   const undo = useCallback(() => {
-    console.log(previousStates[0] === currentState);
-
     cy.current.json(previousStates[0]);
     cy.current.elements().selectify();
     cy.current.elements().unselect();
@@ -104,14 +103,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   );
   const redoable = useCallback(() => futureStates.length > 0, [futureStates]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getGraph = useCallback(() => currentState, []);
-
   return (
     <GraphContext.Provider
       value={{
         cy,
-        getGraph,
+        loadGraph,
         updateGraph,
         undo,
         redo,

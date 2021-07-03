@@ -46,6 +46,8 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
     //   return 'flat';
     // },
     complete: function (source, target, edges) {
+      console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
+
       const sourceData = source.data() as cytoModel.node.Data;
       const targetData = target.data() as cytoModel.node.Data;
 
@@ -55,8 +57,8 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
         cytoModel.node.isAtom(sourceData) &&
         cytoModel.node.isAtom(targetData)
       ) {
-        const sourcePos = source.position() as { x: number; y: number };
-        const targetPos = target.position() as { x: number; y: number };
+        const sourcePos = source.position();
+        const targetPos = target.position();
 
         const position = {
           x: (sourcePos.x + targetPos.x) / 2,
@@ -65,25 +67,21 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
 
         const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
 
-        cy.add([
-          {
-            group: "nodes",
-            data: schemeData,
-            position,
-          },
-          {
-            group: "edges",
-            data: cytoModel.edge.init(sourceData.id, schemeData.id),
-          },
-          {
-            group: "edges",
-            data: cytoModel.edge.init(schemeData.id, targetData.id),
-          },
-        ]);
+        cy.add({
+          nodes: [{ data: schemeData, position }],
+          edges: [
+            { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
+            { data: cytoModel.edge.init(schemeData.id, targetData.id) },
+          ],
+        });
       } else {
         cy.add({
-          group: "edges",
-          data: cytoModel.edge.init(sourceData.id, targetData.id),
+          // @ts-ignore
+          edges: [
+            {
+              data: cytoModel.edge.init(sourceData.id, targetData.id),
+            },
+          ],
         });
       }
 
@@ -219,7 +217,7 @@ export default function Cytoscape() {
   }>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const { cy, getGraph, updateGraph, undo, redo, undoable, redoable, reset } =
+  const { cy, loadGraph, updateGraph, undo, redo, undoable, redoable, reset } =
     useGraph();
 
   const layout = useCallback(() => {
@@ -244,7 +242,7 @@ export default function Cytoscape() {
     if (containerRef.current !== null) {
       const _cy = cytoscape({
         container: containerRef.current,
-        ...getGraph(),
+        ...loadGraph(),
         layout: { name: "preset" },
         // @ts-ignore
         style: style(theme),
@@ -259,19 +257,17 @@ export default function Cytoscape() {
       _cy.elements().selectify();
       _cy.elements().unselect();
       initEdgeHandles(_cy, updateGraph);
-      _cy.nodes("[kind='atom'], [kind='scheme']").on("dragfree", () => {
+      _cy.nodes("[metadata]").on("dragfree", () => {
         updateGraph();
       });
 
       if (
-        _cy
-          .nodes("[kind='atom'], [kind='scheme']")
-          .every((node: NodeSingular) => {
-            const pos = node.position();
-            return pos.x === 0 && pos.y === 0;
-          })
+        _cy.nodes("[metadata]").every((node: NodeSingular) => {
+          const pos = node.position();
+          return pos.x === 0 && pos.y === 0;
+        })
       ) {
-        console.log("layout");
+        // layout() also calls updateGraph()
         layout();
       } else {
         updateGraph();
@@ -282,7 +278,7 @@ export default function Cytoscape() {
       return () => _cy.destroy();
     }
     // xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, layout, updateGraph, reset, theme, getGraph]);
+  }, [cy, layout, updateGraph, reset, theme, loadGraph]);
 
   return (
     <Box>
