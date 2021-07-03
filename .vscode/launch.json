@@ -7,7 +7,7 @@
     {
       "type": "pwa-msedge",
       "request": "launch",
-      "name": "Chrome",
+      "name": "Edge",
       "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}"
     }

@@ -7,19 +7,20 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useGraph } from "./GraphContext";
 
 function Inspector() {
+  // TODO: `graph` is not shown in debug console
   const { cy, updateGraph } = useGraph();
   // @ts-ignore
-  const [element, setElement] = useState(cy?.data());
+  const [element, setElement] = useState(cy.current?.data());
 
   useEffect(() => {
-    if (cy) {
-      cy.on("select", (e) => {
+    if (cy.current) {
+      cy.current.on("select", (e) => {
         setElement(e.target.data());
       });
-      cy.on("unselect", (e) => {
-        if (cy) {
+      cy.current.on("unselect", (e) => {
+        if (cy.current) {
           // @ts-ignore
-          setElement(cy.data());
+          setElement(cy.current.data());
         } else {
           setElement(null);
         }
@@ -31,7 +32,7 @@ function Inspector() {
     (attr: string | string[]) => {
       // We need to return a function here, thus the nested callbacks
       return (event: React.ChangeEvent<HTMLInputElement>) => {
-        cy.elements().unselectify();
+        cy.current.elements().unselectify();
 
         setElement((element) => {
           return produce(element, (draft) => {
@@ -83,12 +84,10 @@ function Inspector() {
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
               if (element) {
-                const cytoElem = cy.$id(element.id);
+                const cytoElem = cy.current.$id(element.id);
                 cytoElem.data(element);
-                updateGraph(cy);
+                updateGraph();
               }
-
-              cy.elements().selectify();
             }}
           >
             Save
@@ -98,8 +97,8 @@ function Inspector() {
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {
-              cy.elements().selectify();
-              cy.elements().unselect();
+              cy.current.elements().selectify();
+              cy.current.elements().unselect();
             }}
           >
             Cancel

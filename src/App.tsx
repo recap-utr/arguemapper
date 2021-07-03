@@ -25,7 +25,7 @@ export default function App() {
   const [activeResource, setActiveResource] = React.useState("1");
 
   return (
-    <GraphProvider>
+    <GraphProvider storageName="graph">
       <Stack direction="row" sx={{ height: "100vh" }}>
         <Sidebar
           side="left"

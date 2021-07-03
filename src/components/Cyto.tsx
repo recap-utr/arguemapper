@@ -13,7 +13,7 @@ import {
   Stack,
   useTheme,
 } from "@material-ui/core";
-import cytoscape from "cytoscape";
+import cytoscape, { NodeSingular } from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
@@ -36,10 +36,7 @@ const defaultLayout = {
   animate: false,
 };
 
-function initEdgeHandles(
-  cy: cytoscape.Core,
-  updateGraph: (cy: cytoscape.Core) => void
-) {
+function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
   cy.edgehandles({
     hoverDelay: 0,
     // edgeType: function (_source, edge) {
@@ -90,7 +87,7 @@ function initEdgeHandles(
         });
       }
 
-      updateGraph(cy);
+      updateGraph();
     },
   });
 }
@@ -222,20 +219,15 @@ export default function Cytoscape() {
   }>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const {
-    cy,
-    setCy,
-    graph,
-    updateGraph,
-    undo,
-    redo,
-    undoable,
-    redoable,
-    reset,
-  } = useGraph();
+  const { cy, getGraph, updateGraph, undo, redo, undoable, redoable, reset } =
+    useGraph();
+
   const layout = useCallback(() => {
-    if (cy) cy.layout(defaultLayout).run();
-  }, [cy]);
+    if (cy) {
+      cy.current.layout(defaultLayout).run();
+      updateGraph();
+    }
+  }, [cy, updateGraph]);
 
   const handleClick = (event: cytoscape.EventObject) => {
     setCtxMenu({
@@ -252,7 +244,8 @@ export default function Cytoscape() {
     if (containerRef.current !== null) {
       const _cy = cytoscape({
         container: containerRef.current,
-        ...graph,
+        ...getGraph(),
+        layout: { name: "preset" },
         // @ts-ignore
         style: style(theme),
         boxSelectionEnabled: false,
@@ -261,24 +254,35 @@ export default function Cytoscape() {
         minZoom: 0.1,
         maxZoom: 3.0,
       });
-      setCy(_cy);
+      cy.current = _cy;
+
       _cy.elements().selectify();
       _cy.elements().unselect();
       initEdgeHandles(_cy, updateGraph);
+      _cy.nodes("[kind='atom'], [kind='scheme']").on("dragfree", () => {
+        updateGraph();
+      });
 
       if (
-        // @ts-ignore
-        _cy.nodes().every((node) => !_.has(node.data(), "position"))
+        _cy
+          .nodes("[kind='atom'], [kind='scheme']")
+          .every((node: NodeSingular) => {
+            const pos = node.position();
+            return pos.x === 0 && pos.y === 0;
+          })
       ) {
-        _cy.layout(defaultLayout).run();
-        updateGraph(_cy);
-        reset();
+        console.log("layout");
+        layout();
+      } else {
+        updateGraph();
       }
+
+      reset();
 
       return () => _cy.destroy();
     }
     // xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateGraph, setCy, reset, theme]);
+  }, [cy, layout, updateGraph, reset, theme, getGraph]);
 
   return (
     <Box>
@@ -303,7 +307,7 @@ export default function Cytoscape() {
           </IconButton>
           <IconButton
             onClick={() => {
-              cy.add({
+              cy.current.add({
                 data: {
                   id: "e3",
                   metadata: {},
@@ -313,7 +317,7 @@ export default function Cytoscape() {
                   updated: new Date(),
                 },
               });
-              updateGraph(cy);
+              updateGraph();
             }}
           >
             <FontAwesomeIcon icon={faPlus} />

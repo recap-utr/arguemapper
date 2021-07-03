@@ -1,15 +1,20 @@
 import cytoscape from "cytoscape";
-import React, { createContext, useCallback, useContext, useState } from "react";
-import { useLocalStorage } from "react-use";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import * as cytoModel from "../model/cytoModel";
 import demoGraph from "../model/demo";
 
 const GraphContext = createContext<
   Partial<{
-    cy: cytoscape.Core;
-    setCy: (cy: React.SetStateAction<cytoscape.Core>) => void;
-    graph: cytoModel.Wrapper;
-    updateGraph: (cy: cytoscape.Core) => void;
+    cy: React.MutableRefObject<cytoscape.Core>;
+    getGraph: () => cytoModel.Wrapper;
+    updateGraph: () => void;
     redo: () => void;
     undo: () => void;
     reset: () => void;
@@ -18,55 +23,75 @@ const GraphContext = createContext<
   }>
 >(null);
 
-export const GraphProvider: React.FC = ({ children }) => {
-  const [currentState, setCurrentState] = useLocalStorage(
-    "cytoGraph",
-    demoGraph
-  );
+interface GraphProviderProps {
+  storageName: string;
+}
+
+export const GraphProvider: React.FC<GraphProviderProps> = ({
+  children,
+  storageName,
+}) => {
+  // const [currentState, setCurrentState] = useLocalStorage(
+  //   "cytoGraph",
+  //   demoGraph
+  // );
+  const stateRef = useRef<cytoModel.Wrapper>(null);
+  const [currentState, setCurrentState] = useState<cytoModel.Wrapper>(() => {
+    const storedGraph = localStorage.getItem(storageName);
+
+    if (storedGraph) {
+      return JSON.parse(storedGraph);
+    }
+
+    return demoGraph;
+  });
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
-  const [cy, setCy] = useState<cytoscape.Core>(null);
+  const cy = useRef<cytoscape.Core>(null);
+
+  useEffect(() => {
+    localStorage.setItem(storageName, JSON.stringify(currentState));
+    stateRef.current = currentState;
+  }, [currentState, storageName]);
 
   const updateGraph = useCallback(() => {
-    // @ts-ignore
-    setCurrentState((pastState) => {
-      console.log(pastState.elements.nodes[0].data);
-      setPreviousStates((states) => [pastState, ...states]);
-      setFutureStates([]);
-
-      return {
+    setPreviousStates((states) => [stateRef.current, ...states]);
+    setFutureStates([]);
+    setCurrentState({
+      // @ts-ignore
+      data: cy.current.data(),
+      elements: {
         // @ts-ignore
-        data: cy.data(),
-        elements: {
-          // @ts-ignore
-          nodes: cy.elements("node[kind='scheme'], node[kind='atom']").jsons(),
-          // @ts-ignore
-          edges: cy.elements("edge").jsons(),
-        },
-      };
+        nodes: cy.current
+          .elements("node[kind='scheme'], node[kind='atom']")
+          .jsons(),
+        // @ts-ignore
+        edges: cy.current.elements("edge").jsons(),
+      },
     });
-    // TODO: Circular dependency!!!!!!!!!!!
-  }, [cy, setCurrentState]);
+  }, [setCurrentState]);
 
   const undo = useCallback(() => {
-    setCurrentState(previousStates[0]);
+    console.log(previousStates[0] === currentState);
 
-    cy.json(previousStates[0]);
-    cy.elements().unselect();
+    cy.current.json(previousStates[0]);
+    cy.current.elements().selectify();
+    cy.current.elements().unselect();
 
     setFutureStates((states) => [currentState, ...states]);
+    setCurrentState(previousStates[0]);
     setPreviousStates((states) => states.slice(1));
-  }, [cy, currentState, previousStates, setCurrentState]);
+  }, [currentState, previousStates, setCurrentState]);
 
   const redo = useCallback(() => {
-    setCurrentState(futureStates[0]);
-
-    cy.json(futureStates[0]);
-    cy.elements().unselect();
+    cy.current.json(futureStates[0]);
+    cy.current.elements().selectify();
+    cy.current.elements().unselect();
 
     setPreviousStates((states) => [currentState, ...states]);
+    setCurrentState(futureStates[0]);
     setFutureStates((states) => states.slice(1));
-  }, [cy, currentState, futureStates, setCurrentState]);
+  }, [currentState, futureStates, setCurrentState]);
 
   const reset = useCallback(() => {
     setPreviousStates([]);
@@ -79,12 +104,14 @@ export const GraphProvider: React.FC = ({ children }) => {
   );
   const redoable = useCallback(() => futureStates.length > 0, [futureStates]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getGraph = useCallback(() => currentState, []);
+
   return (
     <GraphContext.Provider
       value={{
         cy,
-        setCy,
-        graph: currentState,
+        getGraph,
         updateGraph,
         undo,
         redo,
