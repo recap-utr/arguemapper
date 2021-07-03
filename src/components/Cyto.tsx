@@ -217,8 +217,17 @@ export default function Cytoscape() {
   }>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const { cy, loadGraph, updateGraph, undo, redo, undoable, redoable, reset } =
-    useGraph();
+  const {
+    cy,
+    initializeCy,
+    loadGraph,
+    updateGraph,
+    undo,
+    redo,
+    undoable,
+    redoable,
+    reset,
+  } = useGraph();
 
   const layout = useCallback(() => {
     if (cy) {
@@ -274,11 +283,12 @@ export default function Cytoscape() {
       }
 
       reset();
+      initializeCy(new Date());
 
       return () => _cy.destroy();
     }
     // xeslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cy, layout, updateGraph, reset, theme, loadGraph]);
+  }, [cy, layout, updateGraph, reset, theme, loadGraph, initializeCy]);
 
   return (
     <Box>

@@ -13,6 +13,8 @@ import demoGraph from "../model/demo";
 const GraphContext = createContext<
   Partial<{
     cy: React.MutableRefObject<cytoscape.Core>;
+    cyHook: Date;
+    initializeCy: React.Dispatch<React.SetStateAction<Date>>;
     loadGraph: () => cytoModel.Wrapper;
     updateGraph: () => void;
     redo: () => void;
@@ -51,6 +53,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
   const cy = useRef<cytoscape.Core>(null);
+  const [cyHook, initializeCy] = useState<Date>(null);
 
   useEffect(() => {
     localStorage.setItem(storageName, JSON.stringify(currentState));
@@ -107,6 +110,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     <GraphContext.Provider
       value={{
         cy,
+        cyHook,
+        initializeCy,
         loadGraph,
         updateGraph,
         undo,
