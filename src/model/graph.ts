@@ -5,6 +5,7 @@ export interface Data extends common.Data {
   resources: Array<Resource>;
   metadata: common.Metadata;
   majorClaim?: string;
+  analyst?: Analyst;
 }
 
 export interface Resource {

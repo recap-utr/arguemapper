@@ -1,8 +1,9 @@
-import { Box, Stack, Tab, TextField, Typography } from "@material-ui/core";
-import TabContext from "@material-ui/lab/TabContext";
-import TabList from "@material-ui/lab/TabList";
-import TabPanel from "@material-ui/lab/TabPanel";
+import TabContext from "@mui/lab/TabContext";
+import TabList from "@mui/lab/TabList";
+import TabPanel from "@mui/lab/TabPanel";
+import { Box, Stack, Tab, TextField, Typography } from "@mui/material";
 import React from "react";
+import { useGraph } from "./GraphContext";
 
 function Resources({
   activeTab,
@@ -14,6 +15,7 @@ function Resources({
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
   };
+  const {} = useGraph();
 
   return (
     <TabContext value={activeTab}>
@@ -42,7 +44,7 @@ function Resource({ id }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h5">Resource {id}</Typography>
-      <TextField fullWidth multiline minRows={5} label="Text"></TextField>
+      <TextField fullWidth multiline minRows={5} label="Text" />
     </Stack>
   );
 }

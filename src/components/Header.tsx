@@ -1,20 +1,12 @@
 import { faInfoCircle, faParagraph } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  AppBar,
-  IconButton,
-  Stack,
-  Toolbar,
-  Typography,
-} from "@material-ui/core";
+import { AppBar, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import config from "../config";
 
 export default function Header({
-  drawerWidth,
   toggleLeft,
   toggleRight,
 }: {
-  drawerWidth: number;
   toggleLeft: () => void;
   toggleRight: () => void;
 }) {

@@ -12,7 +12,7 @@ export interface AtomData extends AbstractData {
 }
 
 export interface Resource {
-  resource: string;
+  id: string;
   text: string;
   offset: number; // evtl. weglassen
 }
@@ -40,10 +40,12 @@ export enum Type {
 export enum Scheme {
   TODO = "TODO",
 }
+
 export function isAtom(obj: Data): obj is AtomData {
   // return 'text' in obj;
   return obj.kind === "atom";
 }
+
 export function isScheme(obj: Data): obj is SchemeData {
   // return 'type' in obj;
   return obj.kind === "scheme";
@@ -71,6 +73,7 @@ export function initAtom(text: string): AtomData {
     text,
   };
 }
+
 export function initScheme(type: Type, scheme?: Scheme): SchemeData {
   const date = new Date();
 

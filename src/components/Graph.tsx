@@ -2,22 +2,26 @@ import {
   faPlus,
   faRedo,
   faSitemap,
+  faTrash,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
   IconButton,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
   Stack,
   useTheme,
-} from "@material-ui/core";
+} from "@mui/material";
 import cytoscape, { NodeSingular } from "cytoscape";
 import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
 import { useCallback, useEffect, useRef, useState } from "react";
+import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as cytoModel from "../model/cytoModel";
 import style from "../model/style";
 import { useGraph } from "./GraphContext";
@@ -45,48 +49,49 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
     //   // }
     //   return 'flat';
     // },
-    complete: function (source, target, edges) {
-      console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
+    // TODO: Type Check Error
+    // complete: function (source, target, edges) {
+    //   console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
 
-      const sourceData = source.data() as cytoModel.node.Data;
-      const targetData = target.data() as cytoModel.node.Data;
+    //   const sourceData = source.data() as cytoModel.node.Data;
+    //   const targetData = target.data() as cytoModel.node.Data;
 
-      edges.remove();
+    //   edges.remove();
 
-      if (
-        cytoModel.node.isAtom(sourceData) &&
-        cytoModel.node.isAtom(targetData)
-      ) {
-        const sourcePos = source.position();
-        const targetPos = target.position();
+    //   if (
+    //     cytoModel.node.isAtom(sourceData) &&
+    //     cytoModel.node.isAtom(targetData)
+    //   ) {
+    //     const sourcePos = source.position();
+    //     const targetPos = target.position();
 
-        const position = {
-          x: (sourcePos.x + targetPos.x) / 2,
-          y: (sourcePos.y + targetPos.y) / 2,
-        };
+    //     const position = {
+    //       x: (sourcePos.x + targetPos.x) / 2,
+    //       y: (sourcePos.y + targetPos.y) / 2,
+    //     };
 
-        const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
+    //     const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
 
-        cy.add({
-          nodes: [{ data: schemeData, position }],
-          edges: [
-            { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
-            { data: cytoModel.edge.init(schemeData.id, targetData.id) },
-          ],
-        });
-      } else {
-        cy.add({
-          // @ts-ignore
-          edges: [
-            {
-              data: cytoModel.edge.init(sourceData.id, targetData.id),
-            },
-          ],
-        });
-      }
+    //     cy.add({
+    //       nodes: [{ data: schemeData, position }],
+    //       edges: [
+    //         { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
+    //         { data: cytoModel.edge.init(schemeData.id, targetData.id) },
+    //       ],
+    //     });
+    //   } else {
+    //     cy.add({
+    //       // @ts-ignore
+    //       edges: [
+    //         {
+    //           data: cytoModel.edge.init(sourceData.id, targetData.id),
+    //         },
+    //       ],
+    //     });
+    //   }
 
-      updateGraph();
-    },
+    //   updateGraph();
+    // },
   });
 }
 
@@ -223,6 +228,7 @@ export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
+  const [undoCmd] = useKeyboardJs("ctrl + c");
   const {
     cy,
     _setCy,
@@ -235,6 +241,8 @@ export default function Cytoscape() {
     redoable,
     reset,
   } = useGraph();
+
+  // useEffect(undo, [undo, undoCmd]);
 
   const layout = useCallback(() => {
     if (cy) {
@@ -263,8 +271,10 @@ export default function Cytoscape() {
   }, []);
 
   const showFor = useCallback(
-    (kind: ElementKind | ElementKind[]) => {
-      if (Array.isArray(kind)) {
+    (kind: ElementKind | ElementKind[] | null) => {
+      if (kind === null) {
+        return { sx: { display: "block" } };
+      } else if (Array.isArray(kind)) {
         return {
           sx: { display: kind.includes(ctxMenu.kind) ? "block" : "none" },
         };
@@ -398,7 +408,22 @@ export default function Cytoscape() {
             handleClose();
           }}
         >
-          Delete
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faTrash} />
+          </ListItemIcon>
+          <ListItemText>Delete</ListItemText>
+        </MenuItem>
+        <MenuItem {...showFor(["graph"])} onClick={() => {}}>
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlus} />
+          </ListItemIcon>
+          <ListItemText>Add Atom</ListItemText>
+        </MenuItem>
+        <MenuItem {...showFor(["graph"])} onClick={() => {}}>
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlus} />
+          </ListItemIcon>
+          <ListItemText>Add Scheme</ListItemText>
         </MenuItem>
       </Menu>
     </Box>

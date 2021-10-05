@@ -1,5 +1,5 @@
-import { Box, Stack, useMediaQuery } from "@material-ui/core";
-import { useTheme } from "@material-ui/core/styles";
+import { Box, Stack, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import React from "react";
 import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
@@ -41,7 +41,6 @@ export default function App() {
         </Sidebar>
         <Stack sx={{ flexGrow: 1 }}>
           <Header
-            drawerWidth={drawerWidth}
             toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
             toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
           />

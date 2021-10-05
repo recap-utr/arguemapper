@@ -1,4 +1,4 @@
-import { Theme } from "@material-ui/core";
+import { Theme } from "@mui/material";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./cytoModel";
 

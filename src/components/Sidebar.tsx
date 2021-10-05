@@ -1,4 +1,4 @@
-import { Drawer, DrawerProps, useTheme } from "@material-ui/core";
+import { Drawer, DrawerProps, useTheme } from "@mui/material";
 import React from "react";
 
 const Sidebar: React.FC<{

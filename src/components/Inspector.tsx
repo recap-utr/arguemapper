@@ -9,7 +9,7 @@ import {
   Stack,
   TextField,
   Toolbar,
-} from "@material-ui/core";
+} from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
@@ -72,7 +72,7 @@ function Inspector() {
             <Select
               value={element.type}
               label="Scheme"
-              onChange={handleChange("type")}
+              // onChange={handleChange("type")} // TODO: Type Check Error
             >
               {Object.entries(cytoModel.node.Type).map(
                 ([menuValue, description]) => (
