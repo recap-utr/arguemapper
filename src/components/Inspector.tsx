@@ -6,6 +6,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  SelectChangeEvent,
   Stack,
   TextField,
   Toolbar,
@@ -46,6 +47,7 @@ function Inspector() {
               value: any;
               event: Event | React.SyntheticEvent<Element, Event>;
             }>
+          | SelectChangeEvent<HTMLInputElement>
       ) => {
         if (cy) {
           cy.elements().unselectify();
@@ -72,7 +74,7 @@ function Inspector() {
             <Select
               value={element.type}
               label="Scheme"
-              // onChange={handleChange("type")} // TODO: Type Check Error
+              onChange={handleChange("type")}
             >
               {Object.entries(cytoModel.node.Type).map(
                 ([menuValue, description]) => (

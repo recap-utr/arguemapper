@@ -49,49 +49,50 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
     //   // }
     //   return 'flat';
     // },
-    // TODO: Type Check Error
-    // complete: function (source, target, edges) {
-    //   console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
+  });
 
-    //   const sourceData = source.data() as cytoModel.node.Data;
-    //   const targetData = target.data() as cytoModel.node.Data;
+  // @ts-ignore
+  cy.on("ehcomplete", (event, source, target, edges) => {
+    console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
 
-    //   edges.remove();
+    const sourceData = source.data() as cytoModel.node.Data;
+    const targetData = target.data() as cytoModel.node.Data;
 
-    //   if (
-    //     cytoModel.node.isAtom(sourceData) &&
-    //     cytoModel.node.isAtom(targetData)
-    //   ) {
-    //     const sourcePos = source.position();
-    //     const targetPos = target.position();
+    edges.remove();
 
-    //     const position = {
-    //       x: (sourcePos.x + targetPos.x) / 2,
-    //       y: (sourcePos.y + targetPos.y) / 2,
-    //     };
+    if (
+      cytoModel.node.isAtom(sourceData) &&
+      cytoModel.node.isAtom(targetData)
+    ) {
+      const sourcePos = source.position();
+      const targetPos = target.position();
 
-    //     const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
+      const position = {
+        x: (sourcePos.x + targetPos.x) / 2,
+        y: (sourcePos.y + targetPos.y) / 2,
+      };
 
-    //     cy.add({
-    //       nodes: [{ data: schemeData, position }],
-    //       edges: [
-    //         { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
-    //         { data: cytoModel.edge.init(schemeData.id, targetData.id) },
-    //       ],
-    //     });
-    //   } else {
-    //     cy.add({
-    //       // @ts-ignore
-    //       edges: [
-    //         {
-    //           data: cytoModel.edge.init(sourceData.id, targetData.id),
-    //         },
-    //       ],
-    //     });
-    //   }
+      const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
 
-    //   updateGraph();
-    // },
+      cy.add({
+        nodes: [{ data: schemeData, position }],
+        edges: [
+          { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
+          { data: cytoModel.edge.init(schemeData.id, targetData.id) },
+        ],
+      });
+    } else {
+      cy.add({
+        // @ts-ignore
+        edges: [
+          {
+            data: cytoModel.edge.init(sourceData.id, targetData.id),
+          },
+        ],
+      });
+    }
+
+    updateGraph();
   });
 }
 
