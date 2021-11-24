@@ -3,24 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.4.1",
-    "@emotion/styled": "^11.3.0",
+    "@emotion/react": "^11.6.0",
+    "@emotion/styled": "^11.6.0",
     "@fontsource/roboto": "^4.5.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
-    "@fortawesome/react-fontawesome": "^0.1.15",
-    "@mui/material": "^5.0.2",
-    "@mui/lab": "^5.0.0-alpha.49",
-    "@testing-library/jest-dom": "^5.14.1",
+    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@mui/material": "^5.2.0",
+    "@mui/lab": "^5.0.0-alpha.56",
+    "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^27.0.2",
-    "@types/node": "^16.10.2",
-    "@types/react": "^17.0.27",
-    "@types/react-dom": "^17.0.9",
-    "@types/uuid": "^8.3.1",
-    "cytoscape": "^3.19.1",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.10",
+    "@types/react": "^17.0.36",
+    "@types/react-dom": "^17.0.11",
+    "@types/uuid": "^8.3.3",
+    "cytoscape": "^3.20.0",
     "cytoscape-cxtmenu": "^3.4.0",
     "cytoscape-dagre": "^2.3.2",
     "cytoscape-edgehandles": "^4.0.1",
@@ -33,7 +33,7 @@
     "react-scripts": "4.0.3",
     "react-use": "^17.3.1",
     "text-metrics": "^2.0.9",
-    "typescript": "^4.4.3",
+    "typescript": "^4.5.2",
     "uuid": "^8.3.2"
   },
   "scripts": {
@@ -61,8 +61,8 @@
     ]
   },
   "devDependencies": {
-    "@types/cytoscape": "^3.14.19",
+    "@types/cytoscape": "^3.19.0",
     "@types/cytoscape-edgehandles": "^4.0.0",
-    "@types/lodash": "^4.14.175"
+    "@types/lodash": "^4.14.177"
   }
 }
