@@ -1,18 +1,19 @@
-import * as common from "./common";
+import { uuid } from "./common";
 import * as edge from "./edge";
 import * as graph from "./graph";
 import * as node from "./node";
+export { node, graph, edge, uuid };
 
-export interface Wrapper {
+export interface CytoGraph {
   data: graph.Data;
-  elements: Elements;
+  elements: CytoElements;
 }
 
 // TODO: Make nodes/edges array an object with the id as the key
 
-export interface Elements {
+export interface CytoElements {
   nodes: Array<{
-    data: node.SchemeData | node.AtomData;
+    data: node.Data;
     [x: string]: unknown;
   }>;
   edges: Array<{
@@ -35,14 +36,12 @@ export interface Elements {
 //   };
 // }
 
-export function init(): Wrapper {
+export function init(): CytoGraph {
   return {
-    data: graph.init(),
+    data: graph.initData(),
     elements: {
       nodes: [],
       edges: [],
     },
   };
 }
-
-export { graph, node, edge, common };

@@ -72,13 +72,15 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
         y: (sourcePos.y + targetPos.y) / 2,
       };
 
-      const schemeData = cytoModel.node.initScheme(cytoModel.node.Type.RA);
+      const schemeData = cytoModel.node.initSchemeData(
+        cytoModel.node.SchemeType.SUPPORT
+      );
 
       cy.add({
         nodes: [{ data: schemeData, position }],
         edges: [
-          { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
-          { data: cytoModel.edge.init(schemeData.id, targetData.id) },
+          { data: cytoModel.edge.initData(sourceData.id, schemeData.id) },
+          { data: cytoModel.edge.initData(schemeData.id, targetData.id) },
         ],
       });
     } else {
@@ -86,7 +88,7 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
         // @ts-ignore
         edges: [
           {
-            data: cytoModel.edge.init(sourceData.id, targetData.id),
+            data: cytoModel.edge.initData(sourceData.id, targetData.id),
           },
         ],
       });
@@ -229,7 +231,7 @@ export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const [undoCmd] = useKeyboardJs("ctrl + c");
+  const [undoCmd] = useKeyboardJs("ctrl + z");
   const {
     cy,
     _setCy,
@@ -240,7 +242,8 @@ export default function Cytoscape() {
     redo,
     undoable,
     redoable,
-    reset,
+    resetStates,
+    resetGraph,
   } = useGraph();
 
   // useEffect(undo, [undo, undoCmd]);
@@ -323,13 +326,13 @@ export default function Cytoscape() {
       }
 
       updateGraph();
-      reset();
+      resetStates();
 
       return () => _cy.destroy();
     }
   }, [
     updateGraph,
-    reset,
+    resetStates,
     theme,
     loadGraph,
     _setCy,
@@ -355,6 +358,9 @@ export default function Cytoscape() {
       /> */}
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
+          {/* <IconButton onClick={resetGraph} aria-label="Reset">
+            <FontAwesomeIcon icon={faTrashAlt} />
+          </IconButton> */}
           <IconButton onClick={layout} aria-label="Layout">
             <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
@@ -366,7 +372,7 @@ export default function Cytoscape() {
                 // @ts-ignore
                 nodes: [
                   {
-                    data: cytoModel.node.initAtom("No Content"),
+                    data: cytoModel.node.initAtomData("No Content"),
                     position: {
                       x: pos.w / 2,
                       y: pos.h / 2,

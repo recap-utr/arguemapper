@@ -1,21 +1,23 @@
-import * as common from './common';
+import * as common from "./common";
 
-export interface Data extends common.Data {
+export class Data {
   id: string;
   source: string;
   target: string;
-  metadata: common.Metadata;
+  created: Date;
+  updated: Date;
+  metadata: common.Struct;
 }
 
-export function init(source: string, target: string): Data {
+export function initData(source: string, target: string, id?: string): Data {
   const date = new Date();
 
   return {
-    id: common.uuid(),
-    updated: date,
-    created: date,
-    metadata: {},
+    id: id ?? common.uuid(),
     source,
     target,
+    created: date,
+    updated: date,
+    metadata: {},
   };
 }

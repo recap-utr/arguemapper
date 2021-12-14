@@ -31,8 +31,7 @@ const style = (theme: Theme) => {
         },
         height: (ele: cytoscape.NodeSingular) => {
           const data = ele.data() as cytoModel.node.Data;
-          const label = cytoModel.node.label(data);
-          const lines: string[] = label.split(/\r?\n/);
+          const lines: string[] = cytoModel.node.label(data).split(/\r?\n/);
           const heights = lines.map(
             (line) => metrics.height(line, { multiline: true }) as number
           );
@@ -65,19 +64,13 @@ const style = (theme: Theme) => {
       },
     },
     {
-      selector: 'node[kind="scheme"][scheme]',
-      style: {
-        content: "data(scheme)",
-      },
-    },
-    {
-      selector: 'node[kind="scheme"][type="RA"]',
+      selector: 'node[kind="scheme"][type="Support"]',
       style: {
         "background-color": theme.palette.success.main,
       },
     },
     {
-      selector: 'node[kind="scheme"][type="CA"]',
+      selector: 'node[kind="scheme"][type="Attack"]',
       style: {
         "background-color": theme.palette.error.main,
       },

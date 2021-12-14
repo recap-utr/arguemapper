@@ -76,7 +76,7 @@ function Inspector() {
               label="Scheme"
               onChange={handleChange("type")}
             >
-              {Object.entries(cytoModel.node.Type).map(
+              {Object.entries(cytoModel.node.SchemeType).map(
                 ([menuValue, description]) => (
                   <MenuItem key={description} value={menuValue}>
                     {description}

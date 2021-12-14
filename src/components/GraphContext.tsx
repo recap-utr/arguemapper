@@ -16,11 +16,12 @@ const GraphContext = createContext<
     _setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
     currentCy: () => cytoscape.Core;
     _setCurrentCy: (instance: cytoscape.Core) => void;
-    loadGraph: () => cytoModel.Wrapper;
+    loadGraph: () => cytoModel.CytoGraph;
     updateGraph: () => void;
     redo: () => void;
     undo: () => void;
-    reset: () => void;
+    resetStates: () => void;
+    resetGraph: () => void;
     undoable: () => boolean;
     redoable: () => boolean;
   }>
@@ -49,8 +50,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, [storageName]);
 
   const [currentState, setCurrentState] =
-    useState<cytoModel.Wrapper>(loadGraph);
-  const currentStateRef = useRef<cytoModel.Wrapper>(null);
+    useState<cytoModel.CytoGraph>(loadGraph);
+  const currentStateRef = useRef<cytoModel.CytoGraph>(null);
   const [previousStates, setPreviousStates] = useState([]);
   const [futureStates, setFutureStates] = useState([]);
   const [cy, _setCy] = useState<cytoscape.Core>(null);
@@ -97,10 +98,28 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setFutureStates((states) => states.slice(1));
   }, [cy, currentState, futureStates, setCurrentState]);
 
-  const reset = useCallback(() => {
+  const resetStates = useCallback(() => {
     setPreviousStates([]);
     setFutureStates([]);
   }, []);
+
+  const resetGraph = useCallback(() => {
+    cy.json({
+      data: {},
+      elements: {
+        // @ts-ignore
+        nodes: [],
+        // @ts-ignore
+        edges: [],
+      },
+    });
+    cy.json(demoGraph);
+    cy.elements().selectify();
+    cy.elements().unselect();
+
+    setCurrentState(demoGraph);
+    resetStates();
+  }, [cy, resetStates, setCurrentState]);
 
   const undoable = useCallback(
     () => previousStates.length > 0,
@@ -129,7 +148,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         redo,
         undoable,
         redoable,
-        reset,
+        resetStates,
+        resetGraph,
       }}
     >
       {children}
