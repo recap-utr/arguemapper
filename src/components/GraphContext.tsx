@@ -16,7 +16,7 @@ const GraphContext = createContext<
     _setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
     currentCy: () => cytoscape.Core;
     _setCurrentCy: (instance: cytoscape.Core) => void;
-    loadGraph: () => cytoModel.CytoGraph;
+    loadGraph: () => cytoModel.CytoGraph | {};
     updateGraph: () => void;
     redo: () => void;
     undo: () => void;
@@ -31,14 +31,16 @@ interface GraphProviderProps {
   storageName: string;
 }
 
+// TODO: loadGraph must be able to load a stored graph, but also use the "reset graph"
+
 export const GraphProvider: React.FC<GraphProviderProps> = ({
   children,
   storageName,
 }) => {
-  // const [currentState, setCurrentState] = useLocalStorage(
-  //   "cytoGraph",
-  //   demoGraph
-  // );
+  const [initialGraph, setInitialGraph] = useState<cytoModel.CytoGraph | {}>(
+    demoGraph
+  );
+
   const loadGraph = useCallback(() => {
     const storedGraph = localStorage.getItem(storageName);
 
@@ -46,8 +48,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       return JSON.parse(storedGraph);
     }
 
-    return demoGraph;
-  }, [storageName]);
+    return initialGraph;
+  }, [storageName, initialGraph]);
 
   const [currentState, setCurrentState] =
     useState<cytoModel.CytoGraph>(loadGraph);
@@ -104,22 +106,9 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, []);
 
   const resetGraph = useCallback(() => {
-    cy.json({
-      data: {},
-      elements: {
-        // @ts-ignore
-        nodes: [],
-        // @ts-ignore
-        edges: [],
-      },
-    });
-    cy.json(demoGraph);
-    cy.elements().selectify();
-    cy.elements().unselect();
-
-    setCurrentState(demoGraph);
-    resetStates();
-  }, [cy, resetStates, setCurrentState]);
+    localStorage.removeItem(storageName);
+    setInitialGraph({});
+  }, [setInitialGraph, storageName]);
 
   const undoable = useCallback(
     () => previousStates.length > 0,

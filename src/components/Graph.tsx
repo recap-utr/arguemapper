@@ -4,6 +4,7 @@ import {
   faRedo,
   faSitemap,
   faTrash,
+  faTrashAlt,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -238,6 +239,8 @@ type ElementKind = null | "atom" | "scheme" | "edge" | "graph";
 interface CtxMenuProps {
   mouseX: null | number;
   mouseY: null | number;
+  cytoX: null | number;
+  cytoY: null | number;
   target: null | cytoscape.AbstractEventObject;
   kind: ElementKind;
 }
@@ -245,6 +248,8 @@ interface CtxMenuProps {
 const initialCtxMenu: CtxMenuProps = {
   mouseX: null,
   mouseY: null,
+  cytoX: null,
+  cytoY: null,
   target: null,
   kind: null,
 };
@@ -285,6 +290,8 @@ export default function Cytoscape() {
     setCtxMenu({
       mouseX: event.originalEvent.clientX,
       mouseY: event.originalEvent.clientY,
+      cytoX: event.position.x,
+      cytoY: event.position.y,
       target: event.target,
       kind: data.kind
         ? data.kind
@@ -386,33 +393,11 @@ export default function Cytoscape() {
       /> */}
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
-          {/* <IconButton onClick={resetGraph} aria-label="Reset">
+          <IconButton onClick={resetGraph} aria-label="Reset">
             <FontAwesomeIcon icon={faTrashAlt} />
-          </IconButton> */}
+          </IconButton>
           <IconButton onClick={layout} aria-label="Layout">
             <FontAwesomeIcon icon={faSitemap} />
-          </IconButton>
-          <IconButton
-            onClick={() => {
-              const pos = cy.elements().boundingBox({ includeLabels: false });
-              console.log(pos);
-              cy.add({
-                // @ts-ignore
-                nodes: [
-                  {
-                    data: cytoModel.node.initAtomData("No Content"),
-                    position: {
-                      x: pos.w / 2,
-                      y: pos.h / 2,
-                    },
-                  },
-                ],
-              });
-              cy.center();
-              updateGraph();
-            }}
-          >
-            <FontAwesomeIcon icon={faPlus} />
           </IconButton>
           <IconButton disabled={!undoable()} onClick={undo}>
             <FontAwesomeIcon icon={faUndo} />
@@ -448,13 +433,50 @@ export default function Cytoscape() {
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>
-        <MenuItem {...showFor(["graph"])} onClick={() => {}}>
+        <MenuItem
+          {...showFor(["graph"])}
+          onClick={() => {
+            cy.add({
+              // @ts-ignore
+              nodes: [
+                {
+                  data: cytoModel.node.initAtomData("Atom Node"),
+                  position: {
+                    x: ctxMenu.cytoX,
+                    y: ctxMenu.cytoY,
+                  },
+                },
+              ],
+            });
+            cy.center();
+            updateGraph();
+            handleClose();
+          }}
+        >
           <ListItemIcon>
             <FontAwesomeIcon icon={faPlus} />
           </ListItemIcon>
           <ListItemText>Add Atom</ListItemText>
         </MenuItem>
-        <MenuItem {...showFor(["graph"])} onClick={() => {}}>
+        <MenuItem
+          {...showFor(["graph"])}
+          onClick={() => {
+            cy.add({
+              // @ts-ignore
+              nodes: [
+                {
+                  data: cytoModel.node.initSchemeData(),
+                  position: {
+                    x: ctxMenu.cytoX,
+                    y: ctxMenu.cytoY,
+                  },
+                },
+              ],
+            });
+            updateGraph();
+            handleClose();
+          }}
+        >
           <ListItemIcon>
             <FontAwesomeIcon icon={faPlus} />
           </ListItemIcon>

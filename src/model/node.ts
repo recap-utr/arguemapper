@@ -135,13 +135,13 @@ export function initAtomData(text: string, id?: string): AtomData {
 }
 
 export interface SchemeData extends Data {
-  type: SchemeType;
+  type?: SchemeType;
   argumentationScheme?: Scheme;
   descriptors: common.Struct;
 }
 
 export function initSchemeData(
-  type: SchemeType,
+  type?: SchemeType,
   argumentationScheme?: Scheme,
   id?: string
 ): SchemeData {
