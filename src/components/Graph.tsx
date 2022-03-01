@@ -1,4 +1,5 @@
 import {
+  faCircle,
   faPlus,
   faRedo,
   faSitemap,
@@ -13,13 +14,15 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  Popper,
   Stack,
   useTheme,
 } from "@mui/material";
 import cytoscape, { NodeSingular } from "cytoscape";
-import cxtmenu from "cytoscape-cxtmenu";
+// import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles from "cytoscape-edgehandles";
+import cytoPopper from "cytoscape-popper";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as cytoModel from "../model/cytoModel";
@@ -29,7 +32,8 @@ import { useGraph } from "./GraphContext";
 cytoscape.use(dagre);
 // @ts-ignore
 cytoscape.use(edgehandles);
-cytoscape.use(cxtmenu);
+cytoscape.use(cytoPopper);
+// cytoscape.use(cxtmenu);
 // Otherwise, react will throw errors when hot-reloading the module
 cytoscape.use = () => {};
 
@@ -40,8 +44,12 @@ const defaultLayout = {
   animate: false,
 };
 
-function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
-  cy.edgehandles({
+function initEdgeHandles(
+  cy: cytoscape.Core,
+  updateGraph: () => void,
+  setEhStart
+) {
+  const eh = cy.edgehandles({
     hoverDelay: 0,
     // edgeType: function (_source, edge) {
     //   // if (edge.source().edgesTo(edge.target()).length() > 1) {
@@ -51,21 +59,33 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
     // },
   });
 
+  // https://github.com/cytoscape/cytoscape.js-edgehandles/blob/3906ce5e43740e2cc0fa8e44ff41ba8befca6b74/demo.html#L186
+  cy.on("mouseover tap", "node", (e) => {
+    setEhStart(e.target);
+  });
+
+  cy.on("tap", (e) => {
+    if (e.target === cy) {
+      setEhStart(null);
+    }
+  });
+
+  cy.on("zoom pan", () => {
+    setEhStart(null);
+  });
+
   // @ts-ignore
-  cy.on("ehcomplete", (event, source, target, edges) => {
-    console.log(JSON.parse(JSON.stringify(edges.map((edge) => edge.data()))));
-
-    const sourceData = source.data() as cytoModel.node.Data;
-    const targetData = target.data() as cytoModel.node.Data;
-
-    edges.remove();
+  cy.on("ehcomplete", (event, sourceNode, targetNode, addedEdge) => {
+    const sourceData = sourceNode.data() as cytoModel.node.Data;
+    const targetData = targetNode.data() as cytoModel.node.Data;
+    addedEdge.remove();
 
     if (
       cytoModel.node.isAtom(sourceData) &&
       cytoModel.node.isAtom(targetData)
     ) {
-      const sourcePos = source.position();
-      const targetPos = target.position();
+      const sourcePos = sourceNode.position();
+      const targetPos = targetNode.position();
 
       const position = {
         x: (sourcePos.x + targetPos.x) / 2,
@@ -96,6 +116,8 @@ function initEdgeHandles(cy: cytoscape.Core, updateGraph: () => void) {
 
     updateGraph();
   });
+
+  return eh;
 }
 
 /*
@@ -229,6 +251,8 @@ const initialCtxMenu: CtxMenuProps = {
 
 export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
+  const [eh, setEh] = useState(null);
+  const [ehStart, setEhStart] = useState(null);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   const [undoCmd] = useKeyboardJs("ctrl + z");
@@ -310,7 +334,7 @@ export default function Cytoscape() {
 
       _cy.elements().selectify();
       _cy.elements().unselect();
-      initEdgeHandles(_cy, updateGraph);
+      setEh(initEdgeHandles(_cy, updateGraph, setEhStart));
       _cy.on("cxttap", handleClick);
       _cy.on("dragfree", "node[metadata]", () => {
         updateGraph();
@@ -339,6 +363,10 @@ export default function Cytoscape() {
     _setCurrentCy,
     handleClick,
   ]);
+
+  useEffect(() => {
+    window.addEventListener("mouseup", () => eh.stop());
+  }, [eh]);
 
   return (
     <Box>
@@ -433,6 +461,25 @@ export default function Cytoscape() {
           <ListItemText>Add Scheme</ListItemText>
         </MenuItem>
       </Menu>
+      {
+        <Popper
+          onMouseDown={useCallback(() => {
+            eh.start(ehStart);
+          }, [eh, ehStart])}
+          open={Boolean(ehStart)}
+          anchorEl={{
+            getBoundingClientRect: ehStart
+              ? ehStart.popperRef().getBoundingClientRect
+              : null,
+          }}
+          placement="top"
+          modifiers={[{ name: "offset", options: { offset: [0, 0] } }]}
+        >
+          <IconButton color="error">
+            <FontAwesomeIcon icon={faCircle} />
+          </IconButton>
+        </Popper>
+      }
     </Box>
   );
 }
