@@ -94,18 +94,6 @@ const style = (theme: Theme) => {
       },
     },
     {
-      selector: ".eh-handle",
-      style: {
-        "background-color": theme.palette.warning.dark,
-        width: 7,
-        height: 7,
-        shape: "ellipse",
-        "overlay-opacity": 0,
-        "border-width": 3, // makes the handle easier to hit
-        "border-opacity": 0,
-      },
-    },
-    {
       selector: ".eh-source, .eh-target",
       style: {
         "background-color": theme.palette.warning.light,
