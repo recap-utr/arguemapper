@@ -301,15 +301,15 @@ export default function Cytoscape() {
   const showFor = useCallback(
     (kind: ElementKind | ElementKind[] | null) => {
       if (kind === null) {
-        return { sx: { display: "block" } };
+        return { sx: { display: "flex" } };
       } else if (Array.isArray(kind)) {
         return {
-          sx: { display: kind.includes(ctxMenu.kind) ? "block" : "none" },
+          sx: { display: kind.includes(ctxMenu.kind) ? "flex" : "none" },
         };
       }
 
       return {
-        sx: { display: kind === ctxMenu.kind ? "block" : "none" },
+        sx: { display: kind === ctxMenu.kind ? "flex" : "none" },
       };
     },
     [ctxMenu.kind]
