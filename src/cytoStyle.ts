@@ -1,6 +1,6 @@
 import { Theme } from "@mui/material";
 import textMetrics from "text-metrics";
-import * as cytoModel from "./cytoModel";
+import * as cytoModel from "./model/cytoWrapper";
 
 const lineHeight = 1.15;
 const maxWidth = 160;
@@ -18,7 +18,7 @@ const style = (theme: Theme) => {
       selector: 'node[kind="atom"], node[kind="scheme"]',
       style: {
         width: (ele: cytoscape.NodeSingular) => {
-          const data = ele.data() as cytoModel.node.Data;
+          const data = ele.data() as cytoModel.node.Node;
           const label = cytoModel.node.label(data);
           const lines: string[] = label.split(/\r?\n/);
 
@@ -30,7 +30,7 @@ const style = (theme: Theme) => {
           return width;
         },
         height: (ele: cytoscape.NodeSingular) => {
-          const data = ele.data() as cytoModel.node.Data;
+          const data = ele.data() as cytoModel.node.Node;
           const lines: string[] = cytoModel.node.label(data).split(/\r?\n/);
           const heights = lines.map(
             (line) => metrics.height(line, { multiline: true }) as number

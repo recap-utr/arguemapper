@@ -1,4 +1,4 @@
-import { faBan, faSave } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faDownload, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
@@ -9,18 +9,48 @@ import {
   SelectChangeEvent,
   Stack,
   TextField,
-  Toolbar,
+  Toolbar
 } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
-import * as cytoModel from "../model/cytoModel";
+import * as cytoModel from "../model/cytoWrapper";
+import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
 import { useGraph } from "./GraphContext";
 
+// https://stackoverflow.com/a/55613750/7626878
+async function downloadJson(data: any, filename?: string) {
+  if (!filename) {
+    filename = "TODO";
+  }
+
+  if (!filename.endsWith(".json")) {
+    filename = `${filename}.json`;
+  }
+
+  const json = JSON.stringify(data);
+  const blob = new Blob([json], { type: "application/json" });
+  const href = await URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function Inspector() {
-  const { cy, updateGraph } = useGraph();
+  const { cy, updateGraph, exportState } = useGraph();
   // @ts-ignore
   const [element, setElement] = useState(cy?.data());
+
+  const downloadProtobuf = useCallback(() => {
+    downloadJson(proto2json(cyto2protobuf(exportState())));
+  }, [exportState]);
+
+  const downloadAif = useCallback(() => {
+    downloadJson(cyto2aif(exportState()));
+  }, [exportState]);
 
   useEffect(() => {
     setElement(null);
@@ -65,54 +95,71 @@ function Inspector() {
 
   let fields = null;
 
-  if (element) {
-    if (element.kind === "scheme") {
-      fields = (
-        <>
-          <FormControl fullWidth>
-            <InputLabel>Scheme</InputLabel>
-            <Select
-              value={element.type}
-              label="Scheme"
-              onChange={handleChange("type")}
-            >
-              {Object.entries(cytoModel.node.SchemeType).map(
-                ([menuValue, description]) => (
-                  <MenuItem key={description} value={menuValue}>
-                    {description}
-                  </MenuItem>
-                )
-              )}
-            </Select>
-          </FormControl>
-        </>
-      );
-    } else if (element.kind === "atom") {
-      fields = (
-        <>
-          <TextField
-            fullWidth
-            multiline
-            minRows={3}
-            label="Text"
-            value={element.text}
-            onChange={handleChange("text")}
-          />
-          <TextField
-            fullWidth
-            multiline
-            minRows={3}
-            label="Original Text"
-            value={element.resource?.text}
-            onChange={handleChange(["resource", "text"])}
-          />
-        </>
-      );
-    } else if (element.source && element.target) {
-      // edge
-    } else {
-      // graph
-    }
+  if (element && element.kind === "scheme") {
+    fields = (
+      <>
+        <FormControl fullWidth>
+          <InputLabel>Scheme</InputLabel>
+          <Select
+            value={element.type}
+            label="Scheme"
+            onChange={handleChange("type")}
+          >
+            {Object.entries(cytoModel.node.SchemeType).map(
+              ([menuValue, description]) => (
+                <MenuItem key={description} value={menuValue}>
+                  {description}
+                </MenuItem>
+              )
+            )}
+          </Select>
+        </FormControl>
+      </>
+    );
+  } else if (element && element.kind === "atom") {
+    fields = (
+      <>
+        <TextField
+          fullWidth
+          multiline
+          minRows={3}
+          label="Text"
+          value={element.text}
+          onChange={handleChange("text")}
+        />
+        <TextField
+          fullWidth
+          multiline
+          minRows={3}
+          label="Original Text"
+          value={element.resource?.text}
+          onChange={handleChange(["resource", "text"])}
+        />
+      </>
+    );
+  } else if (element && element.source && element.target) {
+    // edge
+  } else {
+    fields = (
+      <>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<FontAwesomeIcon icon={faDownload} />}
+          onClick={downloadProtobuf}
+        >
+          Save as Arguebuf
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<FontAwesomeIcon icon={faDownload} />}
+          onClick={downloadAif}
+        >
+          Save as AIF
+        </Button>
+      </>
+    );
   }
 
   return (

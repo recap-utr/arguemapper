@@ -1,4 +1,10 @@
-import * as common from "./common";
+import { JsonValue } from "@protobuf-ts/runtime";
+import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
+import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
+import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
+import { v1 as uuid } from "uuid";
+import * as aif from "./aif";
+import { Reference, toProtobuf as referenceToProtobuf } from "./reference";
 
 export enum SchemeType {
   SUPPORT = "Support",
@@ -8,6 +14,30 @@ export enum SchemeType {
   PREFERENCE = "Preference",
   ASSERTION = "Assertion",
 }
+
+const schemeType2Proto: {
+  [key in SchemeType]: arguebuf.SchemeType;
+} = {
+  Support: arguebuf.SchemeType.SUPPORT,
+  Attack: arguebuf.SchemeType.ATTACK,
+  Rephrase: arguebuf.SchemeType.REPHRASE,
+  Transition: arguebuf.SchemeType.TRANSITION,
+  Preference: arguebuf.SchemeType.PREFERENCE,
+  Assertion: arguebuf.SchemeType.ASSERTION,
+};
+
+// const proto2schemeType: {
+//   [key in arguebuf.SchemeType]?: SchemeType;
+// } = invert(schemeType2Proto);
+
+const schemeType2aif: { [key in SchemeType]: string } = {
+  Support: "RA",
+  Attack: "CA",
+  Rephrase: "MA",
+  Transition: "TA",
+  Preference: "PA",
+  Assertion: "YA",
+};
 
 export enum Scheme {
   AD_HOMINEM = "Ad Hominem",
@@ -104,51 +134,51 @@ export enum Scheme {
   WITNESS_TESTIMONY = "Witness Testimony",
 }
 
-export interface Data {
+export interface Node {
   id: string;
   kind: "atom" | "scheme";
-  created: Date;
-  updated: Date;
-  metadata: common.Struct;
+  created: string;
+  updated: string;
+  metadata: JsonValue;
 }
 
-export interface AtomData extends Data {
+export interface AtomNode extends Node {
   kind: "atom";
   text: string;
   reference?: Reference;
   participant?: string;
 }
 
-export function initAtomData(text: string, id?: string): AtomData {
-  const date = new Date();
+export function initAtom(text: string, id?: string): AtomNode {
+  const date = new Date().toISOString();
 
   return {
-    id: id ?? common.uuid(),
+    id: id ?? uuid(),
     kind: "atom",
     created: date,
     updated: date,
     metadata: {},
     text: text,
-    reference: null,
-    participant: null,
+    reference: undefined,
+    participant: undefined,
   };
 }
 
-export interface SchemeData extends Data {
+export interface SchemeNode extends Node {
   type?: SchemeType;
   argumentationScheme?: Scheme;
-  descriptors: common.Struct;
+  descriptors: JsonValue;
 }
 
-export function initSchemeData(
+export function initScheme(
   type?: SchemeType,
   argumentationScheme?: Scheme,
   id?: string
-): SchemeData {
-  const date = new Date();
+): SchemeNode {
+  const date = new Date().toISOString();
 
   return {
-    id: id ?? common.uuid(),
+    id: id ?? uuid(),
     kind: "scheme",
     created: date,
     updated: date,
@@ -159,35 +189,15 @@ export function initSchemeData(
   };
 }
 
-export interface Reference {
-  resource: string;
-  offset: number;
-  text: string;
-  metadata: common.Struct;
-}
-
-export function initReference(
-  resource: string,
-  offset: number,
-  text: string
-): Reference {
-  return {
-    resource,
-    offset,
-    text,
-    metadata: {},
-  };
-}
-
-export function isAtom(data: Data): data is AtomData {
+export function isAtom(data: Node): data is AtomNode {
   return data.kind === "atom";
 }
 
-export function isScheme(data: Data): data is SchemeData {
+export function isScheme(data: Node): data is SchemeNode {
   return data.kind === "scheme";
 }
 
-export function label(data: Data): string {
+export function label(data: Node): string {
   if (isAtom(data)) {
     return data.text;
   } else if (isScheme(data)) {
@@ -195,4 +205,71 @@ export function label(data: Data): string {
   }
 
   return "Unknown";
+}
+
+export function toProtobuf(data: Node): arguebuf.Node {
+  const commonData = {
+    created: Timestamp.fromDate(new Date(data.created)),
+    updated: Timestamp.fromDate(new Date(data.updated)),
+    metadata: Struct.fromJson(data.metadata),
+  };
+
+  if (isAtom(data)) {
+    return {
+      ...commonData,
+      node: {
+        oneofKind: "atom",
+        atom: atomToProtobuf(data),
+      },
+    };
+  } else if (isScheme(data)) {
+    return {
+      ...commonData,
+      node: {
+        oneofKind: "scheme",
+        scheme: schemeToProtobuf(data),
+      },
+    };
+  }
+}
+
+function atomToProtobuf(data: AtomNode): arguebuf.AtomNode {
+  return {
+    text: data.text,
+    participant: data.participant,
+    reference: data.reference ? referenceToProtobuf(data.reference) : undefined,
+  };
+}
+function schemeToProtobuf(data: SchemeNode): arguebuf.SchemeNode {
+  return {
+    descriptors: Struct.fromJson(data.descriptors),
+    type: data.type ? schemeType2Proto[data.type] : undefined,
+    // TODO: argumentation_scheme
+  };
+}
+
+export function toAif(data: Node): aif.Node {
+  let text = "Unknown";
+  let type = "";
+
+  if (isAtom(data)) {
+    text = data.text;
+    type = "I";
+  } else if (isScheme(data)) {
+    if (data.type) {
+      text = data.type;
+      type = schemeType2aif[data.type];
+    }
+
+    if (data.argumentationScheme) {
+      text = data.argumentationScheme;
+    }
+  }
+
+  return {
+    nodeID: data.id,
+    text: text,
+    type: type,
+    timestamp: data.updated.replace("T", " "),
+  };
 }

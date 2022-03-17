@@ -26,8 +26,8 @@ import edgehandles from "cytoscape-edgehandles";
 import cytoPopper from "cytoscape-popper";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
-import * as cytoModel from "../model/cytoModel";
-import style from "../model/style";
+import style from "../cytoStyle";
+import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
 cytoscape.use(dagre);
@@ -77,8 +77,8 @@ function initEdgeHandles(
 
   // @ts-ignore
   cy.on("ehcomplete", (event, sourceNode, targetNode, addedEdge) => {
-    const sourceData = sourceNode.data() as cytoModel.node.Data;
-    const targetData = targetNode.data() as cytoModel.node.Data;
+    const sourceData = sourceNode.data() as cytoModel.node.Node;
+    const targetData = targetNode.data() as cytoModel.node.Node;
     addedEdge.remove();
 
     if (
@@ -93,15 +93,15 @@ function initEdgeHandles(
         y: (sourcePos.y + targetPos.y) / 2,
       };
 
-      const schemeData = cytoModel.node.initSchemeData(
+      const schemeData = cytoModel.node.initScheme(
         cytoModel.node.SchemeType.SUPPORT
       );
 
       cy.add({
         nodes: [{ data: schemeData, position }],
         edges: [
-          { data: cytoModel.edge.initData(sourceData.id, schemeData.id) },
-          { data: cytoModel.edge.initData(schemeData.id, targetData.id) },
+          { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
+          { data: cytoModel.edge.init(schemeData.id, targetData.id) },
         ],
       });
     } else {
@@ -109,7 +109,7 @@ function initEdgeHandles(
         // @ts-ignore
         edges: [
           {
-            data: cytoModel.edge.initData(sourceData.id, targetData.id),
+            data: cytoModel.edge.init(sourceData.id, targetData.id),
           },
         ],
       });
@@ -372,7 +372,9 @@ export default function Cytoscape() {
   ]);
 
   useEffect(() => {
-    window.addEventListener("mouseup", () => eh.stop());
+    if (eh) {
+      window.addEventListener("mouseup", () => eh.stop());
+    }
   }, [eh]);
 
   return (
@@ -440,7 +442,7 @@ export default function Cytoscape() {
               // @ts-ignore
               nodes: [
                 {
-                  data: cytoModel.node.initAtomData("Atom Node"),
+                  data: cytoModel.node.initAtom("Atom Node"),
                   position: {
                     x: ctxMenu.cytoX,
                     y: ctxMenu.cytoY,
@@ -465,7 +467,7 @@ export default function Cytoscape() {
               // @ts-ignore
               nodes: [
                 {
-                  data: cytoModel.node.initSchemeData(),
+                  data: cytoModel.node.initScheme(),
                   position: {
                     x: ctxMenu.cytoX,
                     y: ctxMenu.cytoY,

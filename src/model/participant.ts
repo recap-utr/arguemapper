@@ -2,46 +2,45 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
 import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
-import { v1 as uuid } from "uuid";
-import * as aif from "./aif";
 
-export class Edge {
-  id: string;
-  source: string;
-  target: string;
+export interface Participant {
+  name?: string;
+  username?: string;
+  email?: string;
+  url?: string;
+  location?: string;
+  description?: string;
   created: string;
   updated: string;
   metadata: JsonValue;
 }
 
-export function init(source: string, target: string, id?: string): Edge {
+export function init(): Participant {
   const date = new Date().toISOString();
 
   return {
-    id: id ?? uuid(),
-    source,
-    target,
+    name: undefined,
+    username: undefined,
+    email: undefined,
+    url: undefined,
+    location: undefined,
+    description: undefined,
     created: date,
     updated: date,
     metadata: {},
   };
 }
 
-export function toProtobuf(data: Edge): arguebuf.Edge {
+export function toProtobuf(data: Participant): arguebuf.Participant {
   return {
-    source: data.source,
-    target: data.target,
+    name: data.name,
+    username: data.username,
+    email: data.email,
+    url: data.url,
+    location: data.location,
+    description: data.description,
     created: Timestamp.fromDate(new Date(data.created)),
     updated: Timestamp.fromDate(new Date(data.updated)),
     metadata: Struct.fromJson(data.metadata),
-  };
-}
-
-export function toAif(data: Edge): aif.Edge {
-  return {
-    edgeID: data.id,
-    fromID: data.source,
-    toID: data.target,
-    formEdgeID: "",
   };
 }

@@ -7,8 +7,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import * as cytoModel from "../model/cytoModel";
-import demoGraph from "../model/demo";
+import * as cytoModel from "../model/cytoWrapper";
+import demoGraph from "../services/demo";
 
 const GraphContext = createContext<
   Partial<{
@@ -21,6 +21,7 @@ const GraphContext = createContext<
     redo: () => void;
     undo: () => void;
     resetStates: () => void;
+    exportState: () => cytoModel.CytoGraph;
     resetGraph: () => void;
     undoable: () => boolean;
     redoable: () => boolean;
@@ -64,10 +65,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     currentStateRef.current = currentState;
   }, [currentState, storageName]);
 
-  const updateGraph = useCallback(() => {
-    setPreviousStates((states) => [currentStateRef.current, ...states]);
-    setFutureStates([]);
-    setCurrentState({
+  const exportState = useCallback((): cytoModel.CytoGraph => {
+    return {
       // TODO: Include other metadata (e.g., zoom, panning position)
       // @ts-ignore
       data: cyRef.current.data(),
@@ -77,8 +76,14 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         // @ts-ignore
         edges: cyRef.current.edges("[metadata]").jsons(),
       },
-    });
-  }, [setCurrentState]);
+    };
+  }, []);
+
+  const updateGraph = useCallback(() => {
+    setPreviousStates((states) => [currentStateRef.current, ...states]);
+    setFutureStates([]);
+    setCurrentState(exportState());
+  }, [exportState]);
 
   const undo = useCallback(() => {
     cy.json(previousStates[0]);
@@ -139,6 +144,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         redoable,
         resetStates,
         resetGraph,
+        exportState,
       }}
     >
       {children}
