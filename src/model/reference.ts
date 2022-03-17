@@ -26,7 +26,7 @@ export function toProtobuf(data: Reference): arguebuf.Reference {
   return {
     text: data.text,
     resource: data.resource,
-    offset: BigInt(data.offset),
+    offset: data.offset ? BigInt(data.offset) : undefined,
     metadata: Struct.fromJson(data.metadata),
   };
 }

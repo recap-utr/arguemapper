@@ -201,7 +201,7 @@ export function label(data: Node): string {
   if (isAtom(data)) {
     return data.text;
   } else if (isScheme(data)) {
-    return data.argumentationScheme ?? data.type;
+    return data.argumentationScheme ?? data.type ?? "Unknown";
   }
 
   return "Unknown";
@@ -231,6 +231,8 @@ export function toProtobuf(data: Node): arguebuf.Node {
       },
     };
   }
+
+  throw new Error("Node type not supported.");
 }
 
 function atomToProtobuf(data: AtomNode): arguebuf.AtomNode {

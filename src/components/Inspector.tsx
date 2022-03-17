@@ -9,7 +9,7 @@ import {
   SelectChangeEvent,
   Stack,
   TextField,
-  Toolbar
+  Toolbar,
 } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
@@ -55,15 +55,13 @@ function Inspector() {
   useEffect(() => {
     setElement(null);
 
-    if (cy) {
-      cy.on("select", (e) => {
-        setElement(e.target.data());
-      });
-      cy.on("unselect", (e) => {
-        // @ts-ignore
-        setElement(cy.data());
-      });
-    }
+    cy?.on("select", (e) => {
+      setElement(e.target.data());
+    });
+    cy?.on("unselect", (e) => {
+      // @ts-ignore
+      setElement(cy?.data());
+    });
   }, [cy]);
 
   const handleChange = useCallback(
@@ -82,8 +80,8 @@ function Inspector() {
         if (cy) {
           cy.elements().unselectify();
 
-          setElement((element) => {
-            return produce(element, (draft) => {
+          setElement((element: any) => {
+            return produce(element, (draft: any) => {
               _.set(draft, attr, event.target.value);
             });
           });
@@ -171,11 +169,11 @@ function Inspector() {
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
               if (element) {
-                const cytoElem = cy.$id(element.id);
-                cytoElem.data(element);
+                const cytoElem = cy?.$id(element.id);
+                cytoElem?.data(element);
                 updateGraph();
               }
-              cy.elements().selectify();
+              cy?.elements().selectify();
             }}
           >
             Save
@@ -185,8 +183,8 @@ function Inspector() {
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {
-              cy.elements().selectify();
-              cy.elements().unselect();
+              cy?.elements().selectify();
+              cy?.elements().unselect();
             }}
           >
             Cancel

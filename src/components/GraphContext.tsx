@@ -10,23 +10,35 @@ import React, {
 import * as cytoModel from "../model/cytoWrapper";
 import demoGraph from "../services/demo";
 
-const GraphContext = createContext<
-  Partial<{
-    cy: cytoscape.Core;
-    _setCy: React.Dispatch<React.SetStateAction<cytoscape.Core>>;
-    currentCy: () => cytoscape.Core;
-    _setCurrentCy: (instance: cytoscape.Core) => void;
-    loadGraph: () => cytoModel.CytoGraph | {};
-    updateGraph: () => void;
-    redo: () => void;
-    undo: () => void;
-    resetStates: () => void;
-    exportState: () => cytoModel.CytoGraph;
-    resetGraph: () => void;
-    undoable: () => boolean;
-    redoable: () => boolean;
-  }>
->(null);
+const GraphContext = createContext<{
+  cy: cytoscape.Core | null;
+  _setCy: (instance: cytoscape.Core | null) => void;
+  currentCy: () => cytoscape.Core | null;
+  _setCurrentCy: (instance: cytoscape.Core) => void;
+  loadGraph: () => cytoModel.CytoGraph | {};
+  updateGraph: () => void;
+  redo: () => void;
+  undo: () => void;
+  resetStates: () => void;
+  exportState: () => cytoModel.CytoGraph;
+  resetGraph: () => void;
+  undoable: () => boolean;
+  redoable: () => boolean;
+}>({
+  cy: null,
+  _setCy: () => {},
+  currentCy: () => null,
+  _setCurrentCy: () => {},
+  loadGraph: () => ({}),
+  updateGraph: () => {},
+  redo: () => {},
+  undo: () => {},
+  resetStates: () => {},
+  exportState: () => cytoModel.init(),
+  resetGraph: () => {},
+  undoable: () => false,
+  redoable: () => false,
+});
 
 interface GraphProviderProps {
   storageName: string;
@@ -54,11 +66,13 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
 
   const [currentState, setCurrentState] =
     useState<cytoModel.CytoGraph>(loadGraph);
-  const currentStateRef = useRef<cytoModel.CytoGraph>(null);
-  const [previousStates, setPreviousStates] = useState([]);
-  const [futureStates, setFutureStates] = useState([]);
-  const [cy, _setCy] = useState<cytoscape.Core>(null);
-  const cyRef = useRef<cytoscape.Core>(null);
+  const currentStateRef = useRef<cytoModel.CytoGraph | null>(null);
+  const [previousStates, setPreviousStates] = useState<cytoModel.CytoGraph[]>(
+    []
+  );
+  const [futureStates, setFutureStates] = useState<cytoModel.CytoGraph[]>([]);
+  const [cy, _setCy] = useState<cytoscape.Core | null>(null);
+  const cyRef = useRef<cytoscape.Core | null>(null);
 
   useEffect(() => {
     localStorage.setItem(storageName, JSON.stringify(currentState));
@@ -80,15 +94,19 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, []);
 
   const updateGraph = useCallback(() => {
-    setPreviousStates((states) => [currentStateRef.current, ...states]);
-    setFutureStates([]);
-    setCurrentState(exportState());
+    const ref = currentStateRef.current;
+
+    if (ref) {
+      setPreviousStates((states) => [ref, ...states]);
+      setFutureStates([]);
+      setCurrentState(exportState());
+    }
   }, [exportState]);
 
   const undo = useCallback(() => {
-    cy.json(previousStates[0]);
-    cy.elements().selectify();
-    cy.elements().unselect();
+    cy?.json(previousStates[0]);
+    cy?.elements().selectify();
+    cy?.elements().unselect();
 
     setFutureStates((states) => [currentState, ...states]);
     setCurrentState(previousStates[0]);
@@ -96,9 +114,9 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, [cy, currentState, previousStates, setCurrentState]);
 
   const redo = useCallback(() => {
-    cy.json(futureStates[0]);
-    cy.elements().selectify();
-    cy.elements().unselect();
+    cy?.json(futureStates[0]);
+    cy?.elements().selectify();
+    cy?.elements().unselect();
 
     setPreviousStates((states) => [currentState, ...states]);
     setCurrentState(futureStates[0]);

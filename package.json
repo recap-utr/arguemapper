@@ -61,7 +61,9 @@
   },
   "devDependencies": {
     "@types/cytoscape": "^3.19.4",
+    "@types/cytoscape-dagre": "^2.3.0",
     "@types/cytoscape-edgehandles": "^4.0.0",
+    "@types/cytoscape-popper": "^2.0.0",
     "@types/jest": "^27.4.1",
     "@types/lodash": "^4.14.180",
     "@types/node": "^17.0.21",

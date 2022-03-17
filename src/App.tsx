@@ -31,7 +31,7 @@ export default function App() {
           side="left"
           drawerWidth={drawerWidth}
           isMobile={isMobile}
-          isOpen={leftSidebarOpen}
+          isOpen={leftSidebarOpen ?? true}
           setIsOpen={setLeftSidebarOpen}
         >
           <Resources
@@ -57,7 +57,7 @@ export default function App() {
           side="right"
           drawerWidth={drawerWidth}
           isMobile={isMobile}
-          isOpen={rightSidebarOpen}
+          isOpen={rightSidebarOpen ?? true}
           setIsOpen={setRightSidebarOpen}
         >
           <Inspector />

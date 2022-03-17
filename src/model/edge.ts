@@ -5,7 +5,7 @@ import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb"
 import { v1 as uuid } from "uuid";
 import * as aif from "./aif";
 
-export class Edge {
+export interface Edge {
   id: string;
   source: string;
   target: string;

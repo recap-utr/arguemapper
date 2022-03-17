@@ -22,10 +22,9 @@ import {
 import cytoscape, { NodeSingular } from "cytoscape";
 // import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
-import edgehandles from "cytoscape-edgehandles";
+import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
 import cytoPopper from "cytoscape-popper";
 import { useCallback, useEffect, useRef, useState } from "react";
-import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import style from "../cytoStyle";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
@@ -48,7 +47,7 @@ const defaultLayout = {
 function initEdgeHandles(
   cy: cytoscape.Core,
   updateGraph: () => void,
-  setEhStart
+  setEhStart: (element: any) => void
 ) {
   const eh = cy.edgehandles({
     hoverDelay: 0,
@@ -256,11 +255,11 @@ const initialCtxMenu: CtxMenuProps = {
 
 export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
-  const [eh, setEh] = useState(null);
-  const [ehStart, setEhStart] = useState(null);
+  const [eh, setEh] = useState<EdgeHandlesInstance | null>(null);
+  const [ehStart, setEhStart] = useState<any>(null);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  const [undoCmd] = useKeyboardJs("ctrl + z");
+  // const [undoCmd] = useKeyboardJs("ctrl + z");
   const {
     cy,
     _setCy,
@@ -348,8 +347,8 @@ export default function Cytoscape() {
       });
 
       if (
-        _cy.nodes("[metadata]").every((node: NodeSingular) => {
-          const pos = node.position();
+        _cy.nodes("[metadata]").every((node) => {
+          const pos = (node as NodeSingular).position();
           return pos.x === 0 && pos.y === 0;
         })
       ) {
@@ -438,7 +437,7 @@ export default function Cytoscape() {
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
-            cy.add({
+            cy?.add({
               // @ts-ignore
               nodes: [
                 {
@@ -450,7 +449,7 @@ export default function Cytoscape() {
                 },
               ],
             });
-            cy.center();
+            cy?.center();
             updateGraph();
             handleClose();
           }}
@@ -463,7 +462,7 @@ export default function Cytoscape() {
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
-            cy.add({
+            cy?.add({
               // @ts-ignore
               nodes: [
                 {
@@ -488,7 +487,9 @@ export default function Cytoscape() {
       {
         <Popper
           onMouseDown={useCallback(() => {
-            eh.start(ehStart);
+            if (ehStart) {
+              eh?.start(ehStart);
+            }
           }, [eh, ehStart])}
           open={Boolean(ehStart)}
           anchorEl={{

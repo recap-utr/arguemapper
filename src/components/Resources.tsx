@@ -40,7 +40,7 @@ function Resources({
   );
 }
 
-function Resource({ id }) {
+function Resource({ id }: { id: string }) {
   return (
     <Stack spacing={2}>
       <Typography variant="h5">Resource {id}</Typography>
