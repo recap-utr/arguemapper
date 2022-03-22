@@ -3,7 +3,6 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Stack, Tab, TextField, Typography } from "@mui/material";
 import React from "react";
-import { useGraph } from "./GraphContext";
 
 function Resources({
   activeTab,
@@ -15,7 +14,7 @@ function Resources({
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
   };
-  const {} = useGraph();
+  // const {} = useGraph();
 
   return (
     <TabContext value={activeTab}>
