@@ -18,7 +18,13 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
-import cytoscape, { NodeSingular } from "cytoscape";
+import type {
+  AbstractEventObject,
+  Core,
+  EventObject,
+  NodeSingular,
+} from "cytoscape";
+import cytoscape from "cytoscape";
 // import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
@@ -47,7 +53,7 @@ const defaultLayout = {
 };
 
 function initEdgeHandles(
-  cy: cytoscape.Core,
+  cy: Core,
   updateGraph: () => void,
   setEhStart: (element: any) => void
 ) {
@@ -246,7 +252,7 @@ interface CtxMenuProps {
   mouseY: null | number;
   cytoX: null | number;
   cytoY: null | number;
-  target: null | cytoscape.AbstractEventObject;
+  target: null | AbstractEventObject;
   kind: ElementKind;
 }
 
@@ -289,7 +295,7 @@ export default function Cytoscape() {
     }
   }, [cy, updateGraph]);
 
-  const handleClick = useCallback((event: cytoscape.EventObject) => {
+  const handleClick = useCallback((event: EventObject) => {
     const data = event.target.data();
 
     setCtxMenu({
@@ -492,6 +498,7 @@ export default function Cytoscape() {
         </MenuItem>
       </Menu>
       {
+        // @ts-ignore
         <Popper
           onMouseDown={useCallback(() => {
             if (ehStart && eh) {
