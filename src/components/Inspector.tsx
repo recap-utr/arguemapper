@@ -198,7 +198,11 @@ function Inspector() {
   return (
     <>
       <Toolbar>
-        {hasChanged ? (
+        <Typography variant="h5">Inspector</Typography>
+      </Toolbar>
+      <Stack spacing={3} sx={{ padding: 3 }}>
+        {fields}
+        {hasChanged && (
           <Stack
             justifyContent="space-around"
             direction="row"
@@ -232,12 +236,7 @@ function Inspector() {
               Discard
             </Button>
           </Stack>
-        ) : (
-          <Typography variant="h5">Inspector</Typography>
         )}
-      </Toolbar>
-      <Stack spacing={3} sx={{ padding: 3 }}>
-        {fields}
       </Stack>
     </>
   );
