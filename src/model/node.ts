@@ -272,6 +272,8 @@ export function toAif(data: Node): aif.Node {
     nodeID: data.id,
     text: text,
     type: type,
-    timestamp: data.updated.replace("T", " "),
+    timestamp: data.updated
+      .replace("T", " ")
+      .substring(0, data.updated.indexOf(".")),
   };
 }
