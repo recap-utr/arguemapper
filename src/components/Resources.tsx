@@ -23,7 +23,7 @@ function Resources({
           onChange={handleChange}
           aria-label="resource list"
           variant="scrollable"
-          scrollButtons={false}
+          scrollButtons={true}
         >
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((key) => (
             <Tab key={key} label={key} value={key} sx={{ minWidth: 50 }} />
