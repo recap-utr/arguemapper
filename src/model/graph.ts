@@ -2,6 +2,7 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
 import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
+import argServices from "@recap-utr/arg-services/package.json";
 import {
   Participant,
   toProtobuf as participantToProtobuf,
@@ -29,7 +30,7 @@ export function init(): Graph {
     resources: {},
     participants: {},
     analysts: [],
-    version: "TODO",
+    version: argServices.version,
   };
 }
 
