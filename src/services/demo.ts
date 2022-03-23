@@ -26,39 +26,57 @@ import * as cytoModel from "../model/cytoWrapper";
 //   data: cytoModel.graph.init(),
 // };
 
-const demoGraph: cytoModel.CytoGraph = {
-  elements: {
-    nodes: [
-      {
-        data: cytoModel.node.initAtom(
-          "Every person is going to die, plus additional text such that the node will have to wrap to the next line.",
-          "a1"
-        ),
-      },
-      {
-        data: cytoModel.node.initAtom("This is a fact", "a2"),
-      },
-      {
-        data: cytoModel.node.initAtom("Just a third node", "a3"),
-      },
-      {
-        data: cytoModel.node.initScheme(
-          cytoModel.node.SchemeType.SUPPORT,
-          undefined,
-          "s1"
-        ),
-      },
-    ],
-    edges: [
-      {
-        data: cytoModel.edge.init("a1", "s1", "e1"),
-      },
-      {
-        data: cytoModel.edge.init("s1", "a2", "e2"),
-      },
-    ],
-  },
-  data: cytoModel.graph.init(),
-};
+function demoGraph(): cytoModel.CytoGraph {
+  const nodes = [
+    {
+      data: cytoModel.node.initAtom(
+        "This node represents the major claim of the argument."
+      ),
+    },
+    {
+      data: cytoModel.node.initAtom(
+        "Here we have a premise that supports the claim."
+      ),
+    },
+    {
+      data: cytoModel.node.initAtom("And another one that attacks it."),
+    },
+    {
+      data: cytoModel.node.initScheme(
+        cytoModel.node.SchemeType.SUPPORT,
+        undefined
+      ),
+    },
+    {
+      data: cytoModel.node.initScheme(
+        cytoModel.node.SchemeType.ATTACK,
+        undefined
+      ),
+    },
+  ];
+
+  const edges = [
+    {
+      data: cytoModel.edge.init(nodes[1].data.id, nodes[3].data.id),
+    },
+    {
+      data: cytoModel.edge.init(nodes[3].data.id, nodes[0].data.id),
+    },
+    {
+      data: cytoModel.edge.init(nodes[2].data.id, nodes[4].data.id),
+    },
+    {
+      data: cytoModel.edge.init(nodes[4].data.id, nodes[0].data.id),
+    },
+  ];
+
+  return {
+    elements: {
+      nodes,
+      edges,
+    },
+    data: { ...cytoModel.graph.init(), majorClaim: nodes[0].data.id },
+  };
+}
 
 export default demoGraph;
