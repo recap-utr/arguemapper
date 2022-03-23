@@ -1,6 +1,7 @@
 import { Theme } from "@mui/material";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./model/cytoWrapper";
+import { SchemeNode } from "./model/node";
 
 const lineHeight = 1.15;
 const maxWidth = 160;
@@ -59,7 +60,17 @@ const style = (theme: Theme) => {
     {
       selector: 'node[kind="scheme"]',
       style: {
-        content: "data(type)",
+        content: (ele: cytoscape.NodeSingular) => {
+          const data = ele.data() as SchemeNode;
+
+          if (data.argumentationScheme) {
+            return data.argumentationScheme;
+          } else if (data.type) {
+            return data.type;
+          } else {
+            return "Unknowm";
+          }
+        },
         shape: "round-diamond",
       },
     },
