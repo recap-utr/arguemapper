@@ -28,7 +28,8 @@ import { useGraph } from "./GraphContext";
 // https://stackoverflow.com/a/55613750/7626878
 async function downloadJson(data: any, filename?: string) {
   if (!filename) {
-    filename = "TODO";
+    filename = new Date().toISOString().replace("T", "-").replace(":", "-");
+    filename = filename.substring(0, filename.indexOf("."));
   }
 
   if (!filename.endsWith(".json")) {
