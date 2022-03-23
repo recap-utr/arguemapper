@@ -62,8 +62,12 @@ function initEdgeHandles(
   });
 
   // https://github.com/cytoscape/cytoscape.js-edgehandles/blob/3906ce5e43740e2cc0fa8e44ff41ba8befca6b74/demo.html#L186
-  cy.on("mouseover tap", "node", (e) => {
+  cy.on("mouseover tap free", "node", (e) => {
     setEhStart(e.target);
+  });
+
+  cy.on("grab", "node", () => {
+    setEhStart(null);
   });
 
   cy.on("tap", (e) => {
@@ -72,7 +76,7 @@ function initEdgeHandles(
     }
   });
 
-  cy.on("zoom pan", () => {
+  cy.on("viewport", () => {
     setEhStart(null);
   });
 
@@ -259,6 +263,7 @@ export default function Cytoscape() {
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const [eh, setEh] = useState<EdgeHandlesInstance | null>(null);
   const [ehStart, setEhStart] = useState<any>(null);
+  const [zoom, setZoom] = useState<number>(1);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   // const [undoCmd] = useKeyboardJs("ctrl + z");
@@ -346,6 +351,9 @@ export default function Cytoscape() {
       _cy.on("dragfree", "node[metadata]", () => {
         updateGraph();
       });
+      _cy.on("zoom", () => {
+        setZoom(_cy.zoom());
+      });
 
       if (
         _cy.nodes("[metadata]").every((node) => {
@@ -358,6 +366,7 @@ export default function Cytoscape() {
 
       updateGraph();
       resetStates();
+      setZoom(_cy.zoom());
 
       return () => _cy.destroy();
     }
@@ -485,11 +494,11 @@ export default function Cytoscape() {
       {
         <Popper
           onMouseDown={useCallback(() => {
-            if (ehStart) {
-              eh?.start(ehStart);
+            if (ehStart && eh) {
+              eh.start(ehStart);
             }
           }, [eh, ehStart])}
-          open={Boolean(ehStart)}
+          open={Boolean(ehStart) && zoom > 0.7}
           anchorEl={{
             getBoundingClientRect: ehStart
               ? ehStart.popperRef().getBoundingClientRect
@@ -498,7 +507,7 @@ export default function Cytoscape() {
           placement="top"
           modifiers={[{ name: "offset", options: { offset: [0, 0] } }]}
         >
-          <IconButton color="error">
+          <IconButton sx={{ fontSize: 12 * zoom }} color="error">
             <FontAwesomeIcon icon={faCircle} />
           </IconButton>
         </Popper>
