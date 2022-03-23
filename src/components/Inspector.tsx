@@ -22,6 +22,7 @@ import _ from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
+import { isAtom, isScheme } from "../model/node";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
 import { useGraph } from "./GraphContext";
 
@@ -87,16 +88,32 @@ function Inspector() {
               value: any;
               event: Event | React.SyntheticEvent<Element, Event>;
             }>
-          | SelectChangeEvent<HTMLInputElement>
+          | SelectChangeEvent<HTMLInputElement | string>
       ) => {
         setHasChanged(true);
 
         if (cy) {
+          // Prevent the user from selecting another element.
+          // Otherwise, the local changes would be lost.
           cy.elements().unselectify();
 
+          // Update our interim element
           setElement((element: any) => {
+            let newValue = event.target.value;
+
+            // For select fields with optional values, convert "Undefined" to undefined.
+            // This is hacky!
+            if (
+              newValue === "Undefined" &&
+              (attr === "type" || attr === "argumentationScheme")
+            ) {
+              newValue = undefined;
+            }
+
+            // As we cannot directly modify it, we need to "produce" a new one
             return produce(element, (draft: any) => {
-              _.set(draft, attr, event.target.value);
+              // Update the given attribute with the new value
+              _.set(draft, attr, newValue);
             });
           });
         }
@@ -107,28 +124,44 @@ function Inspector() {
 
   let fields = null;
 
-  if (element && element.kind === "scheme") {
+  if (element && isScheme(element)) {
     fields = (
       <>
         <FormControl fullWidth>
-          <InputLabel>Scheme</InputLabel>
+          <InputLabel>Scheme Type</InputLabel>
           <Select
             value={element.type}
-            label="Scheme"
+            label="Scheme Type"
             onChange={handleChange("type")}
+            defaultValue={cytoModel.node.SchemeType.UNKNOWN}
           >
-            {Object.entries(cytoModel.node.SchemeType).map(
-              ([menuValue, description]) => (
-                <MenuItem key={description} value={menuValue}>
-                  {description}
+            {Object.entries(cytoModel.node.SchemeType).map(([key, value]) => (
+              <MenuItem key={key} value={value}>
+                {value}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl fullWidth>
+          <InputLabel>Argumentation Scheme</InputLabel>
+          <Select
+            value={element.argumentationScheme}
+            label="Argumentation Scheme"
+            onChange={handleChange("argumentationScheme")}
+            defaultValue={cytoModel.node.Scheme.UNKNOWN}
+          >
+            {Object.entries(cytoModel.node.Scheme).map(([key, value]) => {
+              return (
+                <MenuItem key={key} value={value}>
+                  {value}
                 </MenuItem>
-              )
-            )}
+              );
+            })}
           </Select>
         </FormControl>
       </>
     );
-  } else if (element && element.kind === "atom") {
+  } else if (element && isAtom(element)) {
     fields = (
       <>
         <TextField
@@ -144,7 +177,7 @@ function Inspector() {
           multiline
           minRows={3}
           label="Original Text"
-          value={element.resource?.text}
+          value={element.reference?.text}
           onChange={handleChange(["resource", "text"])}
         />
       </>
