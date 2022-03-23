@@ -21,7 +21,7 @@ const GraphContext = createContext<{
   undo: () => void;
   resetStates: () => void;
   exportState: () => cytoModel.CytoGraph;
-  resetGraph: () => void;
+  resetGraph: (useDemo: boolean) => void;
   undoable: () => boolean;
   redoable: () => boolean;
 }>({
@@ -58,7 +58,9 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     const storedGraph = localStorage.getItem(storageName);
 
     if (storedGraph) {
-      return JSON.parse(storedGraph);
+      try {
+        return JSON.parse(storedGraph);
+      } catch {}
     }
 
     return initialGraph;
@@ -128,10 +130,18 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setFutureStates([]);
   }, []);
 
-  const resetGraph = useCallback(() => {
-    localStorage.removeItem(storageName);
-    setInitialGraph({});
-  }, [setInitialGraph, storageName]);
+  const resetGraph = useCallback(
+    (useDemo: boolean) => {
+      localStorage.removeItem(storageName);
+
+      if (useDemo) {
+        setInitialGraph(demoGraph);
+      } else {
+        setInitialGraph({});
+      }
+    },
+    [setInitialGraph, storageName]
+  );
 
   const undoable = useCallback(
     () => previousStates.length > 0,

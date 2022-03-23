@@ -3,6 +3,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { CssBaseline, ThemeProvider } from "@mui/material";
+import { ConfirmProvider } from "material-ui-confirm";
 import React from "react";
 import ReactDOM from "react-dom";
 import { useMedia } from "react-use";
@@ -29,7 +30,17 @@ function Layout() {
   return (
     <ThemeProvider theme={theme(darkMode)}>
       <CssBaseline />
-      <App />
+      <ConfirmProvider
+        defaultOptions={{
+          title: "Are You Sure?",
+          description: "This action is destructive and cannot be undone!",
+          confirmationText: "OK",
+          cancellationText: "Cancel",
+          confirmationButtonProps: { autoFocus: true },
+        }}
+      >
+        <App />
+      </ConfirmProvider>
     </ThemeProvider>
   );
 }

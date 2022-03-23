@@ -1,4 +1,9 @@
-import { faBan, faDownload, faSave } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBan,
+  faDownload,
+  faSave,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
@@ -10,9 +15,11 @@ import {
   Stack,
   TextField,
   Toolbar,
+  Typography,
 } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
+import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
@@ -40,9 +47,11 @@ async function downloadJson(data: any, filename?: string) {
 }
 
 function Inspector() {
-  const { cy, updateGraph, exportState } = useGraph();
+  const { cy, updateGraph, exportState, resetGraph } = useGraph();
   // @ts-ignore
   const [element, setElement] = useState(cy?.data());
+  const [hasChanged, setHasChanged] = useState(false);
+  const confirm = useConfirm();
 
   const downloadProtobuf = useCallback(() => {
     downloadJson(proto2json(cyto2protobuf(exportState())));
@@ -56,13 +65,15 @@ function Inspector() {
     setElement(null);
 
     cy?.on("select", (e) => {
+      setHasChanged(false);
       setElement(e.target.data());
     });
     cy?.on("unselect", (e) => {
+      setHasChanged(false);
       // @ts-ignore
       setElement(cy?.data());
     });
-  }, [cy]);
+  }, [cy, setHasChanged]);
 
   const handleChange = useCallback(
     (attr: string | string[]) => {
@@ -77,6 +88,8 @@ function Inspector() {
             }>
           | SelectChangeEvent<HTMLInputElement>
       ) => {
+        setHasChanged(true);
+
         if (cy) {
           cy.elements().unselectify();
 
@@ -142,11 +155,32 @@ function Inspector() {
       <>
         <Button
           variant="contained"
+          color="error"
+          startIcon={<FontAwesomeIcon icon={faTrashAlt} />}
+          onClick={() => {
+            confirm().then(() => resetGraph(false));
+          }}
+        >
+          Reset Graph
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<FontAwesomeIcon icon={faTrashAlt} />}
+          onClick={() => {
+            confirm().then(() => resetGraph(true));
+          }}
+        >
+          Load Demo
+        </Button>
+        <Typography variant="h6">Download</Typography>
+        <Button
+          variant="contained"
           color="success"
           startIcon={<FontAwesomeIcon icon={faDownload} />}
           onClick={downloadProtobuf}
         >
-          Save as Arguebuf
+          Arguebuf
         </Button>
         <Button
           variant="contained"
@@ -154,7 +188,7 @@ function Inspector() {
           startIcon={<FontAwesomeIcon icon={faDownload} />}
           onClick={downloadAif}
         >
-          Save as AIF
+          AIF
         </Button>
       </>
     );
@@ -163,33 +197,43 @@ function Inspector() {
   return (
     <>
       <Toolbar>
-        <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
-          <Button
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faSave} />}
-            onClick={() => {
-              if (element) {
-                const cytoElem = cy?.$id(element.id);
-                cytoElem?.data(element);
-                updateGraph();
-              }
-              cy?.elements().selectify();
-            }}
+        {hasChanged ? (
+          <Stack
+            justifyContent="space-around"
+            direction="row"
+            sx={{ width: 1 }}
           >
-            Save
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={<FontAwesomeIcon icon={faBan} />}
-            onClick={() => {
-              cy?.elements().selectify();
-              cy?.elements().unselect();
-            }}
-          >
-            Cancel
-          </Button>
-        </Stack>
+            <Button
+              variant="contained"
+              startIcon={<FontAwesomeIcon icon={faSave} />}
+              onClick={() => {
+                if (element) {
+                  const cytoElem = cy?.$id(element.id);
+                  cytoElem?.data(element);
+                  updateGraph();
+                }
+                cy?.elements().selectify();
+                setHasChanged(false);
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<FontAwesomeIcon icon={faBan} />}
+              onClick={() => {
+                cy?.elements().selectify();
+                cy?.elements().unselect();
+                setHasChanged(false);
+              }}
+            >
+              Discard
+            </Button>
+          </Stack>
+        ) : (
+          <Typography variant="h5">Inspector</Typography>
+        )}
       </Toolbar>
       <Stack spacing={3} sx={{ padding: 3 }}>
         {fields}

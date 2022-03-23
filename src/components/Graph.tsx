@@ -4,7 +4,6 @@ import {
   faRedo,
   faSitemap,
   faTrash,
-  faTrashAlt,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -29,12 +28,15 @@ import style from "../cytoStyle";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
+// @ts-ignore
 cytoscape.use(dagre);
 // @ts-ignore
 cytoscape.use(edgehandles);
+// @ts-ignore
 cytoscape.use(cytoPopper);
 // cytoscape.use(cxtmenu);
 // Otherwise, react will throw errors when hot-reloading the module
+// @ts-ignore
 cytoscape.use = () => {};
 
 const defaultLayout = {
@@ -271,7 +273,6 @@ export default function Cytoscape() {
     undoable,
     redoable,
     resetStates,
-    resetGraph,
   } = useGraph();
 
   // useEffect(undo, [undo, undoCmd]);
@@ -394,9 +395,6 @@ export default function Cytoscape() {
       /> */}
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
-          <IconButton onClick={resetGraph} aria-label="Reset">
-            <FontAwesomeIcon icon={faTrashAlt} />
-          </IconButton>
           <IconButton onClick={layout} aria-label="Layout">
             <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
