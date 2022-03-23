@@ -28,6 +28,8 @@ import cytoscape from "cytoscape";
 // import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
 import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
+// @ts-ignore
+import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
 import { useCallback, useEffect, useRef, useState } from "react";
 import style from "../cytoStyle";
@@ -40,6 +42,8 @@ cytoscape.use(dagre);
 cytoscape.use(edgehandles);
 // @ts-ignore
 cytoscape.use(cytoPopper);
+// @ts-ignore
+cytoscape.use(navigator);
 // cytoscape.use(cxtmenu);
 // Otherwise, react will throw errors when hot-reloading the module
 // @ts-ignore
@@ -234,17 +238,6 @@ function initEdgeHandles(
 // // @ts-ignore
 // cy.cxtmenu(atomOptions);
 
-// @ts-ignore
-// cy.navigator({
-//   container: "#navigatorContainer",
-//   //   viewLiveFramerate: 0, // set false to update graph pan only on drag end; set 0 to do it instantly; set a number (frames per second) to update not more than N times per second
-//   //   thumbnailEventFramerate: 30, // max thumbnail's updates per second triggered by graph updates
-//   //   thumbnailLiveFramerate: false, // max thumbnail's updates per second. Set false to disable
-//   //   dblClickDelay: 200, // milliseconds
-//   removeCustomContainer: false, // destroy the container specified by user on plugin destroy
-//   rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
-// });
-
 type ElementKind = null | "atom" | "scheme" | "edge" | "graph";
 
 interface CtxMenuProps {
@@ -360,6 +353,17 @@ export default function Cytoscape() {
       _cy.on("zoom", () => {
         setZoom(_cy.zoom());
       });
+
+      // // @ts-ignore
+      // _cy.navigator({
+      //   // container: "#navigatorContainer",
+      //   //   viewLiveFramerate: 0, // set false to update graph pan only on drag end; set 0 to do it instantly; set a number (frames per second) to update not more than N times per second
+      //   //   thumbnailEventFramerate: 30, // max thumbnail's updates per second triggered by graph updates
+      //   //   thumbnailLiveFramerate: false, // max thumbnail's updates per second. Set false to disable
+      //   //   dblClickDelay: 200, // milliseconds
+      //   // removeCustomContainer: false, // destroy the container specified by user on plugin destroy
+      //   // rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
+      // });
 
       if (
         _cy.nodes("[metadata]").every((node) => {
