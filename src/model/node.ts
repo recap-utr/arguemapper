@@ -7,6 +7,7 @@ import * as aif from "./aif";
 import { Reference, toProtobuf as referenceToProtobuf } from "./reference";
 
 export enum SchemeType {
+  UNKNOWN = "Undefined",
   SUPPORT = "Support",
   ATTACK = "Attack",
   REPHRASE = "Rephrase",
@@ -16,8 +17,9 @@ export enum SchemeType {
 }
 
 const schemeType2Proto: {
-  [key in SchemeType]: arguebuf.SchemeType;
+  [key in SchemeType]: arguebuf.SchemeType | undefined;
 } = {
+  Undefined: undefined,
   Support: arguebuf.SchemeType.SUPPORT,
   Attack: arguebuf.SchemeType.ATTACK,
   Rephrase: arguebuf.SchemeType.REPHRASE,
@@ -31,6 +33,7 @@ const schemeType2Proto: {
 // } = invert(schemeType2Proto);
 
 const schemeType2aif: { [key in SchemeType]: string } = {
+  Undefined: "",
   Support: "RA",
   Attack: "CA",
   Rephrase: "MA",
@@ -40,6 +43,7 @@ const schemeType2aif: { [key in SchemeType]: string } = {
 };
 
 export enum Scheme {
+  UNKNOWN = "Undefined",
   AD_HOMINEM = "Ad Hominem",
   ALTERNATIVE_MEANS = "Alternative Means",
   ALTERNATIVES = "Alternatives",
@@ -47,7 +51,7 @@ export enum Scheme {
   ARBITRARY_VERBAL_CLASSIFICATION = "Arbitrary Verbal Classification",
   AUTHORITY = "Authority",
   BIAS = "Bias",
-  BIASED_CLASSIFICATION = "Biased_Classification",
+  BIASED_CLASSIFICATION = "Biased Classification",
   CALLING_OUT = "Calling Out",
   CAUSAL_SLIPPERY_SLOPE = "Causal Slippery Slope",
   CAUSE_TO_EFFECT = "Cause To Effect",
