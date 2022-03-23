@@ -415,7 +415,7 @@ export default function Cytoscape() {
           placement="top"
           modifiers={[{ name: "offset", options: { offset: [0, 0] } }]}
         >
-          <IconButton sx={{ fontSize: 10 * zoom }} color="error">
+          <IconButton sx={{ fontSize: 10 * zoom }} color="warning">
             <FontAwesomeIcon icon={faCircle} />
           </IconButton>
         </Popper>
