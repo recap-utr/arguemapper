@@ -71,7 +71,7 @@ const style = (theme: Theme) => {
             return "Unknowm";
           }
         },
-        shape: "round-diamond",
+        // shape: "round-diamond",
       },
     },
     {
