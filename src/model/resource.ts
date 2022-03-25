@@ -1,6 +1,7 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
+import * as date from "../services/date";
 
 export interface Resource {
   text: string;
@@ -12,14 +13,14 @@ export interface Resource {
 }
 
 export function init(): Resource {
-  const date = new Date().toISOString();
+  const now = date.now();
 
   return {
     text: "",
     title: undefined,
     source: undefined,
-    created: date,
-    updated: date,
+    created: now,
+    updated: now,
     metadata: {},
   };
 }

@@ -3,6 +3,7 @@ import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_p
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
 import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
 import { v1 as uuid } from "uuid";
+import * as date from "../services/date";
 import * as aif from "./aif";
 import { Reference, toProtobuf as referenceToProtobuf } from "./reference";
 
@@ -154,13 +155,13 @@ export interface AtomNode extends Node {
 }
 
 export function initAtom(text: string, id?: string): AtomNode {
-  const date = new Date().toISOString();
+  const now = date.now();
 
   return {
     id: id ?? uuid(),
     kind: "atom",
-    created: date,
-    updated: date,
+    created: now,
+    updated: now,
     metadata: {},
     text: text,
     reference: undefined,
@@ -179,13 +180,13 @@ export function initScheme(
   argumentationScheme?: Scheme,
   id?: string
 ): SchemeNode {
-  const date = new Date().toISOString();
+  const now = date.now();
 
   return {
     id: id ?? uuid(),
     kind: "scheme",
-    created: date,
-    updated: date,
+    created: now,
+    updated: now,
     metadata: {},
     type: type,
     argumentationScheme: argumentationScheme,
@@ -213,8 +214,8 @@ export function label(data: Node): string {
 
 export function toProtobuf(data: Node): arguebuf.Node {
   const commonData = {
-    created: Timestamp.fromDate(new Date(data.created)),
-    updated: Timestamp.fromDate(new Date(data.updated)),
+    created: Timestamp.fromDate(date.instance(data.created)),
+    updated: Timestamp.fromDate(date.instance(data.updated)),
     metadata: Struct.fromJson(data.metadata),
   };
 
@@ -276,8 +277,6 @@ export function toAif(data: Node): aif.Node {
     nodeID: data.id,
     text: text,
     type: type,
-    timestamp: data.updated
-      .replace("T", " ")
-      .substring(0, data.updated.indexOf(".")),
+    timestamp: date.format(data.updated, aif.DATE_FORMAT),
   };
 }

@@ -17,3 +17,7 @@ export interface Edge {
   toID: string;
   formEdgeID: "";
 }
+
+export type SchemeType = "RA" | "CA" | "MA" | "TA" | "PA" | "YA";
+
+export const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";

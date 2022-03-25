@@ -2,6 +2,7 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
 import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
+import * as date from "../services/date";
 
 export interface Participant {
   name?: string;
@@ -16,7 +17,7 @@ export interface Participant {
 }
 
 export function init(): Participant {
-  const date = new Date().toISOString();
+  const now = date.now();
 
   return {
     name: undefined,
@@ -25,8 +26,8 @@ export function init(): Participant {
     url: undefined,
     location: undefined,
     description: undefined,
-    created: date,
-    updated: date,
+    created: now,
+    updated: now,
     metadata: {},
   };
 }
@@ -39,8 +40,8 @@ export function toProtobuf(data: Participant): arguebuf.Participant {
     url: data.url,
     location: data.location,
     description: data.description,
-    created: Timestamp.fromDate(new Date(data.created)),
-    updated: Timestamp.fromDate(new Date(data.updated)),
+    created: Timestamp.fromDate(date.instance(data.created)),
+    updated: Timestamp.fromDate(date.instance(data.updated)),
     metadata: Struct.fromJson(data.metadata),
   };
 }

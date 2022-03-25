@@ -3,6 +3,7 @@ import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_p
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
 import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
 import argServices from "@recap-utr/arg-services/package.json";
+import * as date from "../services/date";
 import {
   Participant,
   toProtobuf as participantToProtobuf,
@@ -21,11 +22,11 @@ export interface Graph {
 }
 
 export function init(): Graph {
-  const date = new Date().toISOString();
+  const now = date.now();
 
   return {
-    created: date,
-    updated: date,
+    created: now,
+    updated: now,
     metadata: {},
     resources: {},
     participants: {},
@@ -50,8 +51,8 @@ export function toProtobuf(
     majorClaim: data.majorClaim,
     analysts: data.analysts.map((v) => participantToProtobuf(v)),
     version: data.version,
-    created: Timestamp.fromDate(new Date(data.created)),
-    updated: Timestamp.fromDate(new Date(data.updated)),
+    created: Timestamp.fromDate(date.instance(data.created)),
+    updated: Timestamp.fromDate(date.instance(data.updated)),
     metadata: Struct.fromJson(data.metadata),
   };
 }

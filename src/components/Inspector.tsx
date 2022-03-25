@@ -24,6 +24,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
 import { isAtom, isScheme } from "../model/node";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
+import * as date from "../services/date";
 import { useGraph } from "./GraphContext";
 
 const NULL_VALUE = "###NULL###";
@@ -31,8 +32,7 @@ const NULL_VALUE = "###NULL###";
 // https://stackoverflow.com/a/55613750/7626878
 async function downloadJson(data: any, filename?: string) {
   if (!filename) {
-    filename = new Date().toISOString().replace("T", "-").replace(":", "-");
-    filename = filename.substring(0, filename.indexOf("."));
+    filename = date.format(date.now(), "YYYY-MM-DD-HH-mm-ss");
   }
 
   if (!filename.endsWith(".json")) {
