@@ -46,3 +46,27 @@ export function toAif(data: Edge): aif.Edge {
     formEdgeID: "",
   };
 }
+
+export function fromAif(obj: aif.Edge): Edge {
+  const now = date.now();
+
+  return {
+    id: obj.edgeID,
+    source: obj.fromID,
+    target: obj.toID,
+    created: now,
+    updated: now,
+    metadata: {},
+  };
+}
+
+export function fromProtobuf(id: string, obj: arguebuf.Edge): Edge {
+  return {
+    id,
+    source: obj.source,
+    target: obj.target,
+    created: date.fromProtobuf(obj.created),
+    updated: date.fromProtobuf(obj.updated),
+    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+  };
+}

@@ -56,3 +56,8 @@ export function toProtobuf(
     metadata: Struct.fromJson(data.metadata),
   };
 }
+
+export function fromProtobuf(obj: arguebuf.Graph): Graph {
+  // TODO
+  throw new Error("Function not implemented.");
+}

@@ -8,7 +8,6 @@ import * as aif from "./aif";
 import { Reference, toProtobuf as referenceToProtobuf } from "./reference";
 
 export enum SchemeType {
-  UNKNOWN = "Undefined",
   SUPPORT = "Support",
   ATTACK = "Attack",
   REPHRASE = "Rephrase",
@@ -18,23 +17,29 @@ export enum SchemeType {
 }
 
 const schemeType2Proto: {
-  [key in SchemeType]: arguebuf.SchemeType | undefined;
+  [key in SchemeType]: arguebuf.SchemeType;
 } = {
-  Undefined: undefined,
-  Support: arguebuf.SchemeType.SUPPORT,
-  Attack: arguebuf.SchemeType.ATTACK,
-  Rephrase: arguebuf.SchemeType.REPHRASE,
-  Transition: arguebuf.SchemeType.TRANSITION,
-  Preference: arguebuf.SchemeType.PREFERENCE,
-  Assertion: arguebuf.SchemeType.ASSERTION,
+  [SchemeType.SUPPORT]: arguebuf.SchemeType.SUPPORT,
+  [SchemeType.ATTACK]: arguebuf.SchemeType.ATTACK,
+  [SchemeType.REPHRASE]: arguebuf.SchemeType.REPHRASE,
+  [SchemeType.TRANSITION]: arguebuf.SchemeType.TRANSITION,
+  [SchemeType.PREFERENCE]: arguebuf.SchemeType.PREFERENCE,
+  [SchemeType.ASSERTION]: arguebuf.SchemeType.ASSERTION,
 };
 
-// const proto2schemeType: {
-//   [key in arguebuf.SchemeType]?: SchemeType;
-// } = invert(schemeType2Proto);
+const proto2schemeType: {
+  [key in arguebuf.SchemeType]: SchemeType | undefined;
+} = {
+  [arguebuf.SchemeType.UNSPECIFIED]: undefined,
+  [arguebuf.SchemeType.SUPPORT]: SchemeType.SUPPORT,
+  [arguebuf.SchemeType.ATTACK]: SchemeType.ATTACK,
+  [arguebuf.SchemeType.REPHRASE]: SchemeType.REPHRASE,
+  [arguebuf.SchemeType.TRANSITION]: SchemeType.TRANSITION,
+  [arguebuf.SchemeType.PREFERENCE]: SchemeType.PREFERENCE,
+  [arguebuf.SchemeType.ASSERTION]: SchemeType.ASSERTION,
+};
 
-const schemeType2aif: { [key in SchemeType]: string } = {
-  Undefined: "",
+const schemeType2aif: { [key in SchemeType]: aif.SchemeType } = {
   Support: "RA",
   Attack: "CA",
   Rephrase: "MA",
@@ -43,8 +48,18 @@ const schemeType2aif: { [key in SchemeType]: string } = {
   Assertion: "YA",
 };
 
+const aif2schemeType: {
+  [key in aif.SchemeType]: SchemeType;
+} = {
+  RA: SchemeType.SUPPORT,
+  CA: SchemeType.ATTACK,
+  MA: SchemeType.REPHRASE,
+  TA: SchemeType.TRANSITION,
+  PA: SchemeType.PREFERENCE,
+  YA: SchemeType.ASSERTION,
+};
+
 export enum Scheme {
-  UNKNOWN = "Undefined",
   AD_HOMINEM = "Ad Hominem",
   ALTERNATIVE_MEANS = "Alternative Means",
   ALTERNATIVES = "Alternatives",
@@ -224,7 +239,13 @@ export function toProtobuf(data: Node): arguebuf.Node {
       ...commonData,
       node: {
         oneofKind: "atom",
-        atom: atomToProtobuf(data),
+        atom: {
+          text: data.text,
+          participant: data.participant,
+          reference: data.reference
+            ? referenceToProtobuf(data.reference)
+            : undefined,
+        },
       },
     };
   } else if (isScheme(data)) {
@@ -232,27 +253,16 @@ export function toProtobuf(data: Node): arguebuf.Node {
       ...commonData,
       node: {
         oneofKind: "scheme",
-        scheme: schemeToProtobuf(data),
+        scheme: {
+          descriptors: Struct.fromJson(data.descriptors),
+          type: data.type ? schemeType2Proto[data.type] : undefined,
+          argumentationScheme: undefined, // TODO
+        },
       },
     };
   }
 
   throw new Error("Node type not supported.");
-}
-
-function atomToProtobuf(data: AtomNode): arguebuf.AtomNode {
-  return {
-    text: data.text,
-    participant: data.participant,
-    reference: data.reference ? referenceToProtobuf(data.reference) : undefined,
-  };
-}
-function schemeToProtobuf(data: SchemeNode): arguebuf.SchemeNode {
-  return {
-    descriptors: Struct.fromJson(data.descriptors),
-    type: data.type ? schemeType2Proto[data.type] : undefined,
-    // TODO: argumentation_scheme
-  };
 }
 
 export function toAif(data: Node): aif.Node {
@@ -279,4 +289,70 @@ export function toAif(data: Node): aif.Node {
     type: type,
     timestamp: date.format(data.updated, aif.DATE_FORMAT),
   };
+}
+
+export function fromAif(obj: aif.Node): Node {
+  const commonProps: Omit<Node, "kind"> = {
+    id: obj.nodeID,
+    created: date.parse(obj.timestamp, aif.DATE_FORMAT),
+    updated: date.parse(obj.timestamp, aif.DATE_FORMAT),
+    metadata: {},
+  };
+
+  if (obj.type === "I") {
+    const node: AtomNode = {
+      ...commonProps,
+      kind: "atom",
+      text: obj.text,
+    };
+
+    return node;
+  } else {
+    const node: SchemeNode = {
+      ...commonProps,
+      kind: "scheme",
+      type: obj.type ? aif2schemeType[obj.type as aif.SchemeType] : undefined,
+      argumentationScheme: undefined, // TODO
+      descriptors: {},
+    };
+
+    return node;
+  }
+}
+
+export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
+  const commonProps: Omit<Node, "kind"> = {
+    id,
+    created: date.fromProtobuf(obj.created),
+    updated: date.fromProtobuf(obj.updated),
+    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+  };
+
+  if (obj.node.oneofKind === "atom") {
+    const node: AtomNode = {
+      ...commonProps,
+      kind: "atom",
+      text: obj.node.atom.text,
+      // TODO
+    };
+
+    return node;
+  } else if (obj.node.oneofKind === "scheme") {
+    const node: SchemeNode = {
+      ...commonProps,
+      kind: "scheme",
+      type: obj.node.scheme.type
+        ? proto2schemeType[obj.node.scheme.type]
+        : undefined,
+      descriptors: obj.node.scheme.descriptors
+        ? Struct.toJson(obj.node.scheme.descriptors)
+        : {},
+      // TODO
+    };
+
+    return node;
+  }
+
+  // TODO: Handle this error at some point!
+  throw new Error("Node is neither Atom nor Scheme.");
 }
