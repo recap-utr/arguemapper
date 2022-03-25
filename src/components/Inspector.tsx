@@ -26,6 +26,8 @@ import { isAtom, isScheme } from "../model/node";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
 import { useGraph } from "./GraphContext";
 
+const NULL_VALUE = "###NULL###";
+
 // https://stackoverflow.com/a/55613750/7626878
 async function downloadJson(data: any, filename?: string) {
   if (!filename) {
@@ -103,10 +105,7 @@ function Inspector() {
 
             // For select fields with optional values, convert "Undefined" to undefined.
             // This is hacky!
-            if (
-              newValue === "Undefined" &&
-              (attr === "type" || attr === "argumentationScheme")
-            ) {
+            if (newValue === NULL_VALUE) {
               newValue = undefined;
             }
 
@@ -133,7 +132,7 @@ function Inspector() {
             value={element.type}
             label="Scheme Type"
             onChange={handleChange("type")}
-            defaultValue={cytoModel.node.SchemeType.UNKNOWN}
+            defaultValue={NULL_VALUE}
           >
             {Object.entries(cytoModel.node.SchemeType).map(([key, value]) => (
               <MenuItem key={key} value={value}>
@@ -148,7 +147,7 @@ function Inspector() {
             value={element.argumentationScheme}
             label="Argumentation Scheme"
             onChange={handleChange("argumentationScheme")}
-            defaultValue={cytoModel.node.Scheme.UNKNOWN}
+            defaultValue={NULL_VALUE}
           >
             {Object.entries(cytoModel.node.Scheme).map(([key, value]) => {
               return (
