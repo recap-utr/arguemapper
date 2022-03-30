@@ -64,14 +64,6 @@ function Inspector() {
   const confirm = useConfirm();
   const theme = useTheme();
 
-  const downloadProtobuf = useCallback(() => {
-    downloadJson(proto2json(cyto2protobuf(exportState())));
-  }, [exportState]);
-
-  const downloadAif = useCallback(() => {
-    downloadJson(cyto2aif(exportState()));
-  }, [exportState]);
-
   useEffect(() => {
     setElement(null);
 
@@ -141,6 +133,7 @@ function Inspector() {
             onChange={handleChange("type")}
             defaultValue={NULL_VALUE}
           >
+            <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
             {Object.entries(cytoModel.node.SchemeType).map(([key, value]) => (
               <MenuItem key={key} value={value}>
                 {value}
@@ -156,6 +149,7 @@ function Inspector() {
             onChange={handleChange("argumentationScheme")}
             defaultValue={NULL_VALUE}
           >
+            <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
             {Object.entries(cytoModel.node.Scheme).map(([key, value]) => {
               return (
                 <MenuItem key={key} value={value}>
@@ -232,10 +226,20 @@ function Inspector() {
           </AccordionSummary>
           <AccordionDetails>
             <Stack spacing={1}>
-              <Button variant="contained" onClick={downloadProtobuf}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  downloadJson(proto2json(cyto2protobuf(exportState())));
+                }}
+              >
                 Arguebuf
               </Button>
-              <Button variant="contained" onClick={downloadAif}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  downloadJson(cyto2aif(exportState()));
+                }}
+              >
                 AIF
               </Button>
             </Stack>
@@ -255,13 +259,31 @@ function Inspector() {
                 onClick={() => {
                   if (cy) {
                     downloadBlob(
-                      cy.png({ output: "blob", full: true }),
+                      cy.png({ output: "blob", scale: 2, full: true }),
                       ".png"
                     );
                   }
                 }}
               >
-                PNG
+                PNG (Transparent)
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  if (cy) {
+                    downloadBlob(
+                      cy.png({
+                        output: "blob",
+                        scale: 2,
+                        full: true,
+                        bg: theme.palette.background.default,
+                      }),
+                      ".png"
+                    );
+                  }
+                }}
+              >
+                PNG (Background)
               </Button>
               <Button
                 variant="contained"
@@ -270,6 +292,7 @@ function Inspector() {
                     downloadBlob(
                       cy.jpg({
                         output: "blob",
+                        scale: 2,
                         full: true,
                         quality: 1,
                         bg: theme.palette.background.default,
@@ -279,8 +302,16 @@ function Inspector() {
                   }
                 }}
               >
-                JPG
+                JPG (Background)
               </Button>
+              {theme.palette.mode === "dark" && (
+                <Typography variant="caption">
+                  <b>Please note:</b>
+                  <br />
+                  The rendering respects the dark mode. If you want a white
+                  background, please switch to the light mode.
+                </Typography>
+              )}
             </Stack>
           </AccordionDetails>
         </Accordion>
