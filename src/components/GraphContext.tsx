@@ -15,7 +15,7 @@ const GraphContext = createContext<{
   _setCy: (instance: cytoscape.Core | null) => void;
   currentCy: () => cytoscape.Core | null;
   _setCurrentCy: (instance: cytoscape.Core) => void;
-  loadGraph: () => cytoModel.CytoGraph | {};
+  loadGraph: () => cytoModel.CytoGraph;
   updateGraph: () => void;
   redo: () => void;
   undo: () => void;
@@ -29,7 +29,7 @@ const GraphContext = createContext<{
   _setCy: () => {},
   currentCy: () => null,
   _setCurrentCy: () => {},
-  loadGraph: () => ({}),
+  loadGraph: () => cytoModel.init(),
   updateGraph: () => {},
   redo: () => {},
   undo: () => {},
@@ -50,8 +50,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   children,
   storageName,
 }) => {
-  const [initialGraph, setInitialGraph] = useState<cytoModel.CytoGraph | {}>(
-    demoGraph
+  const [initialGraph, setInitialGraph] = useState<cytoModel.CytoGraph>(
+    cytoModel.init()
   );
 
   const loadGraph = useCallback(() => {
@@ -137,7 +137,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       if (useDemo) {
         setInitialGraph(demoGraph);
       } else {
-        setInitialGraph({});
+        setInitialGraph(cytoModel.init());
       }
     },
     [setInitialGraph, storageName]
