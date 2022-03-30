@@ -32,6 +32,7 @@ import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
 import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
 import { useCallback, useEffect, useRef, useState } from "react";
+import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import style from "../cytoStyle";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
@@ -163,7 +164,8 @@ export default function Cytoscape() {
   const [zoom, setZoom] = useState<number>(1);
   const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
-  // const [undoCmd] = useKeyboardJs("ctrl + z");
+  const [undoPressed] = useKeyboardJs("mod + z");
+  const [redoPressed] = useKeyboardJs("mod + shift + z");
   const {
     cy,
     _setCy,
@@ -177,7 +179,17 @@ export default function Cytoscape() {
     resetStates,
   } = useGraph();
 
-  // useEffect(undo, [undo, undoCmd]);
+  useEffect(() => {
+    if (undoPressed && undoable()) {
+      undo();
+    }
+  }, [undo, undoPressed, undoable]);
+
+  useEffect(() => {
+    if (redoPressed && redoable()) {
+      redo();
+    }
+  }, [redo, redoPressed, redoable]);
 
   const layout = useCallback(() => {
     if (cy) {
