@@ -32,7 +32,7 @@ const NULL_VALUE = "###NULL###";
 // https://stackoverflow.com/a/55613750/7626878
 async function downloadJson(data: any, filename?: string) {
   if (!filename) {
-    filename = date.format(date.now(), "YYYY-MM-DD-HH-mm-ss");
+    filename = date.format(date.now(), "yyyy-MM-dd-HH-mm-ss");
   }
 
   if (!filename.endsWith(".json")) {

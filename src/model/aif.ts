@@ -20,4 +20,4 @@ export interface Edge {
 
 export type SchemeType = "RA" | "CA" | "MA" | "TA" | "PA" | "YA";
 
-export const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";
+export const DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
