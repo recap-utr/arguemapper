@@ -69,7 +69,7 @@ const style = (theme: Theme) => {
           } else if (data.type) {
             return data.type;
           } else {
-            return "Unknowm";
+            return "Unknown";
           }
         },
         // shape: "round-diamond",
