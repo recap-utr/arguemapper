@@ -14,6 +14,15 @@ const theme = (prefersDarkMode: boolean) =>
       error: {
         main: "#FF0000",
       },
+      success: {
+        main: "#00FF00",
+      },
+      info: {
+        main: "#0000FF",
+      },
+      warning: {
+        main: "#FFFF00",
+      },
     },
   });
 
