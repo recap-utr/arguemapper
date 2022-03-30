@@ -1,11 +1,16 @@
 import {
   faBan,
-  faDownload,
+  faCaretDown,
+  faCode,
+  faImage,
   faSave,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Button,
   FormControl,
   InputLabel,
@@ -16,6 +21,7 @@ import {
   TextField,
   Toolbar,
   Typography,
+  useTheme,
 } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
@@ -29,22 +35,22 @@ import { useGraph } from "./GraphContext";
 
 const NULL_VALUE = "###NULL###";
 
+function generateFilename() {
+  return date.format(date.now(), "yyyy-MM-dd-HH-mm-ss");
+}
+
 // https://stackoverflow.com/a/55613750/7626878
-async function downloadJson(data: any, filename?: string) {
-  if (!filename) {
-    filename = date.format(date.now(), "yyyy-MM-dd-HH-mm-ss");
-  }
-
-  if (!filename.endsWith(".json")) {
-    filename = `${filename}.json`;
-  }
-
+async function downloadJson(data: any) {
   const json = JSON.stringify(data);
   const blob = new Blob([json], { type: "application/json" });
-  const href = await URL.createObjectURL(blob);
+  downloadBlob(blob, ".json");
+}
+
+async function downloadBlob(data: Blob, suffix: string) {
+  const href = URL.createObjectURL(data);
   const link = document.createElement("a");
   link.href = href;
-  link.download = filename;
+  link.download = generateFilename() + suffix;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -56,6 +62,7 @@ function Inspector() {
   const [element, setElement] = useState(cy?.data());
   const [hasChanged, setHasChanged] = useState(false);
   const confirm = useConfirm();
+  const theme = useTheme();
 
   const downloadProtobuf = useCallback(() => {
     downloadJson(proto2json(cyto2protobuf(exportState())));
@@ -185,45 +192,99 @@ function Inspector() {
     // edge
   } else {
     fields = (
-      <>
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<FontAwesomeIcon icon={faTrashAlt} />}
-          onClick={() => {
-            confirm().then(() => resetGraph(false));
-          }}
-        >
-          Reset Graph
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<FontAwesomeIcon icon={faTrashAlt} />}
-          onClick={() => {
-            confirm().then(() => resetGraph(true));
-          }}
-        >
-          Load Demo
-        </Button>
-        <Typography variant="h6">Download</Typography>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<FontAwesomeIcon icon={faDownload} />}
-          onClick={downloadProtobuf}
-        >
-          Arguebuf
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<FontAwesomeIcon icon={faDownload} />}
-          onClick={downloadAif}
-        >
-          AIF
-        </Button>
-      </>
+      <div>
+        <Accordion>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="button">
+              <FontAwesomeIcon icon={faTrashAlt} />
+              &nbsp;Replace with
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => {
+                  confirm().then(() => resetGraph(false));
+                }}
+              >
+                Emtpy Graph
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => {
+                  confirm().then(() => resetGraph(true));
+                }}
+              >
+                Demo Graph
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="button">
+              <FontAwesomeIcon icon={faCode} />
+              &nbsp;Export
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              <Button variant="contained" onClick={downloadProtobuf}>
+                Arguebuf
+              </Button>
+              <Button variant="contained" onClick={downloadAif}>
+                AIF
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="button">
+              <FontAwesomeIcon icon={faImage} />
+              &nbsp;Render
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  if (cy) {
+                    downloadBlob(
+                      cy.png({ output: "blob", full: true }),
+                      ".png"
+                    );
+                  }
+                }}
+              >
+                PNG
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  if (cy) {
+                    downloadBlob(
+                      cy.jpg({
+                        output: "blob",
+                        full: true,
+                        quality: 1,
+                        bg: theme.palette.background.default,
+                      }),
+                      ".jpg"
+                    );
+                  }
+                }}
+              >
+                JPG
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      </div>
     );
   }
 
