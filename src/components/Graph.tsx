@@ -1,5 +1,6 @@
 import {
   faCircle,
+  faCommentDots,
   faPlus,
   faRedo,
   faSitemap,
@@ -18,12 +19,7 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
-import type {
-  AbstractEventObject,
-  Core,
-  EventObject,
-  NodeSingular,
-} from "cytoscape";
+import type { Core, EventObject, NodeSingular } from "cytoscape";
 import cytoscape from "cytoscape";
 // import cxtmenu from "cytoscape-cxtmenu";
 import dagre from "cytoscape-dagre";
@@ -144,7 +140,7 @@ interface CtxMenuProps {
   mouseY: null | number;
   cytoX: null | number;
   cytoY: null | number;
-  target: null | AbstractEventObject;
+  target: null | any;
   kind: ElementKind;
 }
 
@@ -348,10 +344,29 @@ export default function Cytoscape() {
         }
       >
         <MenuItem
+          {...showFor(["atom"])}
+          onClick={() => {
+            if (cy && ctxMenu.target) {
+              const nodeId = ctxMenu.target.id();
+
+              if (nodeId) {
+                cy.data("majorClaim", nodeId);
+
+                updateGraph();
+              }
+            }
+            handleClose();
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faCommentDots} />
+          </ListItemIcon>
+          <ListItemText>Set as Major Claim</ListItemText>
+        </MenuItem>
+        <MenuItem
           {...showFor(["atom", "scheme", "edge"])}
           onClick={() => {
-            // @ts-ignore
-            ctxMenu.target.remove();
+            ctxMenu.target?.remove();
             updateGraph();
             handleClose();
           }}

@@ -48,7 +48,7 @@ const style = (theme: Theme) => {
         "text-wrap": "wrap",
         color: theme.palette.common.white,
         "text-max-width": `${maxWidth}px`,
-        "background-color": theme.palette.primary.main,
+        "background-color": grey[500],
         shape: "round-rectangle",
       },
     },
@@ -56,6 +56,26 @@ const style = (theme: Theme) => {
       selector: 'node[kind="atom"]',
       style: {
         content: "data(text)",
+        // "background-color": theme.palette.primary.main,
+        // "border-color": grey[500],
+        // "border-width": (ele: cytoscape.NodeSingular) => {
+        //   const data = ele.cy().data() as cytoModel.graph.Graph;
+
+        //   if (data.majorClaim && data.majorClaim === ele.id()) {
+        //     return 1;
+        //   }
+
+        //   return 0;
+        // },
+        "background-color": (ele: cytoscape.NodeSingular) => {
+          const data = ele.cy().data() as cytoModel.graph.Graph;
+
+          if (data.majorClaim && data.majorClaim === ele.id()) {
+            return theme.palette.secondary.main;
+          }
+
+          return theme.palette.primary.main;
+        },
       },
     },
     {
