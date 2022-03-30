@@ -1,4 +1,5 @@
 import { Theme } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./model/cytoWrapper";
 import { SchemeNode } from "./model/node";
@@ -89,9 +90,9 @@ const style = (theme: Theme) => {
     {
       selector: "edge",
       style: {
-        "line-color": theme.palette.divider,
-        "background-color": theme.palette.divider,
-        "target-arrow-color": theme.palette.divider,
+        "line-color": grey[500],
+        "background-color": grey[500],
+        "target-arrow-color": grey[500],
         "target-arrow-shape": "triangle",
         "curve-style": "bezier", // unbundled-bezier
         // "control-point-distances": [20, -20],
