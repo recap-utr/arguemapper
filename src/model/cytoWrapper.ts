@@ -16,6 +16,7 @@ export interface CytoElements {
 }
 
 export interface CytoGraph {
+  [x: string]: unknown;
   data: graph.Graph;
   elements: CytoElements;
 }
