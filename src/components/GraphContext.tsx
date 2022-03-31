@@ -10,7 +10,6 @@ import React, {
 } from "react";
 import * as cytoModel from "../model/cytoWrapper";
 import * as date from "../services/date";
-import demoGraph from "../services/demo";
 
 const GraphContext = createContext<{
   cy: cytoscape.Core | null;
@@ -23,7 +22,7 @@ const GraphContext = createContext<{
   undo: () => void;
   resetStates: () => void;
   exportState: () => cytoModel.CytoGraph;
-  resetGraph: (useDemo: boolean) => void;
+  resetGraph: (graph: cytoModel.CytoGraph) => void;
   undoable: boolean;
   redoable: boolean;
 }>({
@@ -162,14 +161,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, []);
 
   const resetGraph = useCallback(
-    (useDemo: boolean) => {
+    (graph: cytoModel.CytoGraph) => {
       localStorage.removeItem(storageName);
-
-      if (useDemo) {
-        setInitialGraph(demoGraph);
-      } else {
-        setInitialGraph(cytoModel.init());
-      }
+      // Make the graph unique, otherwise React could skip rerendering
+      graph.data.updated = date.now();
+      setInitialGraph(graph);
     },
     [setInitialGraph, storageName]
   );

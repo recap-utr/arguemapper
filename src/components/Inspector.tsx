@@ -2,9 +2,9 @@ import {
   faBan,
   faCaretDown,
   faCode,
+  faFile,
   faImage,
   faSave,
-  faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,6 +18,7 @@ import {
   Select,
   SelectChangeEvent,
   Stack,
+  styled,
   TextField,
   Toolbar,
   Typography,
@@ -29,8 +30,10 @@ import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
 import { isAtom, isScheme } from "../model/node";
+import * as convert from "../services/convert";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
 import * as date from "../services/date";
+import demoGraph from "../services/demo";
 import { useGraph } from "./GraphContext";
 
 const NULL_VALUE = "###NULL###";
@@ -55,6 +58,10 @@ async function downloadBlob(data: Blob, suffix: string) {
   link.click();
   document.body.removeChild(link);
 }
+
+const Input = styled("input")({
+  display: "none",
+});
 
 function Inspector() {
   const { cy, updateGraph, exportState, resetGraph } = useGraph();
@@ -190,29 +197,59 @@ function Inspector() {
         <Accordion>
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="button">
-              <FontAwesomeIcon icon={faTrashAlt} />
-              &nbsp;Replace with
+              <FontAwesomeIcon icon={faFile} />
+              &nbsp;New Graph
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Stack spacing={1}>
+              <label htmlFor="upload-file-button">
+                <Input
+                  accept="text/json"
+                  id="upload-file-button"
+                  type="file"
+                  // Reset the value after every upload so that the user can upload the same file twice.
+                  // https://stackoverflow.com/a/40429197
+                  onClick={(event) => {
+                    (event.target as HTMLInputElement).value = "";
+                  }}
+                  // TODO: Properly handle the else branches of the conditions
+                  onChange={(event) => {
+                    if (event.target.files && event.target.files.length > 0) {
+                      // https://stackoverflow.com/a/30992506
+                      var reader = new FileReader();
+                      reader.onload = (e) => {
+                        if (e.target && typeof e.target.result === "string") {
+                          const parsedGraph = JSON.parse(e.target.result);
+                          confirm().then(() =>
+                            resetGraph(convert.importGraph(parsedGraph))
+                          );
+                        }
+                      };
+
+                      reader.readAsText(event.target.files[0]);
+                    }
+                  }}
+                />
+                <Button variant="contained" component="span" fullWidth>
+                  Upload…
+                </Button>
+              </label>
               <Button
                 variant="contained"
-                color="error"
                 onClick={() => {
-                  confirm().then(() => resetGraph(false));
+                  confirm().then(() => resetGraph(cytoModel.init()));
                 }}
               >
-                Emtpy Graph
+                Emtpy
               </Button>
               <Button
                 variant="contained"
-                color="error"
                 onClick={() => {
-                  confirm().then(() => resetGraph(true));
+                  confirm().then(() => resetGraph(demoGraph()));
                 }}
               >
-                Demo Graph
+                Demo
               </Button>
             </Stack>
           </AccordionDetails>

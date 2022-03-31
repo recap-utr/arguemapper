@@ -4,7 +4,7 @@ import * as aif from "../model/aif";
 import * as cytoModel from "../model/cytoWrapper";
 
 export function importGraph(obj: any): cytoModel.CytoGraph {
-  if (obj.louctions) {
+  if ("locutions" in obj) {
     return aif2cyto(obj);
   } else {
     return proto2cyto(obj);
