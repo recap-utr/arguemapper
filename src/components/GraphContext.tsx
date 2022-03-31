@@ -1,4 +1,5 @@
 import cytoscape from "cytoscape";
+import { pick } from "lodash";
 import React, {
   createContext,
   useCallback,
@@ -8,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import * as cytoModel from "../model/cytoWrapper";
+import * as date from "../services/date";
 import demoGraph from "../services/demo";
 
 const GraphContext = createContext<{
@@ -75,54 +77,84 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const cyRef = useRef<cytoscape.Core | null>(null);
 
   useEffect(() => {
+    // This function is responsible for updating `currentStateRef` every time `currentState` changes.
     localStorage.setItem(storageName, JSON.stringify(currentState));
     currentStateRef.current = currentState;
   }, [currentState, storageName]);
 
-  const exportState = useCallback((): cytoModel.CytoGraph => {
-    // We cannot use cyRef.current?.json() because it may contain unwanted nodes/edges.
-    // For instance, the preview of edge handles could be serialized.
-    // Also, the style cannot be serialized properly because we use callback functions.
-    return {
-      pan: cyRef.current?.pan(),
-      zoom: cyRef.current?.zoom(),
-      data: cyRef.current?.data(),
-      elements: {
-        nodes: cyRef.current?.nodes("[metadata]").jsons() as any,
-        edges: cyRef.current?.edges("[metadata]").jsons() as any,
-      },
-    };
-  }, []);
+  const exportState = useCallback(
+    (update: boolean = false): cytoModel.CytoGraph => {
+      // We cannot use cyRef.current?.json() because it may contain unwanted nodes/edges.
+      // For instance, the preview of edge handles could be serialized.
+      // Also, the style cannot be serialized properly because we use callback functions.
+      const currentCy = cyRef.current;
+
+      if (currentCy) {
+        if (update) {
+          currentCy.data("updated", date.now());
+        }
+
+        const cytoMetadata = pick(currentCy.json(), [
+          "pan",
+          "zoom",
+          "data",
+        ]) as {
+          data: cytoModel.graph.Graph;
+          [x: string]: unknown;
+        };
+
+        return {
+          ...cytoMetadata,
+          elements: {
+            nodes: currentCy.nodes("[metadata]").jsons() as any,
+            edges: currentCy.edges("[metadata]").jsons() as any,
+          },
+        };
+      }
+
+      return cytoModel.init();
+    },
+    []
+  );
 
   const updateGraph = useCallback(() => {
-    const ref = currentStateRef.current;
+    const state = currentStateRef.current;
 
-    if (ref) {
-      setPreviousStates((states) => [ref, ...states]);
+    if (state) {
       setFutureStates([]);
-      setCurrentState(exportState());
+      setPreviousStates((states) => [state, ...states]);
+      setCurrentState(exportState(true));
     }
   }, [exportState]);
 
   const undo = useCallback(() => {
-    cy?.json(previousStates[0]);
-    cy?.elements().selectify();
-    cy?.elements().unselect();
+    const state = currentStateRef.current;
+    console.log(previousStates[0]);
 
-    setFutureStates((states) => [currentState, ...states]);
-    setCurrentState(previousStates[0]);
-    setPreviousStates((states) => states.slice(1));
-  }, [cy, currentState, previousStates, setCurrentState]);
+    if (state) {
+      cy?.json(previousStates[0]);
+      cy?.elements().selectify();
+      cy?.elements().unselect();
+
+      setFutureStates((states) => [state, ...states]);
+      setCurrentState(previousStates[0]);
+      setPreviousStates((states) => states.slice(1));
+    }
+  }, [cy, previousStates]);
 
   const redo = useCallback(() => {
-    cy?.json(futureStates[0]);
-    cy?.elements().selectify();
-    cy?.elements().unselect();
+    const state = currentStateRef.current;
 
-    setPreviousStates((states) => [currentState, ...states]);
-    setCurrentState(futureStates[0]);
-    setFutureStates((states) => states.slice(1));
-  }, [cy, currentState, futureStates, setCurrentState]);
+    if (state) {
+      cy?.json(futureStates[0]);
+      cy?.elements().selectify();
+      cy?.elements().unselect();
+
+      setPreviousStates((states) => [state, ...states]);
+      setCurrentState(futureStates[0]);
+      setFutureStates((states) => states.slice(1));
+    }
+  }, [cy, futureStates]);
 
   const resetStates = useCallback(() => {
     setPreviousStates([]);
