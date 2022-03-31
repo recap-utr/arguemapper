@@ -176,13 +176,13 @@ export default function Cytoscape() {
   } = useGraph();
 
   useEffect(() => {
-    if (undoPressed && undoable()) {
+    if (undoPressed && undoable) {
       undo();
     }
   }, [undo, undoPressed, undoable]);
 
   useEffect(() => {
-    if (redoPressed && redoable()) {
+    if (redoPressed && redoable) {
       redo();
     }
   }, [redo, redoPressed, redoable]);
@@ -323,10 +323,10 @@ export default function Cytoscape() {
           <IconButton onClick={layout} aria-label="Layout">
             <FontAwesomeIcon icon={faSitemap} />
           </IconButton>
-          <IconButton disabled={!undoable()} onClick={undo}>
+          <IconButton disabled={!undoable} onClick={undo}>
             <FontAwesomeIcon icon={faUndo} />
           </IconButton>
-          <IconButton disabled={!redoable()} onClick={redo}>
+          <IconButton disabled={!redoable} onClick={redo}>
             <FontAwesomeIcon icon={faRedo} />
           </IconButton>
         </Stack>

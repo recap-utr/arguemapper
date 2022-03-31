@@ -22,8 +22,8 @@ const GraphContext = createContext<{
   resetStates: () => void;
   exportState: () => cytoModel.CytoGraph;
   resetGraph: (useDemo: boolean) => void;
-  undoable: () => boolean;
-  redoable: () => boolean;
+  undoable: boolean;
+  redoable: boolean;
 }>({
   cy: null,
   _setCy: () => {},
@@ -36,15 +36,13 @@ const GraphContext = createContext<{
   resetStates: () => {},
   exportState: () => cytoModel.init(),
   resetGraph: () => {},
-  undoable: () => false,
-  redoable: () => false,
+  undoable: false,
+  redoable: false,
 });
 
 interface GraphProviderProps {
   storageName: string;
 }
-
-// TODO: loadGraph must be able to load a stored graph, but also use the "reset graph"
 
 export const GraphProvider: React.FC<GraphProviderProps> = ({
   children,
@@ -144,11 +142,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     [setInitialGraph, storageName]
   );
 
-  const undoable = useCallback(
-    () => previousStates.length > 0,
-    [previousStates]
-  );
-  const redoable = useCallback(() => futureStates.length > 0, [futureStates]);
+  const undoable = previousStates.length > 0;
+  const redoable = futureStates.length > 0;
 
   const currentCy = useCallback(() => cyRef.current, [cyRef]);
   const _setCurrentCy = useCallback(
