@@ -331,7 +331,6 @@ export default function Cytoscape() {
           </IconButton>
         </Stack>
       </Box>
-      {/* TODO: Should be dismissed when switching dark/light mode */}
       <Menu
         keepMounted
         open={ctxMenu.mouseY !== null && ctxMenu.mouseX !== null}

@@ -30,3 +30,12 @@ export function toProtobuf(data: Reference): arguebuf.Reference {
     metadata: Struct.fromJson(data.metadata),
   };
 }
+
+export function fromProtobuf(obj: arguebuf.Reference): Reference {
+  return {
+    text: obj.text,
+    resource: obj.resource,
+    offset: obj.offset ? Number(obj.offset) : undefined,
+    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+  };
+}

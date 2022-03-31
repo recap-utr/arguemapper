@@ -31,5 +31,18 @@ export function toProtobuf(data: Resource): arguebuf.Resource {
     text: data.text,
     title: data.title,
     source: data.source,
+    created: date.toProtobuf(data.created),
+    updated: date.toProtobuf(data.updated),
+  };
+}
+
+export function fromProtobuf(obj: arguebuf.Resource): Resource {
+  return {
+    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+    text: obj.text,
+    title: obj.title,
+    source: obj.source,
+    created: date.fromProtobuf(obj.created),
+    updated: date.fromProtobuf(obj.updated),
   };
 }

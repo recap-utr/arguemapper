@@ -1,11 +1,14 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
-import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
 import { v1 as uuid } from "uuid";
 import * as date from "../services/date";
 import * as aif from "./aif";
-import { Reference, toProtobuf as referenceToProtobuf } from "./reference";
+import {
+  fromProtobuf as referenceFromProtobuf,
+  Reference,
+  toProtobuf as referenceToProtobuf
+} from "./reference";
 
 export enum SchemeType {
   SUPPORT = "Support",
@@ -229,8 +232,8 @@ export function label(data: Node): string {
 
 export function toProtobuf(data: Node): arguebuf.Node {
   const commonData = {
-    created: Timestamp.fromDate(date.instance(data.created)),
-    updated: Timestamp.fromDate(date.instance(data.updated)),
+    created: date.toProtobuf(data.created),
+    updated: date.toProtobuf(data.updated),
     metadata: Struct.fromJson(data.metadata),
   };
 
@@ -333,7 +336,10 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
       ...commonProps,
       kind: "atom",
       text: obj.node.atom.text,
-      // TODO
+      participant: obj.node.atom.participant,
+      reference: obj.node.atom.reference
+        ? referenceFromProtobuf(obj.node.atom.reference)
+        : undefined,
     };
 
     return node;
@@ -347,7 +353,7 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
       descriptors: obj.node.scheme.descriptors
         ? Struct.toJson(obj.node.scheme.descriptors)
         : {},
-      // TODO
+      argumentationScheme: undefined, // TODO
     };
 
     return node;
