@@ -82,15 +82,16 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, [currentState, storageName]);
 
   const exportState = useCallback((): cytoModel.CytoGraph => {
+    // We cannot use cyRef.current?.json() because it may contain unwanted nodes/edges.
+    // For instance, the preview of edge handles could be serialized.
+    // Also, the style cannot be serialized properly because we use callback functions.
     return {
-      // TODO: Include other metadata (e.g., zoom, panning position)
-      // @ts-ignore
-      data: cyRef.current.data(),
+      pan: cyRef.current?.pan(),
+      zoom: cyRef.current?.zoom(),
+      data: cyRef.current?.data(),
       elements: {
-        // @ts-ignore
-        nodes: cyRef.current.nodes("[metadata]").jsons(),
-        // @ts-ignore
-        edges: cyRef.current.edges("[metadata]").jsons(),
+        nodes: cyRef.current?.nodes("[metadata]").jsons() as any,
+        edges: cyRef.current?.edges("[metadata]").jsons() as any,
       },
     };
   }, []);
