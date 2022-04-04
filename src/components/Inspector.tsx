@@ -66,7 +66,9 @@ const Input = styled("input")({
 function Inspector() {
   const { cy, updateGraph, exportState, resetGraph } = useGraph();
   const [element, setElement] = useState(cy?.data());
-  const [hasChanged, setHasChanged] = useState(false);
+  const [modifiedAttributes, setModifiedAttributes] = useState<
+    Array<string | string[]>
+  >([]);
   const confirm = useConfirm();
   const theme = useTheme();
 
@@ -74,14 +76,14 @@ function Inspector() {
     setElement(null);
 
     cy?.on("select", (e) => {
-      setHasChanged(false);
+      setModifiedAttributes([]);
       setElement(e.target.data());
     });
     cy?.on("unselect", (e) => {
-      setHasChanged(false);
+      setModifiedAttributes([]);
       setElement(cy?.data());
     });
-  }, [cy, setHasChanged]);
+  }, [cy, setModifiedAttributes]);
 
   const handleChange = useCallback(
     (attr: string | string[]) => {
@@ -96,7 +98,7 @@ function Inspector() {
             }>
           | SelectChangeEvent<HTMLInputElement | string>
       ) => {
-        setHasChanged(true);
+        setModifiedAttributes((previous) => [...previous, attr]);
 
         if (cy) {
           // Prevent the user from selecting another element.
@@ -105,18 +107,10 @@ function Inspector() {
 
           // Update our interim element
           setElement((element: any) => {
-            let newValue = event.target.value;
-
-            // For select fields with optional values, convert "Undefined" to undefined.
-            // This is hacky!
-            if (newValue === NULL_VALUE) {
-              newValue = undefined;
-            }
-
             // As we cannot directly modify it, we need to "produce" a new one
             return produce(element, (draft: any) => {
               // Update the given attribute with the new value
-              _.set(draft, attr, newValue);
+              _.set(draft, attr, event.target.value);
             });
           });
         }
@@ -361,7 +355,7 @@ function Inspector() {
       </Toolbar>
       <Stack spacing={3} sx={{ padding: 3 }}>
         {fields}
-        {hasChanged && (
+        {modifiedAttributes.length > 0 && (
           <Stack
             justifyContent="space-around"
             direction="row"
@@ -374,7 +368,7 @@ function Inspector() {
               onClick={() => {
                 cy?.elements().selectify();
                 cy?.elements().unselect();
-                setHasChanged(false);
+                setModifiedAttributes([]);
               }}
             >
               Discard
@@ -384,12 +378,22 @@ function Inspector() {
               startIcon={<FontAwesomeIcon icon={faSave} />}
               onClick={() => {
                 if (element) {
-                  const cytoElem = cy?.$id(element.id);
-                  cytoElem?.data(element);
+                  const modifiedAttrs = new Set(modifiedAttributes);
+                  // Could improve performance when avoiding deep clone
+                  const elem = _.cloneDeep(element);
+
+                  modifiedAttrs.forEach((attr) => {
+                    if (_.get(elem, attr) === NULL_VALUE) {
+                      _.set(elem, attr, undefined);
+                    }
+                  });
+
+                  const cytoElem = cy?.$id(elem.id);
+                  cytoElem?.data(elem);
                   updateGraph();
                 }
                 cy?.elements().selectify();
-                setHasChanged(false);
+                setModifiedAttributes([]);
               }}
             >
               Save
