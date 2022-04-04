@@ -153,17 +153,6 @@ function Resources() {
         <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
           <Button
             variant="contained"
-            startIcon={<FontAwesomeIcon icon={faSave} />}
-            onClick={() => {
-              cy?.data("resources", resources);
-              updateGraph();
-              setHasChanged(false);
-            }}
-          >
-            Save
-          </Button>
-          <Button
-            variant="contained"
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {
@@ -173,6 +162,17 @@ function Resources() {
             }}
           >
             Discard
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<FontAwesomeIcon icon={faSave} />}
+            onClick={() => {
+              cy?.data("resources", resources);
+              updateGraph();
+              setHasChanged(false);
+            }}
+          >
+            Save
           </Button>
         </Stack>
       )}

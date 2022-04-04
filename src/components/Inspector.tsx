@@ -369,6 +369,18 @@ function Inspector() {
           >
             <Button
               variant="contained"
+              color="error"
+              startIcon={<FontAwesomeIcon icon={faBan} />}
+              onClick={() => {
+                cy?.elements().selectify();
+                cy?.elements().unselect();
+                setHasChanged(false);
+              }}
+            >
+              Discard
+            </Button>
+            <Button
+              variant="contained"
               startIcon={<FontAwesomeIcon icon={faSave} />}
               onClick={() => {
                 if (element) {
@@ -381,18 +393,6 @@ function Inspector() {
               }}
             >
               Save
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              startIcon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => {
-                cy?.elements().selectify();
-                cy?.elements().unselect();
-                setHasChanged(false);
-              }}
-            >
-              Discard
             </Button>
           </Stack>
         )}
