@@ -32,7 +32,7 @@ function Layout() {
       <CssBaseline />
       <ConfirmProvider
         defaultOptions={{
-          title: "Are You Sure?",
+          title: "Are you sure?",
           description: "This action is destructive and cannot be undone!",
           confirmationText: "OK",
           cancellationText: "Cancel",
