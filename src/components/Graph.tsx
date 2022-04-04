@@ -73,7 +73,7 @@ function initEdgeHandles(
     setEhStart(e.target);
   });
 
-  cy.on("grab", "node", () => {
+  cy.on("grab mouseout", "node", () => {
     setEhStart(null);
   });
 
