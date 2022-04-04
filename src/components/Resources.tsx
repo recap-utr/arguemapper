@@ -17,7 +17,7 @@ import { v1 as uuid } from "uuid";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
-// TODO: Verify that hiding the resource pane does not reset all local changes!
+// TODO: Undo/redo does not work currently. We need to add a cytoscape event listener for the data field to update the local resources.
 
 function Resources() {
   const { cy, updateGraph } = useGraph();

@@ -128,7 +128,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
 
   const undo = useCallback(() => {
     const state = currentStateRef.current;
-    console.log(previousStates[0]);
 
     if (state) {
       cy?.json(previousStates[0]);
