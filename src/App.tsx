@@ -22,7 +22,6 @@ export default function App() {
   );
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
-  const [activeResource, setActiveResource] = React.useState("1");
 
   return (
     <GraphProvider storageName="graph">
@@ -34,10 +33,7 @@ export default function App() {
           isOpen={leftSidebarOpen ?? true}
           setIsOpen={setLeftSidebarOpen}
         >
-          <Resources
-            activeTab={activeResource}
-            setActiveTab={setActiveResource}
-          />
+          <Resources />
         </Sidebar>
         <Stack sx={{ flexGrow: 1 }}>
           <Header
@@ -47,11 +43,6 @@ export default function App() {
           <Box sx={{ position: "relative", height: 1 }}>
             <Graph />
           </Box>
-          {/* <Box sx={{ position: "relative", height: 1 }}>
-          <ReactFlowProvider>
-            <Graph />
-          </ReactFlowProvider>
-        </Box> */}
         </Stack>
         <Sidebar
           side="right"

@@ -2,6 +2,9 @@ import * as edge from "./edge";
 import * as graph from "./graph";
 import * as node from "./node";
 export { v1 as uuid } from "uuid";
+export * as participant from "./participant";
+export * as reference from "./reference";
+export * as resource from "./resource";
 export { node, graph, edge };
 
 export interface CytoElements {

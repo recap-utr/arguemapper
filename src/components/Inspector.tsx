@@ -65,7 +65,6 @@ const Input = styled("input")({
 
 function Inspector() {
   const { cy, updateGraph, exportState, resetGraph } = useGraph();
-  // @ts-ignore
   const [element, setElement] = useState(cy?.data());
   const [hasChanged, setHasChanged] = useState(false);
   const confirm = useConfirm();
@@ -80,7 +79,6 @@ function Inspector() {
     });
     cy?.on("unselect", (e) => {
       setHasChanged(false);
-      // @ts-ignore
       setElement(cy?.data());
     });
   }, [cy, setHasChanged]);
@@ -185,7 +183,7 @@ function Inspector() {
           minRows={3}
           label="Original Text"
           value={element.reference?.text}
-          onChange={handleChange(["resource", "text"])}
+          onChange={handleChange(["reference", "text"])}
         />
       </>
     );
