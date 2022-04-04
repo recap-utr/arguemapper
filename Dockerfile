@@ -5,7 +5,7 @@
 FROM node:17-alpine as builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --silent
 COPY . ./
 RUN npm run build
 
