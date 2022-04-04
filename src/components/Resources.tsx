@@ -12,12 +12,10 @@ import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { v1 as uuid } from "uuid";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
-
-// TODO: Undo/redo does not work currently. We need to add a cytoscape event listener for the data field to update the local resources.
 
 function Resources() {
   const { cy, updateGraph } = useGraph();
@@ -26,6 +24,9 @@ function Resources() {
   const [resources, setResources] = useState<{
     [x: string]: cytoModel.resource.Resource;
   }>(cyResources);
+  // This ref is necessary to avoid an infinite re-rendering loop
+  // Otherwise, the callback containing 'cy.on' would be executed every time 'references' changes.
+  const resourcesRef = useRef(cyResources());
   const [hasChanged, setHasChanged] = useState(false);
   const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState("1");
@@ -44,6 +45,21 @@ function Resources() {
   useEffect(() => {
     setResources(cyResources);
   }, [cyResources]);
+
+  // Update ref to maintain consistency
+  useEffect(() => {
+    resourcesRef.current = resources;
+  }, [resources]);
+
+  useEffect(() => {
+    if (cy) {
+      cy.on("data", () => {
+        if (cy.data("resources") !== resourcesRef.current) {
+          setResources(cy.data("resources"));
+        }
+      });
+    }
+  }, [cy]);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
@@ -75,7 +91,7 @@ function Resources() {
       confirm().then(() => {
         const newResources = { ...resources };
         delete newResources[key];
-        setResources(newResources);
+        // setResources(newResources);
         cy?.data("resources", newResources);
         updateGraph();
         setHasChanged(false);
@@ -130,7 +146,7 @@ function Resources() {
               ...resources,
               [uuid()]: cytoModel.resource.init(),
             };
-            setResources(newResources);
+            // setResources(newResources);
             cy?.data("resources", newResources);
             updateGraph();
             setHasChanged(false);
