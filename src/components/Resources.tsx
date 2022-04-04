@@ -11,11 +11,12 @@ import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
-import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { v1 as uuid } from "uuid";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
+
+// Highlight references in textfield: https://github.com/bonafideduck/react-highlight-within-textarea/
 
 function Resources() {
   const { cy, updateGraph } = useGraph();
@@ -28,7 +29,6 @@ function Resources() {
   // Otherwise, the callback containing 'cy.on' would be executed every time 'references' changes.
   const resourcesRef = useRef(cyResources());
   const [hasChanged, setHasChanged] = useState(false);
-  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState("1");
 
   const handleTabChange = useCallback(
@@ -88,19 +88,14 @@ function Resources() {
 
   const deleteResource = useCallback(
     (key: string) => {
-      confirm().then(() => {
-        const newResources = { ...resources };
-        delete newResources[key];
-        // setResources(newResources);
-        cy?.data("resources", newResources);
-        updateGraph();
-        setHasChanged(false);
-      });
+      const newResources = { ...resources };
+      delete newResources[key];
+      cy?.data("resources", newResources);
+      updateGraph();
+      setHasChanged(false);
     },
-    [confirm, cy, resources, updateGraph]
+    [cy, resources, updateGraph]
   );
-
-  // TODO: Allow deleting resources (with confirmation dialog)
 
   return (
     <TabContext value={activeTab}>
@@ -146,7 +141,6 @@ function Resources() {
               ...resources,
               [uuid()]: cytoModel.resource.init(),
             };
-            // setResources(newResources);
             cy?.data("resources", newResources);
             updateGraph();
             setHasChanged(false);
