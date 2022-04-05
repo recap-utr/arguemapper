@@ -70,7 +70,7 @@ const Input = styled("input")({
   display: "none",
 });
 
-type ElementType = "graph" | "atom" | "scheme" | "edge";
+type ElementType = "graph" | "atom" | "scheme" | "edge" | "null";
 
 function Inspector() {
   const { cy, updateGraph, exportState, resetGraph } = useGraph();
@@ -81,26 +81,6 @@ function Inspector() {
   const confirm = useConfirm();
   const theme = useTheme();
 
-  // TODO: Handle the selection of multiple elements
-  useEffect(() => {
-    setElement(null);
-
-    cy?.on("select", (e) => {
-      setModifiedAttributes([]);
-      setElement(e.target.data());
-    });
-    cy?.on("unselect", () => {
-      setModifiedAttributes([]);
-      setElement(cy?.data());
-    });
-    cy?.on("remove", () => {
-      cy?.elements().selectify();
-      cy?.elements().unselect();
-      setModifiedAttributes([]);
-      setElement(cy?.data());
-    });
-  }, [cy]);
-
   const elementType: () => ElementType = useCallback(() => {
     if (element && isScheme(element)) {
       return "scheme";
@@ -108,10 +88,39 @@ function Inspector() {
       return "atom";
     } else if (element && element.source && element.target) {
       return "edge";
-    } else {
+    } else if (element) {
       return "graph";
+    } else {
+      return "null";
     }
   }, [element]);
+
+  useEffect(() => {
+    if (cy) {
+      setElement(cy.data());
+
+      cy.on("select", (e) => {
+        setModifiedAttributes([]);
+        if (cy.$(":selected").length === 1) {
+          setElement(e.target.data());
+        } else {
+          setElement(null);
+        }
+      });
+      cy.on("unselect", () => {
+        if (cy.$(":selected").length === 0) {
+          setModifiedAttributes([]);
+          setElement(cy.data());
+        }
+      });
+      cy.on("remove", () => {
+        cy.elements().selectify();
+        cy.elements().unselect();
+        setModifiedAttributes([]);
+        setElement(cy.data());
+      });
+    }
+  }, [cy]);
 
   const handleChange = useCallback(
     (attr: string | string[]) => {
@@ -352,6 +361,16 @@ function Inspector() {
           </AccordionDetails>
         </Accordion>
       </div>
+    );
+  } else if (elementType() === "null") {
+    fields = (
+      <Stack spacing={3}>
+        <Typography variant="h6">Multiple elements selected</Typography>
+        <Typography variant="body1">
+          Please select only one if you want to edit their values. You can still
+          move multiple elements together in the canvas.
+        </Typography>
+      </Stack>
     );
   }
 

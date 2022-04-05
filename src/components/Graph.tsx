@@ -246,7 +246,7 @@ export default function Cytoscape() {
         layout: { name: "preset" },
         // @ts-ignore
         style: style(theme),
-        boxSelectionEnabled: false,
+        boxSelectionEnabled: true,
         autounselectify: false,
         selectionType: "single",
         minZoom: 0.1,
