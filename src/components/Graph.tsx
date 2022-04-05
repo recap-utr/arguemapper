@@ -411,11 +411,12 @@ export default function Cytoscape() {
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
+            const newElem = cytoModel.node.initAtom();
             cy?.add({
               // @ts-ignore
               nodes: [
                 {
-                  data: cytoModel.node.initAtom("Atom Node"),
+                  data: newElem,
                   position: {
                     x: ctxMenu.cytoX,
                     y: ctxMenu.cytoY,
@@ -424,6 +425,7 @@ export default function Cytoscape() {
               ],
             });
             updateGraph();
+            cy?.$id(newElem.id).select();
             handleClose();
           }}
         >
@@ -435,11 +437,12 @@ export default function Cytoscape() {
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
+            const newElem = cytoModel.node.initScheme();
             cy?.add({
               // @ts-ignore
               nodes: [
                 {
-                  data: cytoModel.node.initScheme(),
+                  data: newElem,
                   position: {
                     x: ctxMenu.cytoX,
                     y: ctxMenu.cytoY,
@@ -448,6 +451,7 @@ export default function Cytoscape() {
               ],
             });
             updateGraph();
+            cy?.$id(newElem.id).select();
             handleClose();
           }}
         >
