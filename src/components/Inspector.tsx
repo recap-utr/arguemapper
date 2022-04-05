@@ -5,6 +5,7 @@ import {
   faFile,
   faImage,
   faSave,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,6 +14,7 @@ import {
   AccordionSummary,
   Button,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -63,6 +65,8 @@ const Input = styled("input")({
   display: "none",
 });
 
+type ElementType = "graph" | "atom" | "scheme" | "edge";
+
 function Inspector() {
   const { cy, updateGraph, exportState, resetGraph } = useGraph();
   const [element, setElement] = useState(cy?.data());
@@ -84,6 +88,18 @@ function Inspector() {
       setElement(cy?.data());
     });
   }, [cy, setModifiedAttributes]);
+
+  const elementType: () => ElementType = useCallback(() => {
+    if (element && isScheme(element)) {
+      return "scheme";
+    } else if (element && isAtom(element)) {
+      return "atom";
+    } else if (element && element.source && element.target) {
+      return "edge";
+    } else {
+      return "graph";
+    }
+  }, [element]);
 
   const handleChange = useCallback(
     (attr: string | string[]) => {
@@ -121,7 +137,7 @@ function Inspector() {
 
   let fields = null;
 
-  if (element && isScheme(element)) {
+  if (elementType() === "scheme") {
     fields = (
       <>
         <FormControl fullWidth>
@@ -160,7 +176,7 @@ function Inspector() {
         </FormControl>
       </>
     );
-  } else if (element && isAtom(element)) {
+  } else if (elementType() === "atom") {
     fields = (
       <>
         <TextField
@@ -181,9 +197,7 @@ function Inspector() {
         />
       </>
     );
-  } else if (element && element.source && element.target) {
-    // edge
-  } else {
+  } else if (elementType() === "graph") {
     fields = (
       <div>
         <Accordion>
@@ -351,16 +365,30 @@ function Inspector() {
   return (
     <>
       <Toolbar>
-        <Typography variant="h5">Inspector</Typography>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          width={1}
+          alignItems="center"
+        >
+          <Typography variant="h5">Inspector</Typography>
+          {elementType() !== "graph" && (
+            <IconButton
+              onClick={() => {
+                cy?.elements().selectify();
+                cy?.elements().unselect();
+                setModifiedAttributes([]);
+              }}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </IconButton>
+          )}
+        </Stack>
       </Toolbar>
-      <Stack spacing={3} sx={{ padding: 3 }}>
+      <Stack spacing={3} padding={3}>
         {fields}
         {modifiedAttributes.length > 0 && (
-          <Stack
-            justifyContent="space-around"
-            direction="row"
-            sx={{ width: 1 }}
-          >
+          <Stack justifyContent="space-around" direction="row" width={1}>
             <Button
               variant="contained"
               color="error"
