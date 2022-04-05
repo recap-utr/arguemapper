@@ -15,7 +15,7 @@ export interface Edge {
   edgeID: string;
   fromID: string;
   toID: string;
-  formEdgeID: "";
+  formEdgeID: null;
 }
 
 export type SchemeType = "RA" | "CA" | "MA" | "TA" | "PA" | "YA";

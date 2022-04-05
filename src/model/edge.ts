@@ -42,7 +42,7 @@ export function toAif(data: Edge): aif.Edge {
     edgeID: data.id,
     fromID: data.source,
     toID: data.target,
-    formEdgeID: "",
+    formEdgeID: null,
   };
 }
 
