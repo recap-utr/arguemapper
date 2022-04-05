@@ -27,6 +27,7 @@ import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
 // @ts-ignore
 import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
+import { useSnackbar } from "notistack";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import style from "../cytoStyle";
@@ -154,6 +155,7 @@ const initialCtxMenu: CtxMenuProps = {
 };
 
 export default function Cytoscape() {
+  const { enqueueSnackbar } = useSnackbar();
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const [eh, setEh] = useState<EdgeHandlesInstance | null>(null);
   const [ehStart, setEhStart] = useState<any>(null);
@@ -303,8 +305,12 @@ export default function Cytoscape() {
     } catch {
       resetGraph(cytoModel.init());
       initCy();
+      enqueueSnackbar(
+        "There was an error loading your stored graph. We have created an empty graph for you.",
+        { variant: "error", key: "graph_initcy_error" }
+      );
     }
-  }, [initCy, resetGraph]);
+  }, [initCy, resetGraph, enqueueSnackbar]);
 
   useEffect(() => {
     if (eh) {

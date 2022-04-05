@@ -4,6 +4,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ConfirmProvider } from "material-ui-confirm";
+import { SnackbarProvider } from "notistack";
 import React from "react";
 import ReactDOM from "react-dom";
 import { useMedia } from "react-use";
@@ -39,7 +40,9 @@ function Layout() {
           confirmationButtonProps: { autoFocus: true },
         }}
       >
-        <App />
+        <SnackbarProvider maxSnack={3} preventDuplicate>
+          <App />
+        </SnackbarProvider>
       </ConfirmProvider>
     </ThemeProvider>
   );
