@@ -7,7 +7,7 @@ import * as aif from "./aif";
 import {
   fromProtobuf as referenceFromProtobuf,
   Reference,
-  toProtobuf as referenceToProtobuf
+  toProtobuf as referenceToProtobuf,
 } from "./reference";
 
 export enum SchemeType {
@@ -172,7 +172,7 @@ export interface AtomNode extends Node {
   participant?: string;
 }
 
-export function initAtom(text: string, id?: string): AtomNode {
+export function initAtom(text: string = "", id?: string | undefined): AtomNode {
   const now = date.now();
 
   return {

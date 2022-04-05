@@ -27,6 +27,8 @@ const style = (theme: Theme) => {
           const widths = lines.map(
             (line) => metrics.width(line, { multiline: true }) as number
           );
+          // Add miminum value in case it has no text
+          widths.push(20);
           const width = Math.max(...widths);
 
           return width;
@@ -37,6 +39,10 @@ const style = (theme: Theme) => {
           const heights = lines.map(
             (line) => metrics.height(line, { multiline: true }) as number
           );
+          // Add miminum value in case it has no text
+          if (lines.length === 0) {
+            heights.push(10);
+          }
           return heights.reduce((a, b) => a + b);
         },
         padding: 10,
@@ -66,6 +72,15 @@ const style = (theme: Theme) => {
         //   }
 
         //   return 0;
+        // },
+        // content: (ele: cytoscape.NodeSingular) => {
+        //   const data = ele.data() as AtomNode;
+
+        //   if (data.text === "") {
+        //     return "No Text";
+        //   } else {
+        //     return data.text;
+        //   }
         // },
         "background-color": (ele: cytoscape.NodeSingular) => {
           const data = ele.cy().data() as cytoModel.graph.Graph;
