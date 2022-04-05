@@ -1,10 +1,14 @@
 import {
   faBan,
   faCaretDown,
-  faCode,
-  faFile,
-  faImage,
+  faDownload,
+  faFileArrowUp,
+  faFileCirclePlus,
+  faFileCode,
+  faFileImage,
+  faFilePen,
   faSave,
+  faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -200,11 +204,11 @@ function Inspector() {
   } else if (elementType() === "graph") {
     fields = (
       <div>
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
-            <Typography variant="button">
-              <FontAwesomeIcon icon={faFile} />
-              &nbsp;New Graph
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faUpload} />
+              &nbsp;Import
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -237,39 +241,47 @@ function Inspector() {
                     }
                   }}
                 />
-                <Button variant="contained" component="span" fullWidth>
-                  Upload…
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileArrowUp} />}
+                  variant="contained"
+                  component="span"
+                  fullWidth
+                >
+                  Upload
                 </Button>
               </label>
               <Button
+                startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
                 variant="contained"
                 onClick={() => {
                   confirm().then(() => resetGraph(cytoModel.init()));
                 }}
               >
-                Emtpy
+                Load Empty
               </Button>
               <Button
+                startIcon={<FontAwesomeIcon icon={faFilePen} />}
                 variant="contained"
                 onClick={() => {
                   confirm().then(() => resetGraph(demoGraph()));
                 }}
               >
-                Demo
+                Load Demo
               </Button>
             </Stack>
           </AccordionDetails>
         </Accordion>
-        <Accordion>
+        <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
-            <Typography variant="button">
-              <FontAwesomeIcon icon={faCode} />
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faDownload} />
               &nbsp;Export
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Stack spacing={1}>
               <Button
+                startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
                   downloadJson(proto2json(cyto2protobuf(exportState())));
@@ -278,6 +290,7 @@ function Inspector() {
                 Arguebuf
               </Button>
               <Button
+                startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
                   downloadJson(cyto2aif(exportState()));
@@ -285,19 +298,8 @@ function Inspector() {
               >
                 AIF
               </Button>
-            </Stack>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
-            <Typography variant="button">
-              <FontAwesomeIcon icon={faImage} />
-              &nbsp;Render
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Stack spacing={1}>
               <Button
+                startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
                   if (cy) {
@@ -308,27 +310,10 @@ function Inspector() {
                   }
                 }}
               >
-                PNG (Transparent)
+                PNG
               </Button>
               <Button
-                variant="contained"
-                onClick={() => {
-                  if (cy) {
-                    downloadBlob(
-                      cy.png({
-                        output: "blob",
-                        scale: 2,
-                        full: true,
-                        bg: theme.palette.background.default,
-                      }),
-                      ".png"
-                    );
-                  }
-                }}
-              >
-                PNG (Background)
-              </Button>
-              <Button
+                startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
                   if (cy) {
@@ -345,14 +330,14 @@ function Inspector() {
                   }
                 }}
               >
-                JPG (Background)
+                JPG
               </Button>
               {theme.palette.mode === "dark" && (
                 <Typography variant="caption">
                   <b>Please note:</b>
                   <br />
-                  The rendering respects the dark mode. If you want a white
-                  background, please switch to the light mode.
+                  The rendering respects dark mode. If you want a white
+                  background, please switch to light mode.
                 </Typography>
               )}
             </Stack>
