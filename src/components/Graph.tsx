@@ -167,6 +167,7 @@ export default function Cytoscape() {
     _setCy,
     _setCurrentCy,
     loadGraph,
+    resetGraph,
     updateGraph,
     undo,
     redo,
@@ -232,7 +233,7 @@ export default function Cytoscape() {
     [ctxMenu.kind]
   );
 
-  useEffect(() => {
+  const initCy = useCallback(() => {
     if (containerRef.current !== null) {
       const _cy = cytoscape({
         container: containerRef.current,
@@ -295,6 +296,15 @@ export default function Cytoscape() {
     _setCurrentCy,
     handleClick,
   ]);
+
+  useEffect(() => {
+    try {
+      initCy();
+    } catch {
+      resetGraph(cytoModel.init());
+      initCy();
+    }
+  }, [initCy, resetGraph]);
 
   useEffect(() => {
     if (eh) {

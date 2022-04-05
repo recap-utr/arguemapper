@@ -166,7 +166,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       graph.data.updated = date.now();
       setInitialGraph(graph);
     },
-    [setInitialGraph, storageName]
+    [storageName]
   );
 
   const undoable = previousStates.length > 0;
