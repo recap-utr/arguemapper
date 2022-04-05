@@ -81,6 +81,7 @@ function Inspector() {
   const confirm = useConfirm();
   const theme = useTheme();
 
+  // TODO: Handle the selection of multiple elements
   useEffect(() => {
     setElement(null);
 
@@ -88,11 +89,17 @@ function Inspector() {
       setModifiedAttributes([]);
       setElement(e.target.data());
     });
-    cy?.on("unselect", (e) => {
+    cy?.on("unselect", () => {
       setModifiedAttributes([]);
       setElement(cy?.data());
     });
-  }, [cy, setModifiedAttributes]);
+    cy?.on("remove", () => {
+      cy?.elements().selectify();
+      cy?.elements().unselect();
+      setModifiedAttributes([]);
+      setElement(cy?.data());
+    });
+  }, [cy]);
 
   const elementType: () => ElementType = useCallback(() => {
     if (element && isScheme(element)) {
