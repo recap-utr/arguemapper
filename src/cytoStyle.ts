@@ -143,6 +143,14 @@ const style = (theme: Theme) => {
       },
     },
     {
+      selector: "edge:selected",
+      style: {
+        "line-color": theme.palette.text.primary,
+        "background-color": theme.palette.text.primary,
+        "target-arrow-color": theme.palette.text.primary,
+      },
+    },
+    {
       selector: ".eh-source, .eh-target",
       style: {
         "background-color": color.brown[500],
