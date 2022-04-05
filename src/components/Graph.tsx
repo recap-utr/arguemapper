@@ -17,6 +17,7 @@ import {
   MenuItem,
   Popper,
   Stack,
+  Tooltip,
   useTheme,
 } from "@mui/material";
 import type { Core, EventObject, NodeSingular } from "cytoscape";
@@ -338,15 +339,29 @@ export default function Cytoscape() {
       /> */}
       <Box sx={{ position: "absolute", left: 0, bottom: 0 }}>
         <Stack direction="column">
-          <IconButton onClick={layout} aria-label="Layout">
-            <FontAwesomeIcon icon={faSitemap} />
-          </IconButton>
-          <IconButton disabled={!undoable} onClick={undo}>
-            <FontAwesomeIcon icon={faUndo} />
-          </IconButton>
-          <IconButton disabled={!redoable} onClick={redo}>
-            <FontAwesomeIcon icon={faRedo} />
-          </IconButton>
+          <Tooltip
+            describeChild
+            title="Automatically layout graph elements"
+            placement="right"
+          >
+            <IconButton onClick={layout}>
+              <FontAwesomeIcon icon={faSitemap} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip describeChild title="Undo last action" placement="right">
+            <span>
+              <IconButton disabled={!undoable} onClick={undo}>
+                <FontAwesomeIcon icon={faUndo} />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip describeChild title="Redo last action" placement="right">
+            <span>
+              <IconButton disabled={!redoable} onClick={redo}>
+                <FontAwesomeIcon icon={faRedo} />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Stack>
       </Box>
       <Menu

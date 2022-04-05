@@ -27,6 +27,7 @@ import {
   styled,
   TextField,
   Toolbar,
+  Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -358,15 +359,17 @@ function Inspector() {
         >
           <Typography variant="h5">Inspector</Typography>
           {elementType() !== "graph" && (
-            <IconButton
-              onClick={() => {
-                cy?.elements().selectify();
-                cy?.elements().unselect();
-                setModifiedAttributes([]);
-              }}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </IconButton>
+            <Tooltip describeChild title="Close inspector for current element">
+              <IconButton
+                onClick={() => {
+                  cy?.elements().selectify();
+                  cy?.elements().unselect();
+                  setModifiedAttributes([]);
+                }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </IconButton>
+            </Tooltip>
           )}
         </Stack>
       </Toolbar>
