@@ -87,7 +87,7 @@ function initEdgeHandles(
     }
   });
 
-  cy.on("viewport", () => {
+  cy.on("viewport add remove move", () => {
     setEhStart(null);
   });
 
