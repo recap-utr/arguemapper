@@ -92,7 +92,8 @@ const style = (theme: Theme) => {
             return "Unknown";
           }
         },
-        // shape: "round-diamond",
+        shape: "round-hexagon",
+        "background-color": color.teal[500],
       },
     },
     {
