@@ -27,11 +27,13 @@ const style = (theme: Theme) => {
           const widths = lines.map(
             (line) => metrics.width(line, { multiline: true }) as number
           );
-          // Add miminum value in case it has no text
-          widths.push(20);
           const width = Math.max(...widths);
 
-          return width;
+          if (width > 0) {
+            return width;
+          }
+
+          return 20;
         },
         height: (ele: cytoscape.NodeSingular) => {
           const data = ele.data() as cytoModel.node.Node;
@@ -39,11 +41,13 @@ const style = (theme: Theme) => {
           const heights = lines.map(
             (line) => metrics.height(line, { multiline: true }) as number
           );
-          // Add miminum value in case it has no text
-          if (lines.length === 0) {
-            heights.push(10);
+          const height = heights.reduce((a, b) => a + b);
+
+          if (height > 0) {
+            return height;
           }
-          return heights.reduce((a, b) => a + b);
+
+          return 10;
         },
         padding: 10,
         "font-size": `${theme.typography.fontSize}px`,
