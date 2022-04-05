@@ -1,5 +1,5 @@
 import { Theme } from "@mui/material";
-import { grey } from "@mui/material/colors";
+import * as color from "@mui/material/colors";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./model/cytoWrapper";
 import { SchemeNode } from "./model/node";
@@ -48,7 +48,7 @@ const style = (theme: Theme) => {
         "text-wrap": "wrap",
         color: theme.palette.common.white,
         "text-max-width": `${maxWidth}px`,
-        "background-color": grey[500],
+        "background-color": color.grey[500],
         shape: "round-rectangle",
       },
     },
@@ -71,10 +71,10 @@ const style = (theme: Theme) => {
           const data = ele.cy().data() as cytoModel.graph.Graph;
 
           if (data.majorClaim && data.majorClaim === ele.id()) {
-            return theme.palette.secondary.main;
+            return color.blue[900];
           }
 
-          return theme.palette.primary.main;
+          return color.blue[500];
         },
       },
     },
@@ -98,21 +98,21 @@ const style = (theme: Theme) => {
     {
       selector: 'node[kind="scheme"][type="Support"]',
       style: {
-        "background-color": theme.palette.success.main,
+        "background-color": color.green[500],
       },
     },
     {
       selector: 'node[kind="scheme"][type="Attack"]',
       style: {
-        "background-color": theme.palette.error.main,
+        "background-color": color.red[500],
       },
     },
     {
       selector: "edge",
       style: {
-        "line-color": grey[500],
-        "background-color": grey[500],
-        "target-arrow-color": grey[500],
+        "line-color": color.grey[500],
+        "background-color": color.grey[500],
+        "target-arrow-color": color.grey[500],
         "target-arrow-shape": "triangle",
         "curve-style": "bezier", // unbundled-bezier
         // "control-point-distances": [20, -20],
@@ -122,21 +122,22 @@ const style = (theme: Theme) => {
     {
       selector: ":selected",
       style: {
-        "background-color": theme.palette.info.main,
+        "border-color": theme.palette.text.primary,
+        "border-width": 3,
       },
     },
     {
       selector: ".eh-source, .eh-target",
       style: {
-        "background-color": theme.palette.warning.light,
+        "background-color": color.brown[500],
       },
     },
     {
       selector: ".eh-preview, .eh-ghost-edge",
       style: {
-        "line-color": theme.palette.warning.light,
-        "target-arrow-color": theme.palette.warning.light,
-        "source-arrow-color": theme.palette.warning.light,
+        "line-color": color.brown[500],
+        "target-arrow-color": color.brown[500],
+        "source-arrow-color": color.brown[500],
       },
     },
     {

@@ -5,24 +5,24 @@ const theme = (prefersDarkMode: boolean) =>
   createTheme({
     palette: {
       mode: prefersDarkMode ? "dark" : "light",
-      primary: {
-        main: "#556cd6",
-      },
-      secondary: {
-        main: "#19857b",
-      },
-      error: {
-        main: "#FF0000",
-      },
-      success: {
-        main: "#00FF00",
-      },
-      info: {
-        main: "#0000FF",
-      },
-      warning: {
-        main: "#FFFF00",
-      },
+      // primary: {
+      //   main: color.blue[500],
+      // },
+      // secondary: {
+      //   main: color.teal[500],
+      // },
+      // error: {
+      //   main: color.red[500],
+      // },
+      // success: {
+      //   main: color.green[500],
+      // },
+      // info: {
+      //   main: color.blue[500],
+      // },
+      // warning: {
+      //   main: color.yellow[500],
+      // },
     },
   });
 
