@@ -50,6 +50,8 @@ cytoscape.use = () => {};
 const defaultLayout = {
   name: "dagre",
   nodeDimensionsIncludeLabels: true,
+  nodeSep: 50,
+  rankSep: 25,
   rankDir: "BT",
   animate: false,
 };
