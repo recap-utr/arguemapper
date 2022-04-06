@@ -8,6 +8,7 @@ import {
   faFileImage,
   faFilePen,
   faSave,
+  faTrash,
   faUpload,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -73,7 +74,7 @@ const Input = styled("input")({
 type ElementType = "graph" | "atom" | "scheme" | "edge" | "null";
 
 function Inspector() {
-  const { cy, updateGraph, exportState, resetGraph } = useGraph();
+  const { cy, updateGraph, exportState, resetGraph, clearCache } = useGraph();
   const [element, setElement] = useState(cy?.data());
   const [modifiedAttributes, setModifiedAttributes] = useState<
     Array<string | string[]>
@@ -220,147 +221,168 @@ function Inspector() {
     );
   } else if (elementType() === "graph") {
     fields = (
-      <div>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
-            <Typography variant="h6">
-              <FontAwesomeIcon icon={faUpload} />
-              &nbsp;Import
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Stack spacing={1}>
-              <label htmlFor="upload-file-button">
-                <Input
-                  accept="text/json"
-                  id="upload-file-button"
-                  type="file"
-                  // Reset the value after every upload so that the user can upload the same file twice.
-                  // https://stackoverflow.com/a/40429197
-                  onClick={(event) => {
-                    (event.target as HTMLInputElement).value = "";
-                  }}
-                  // TODO: Properly handle the else branches of the conditions
-                  onChange={(event) => {
-                    if (event.target.files && event.target.files.length > 0) {
-                      // https://stackoverflow.com/a/30992506
-                      var reader = new FileReader();
-                      reader.onload = (e) => {
-                        if (e.target && typeof e.target.result === "string") {
-                          const parsedGraph = JSON.parse(e.target.result);
-                          confirm().then(() =>
-                            resetGraph(convert.importGraph(parsedGraph))
-                          );
-                        }
-                      };
+      <>
+        <div>
+          <Accordion defaultExpanded>
+            <AccordionSummary
+              expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
+            >
+              <Typography variant="h6">
+                <FontAwesomeIcon icon={faUpload} />
+                &nbsp;Import
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={1}>
+                <label htmlFor="upload-file-button">
+                  <Input
+                    accept="text/json"
+                    id="upload-file-button"
+                    type="file"
+                    // Reset the value after every upload so that the user can upload the same file twice.
+                    // https://stackoverflow.com/a/40429197
+                    onClick={(event) => {
+                      (event.target as HTMLInputElement).value = "";
+                    }}
+                    // TODO: Properly handle the else branches of the conditions
+                    onChange={(event) => {
+                      if (event.target.files && event.target.files.length > 0) {
+                        // https://stackoverflow.com/a/30992506
+                        var reader = new FileReader();
+                        reader.onload = (e) => {
+                          if (e.target && typeof e.target.result === "string") {
+                            const parsedGraph = JSON.parse(e.target.result);
+                            confirm().then(() =>
+                              resetGraph(convert.importGraph(parsedGraph))
+                            );
+                          }
+                        };
 
-                      reader.readAsText(event.target.files[0]);
+                        reader.readAsText(event.target.files[0]);
+                      }
+                    }}
+                  />
+                  <Button
+                    startIcon={<FontAwesomeIcon icon={faFileArrowUp} />}
+                    variant="contained"
+                    component="span"
+                    fullWidth
+                  >
+                    Upload
+                  </Button>
+                </label>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
+                  variant="contained"
+                  onClick={() => {
+                    confirm().then(() => resetGraph(cytoModel.init()));
+                  }}
+                >
+                  Load Empty
+                </Button>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFilePen} />}
+                  variant="contained"
+                  onClick={() => {
+                    confirm().then(() => resetGraph(demoGraph()));
+                  }}
+                >
+                  Load Demo
+                </Button>
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion defaultExpanded>
+            <AccordionSummary
+              expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
+            >
+              <Typography variant="h6">
+                <FontAwesomeIcon icon={faDownload} />
+                &nbsp;Export
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={1}>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileCode} />}
+                  variant="contained"
+                  onClick={() => {
+                    downloadJson(proto2json(cyto2protobuf(exportState())));
+                  }}
+                >
+                  Arguebuf
+                </Button>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileCode} />}
+                  variant="contained"
+                  onClick={() => {
+                    downloadJson(cyto2aif(exportState()));
+                  }}
+                >
+                  AIF
+                </Button>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileImage} />}
+                  variant="contained"
+                  onClick={() => {
+                    if (cy) {
+                      downloadBlob(
+                        cy.png({ output: "blob", scale: 2, full: true }),
+                        ".png"
+                      );
                     }
                   }}
-                />
-                <Button
-                  startIcon={<FontAwesomeIcon icon={faFileArrowUp} />}
-                  variant="contained"
-                  component="span"
-                  fullWidth
                 >
-                  Upload
+                  PNG
                 </Button>
-              </label>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
-                variant="contained"
-                onClick={() => {
-                  confirm().then(() => resetGraph(cytoModel.init()));
-                }}
-              >
-                Load Empty
-              </Button>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFilePen} />}
-                variant="contained"
-                onClick={() => {
-                  confirm().then(() => resetGraph(demoGraph()));
-                }}
-              >
-                Load Demo
-              </Button>
-            </Stack>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
-            <Typography variant="h6">
-              <FontAwesomeIcon icon={faDownload} />
-              &nbsp;Export
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Stack spacing={1}>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFileCode} />}
-                variant="contained"
-                onClick={() => {
-                  downloadJson(proto2json(cyto2protobuf(exportState())));
-                }}
-              >
-                Arguebuf
-              </Button>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFileCode} />}
-                variant="contained"
-                onClick={() => {
-                  downloadJson(cyto2aif(exportState()));
-                }}
-              >
-                AIF
-              </Button>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFileImage} />}
-                variant="contained"
-                onClick={() => {
-                  if (cy) {
-                    downloadBlob(
-                      cy.png({ output: "blob", scale: 2, full: true }),
-                      ".png"
-                    );
-                  }
-                }}
-              >
-                PNG
-              </Button>
-              <Button
-                startIcon={<FontAwesomeIcon icon={faFileImage} />}
-                variant="contained"
-                onClick={() => {
-                  if (cy) {
-                    downloadBlob(
-                      cy.jpg({
-                        output: "blob",
-                        scale: 2,
-                        full: true,
-                        quality: 1,
-                        bg: theme.palette.background.default,
-                      }),
-                      ".jpg"
-                    );
-                  }
-                }}
-              >
-                JPG
-              </Button>
-              {theme.palette.mode === "dark" && (
-                <Typography variant="caption">
-                  <b>Please note:</b>
-                  <br />
-                  The rendering respects dark mode. If you want a white
-                  background, please switch to light mode.
-                </Typography>
-              )}
-            </Stack>
-          </AccordionDetails>
-        </Accordion>
-      </div>
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileImage} />}
+                  variant="contained"
+                  onClick={() => {
+                    if (cy) {
+                      downloadBlob(
+                        cy.jpg({
+                          output: "blob",
+                          scale: 2,
+                          full: true,
+                          quality: 1,
+                          bg: theme.palette.background.default,
+                        }),
+                        ".jpg"
+                      );
+                    }
+                  }}
+                >
+                  JPG
+                </Button>
+                {theme.palette.mode === "dark" && (
+                  <Typography variant="caption">
+                    <b>Please note:</b>
+                    <br />
+                    The rendering respects dark mode. If you want a white
+                    background, please switch to light mode.
+                  </Typography>
+                )}
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+        </div>
+        <Tooltip
+          title="If errors occur, you can clear your browser's cache and reload the page with this button"
+          describeChild
+        >
+          <Button
+            color="error"
+            startIcon={<FontAwesomeIcon icon={faTrash} />}
+            variant="contained"
+            onClick={() => {
+              confirm().then(clearCache);
+            }}
+          >
+            Clear cache
+          </Button>
+        </Tooltip>
+      </>
     );
   } else if (elementType() === "null") {
     fields = (

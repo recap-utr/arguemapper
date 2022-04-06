@@ -25,6 +25,7 @@ const GraphContext = createContext<{
   resetGraph: (graph: cytoModel.CytoGraph) => void;
   undoable: boolean;
   redoable: boolean;
+  clearCache: () => void;
 }>({
   cy: null,
   _setCy: () => {},
@@ -39,6 +40,7 @@ const GraphContext = createContext<{
   resetGraph: () => {},
   undoable: false,
   redoable: false,
+  clearCache: () => {},
 });
 
 interface GraphProviderProps {
@@ -169,6 +171,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     [storageName]
   );
 
+  const clearCache = useCallback(() => {
+    localStorage.clear();
+    window.location.reload();
+  }, []);
+
   const undoable = previousStates.length > 0;
   const redoable = futureStates.length > 0;
 
@@ -196,6 +203,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         resetStates,
         resetGraph,
         exportState,
+        clearCache,
       }}
     >
       {children}
