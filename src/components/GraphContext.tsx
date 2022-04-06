@@ -1,5 +1,9 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, IconButton } from "@mui/material";
 import cytoscape from "cytoscape";
 import { pick } from "lodash";
+import { useSnackbar } from "notistack";
 import React, {
   createContext,
   useCallback,
@@ -10,6 +14,7 @@ import React, {
 } from "react";
 import * as cytoModel from "../model/cytoWrapper";
 import * as date from "../services/date";
+import demoGraph from "../services/demo";
 
 const GraphContext = createContext<{
   cy: cytoscape.Core | null;
@@ -53,6 +58,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     cytoModel.init()
   );
   const [cy, _setCy] = useState<cytoscape.Core | null>(null);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [currentState, setCurrentState] = useState<cytoModel.CytoGraph | null>(
     null
   );
@@ -194,6 +200,39 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const _setCyRef = useCallback((instance: cytoscape.Core | null) => {
     cyRef.current = instance;
   }, []);
+
+  // If the user visits the app for the first time, show a little banner
+  useEffect(() => {
+    if (localStorage.getItem(storageName) === null) {
+      enqueueSnackbar(
+        "Hi there! If you are using this app for the first time, you may want to load our demo.",
+        {
+          key: "welcome",
+          persist: true,
+          variant: "info",
+          action: (key) => (
+            <>
+              <Button
+                onClick={() => {
+                  resetGraph(demoGraph());
+                  closeSnackbar(key);
+                }}
+              >
+                Load Demo
+              </Button>
+              <IconButton
+                onClick={() => {
+                  closeSnackbar(key);
+                }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </IconButton>
+            </>
+          ),
+        }
+      );
+    }
+  }, [closeSnackbar, enqueueSnackbar, resetGraph, storageName]);
 
   return (
     <GraphContext.Provider
