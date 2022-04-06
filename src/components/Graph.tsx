@@ -170,7 +170,7 @@ export default function Cytoscape() {
   const {
     cy,
     _setCy,
-    _setCurrentCy,
+    _setCyRef,
     loadGraph,
     resetGraph,
     updateGraph,
@@ -253,7 +253,7 @@ export default function Cytoscape() {
         maxZoom: 3.0,
       });
       _setCy(_cy);
-      _setCurrentCy(_cy);
+      _setCyRef(_cy);
 
       _cy.elements().selectify();
       _cy.elements().unselect();
@@ -298,7 +298,7 @@ export default function Cytoscape() {
     theme,
     loadGraph,
     _setCy,
-    _setCurrentCy,
+    _setCyRef,
     handleClick,
   ]);
 
