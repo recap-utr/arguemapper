@@ -121,6 +121,7 @@ function initEdgeHandles(
         ],
       });
     } else {
+      // @ts-ignore
       cy.add({
         // @ts-ignore
         edges: [
@@ -412,6 +413,7 @@ export default function Cytoscape() {
           {...showFor(["graph"])}
           onClick={() => {
             const newElem = cytoModel.node.initAtom();
+            // @ts-ignore
             cy?.add({
               // @ts-ignore
               nodes: [
@@ -438,6 +440,7 @@ export default function Cytoscape() {
           {...showFor(["graph"])}
           onClick={() => {
             const newElem = cytoModel.node.initScheme();
+            // @ts-ignore
             cy?.add({
               // @ts-ignore
               nodes: [
