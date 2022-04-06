@@ -144,13 +144,11 @@ function Inspector() {
           cy.elements().unselectify();
 
           // Update our interim element
-          setElement((element: any) => {
-            // As we cannot directly modify it, we need to "produce" a new one
-            return produce(element, (draft: any) => {
-              // Update the given attribute with the new value
+          setElement(
+            produce((draft: any) => {
               _.set(draft, attr, event.target.value);
-            });
-          });
+            })
+          );
         }
       };
     },
