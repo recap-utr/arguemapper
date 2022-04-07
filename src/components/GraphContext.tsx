@@ -107,8 +107,8 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         }
 
         const cytoMetadata = pick(currentCy.json(), [
-          "pan",
-          "zoom",
+          // "pan",
+          // "zoom",
           "data",
         ]) as {
           data: cytoModel.graph.Graph;
