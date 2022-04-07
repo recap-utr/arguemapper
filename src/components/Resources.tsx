@@ -47,9 +47,11 @@ function Resources({
   );
 
   const addAtom = useCallback(
-    (text: string) => {
+    (resourceId: string, text: string, offset: number) => {
       if (cy) {
         const newElem = cytoModel.node.initAtom(text);
+        newElem.reference = cytoModel.reference.init(text, resourceId, offset);
+
         let width = window.innerWidth;
         let height = window.innerHeight;
         const container = containerRef.current;
@@ -203,7 +205,7 @@ function Resource({
   >;
   resetResources: () => void;
   writeResources: () => void;
-  addAtom: (text: string) => void;
+  addAtom: (id: string, text: string, offset: number) => void;
 }) {
   const [userSelection, setUserSelection] = useState<Selection>({
     anchor: 0,
@@ -306,10 +308,12 @@ function Resource({
             startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
             onClick={() => {
               addAtom(
+                id,
                 resource.text.substring(
                   userSelection.anchor,
                   userSelection.focus
-                )
+                ),
+                userSelection.anchor
               );
             }}
           >
