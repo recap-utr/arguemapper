@@ -33,6 +33,7 @@
     "notistack": "^2.0.3",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-highlight-within-textarea": "^2.1.4",
     "react-scripts": "5.0.0",
     "react-use": "^17.3.2",
     "text-metrics": "^3.0.0",

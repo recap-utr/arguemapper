@@ -12,11 +12,11 @@ export interface Resource {
   metadata: JsonValue;
 }
 
-export function init(): Resource {
+export function init(text: string): Resource {
   const now = date.now();
 
   return {
-    text: "",
+    text,
     title: undefined,
     source: undefined,
     created: now,

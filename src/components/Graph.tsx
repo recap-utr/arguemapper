@@ -29,7 +29,7 @@ import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
 import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
 import { useSnackbar } from "notistack";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import style from "../cytoStyle";
 import * as cytoModel from "../model/cytoWrapper";
@@ -158,13 +158,16 @@ const initialCtxMenu: CtxMenuProps = {
   kind: null,
 };
 
-export default function Cytoscape() {
+export default function Cytoscape({
+  containerRef,
+}: {
+  containerRef: React.RefObject<HTMLElement>;
+}) {
   const { enqueueSnackbar } = useSnackbar();
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
   const [eh, setEh] = useState<EdgeHandlesInstance | null>(null);
   const [ehStart, setEhStart] = useState<any>(null);
   const [zoom, setZoom] = useState<number>(1);
-  const containerRef = useRef<HTMLElement>(null);
   const theme = useTheme();
   const [undoPressed] = useKeyboardJs("mod + z");
   const [redoPressed] = useKeyboardJs("mod + shift + z");
@@ -301,6 +304,7 @@ export default function Cytoscape() {
     _setCy,
     _setCyRef,
     handleClick,
+    containerRef,
   ]);
 
   useEffect(() => {

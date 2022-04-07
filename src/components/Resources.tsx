@@ -11,91 +11,122 @@ import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
 import _ from "lodash";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+// @ts-ignore
+import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import { v1 as uuid } from "uuid";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
-// Highlight references in textfield: https://github.com/bonafideduck/react-highlight-within-textarea/
+interface Selection {
+  anchor: number;
+  focus: number;
+}
 
-function Resources() {
+function Resources({
+  containerRef,
+}: {
+  containerRef: React.RefObject<HTMLElement>;
+}) {
   const { cy, updateGraph } = useGraph();
-  const cyResources = useCallback(() => (cy ? cy.data("resources") : {}), [cy]);
 
   const [resources, setResources] = useState<{
     [x: string]: cytoModel.resource.Resource;
-  }>(cyResources);
-  // This ref is necessary to avoid an infinite re-rendering loop
-  // Otherwise, the callback containing 'cy.on' would be executed every time 'references' changes.
-  const resourcesRef = useRef(cyResources());
-  const [hasChanged, setHasChanged] = useState(false);
+  }>({});
+  const [allowTabChange, setAllowTabChange] = useState(true);
   const [activeTab, setActiveTab] = useState("1");
+  const [shouldWrite, setShouldWrite] = useState(false);
 
   const handleTabChange = useCallback(
-    (event: React.SyntheticEvent, newValue: string) => {
-      if (!hasChanged) {
+    (_event: React.SyntheticEvent, newValue: string) => {
+      if (allowTabChange) {
         setActiveTab(newValue);
       }
     },
-    [hasChanged]
+    [allowTabChange]
   );
+
+  const addAtom = useCallback(
+    (text: string) => {
+      if (cy) {
+        const newElem = cytoModel.node.initAtom(text);
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        const container = containerRef.current;
+
+        if (container) {
+          width = container.clientWidth;
+          height = container.clientHeight;
+        }
+
+        // @ts-ignore
+        cy.add({
+          // @ts-ignore
+          nodes: [
+            {
+              data: newElem,
+              renderedPosition: {
+                x: width / 2,
+                y: height / 2,
+              },
+            },
+          ],
+        });
+        updateGraph();
+        cy.$id(newElem.id).select();
+      }
+    },
+    [cy, updateGraph, containerRef]
+  );
+
+  const writeResources = useCallback(() => {
+    setShouldWrite(true);
+  }, []);
+
+  useEffect(() => {
+    if (cy && shouldWrite) {
+      cy.data("resources", resources);
+      updateGraph();
+      setShouldWrite(false);
+    }
+  }, [resources, cy, updateGraph, shouldWrite]);
+
+  const resetResources = useCallback(() => {
+    if (cy) {
+      setResources(cy.data("resources"));
+    }
+  }, [cy]);
 
   // If a new cytoscape instance is created, we need to update our local resource object
   // Otherwise, the data would not be consistent!
   useEffect(() => {
-    setResources(cyResources);
-  }, [cyResources]);
-
-  // Update ref to maintain consistency
-  useEffect(() => {
-    resourcesRef.current = resources;
-  }, [resources]);
-
-  useEffect(() => {
-    if (cy) {
-      cy.on("data", () => {
-        if (cy.data("resources") !== resourcesRef.current) {
-          setResources(cy.data("resources"));
-        }
-      });
-    }
-  }, [cy]);
+    resetResources();
+  }, [resetResources]);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
-  const handleChange = useCallback((attr: string | string[]) => {
-    // We need to return a function here, thus the nested callbacks
-    return (
-      event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      // Prevent the user switching to another tab.
-      // Otherwise, the local changes would be lost.
-      setHasChanged(true);
-      setResources(
-        (previousResources: { [x: string]: cytoModel.resource.Resource }) => {
-          // As we cannot directly modify it, we need to "produce" a new one
-          return produce(
-            previousResources,
-            (draft: { [x: string]: cytoModel.resource.Resource }) => {
-              // Update the given attribute with the new value
-              _.set(draft, attr, event.target.value);
-            }
-          );
-        }
-      );
-    };
-  }, []);
-
   const deleteResource = useCallback(
     (key: string) => {
-      const newResources = { ...resources };
-      delete newResources[key];
-      cy?.data("resources", newResources);
-      updateGraph();
-      setHasChanged(false);
+      setResources(
+        produce((draft) => {
+          delete draft[key];
+        })
+      );
+      writeResources();
+      setAllowTabChange(true);
     },
-    [cy, resources, updateGraph]
+    [writeResources]
   );
+
+  const addResource = useCallback(() => {
+    setResources(
+      produce((draft) => {
+        draft[uuid()] = cytoModel.resource.init("");
+      })
+    );
+    writeResources();
+    setAllowTabChange(true);
+  }, [writeResources]);
 
   return (
     <TabContext value={activeTab}>
@@ -126,8 +157,12 @@ function Resources() {
             id={key}
             resource={resource}
             index={index + 1}
-            handleChange={handleChange}
             deleteResource={deleteResource}
+            setAllowTabChange={setAllowTabChange}
+            setResources={setResources}
+            resetResources={resetResources}
+            writeResources={writeResources}
+            addAtom={addAtom}
           />
         </TabPanel>
       ))}
@@ -136,46 +171,11 @@ function Resources() {
           fullWidth
           variant="contained"
           startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-          onClick={() => {
-            const newResources = {
-              ...resources,
-              [uuid()]: cytoModel.resource.init(),
-            };
-            cy?.data("resources", newResources);
-            updateGraph();
-            setHasChanged(false);
-          }}
+          onClick={addResource}
         >
           Add Resource
         </Button>
       </TabPanel>
-      {hasChanged && (
-        <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={<FontAwesomeIcon icon={faBan} />}
-            onClick={() => {
-              // Might have to clone object to force rerendering
-              setResources(cyResources);
-              setHasChanged(false);
-            }}
-          >
-            Discard
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faSave} />}
-            onClick={() => {
-              cy?.data("resources", resources);
-              updateGraph();
-              setHasChanged(false);
-            }}
-          >
-            Save
-          </Button>
-        </Stack>
-      )}
     </TabContext>
   );
 }
@@ -184,37 +184,150 @@ function Resource({
   id,
   resource,
   index,
-  handleChange,
   deleteResource,
+  setAllowTabChange,
+  setResources,
+  resetResources,
+  writeResources,
+  addAtom,
 }: {
   id: string;
   resource: cytoModel.resource.Resource;
   index: number;
-  handleChange: any;
   deleteResource: (key: string) => void;
+  setAllowTabChange: (value: boolean) => void;
+  setResources: React.Dispatch<
+    React.SetStateAction<{
+      [x: string]: cytoModel.resource.Resource;
+    }>
+  >;
+  resetResources: () => void;
+  writeResources: () => void;
+  addAtom: (text: string) => void;
 }) {
+  const [userSelection, setUserSelection] = useState<Selection>({
+    anchor: 0,
+    focus: 0,
+  });
+  const [systemSelection, setSystemSelection] = useState<Selection | null>(
+    null
+  );
+  const [hasChanged, setHasChanged] = useState(false);
+
+  useEffect(() => {
+    setAllowTabChange(!hasChanged);
+  }, [setAllowTabChange, hasChanged]);
+
+  const produceHandleChange = useCallback(
+    (attr: string | string[]) => {
+      // We need to return a function here, thus the nested callbacks
+      return (
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      ) => {
+        // Prevent the user switching to another tab.
+        // Otherwise, the local changes would be lost.
+        setHasChanged(true);
+        setResources(
+          produce((draft) => {
+            _.set(draft, attr, event.target.value);
+          })
+        );
+      };
+    },
+    [setResources]
+  );
+
+  const handleTextChange = useCallback(
+    (value: string, selection: Selection) => {
+      if (value === resource.text) {
+        setUserSelection(selection);
+        setSystemSelection(null);
+      } else {
+        setHasChanged(true);
+        setResources(
+          produce((draft) => {
+            draft[id].text = value;
+          })
+        );
+      }
+    },
+    [setResources, id, resource.text]
+  );
+
   return (
     <Stack spacing={2}>
       <Typography variant="h5">Resource {index}</Typography>
       <TextField
+        hiddenLabel
         fullWidth
         multiline
         minRows={5}
-        label="Text"
         value={resource.text}
-        onChange={handleChange([id, "text"])}
-      />
-      <Button
-        fullWidth
-        variant="contained"
-        color="error"
-        startIcon={<FontAwesomeIcon icon={faTrash} />}
-        onClick={() => {
-          deleteResource(id);
+        onChange={handleTextChange as any}
+        InputProps={{
+          inputComponent: HighlightWithinTextarea as any,
+          inputProps: {
+            selection: systemSelection,
+          },
         }}
-      >
-        Delete Resource
-      </Button>
+      />
+      {hasChanged && (
+        <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<FontAwesomeIcon icon={faBan} />}
+            onClick={() => {
+              resetResources();
+              setHasChanged(false);
+              setAllowTabChange(true);
+            }}
+          >
+            Discard
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<FontAwesomeIcon icon={faSave} />}
+            onClick={() => {
+              writeResources();
+              setHasChanged(false);
+              setAllowTabChange(true);
+            }}
+          >
+            Save
+          </Button>
+        </Stack>
+      )}
+      {!hasChanged && (
+        <>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+            onClick={() => {
+              addAtom(
+                resource.text.substring(
+                  userSelection.anchor,
+                  userSelection.focus
+                )
+              );
+            }}
+          >
+            Add selected text
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="error"
+            startIcon={<FontAwesomeIcon icon={faTrash} />}
+            onClick={() => {
+              deleteResource(id);
+            }}
+          >
+            Delete Resource
+          </Button>
+        </>
+      )}
     </Stack>
   );
 }
