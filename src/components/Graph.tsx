@@ -1,6 +1,7 @@
 import {
   faCircle,
   faCommentDots,
+  faMinus,
   faPlus,
   faRedo,
   faSitemap,
@@ -364,6 +365,30 @@ export default function Cytoscape({
             <span>
               <IconButton disabled={!redoable} onClick={redo}>
                 <FontAwesomeIcon icon={faRedo} />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip describeChild title="Zoom in" placement="right">
+            <span>
+              <IconButton
+                disabled={zoom === cy?.maxZoom()}
+                onClick={() => {
+                  cy?.zoom(zoom * 1.2);
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip describeChild title="Zoom out" placement="right">
+            <span>
+              <IconButton
+                disabled={zoom === cy?.minZoom()}
+                onClick={() => {
+                  cy?.zoom(zoom * 0.8);
+                }}
+              >
+                <FontAwesomeIcon icon={faMinus} />
               </IconButton>
             </span>
           </Tooltip>
