@@ -123,7 +123,7 @@ function Inspector() {
     }
   }, [cy]);
 
-  const handleChange = useCallback(
+  const produceHandleChange = useCallback(
     (attr: string | string[]) => {
       // We need to return a function here, thus the nested callbacks
       return (
@@ -165,7 +165,7 @@ function Inspector() {
           <Select
             value={element.type}
             label="Scheme Type"
-            onChange={handleChange("type")}
+            onChange={produceHandleChange("type")}
             defaultValue={NULL_VALUE}
           >
             <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
@@ -181,7 +181,7 @@ function Inspector() {
           <Select
             value={element.argumentationScheme}
             label="Argumentation Scheme"
-            onChange={handleChange("argumentationScheme")}
+            onChange={produceHandleChange("argumentationScheme")}
             defaultValue={NULL_VALUE}
           >
             <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
@@ -205,7 +205,7 @@ function Inspector() {
           minRows={3}
           label="Text"
           value={element.text}
-          onChange={handleChange("text")}
+          onChange={produceHandleChange("text")}
         />
         <TextField
           fullWidth
@@ -213,7 +213,7 @@ function Inspector() {
           minRows={3}
           label="Original Text"
           value={element.reference?.text}
-          onChange={handleChange(["reference", "text"])}
+          onChange={produceHandleChange(["reference", "text"])}
         />
       </>
     );
