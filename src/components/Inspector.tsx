@@ -157,6 +157,20 @@ function Inspector() {
 
   let fields = null;
 
+  const deleteButton = (
+    <Button
+      color="error"
+      startIcon={<FontAwesomeIcon icon={faTrash} />}
+      variant="contained"
+      onClick={() => {
+        cy?.$(":selected").remove();
+        updateGraph();
+      }}
+    >
+      Delete selection
+    </Button>
+  );
+
   if (elementType() === "scheme") {
     fields = (
       <>
@@ -194,6 +208,7 @@ function Inspector() {
             })}
           </Select>
         </FormControl>
+        {deleteButton}
       </>
     );
   } else if (elementType() === "atom") {
@@ -215,6 +230,7 @@ function Inspector() {
           value={element.reference?.text}
           onChange={produceHandleChange(["reference", "text"])}
         />
+        {deleteButton}
       </>
     );
   } else if (elementType() === "graph") {
@@ -382,14 +398,17 @@ function Inspector() {
         </Tooltip>
       </>
     );
+  } else if (elementType() === "edge") {
+    fields = <>{deleteButton}</>;
   } else if (elementType() === "null") {
     fields = (
       <Stack spacing={3}>
         <Typography variant="h6">Multiple elements selected</Typography>
         <Typography variant="body1">
           Please select only one if you want to edit their values. You can still
-          move multiple elements together in the canvas.
+          move multiple elements together in the canvas or delete them.
         </Typography>
+        {deleteButton}
       </Stack>
     );
   }
