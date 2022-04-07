@@ -72,7 +72,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   // This enables to use the current value without causing a chain of rerenderings due to changed callbacks
   // Otherwise, we would end up with an infinite loop that would break the application
   // The refs are for internal use of this context only and should not be exported!
-  const state = useRef<cytoModel.CytoGraph | null>(null);
+  const stateRef = useRef<cytoModel.CytoGraph | null>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
 
   const loadGraph = useCallback(() => {
@@ -130,7 +130,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   );
 
   const updateGraph = useCallback(() => {
-    const currState = state.current;
+    const currState = stateRef.current;
 
     if (currState) {
       setFutureStates([]);
@@ -139,11 +139,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
 
     const newState = exportState(true);
     setCurrentState(newState);
-    state.current = newState;
+    stateRef.current = newState;
   }, [exportState]);
 
   const undo = useCallback(() => {
-    const currState = state.current;
+    const currState = stateRef.current;
 
     if (currState) {
       cy?.json(previousStates[0]);
@@ -153,13 +153,13 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       setFutureStates((states) => [currState, ...states]);
       const newState = previousStates[0];
       setCurrentState(newState);
-      state.current = newState;
+      stateRef.current = newState;
       setPreviousStates((states) => states.slice(1));
     }
   }, [cy, previousStates]);
 
   const redo = useCallback(() => {
-    const currState = state.current;
+    const currState = stateRef.current;
 
     if (currState) {
       cy?.json(futureStates[0]);
@@ -169,7 +169,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       setPreviousStates((states) => [currState, ...states]);
       const newState = futureStates[0];
       setCurrentState(newState);
-      state.current = newState;
+      stateRef.current = newState;
       setFutureStates((states) => states.slice(1));
     }
   }, [cy, futureStates]);
