@@ -10,7 +10,6 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
-import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
@@ -28,7 +27,7 @@ function Resources({
 }: {
   containerRef: React.RefObject<HTMLElement>;
 }) {
-  const { cy, updateGraph } = useGraph();
+  const { cy, updateGraph, currentState } = useGraph();
 
   const [resources, setResources] = useState<{
     [x: string]: cytoModel.resource.Resource;
@@ -36,6 +35,21 @@ function Resources({
   const [allowTabChange, setAllowTabChange] = useState(true);
   const [activeTab, setActiveTab] = useState("1");
   const [shouldWrite, setShouldWrite] = useState(false);
+
+  const references = currentState
+    ? Object.fromEntries(
+        Object.entries(currentState.elements.nodes)
+          .filter(
+            ([key, node]) =>
+              cytoModel.node.isAtom(node.data) && node.data.reference
+          )
+          .map(([key, node]) => [
+            key,
+            (node.data as cytoModel.node.AtomNode)
+              .reference as cytoModel.reference.Reference,
+          ])
+      )
+    : {};
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
@@ -94,18 +108,13 @@ function Resources({
   }, [resources, cy, updateGraph, shouldWrite]);
 
   const resetResources = useCallback(() => {
-    if (cy) {
-      setResources(cy.data("resources"));
-    }
-  }, [cy]);
+    setResources(currentState?.data.resources || {});
+  }, [currentState?.data.resources]);
 
-  // If a new cytoscape instance is created, we need to update our local resource object
-  // Otherwise, the data would not be consistent!
+  // Ensure that the data is consistent!
   useEffect(() => {
     resetResources();
   }, [resetResources]);
-
-  const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
   const deleteResource = useCallback(
     (key: string) => {
@@ -129,6 +138,8 @@ function Resources({
     writeResources();
     setAllowTabChange(true);
   }, [writeResources]);
+
+  const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
   return (
     <TabContext value={activeTab}>
@@ -165,6 +176,7 @@ function Resources({
             resetResources={resetResources}
             writeResources={writeResources}
             addAtom={addAtom}
+            references={references}
           />
         </TabPanel>
       ))}
@@ -192,6 +204,7 @@ function Resource({
   resetResources,
   writeResources,
   addAtom,
+  references,
 }: {
   id: string;
   resource: cytoModel.resource.Resource;
@@ -206,6 +219,7 @@ function Resource({
   resetResources: () => void;
   writeResources: () => void;
   addAtom: (id: string, text: string, offset: number) => void;
+  references: { [k: string]: cytoModel.reference.Reference };
 }) {
   const [userSelection, setUserSelection] = useState<Selection>({
     anchor: 0,
@@ -216,28 +230,49 @@ function Resource({
   );
   const [hasChanged, setHasChanged] = useState(false);
 
+  const highlight = useCallback(
+    (text: string, callback: (start: number, end: number) => void) => {
+      const filteredReferences = Object.values(references).filter(
+        (reference) => reference.resource === id
+      );
+
+      for (const reference of filteredReferences) {
+        const start = reference.offset;
+
+        if (start) {
+          const end = start + reference.text.length;
+
+          if (end && text.substring(start, end) === reference.text) {
+            callback(start, end);
+          }
+        }
+      }
+    },
+    [id, references]
+  );
+
   useEffect(() => {
     setAllowTabChange(!hasChanged);
   }, [setAllowTabChange, hasChanged]);
 
-  const produceHandleChange = useCallback(
-    (attr: string | string[]) => {
-      // We need to return a function here, thus the nested callbacks
-      return (
-        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      ) => {
-        // Prevent the user switching to another tab.
-        // Otherwise, the local changes would be lost.
-        setHasChanged(true);
-        setResources(
-          produce((draft) => {
-            _.set(draft, attr, event.target.value);
-          })
-        );
-      };
-    },
-    [setResources]
-  );
+  // const produceHandleChange = useCallback(
+  //   (attr: string | string[]) => {
+  //     // We need to return a function here, thus the nested callbacks
+  //     return (
+  //       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  //     ) => {
+  //       // Prevent the user switching to another tab.
+  //       // Otherwise, the local changes would be lost.
+  //       setHasChanged(true);
+  //       setResources(
+  //         produce((draft) => {
+  //           _.set(draft, attr, event.target.value);
+  //         })
+  //       );
+  //     };
+  //   },
+  //   [setResources]
+  // );
 
   const handleTextChange = useCallback(
     (value: string, selection: Selection) => {
@@ -270,6 +305,7 @@ function Resource({
           inputComponent: HighlightWithinTextarea as any,
           inputProps: {
             selection: systemSelection,
+            highlight: highlight,
           },
         }}
       />
