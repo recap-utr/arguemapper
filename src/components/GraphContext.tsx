@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton } from "@mui/material";
+import { Button, IconButton, Stack } from "@mui/material";
 import cytoscape from "cytoscape";
 import { pick } from "lodash";
 import { useSnackbar } from "notistack";
@@ -213,8 +213,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
           persist: true,
           variant: "info",
           action: (key) => (
-            <>
+            <Stack direction="row" spacing={1}>
               <Button
+                size="small"
+                disableElevation
+                variant="contained"
                 onClick={() => {
                   resetGraph(demoGraph());
                   closeSnackbar(key);
@@ -229,7 +232,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
               >
                 <FontAwesomeIcon icon={faXmark} />
               </IconButton>
-            </>
+            </Stack>
           ),
         }
       );
