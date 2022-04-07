@@ -9,6 +9,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { useMedia } from "react-use";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary";
 import config from "./config";
 import theme from "./theme";
 
@@ -41,7 +42,9 @@ function Layout() {
         }}
       >
         <SnackbarProvider maxSnack={3} preventDuplicate>
-          <App />
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
         </SnackbarProvider>
       </ConfirmProvider>
     </ThemeProvider>
