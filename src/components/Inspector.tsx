@@ -73,7 +73,11 @@ const Input = styled("input")({
 
 type ElementType = "graph" | "atom" | "scheme" | "edge" | "null";
 
-function Inspector() {
+interface Props {
+  openSidebar: (value: boolean) => void;
+}
+
+const Inspector: React.FC<Props> = ({ openSidebar }) => {
   const { cy, updateGraph, exportState, resetGraph, clearCache } = useGraph();
   const [element, setElement] = useState(cy?.data());
   const [modifiedAttributes, setModifiedAttributes] = useState<
@@ -101,27 +105,32 @@ function Inspector() {
       setElement(cy.data());
 
       cy.on("select", (e) => {
+        openSidebar(true);
         setModifiedAttributes([]);
+
         if (cy.$(":selected").length === 1) {
           setElement(e.target.data());
         } else {
           setElement(null);
         }
       });
+
       cy.on("unselect", () => {
         if (cy.$(":selected").length === 0) {
+          openSidebar(false);
           setModifiedAttributes([]);
           setElement(cy.data());
         }
       });
       cy.on("remove", () => {
+        openSidebar(false);
         cy.elements().selectify();
         cy.elements().unselect();
         setModifiedAttributes([]);
         setElement(cy.data());
       });
     }
-  }, [cy]);
+  }, [cy, openSidebar]);
 
   const produceHandleChange = useCallback(
     (attr: string | string[]) => {
@@ -427,6 +436,7 @@ function Inspector() {
             <Tooltip describeChild title="Close inspector for current element">
               <IconButton
                 onClick={() => {
+                  openSidebar(false);
                   cy?.elements().selectify();
                   cy?.elements().unselect();
                   setModifiedAttributes([]);
@@ -447,6 +457,7 @@ function Inspector() {
               color="error"
               startIcon={<FontAwesomeIcon icon={faBan} />}
               onClick={() => {
+                openSidebar(false);
                 cy?.elements().selectify();
                 cy?.elements().unselect();
                 setModifiedAttributes([]);
@@ -484,6 +495,6 @@ function Inspector() {
       </Stack>
     </>
   );
-}
+};
 
 export default Inspector;

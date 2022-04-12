@@ -12,14 +12,13 @@ import Sidebar from "./components/Sidebar";
 const drawerWidth = 300;
 
 export default function App() {
-  const [leftSidebarOpen, setLeftSidebarOpen] = useLocalStorage(
-    "leftSidebarOpen",
-    true
-  );
-  const [rightSidebarOpen, setRightSidebarOpen] = useLocalStorage(
-    "rightSidebarOpen",
-    true
-  );
+  const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
+  const initialSidebarOpen = isMobile ? false : true;
+
+  const [leftSidebarOpen, setLeftSidebarOpen] =
+    useLocalStorage<boolean>("leftSidebarOpen");
+  const [rightSidebarOpen, setRightSidebarOpen] =
+    useLocalStorage<boolean>("rightSidebarOpen");
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const containerRef = useCallback((node: HTMLElement | null) => {
     if (node !== null) {
@@ -28,8 +27,6 @@ export default function App() {
     }
   }, []);
 
-  const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
-
   return (
     <GraphProvider storageName="graph">
       <Stack direction="row" sx={{ height: "100vh" }}>
@@ -37,7 +34,7 @@ export default function App() {
           side="left"
           drawerWidth={drawerWidth}
           isMobile={isMobile}
-          isOpen={leftSidebarOpen ?? true}
+          isOpen={leftSidebarOpen ?? initialSidebarOpen}
           setIsOpen={setLeftSidebarOpen}
         >
           <Resources container={container} />
@@ -58,10 +55,16 @@ export default function App() {
           side="right"
           drawerWidth={drawerWidth}
           isMobile={isMobile}
-          isOpen={rightSidebarOpen ?? true}
+          isOpen={rightSidebarOpen ?? initialSidebarOpen}
           setIsOpen={setRightSidebarOpen}
         >
-          <Inspector />
+          <Inspector
+            openSidebar={(value) => {
+              if (isMobile) {
+                setRightSidebarOpen(value);
+              }
+            }}
+          />
         </Sidebar>
       </Stack>
     </GraphProvider>
