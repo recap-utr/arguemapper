@@ -9,7 +9,7 @@ import React from "react";
 import CacheBuster from "react-cache-buster";
 import ReactDOM from "react-dom";
 import { useMedia } from "react-use";
-import { version } from "../package.json";
+import npmPackage from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
 import config from "./config";
@@ -34,7 +34,7 @@ function Layout() {
 
   return (
     <CacheBuster
-      currentVersion={version}
+      currentVersion={npmPackage.version}
       isEnabled={isProduction}
       isVerboseMode={false}
       loadingComponent={undefined}
