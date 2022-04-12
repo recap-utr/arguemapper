@@ -8,7 +8,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import config from "../config";
 
 export default function Header({
   toggleLeft,
@@ -32,7 +31,7 @@ export default function Header({
               <FontAwesomeIcon icon={faParagraph} />
             </IconButton>
           </Tooltip>
-          <Typography variant="h6">{config.name}</Typography>
+          <Typography variant="h6">ArgueMapper</Typography>
           <Tooltip describeChild title="Toggle inspector">
             <IconButton onClick={toggleRight}>
               <FontAwesomeIcon icon={faInfoCircle} />
