@@ -160,9 +160,11 @@ const initialCtxMenu: CtxMenuProps = {
 };
 
 export default function Cytoscape({
+  container,
   containerRef,
 }: {
-  containerRef: React.RefObject<HTMLElement>;
+  container: HTMLElement | null;
+  containerRef: (node: HTMLElement | null) => void;
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
@@ -206,7 +208,6 @@ export default function Cytoscape({
   }, [cy, updateGraph]);
 
   const handleClick = useCallback((event: EventObject) => {
-    event.preventDefault();
     const data = event.target.data();
 
     setCtxMenu({
@@ -245,9 +246,9 @@ export default function Cytoscape({
   );
 
   const initCy = useCallback(() => {
-    if (containerRef.current !== null) {
+    if (container !== null) {
       const _cy = cytoscape({
-        container: containerRef.current,
+        container: container,
         ...loadGraph(),
         layout: { name: "preset" },
         // @ts-ignore
@@ -306,7 +307,7 @@ export default function Cytoscape({
     _setCy,
     _setCyRef,
     handleClick,
-    containerRef,
+    container,
   ]);
 
   useEffect(() => {

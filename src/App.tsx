@@ -1,6 +1,6 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useRef } from "react";
+import React, { useCallback, useState } from "react";
 import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
 import { GraphProvider } from "./components/GraphContext";
@@ -20,7 +20,13 @@ export default function App() {
     "rightSidebarOpen",
     true
   );
-  const containerRef = useRef<HTMLElement>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const containerRef = useCallback((node: HTMLElement | null) => {
+    if (node !== null) {
+      // node.oncontextmenu = () => false;
+      setContainer(node);
+    }
+  }, []);
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
 
@@ -34,15 +40,18 @@ export default function App() {
           isOpen={leftSidebarOpen ?? true}
           setIsOpen={setLeftSidebarOpen}
         >
-          <Resources containerRef={containerRef} />
+          <Resources container={container} />
         </Sidebar>
         <Stack sx={{ flexGrow: 1 }}>
           <Header
             toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
             toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
           />
-          <Box sx={{ position: "relative", height: 1 }}>
-            <Graph containerRef={containerRef} />
+          <Box
+            onContextMenu={(e) => e.preventDefault()}
+            sx={{ position: "relative", height: 1 }}
+          >
+            <Graph container={container} containerRef={containerRef} />
           </Box>
         </Stack>
         <Sidebar

@@ -22,11 +22,7 @@ interface Selection {
   focus: number;
 }
 
-function Resources({
-  containerRef,
-}: {
-  containerRef: React.RefObject<HTMLElement>;
-}) {
+function Resources({ container }: { container: HTMLElement | null }) {
   const { cy, updateGraph, currentState } = useGraph();
 
   const [resources, setResources] = useState<{
@@ -68,7 +64,6 @@ function Resources({
 
         let width = window.innerWidth;
         let height = window.innerHeight;
-        const container = containerRef.current;
 
         if (container) {
           width = container.clientWidth;
@@ -92,7 +87,7 @@ function Resources({
         cy.$id(newElem.id).select();
       }
     },
-    [cy, updateGraph, containerRef]
+    [cy, updateGraph, container]
   );
 
   const writeResources = useCallback(() => {
