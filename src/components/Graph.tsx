@@ -206,6 +206,7 @@ export default function Cytoscape({
   }, [cy, updateGraph]);
 
   const handleClick = useCallback((event: EventObject) => {
+    event.preventDefault();
     const data = event.target.data();
 
     setCtxMenu({
