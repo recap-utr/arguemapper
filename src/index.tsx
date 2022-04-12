@@ -12,7 +12,6 @@ import { useMedia } from "react-use";
 import npmPackage from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
-import config from "./config";
 import theme from "./theme";
 
 ReactDOM.render(
@@ -29,7 +28,6 @@ function Layout() {
   // query.addEventListener("change", (e) => setDarkMode(e.matches));
 
   const darkMode = useMedia("(prefers-color-scheme: dark)");
-  document.title = config.name;
   const isProduction = process.env.NODE_ENV === "production";
 
   return (
