@@ -294,7 +294,7 @@ export function toAif(data: Node): aif.Node {
   };
 }
 
-export function fromAif(obj: aif.Node): Node {
+export function fromAif(obj: aif.Node | aif.Locution): Node {
   const commonProps: Omit<Node, "kind"> = {
     id: obj.nodeID,
     created: date.parse(obj.timestamp, aif.DATE_FORMAT),
@@ -302,20 +302,32 @@ export function fromAif(obj: aif.Node): Node {
     metadata: {},
   };
 
-  if (obj.type === "I") {
-    const node: AtomNode = {
-      ...commonProps,
-      kind: "atom",
-      text: obj.text,
-    };
+  if ("type" in obj) {
+    if (obj.type === "I" || obj.type === "L") {
+      const node: AtomNode = {
+        ...commonProps,
+        kind: "atom",
+        text: obj.text,
+      };
 
-    return node;
+      return node;
+    } else {
+      const node: SchemeNode = {
+        ...commonProps,
+        kind: "scheme",
+        type: obj.type ? aif2schemeType[obj.type as aif.SchemeType] : undefined,
+        argumentationScheme: undefined, // TODO
+        descriptors: {},
+      };
+
+      return node;
+    }
   } else {
     const node: SchemeNode = {
       ...commonProps,
       kind: "scheme",
-      type: obj.type ? aif2schemeType[obj.type as aif.SchemeType] : undefined,
-      argumentationScheme: undefined, // TODO
+      type: undefined,
+      argumentationScheme: undefined,
       descriptors: {},
     };
 

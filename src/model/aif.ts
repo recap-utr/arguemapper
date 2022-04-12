@@ -1,7 +1,7 @@
 export interface Graph {
-  nodes: Node[];
-  edges: Edge[];
-  locutions: any[];
+  nodes: Array<Node>;
+  edges: Array<Edge>;
+  locutions: Array<Locution>;
 }
 
 export interface Node {
@@ -16,6 +16,15 @@ export interface Edge {
   fromID: string;
   toID: string;
   formEdgeID: null;
+}
+
+export interface Locution {
+  nodeID: string;
+  personID: string;
+  timestamp: string;
+  start?: string;
+  end?: string;
+  source?: string;
 }
 
 export type SchemeType = "RA" | "CA" | "MA" | "TA" | "PA" | "YA";

@@ -46,13 +46,24 @@ export function cyto2aif(cyto: cytoModel.CytoGraph): aif.Graph {
 }
 
 function aif2cyto(obj: aif.Graph): cytoModel.CytoGraph {
+  // const nodes: Array<aif.Node | aif.Locution> = (
+  //   [] as Array<aif.Node | aif.Locution>
+  // ).concat(obj.nodes, obj.locutions);
+
+  const nodes = obj.nodes
+    // .filter((node) => node.type !== "L")
+    .map((node) => ({ data: cytoModel.node.fromAif(node) }));
+  const nodeIds = new Set(nodes.map((node) => node.data.id));
+
   return {
     data: {
       ...cytoModel.graph.init(),
     },
     elements: {
-      nodes: obj.nodes.map((node) => ({ data: cytoModel.node.fromAif(node) })),
-      edges: obj.edges.map((edge) => ({ data: cytoModel.edge.fromAif(edge) })),
+      nodes,
+      edges: obj.edges
+        .filter((edge) => nodeIds.has(edge.fromID) && nodeIds.has(edge.toID))
+        .map((edge) => ({ data: cytoModel.edge.fromAif(edge) })),
     },
   };
 }
