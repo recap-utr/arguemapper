@@ -27,6 +27,14 @@ export default function App() {
     }
   }, []);
 
+  const containerSize = useCallback(
+    () =>
+      container
+        ? { width: container.clientWidth, height: container.clientHeight }
+        : { width: window.innerWidth, height: window.innerHeight },
+    [container]
+  );
+
   return (
     <GraphProvider storageName="graph">
       <Stack direction="row" sx={{ height: "100vh" }}>
@@ -37,7 +45,7 @@ export default function App() {
           isOpen={leftSidebarOpen ?? initialSidebarOpen}
           setIsOpen={setLeftSidebarOpen}
         >
-          <Resources container={container} />
+          <Resources containerSize={containerSize} />
         </Sidebar>
         <Stack sx={{ flexGrow: 1 }}>
           <Header
@@ -48,7 +56,11 @@ export default function App() {
             onContextMenu={(e) => e.preventDefault()}
             sx={{ position: "relative", height: 1 }}
           >
-            <Graph container={container} containerRef={containerRef} />
+            <Graph
+              containerSize={containerSize}
+              container={container}
+              containerRef={containerRef}
+            />
           </Box>
         </Stack>
         <Sidebar

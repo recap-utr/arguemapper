@@ -1,7 +1,8 @@
 import {
   faCircle,
   faCommentDots,
-  faMinus,
+  faMagnifyingGlassMinus,
+  faMagnifyingGlassPlus,
   faPlus,
   faRedo,
   faSitemap,
@@ -162,9 +163,11 @@ const initialCtxMenu: CtxMenuProps = {
 export default function Cytoscape({
   container,
   containerRef,
+  containerSize,
 }: {
   container: HTMLElement | null;
   containerRef: (node: HTMLElement | null) => void;
+  containerSize: () => { width: number; height: number };
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [ctxMenu, setCtxMenu] = useState<CtxMenuProps>(initialCtxMenu);
@@ -174,6 +177,14 @@ export default function Cytoscape({
   const theme = useTheme();
   const [undoPressed] = useKeyboardJs("mod + z");
   const [redoPressed] = useKeyboardJs("mod + shift + z");
+  const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
+  const plusMenuOpen = Boolean(plusButton);
+  const openPlusMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setPlusButton(event.currentTarget);
+  };
+  const closePlusMenu = () => {
+    setPlusButton(null);
+  };
   const {
     cy,
     _setCy,
@@ -207,7 +218,7 @@ export default function Cytoscape({
     }
   }, [cy, updateGraph]);
 
-  const handleClick = useCallback((event: EventObject) => {
+  const openContextMenu = useCallback((event: EventObject) => {
     const data = event.target.data();
 
     setCtxMenu({
@@ -224,7 +235,7 @@ export default function Cytoscape({
     });
   }, []);
 
-  const handleClose = useCallback(() => {
+  const closeContextMenu = useCallback(() => {
     setCtxMenu((menu) => ({ ...initialCtxMenu, kind: menu.kind }));
   }, []);
 
@@ -265,7 +276,7 @@ export default function Cytoscape({
       _cy.elements().selectify();
       _cy.elements().unselect();
       setEh(initEdgeHandles(_cy, updateGraph, setEhStart));
-      _cy.on("cxttap", handleClick);
+      _cy.on("cxttap", openContextMenu);
       _cy.on("dragfree", "node[metadata]", () => {
         updateGraph();
       });
@@ -306,7 +317,7 @@ export default function Cytoscape({
     loadGraph,
     _setCy,
     _setCyRef,
-    handleClick,
+    openContextMenu,
     container,
   ]);
 
@@ -378,7 +389,7 @@ export default function Cytoscape({
                   cy?.zoom(zoom * 1.2);
                 }}
               >
-                <FontAwesomeIcon icon={faPlus} />
+                <FontAwesomeIcon icon={faMagnifyingGlassPlus} />
               </IconButton>
             </span>
           </Tooltip>
@@ -390,16 +401,93 @@ export default function Cytoscape({
                   cy?.zoom(zoom * 0.8);
                 }}
               >
-                <FontAwesomeIcon icon={faMinus} />
+                <FontAwesomeIcon icon={faMagnifyingGlassMinus} />
               </IconButton>
             </span>
           </Tooltip>
         </Stack>
       </Box>
+      <Box sx={{ position: "absolute", right: 10, bottom: 10 }}>
+        <IconButton
+          size="large"
+          sx={{ backgroundColor: theme.palette.primary.dark }}
+          onClick={openPlusMenu}
+        >
+          <FontAwesomeIcon icon={faPlus} />
+        </IconButton>
+      </Box>
       <Menu
-        keepMounted
+        open={plusMenuOpen}
+        onClose={closePlusMenu}
+        anchorEl={plusButton}
+        sx={{ marginBottom: 10 }}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            const newElem = cytoModel.node.initAtom();
+            const size = containerSize();
+            // @ts-ignore
+            cy?.add({
+              // @ts-ignore
+              nodes: [
+                {
+                  data: newElem,
+                  renderedPosition: {
+                    x: size.width / 2,
+                    y: size.height / 2,
+                  },
+                },
+              ],
+            });
+            updateGraph();
+            cy?.$id(newElem.id).select();
+            closePlusMenu();
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlus} />
+          </ListItemIcon>
+          <ListItemText>Add Atom</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const newElem = cytoModel.node.initScheme();
+            const size = containerSize();
+            // @ts-ignore
+            cy?.add({
+              // @ts-ignore
+              nodes: [
+                {
+                  data: newElem,
+                  renderedPosition: {
+                    x: size.width / 2,
+                    y: size.height / 2,
+                  },
+                },
+              ],
+            });
+            updateGraph();
+            cy?.$id(newElem.id).select();
+            closePlusMenu();
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlus} />
+          </ListItemIcon>
+          <ListItemText>Add Scheme</ListItemText>
+        </MenuItem>
+      </Menu>
+      <Menu
         open={ctxMenu.mouseY !== null && ctxMenu.mouseX !== null}
-        onClose={handleClose}
+        onClose={closeContextMenu}
         anchorReference="anchorPosition"
         anchorPosition={
           ctxMenu.mouseY !== null && ctxMenu.mouseX !== null
@@ -419,7 +507,7 @@ export default function Cytoscape({
                 updateGraph();
               }
             }
-            handleClose();
+            closeContextMenu();
           }}
         >
           <ListItemIcon>
@@ -432,7 +520,7 @@ export default function Cytoscape({
           onClick={() => {
             ctxMenu.target?.remove();
             updateGraph();
-            handleClose();
+            closeContextMenu();
           }}
         >
           <ListItemIcon>
@@ -459,7 +547,7 @@ export default function Cytoscape({
             });
             updateGraph();
             cy?.$id(newElem.id).select();
-            handleClose();
+            closeContextMenu();
           }}
         >
           <ListItemIcon>
@@ -486,7 +574,7 @@ export default function Cytoscape({
             });
             updateGraph();
             cy?.$id(newElem.id).select();
-            handleClose();
+            closeContextMenu();
           }}
         >
           <ListItemIcon>

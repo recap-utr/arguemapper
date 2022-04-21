@@ -22,7 +22,11 @@ interface Selection {
   focus: number;
 }
 
-function Resources({ container }: { container: HTMLElement | null }) {
+interface Props {
+  containerSize: () => { width: number; height: number };
+}
+
+const Resources: React.FC<Props> = ({ containerSize }) => {
   const { cy, updateGraph, currentState } = useGraph();
 
   const [resources, setResources] = useState<{
@@ -61,14 +65,7 @@ function Resources({ container }: { container: HTMLElement | null }) {
       if (cy) {
         const newElem = cytoModel.node.initAtom(text);
         newElem.reference = cytoModel.reference.init(text, resourceId, offset);
-
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-
-        if (container) {
-          width = container.clientWidth;
-          height = container.clientHeight;
-        }
+        const size = containerSize();
 
         // @ts-ignore
         cy.add({
@@ -77,8 +74,8 @@ function Resources({ container }: { container: HTMLElement | null }) {
             {
               data: newElem,
               renderedPosition: {
-                x: width / 2,
-                y: height / 2,
+                x: size.width / 2,
+                y: size.height / 2,
               },
             },
           ],
@@ -87,7 +84,7 @@ function Resources({ container }: { container: HTMLElement | null }) {
         cy.$id(newElem.id).select();
       }
     },
-    [cy, updateGraph, container]
+    [cy, updateGraph, containerSize]
   );
 
   const writeResources = useCallback(() => {
@@ -187,7 +184,7 @@ function Resources({ container }: { container: HTMLElement | null }) {
       </TabPanel>
     </TabContext>
   );
-}
+};
 
 function Resource({
   id,
