@@ -15,19 +15,27 @@ export interface Participant {
   metadata: JsonValue;
 }
 
-export function init(): Participant {
+export function init(
+  name?: string,
+  username?: string,
+  email?: string,
+  url?: string,
+  location?: string,
+  description?: string,
+  metadata: JsonValue = {}
+): Participant {
   const now = date.now();
 
   return {
-    name: undefined,
-    username: undefined,
-    email: undefined,
-    url: undefined,
-    location: undefined,
-    description: undefined,
+    name,
+    username,
+    email,
+    url,
+    location,
+    description,
     created: now,
     updated: now,
-    metadata: {},
+    metadata,
   };
 }
 

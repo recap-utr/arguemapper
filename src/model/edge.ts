@@ -14,7 +14,12 @@ export interface Edge {
   metadata: JsonValue;
 }
 
-export function init(source: string, target: string, id?: string): Edge {
+export function init(
+  source: string,
+  target: string,
+  id?: string,
+  metadata: JsonValue = {}
+): Edge {
   const now = date.now();
 
   return {
@@ -23,7 +28,7 @@ export function init(source: string, target: string, id?: string): Edge {
     target,
     created: now,
     updated: now,
-    metadata: {},
+    metadata,
   };
 }
 

@@ -12,16 +12,21 @@ export interface Resource {
   metadata: JsonValue;
 }
 
-export function init(text: string): Resource {
+export function init(
+  text: string,
+  title?: string,
+  source?: string,
+  metadata: JsonValue = {}
+): Resource {
   const now = date.now();
 
   return {
     text,
-    title: undefined,
-    source: undefined,
+    title,
+    source,
     created: now,
     updated: now,
-    metadata: {},
+    metadata,
   };
 }
 

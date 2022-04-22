@@ -172,7 +172,13 @@ export interface AtomNode extends Node {
   participant?: string;
 }
 
-export function initAtom(text: string = "", id?: string | undefined): AtomNode {
+export function initAtom(
+  text: string = "",
+  id?: string,
+  reference?: Reference,
+  participant?: string,
+  metadata: JsonValue = {}
+): AtomNode {
   const now = date.now();
 
   return {
@@ -180,10 +186,10 @@ export function initAtom(text: string = "", id?: string | undefined): AtomNode {
     kind: "atom",
     created: now,
     updated: now,
-    metadata: {},
-    text: text,
-    reference: undefined,
-    participant: undefined,
+    metadata,
+    text,
+    reference,
+    participant,
   };
 }
 
@@ -196,7 +202,9 @@ export interface SchemeNode extends Node {
 export function initScheme(
   type?: SchemeType,
   argumentationScheme?: Scheme,
-  id?: string
+  id?: string,
+  descriptors: JsonValue = {},
+  metadata: JsonValue = {}
 ): SchemeNode {
   const now = date.now();
 
@@ -205,10 +213,10 @@ export function initScheme(
     kind: "scheme",
     created: now,
     updated: now,
-    metadata: {},
-    type: type,
-    argumentationScheme: argumentationScheme,
-    descriptors: {},
+    metadata,
+    type,
+    argumentationScheme,
+    descriptors,
   };
 }
 

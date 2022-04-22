@@ -12,13 +12,14 @@ export interface Reference {
 export function init(
   text: string,
   resource?: string,
-  offset?: number
+  offset?: number,
+  metadata: JsonValue = {}
 ): Reference {
   return {
     resource,
     offset,
     text,
-    metadata: {},
+    metadata,
   };
 }
 
