@@ -1,3 +1,4 @@
+import { v1 as uuid } from "uuid";
 import * as cytoModel from "../model/cytoWrapper";
 
 // STRESS TEST
@@ -27,31 +28,50 @@ import * as cytoModel from "../model/cytoWrapper";
 // };
 
 function demoGraph(): cytoModel.CytoGraph {
+  const resourceId = uuid();
+  const resources = {
+    [resourceId]: cytoModel.resource.init(
+      "The major claim typically appears at the beginning, followed by multiple claims or premises."
+    ),
+  };
+  const participantId = uuid();
+  const participants = {
+    [participantId]: cytoModel.participant.init("John Doe"),
+  };
+
+  const analysts = [cytoModel.participant.init("Michael Web")];
+
   const nodes = [
     {
       data: cytoModel.node.initAtom(
-        "This node represents the major claim of the argument."
+        "This node represents the major claim of the argument.",
+        undefined,
+        cytoModel.reference.init(
+          "The major claim typically appears at the beginning",
+          resourceId,
+          0
+        )
       ),
     },
     {
       data: cytoModel.node.initAtom(
-        "Here we have a premise that supports the claim."
+        "Here we have a premise that supports the claim.",
+        undefined,
+        cytoModel.reference.init(
+          "followed by multiple claims or premises",
+          resourceId,
+          52
+        )
       ),
     },
     {
       data: cytoModel.node.initAtom("And another one that attacks it."),
     },
     {
-      data: cytoModel.node.initScheme(
-        cytoModel.node.SchemeType.SUPPORT,
-        undefined
-      ),
+      data: cytoModel.node.initScheme(cytoModel.node.SchemeType.SUPPORT),
     },
     {
-      data: cytoModel.node.initScheme(
-        cytoModel.node.SchemeType.ATTACK,
-        undefined
-      ),
+      data: cytoModel.node.initScheme(cytoModel.node.SchemeType.ATTACK),
     },
   ];
 
@@ -75,7 +95,13 @@ function demoGraph(): cytoModel.CytoGraph {
       nodes,
       edges,
     },
-    data: { ...cytoModel.graph.init(), majorClaim: nodes[0].data.id },
+    data: {
+      ...cytoModel.graph.init(),
+      majorClaim: nodes[0].data.id,
+      resources,
+      participants,
+      analysts,
+    },
   };
 }
 
