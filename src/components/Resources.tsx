@@ -231,7 +231,7 @@ function Resource({
       for (const reference of filteredReferences) {
         const start = reference.offset;
 
-        if (start) {
+        if (start !== undefined) {
           const end = start + reference.text.length;
 
           if (end && text.substring(start, end) === reference.text) {
