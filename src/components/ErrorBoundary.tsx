@@ -104,7 +104,7 @@ class ErrorBoundary extends React.Component<Props, State> {
             )}
             {this.state.graph && (
               <Stack spacing={1}>
-                <Typography variant="h3">ABuf Export</Typography>
+                <Typography variant="h3">ProtoArg Export</Typography>
                 <Typography variant="h6">
                   Please copy this code to backup your work!
                 </Typography>
