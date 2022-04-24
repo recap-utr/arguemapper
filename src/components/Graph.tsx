@@ -24,9 +24,9 @@ import {
 } from "@mui/material";
 import type { Core, EventObject, NodeSingular } from "cytoscape";
 import cytoscape from "cytoscape";
-// import cxtmenu from "cytoscape-cxtmenu";
-import dagre from "cytoscape-dagre";
 import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
+// @ts-ignore
+import elk from "cytoscape-elk";
 // @ts-ignore
 import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
@@ -38,7 +38,7 @@ import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
 // @ts-ignore
-cytoscape.use(dagre);
+cytoscape.use(elk);
 // @ts-ignore
 cytoscape.use(edgehandles);
 // @ts-ignore
@@ -51,12 +51,16 @@ cytoscape.use(navigator);
 cytoscape.use = () => {};
 
 const defaultLayout = {
-  name: "dagre",
+  name: "elk",
   nodeDimensionsIncludeLabels: true,
-  nodeSep: 25,
-  rankSep: 10,
-  rankDir: "BT",
   animate: false,
+  elk: {
+    // algorithm: "mrtree",
+    algorithm: "layered",
+    "elk.direction": "UP",
+    "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+    "elk.layered.layering.strategy": "NETWORK_SIMPLEX",
+  },
 };
 
 function initEdgeHandles(

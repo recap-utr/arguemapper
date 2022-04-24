@@ -17,9 +17,8 @@
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^14.0.0",
     "cytoscape": "^3.21.0",
-    "cytoscape-cxtmenu": "^3.4.0",
-    "cytoscape-dagre": "^2.4.0",
     "cytoscape-edgehandles": "^4.0",
+    "cytoscape-elk": "^2.0.2",
     "cytoscape-navigator": "^2.0.1",
     "cytoscape-popper": "^2.0.0",
     "date-fns": "^2.28.0",
@@ -68,7 +67,6 @@
   },
   "devDependencies": {
     "@types/cytoscape": "^3.19.4",
-    "@types/cytoscape-dagre": "^2.3.0",
     "@types/cytoscape-edgehandles": "^4.0.0",
     "@types/cytoscape-popper": "^2.0.0",
     "@types/jest": "^27.4.1",
@@ -76,6 +74,7 @@
     "@types/node": "^17.0.23",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",
-    "@types/uuid": "^8.3.4"
+    "@types/uuid": "^8.3.4",
+    "web-worker": "^1.2.0"
   }
 }
