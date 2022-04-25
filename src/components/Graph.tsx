@@ -25,9 +25,7 @@ import {
 import type { Core, EventObject, NodeSingular } from "cytoscape";
 import cytoscape from "cytoscape";
 import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
-// @ts-ignore
-import elk from "cytoscape-elk";
-// @ts-ignore
+import elk, { ElkLayoutOptions } from "cytoscape-elk";
 import navigator from "cytoscape-navigator";
 import cytoPopper from "cytoscape-popper";
 import { useSnackbar } from "notistack";
@@ -37,20 +35,15 @@ import style from "../cytoStyle";
 import * as cytoModel from "../model/cytoWrapper";
 import { useGraph } from "./GraphContext";
 
-// @ts-ignore
 cytoscape.use(elk);
-// @ts-ignore
 cytoscape.use(edgehandles);
-// @ts-ignore
 cytoscape.use(cytoPopper);
-// @ts-ignore
 cytoscape.use(navigator);
-// cytoscape.use(cxtmenu);
 // Otherwise, react will throw errors when hot-reloading the module
 // @ts-ignore
 cytoscape.use = () => {};
 
-const defaultLayout = {
+const defaultLayout: ElkLayoutOptions = {
   name: "elk",
   nodeDimensionsIncludeLabels: true,
   animate: false,
