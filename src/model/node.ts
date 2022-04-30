@@ -1,6 +1,7 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
+import { startCase } from "lodash";
 import { v1 as uuid } from "uuid";
 import * as date from "../services/date";
 import * as aif from "./aif";
@@ -364,7 +365,11 @@ export function label(data: Node): string {
   if (isAtom(data)) {
     return data.text;
   } else if (isScheme(data) && data.scheme) {
-    return `${data.scheme.type} ${data.scheme.value}`;
+    if (data.scheme.value !== schemeMap[data.scheme.type].DEFAULT) {
+      return data.scheme.value;
+    }
+
+    return startCase(data.scheme.type);
   }
 
   return NO_SCHEME_LABEL;

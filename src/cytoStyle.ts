@@ -1,9 +1,7 @@
 import { Theme } from "@mui/material";
 import * as color from "@mui/material/colors";
-import { startCase } from "lodash";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./model/cytoWrapper";
-import { SchemeNode } from "./model/node";
 
 const lineHeight = 1.15;
 const maxWidth = 160;
@@ -20,6 +18,8 @@ const style = (theme: Theme) => {
     {
       selector: 'node[type="atom"], node[type="scheme"]',
       style: {
+        content: (ele: cytoscape.NodeSingular) =>
+          cytoModel.node.label(ele.data()),
         width: (ele: cytoscape.NodeSingular) => {
           const data = ele.data() as cytoModel.node.Node;
           const label = cytoModel.node.label(data);
@@ -66,7 +66,6 @@ const style = (theme: Theme) => {
     {
       selector: 'node[type="atom"]',
       style: {
-        content: "data(text)",
         // "background-color": theme.palette.primary.main,
         // "border-color": grey[500],
         // "border-width": (ele: cytoscape.NodeSingular) => {
@@ -101,16 +100,7 @@ const style = (theme: Theme) => {
     {
       selector: 'node[type="scheme"]',
       style: {
-        content: (ele: cytoscape.NodeSingular) => {
-          const data = ele.data() as SchemeNode;
-
-          if (data.scheme) {
-            return `${startCase(data.scheme.type)}\n${data.scheme?.value}`;
-          } else {
-            return "Unknown";
-          }
-        },
-        shape: "round-hexagon",
+        // shape: "round-hexagon",
         "background-color": color.teal[500],
       },
     },
