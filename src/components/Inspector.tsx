@@ -18,7 +18,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   SelectChangeEvent,
   Stack,
   styled,
@@ -29,7 +33,7 @@ import {
   useTheme,
 } from "@mui/material";
 import produce from "immer";
-import _ from "lodash";
+import _, { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
@@ -152,6 +156,17 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           setElement(
             produce((draft: any) => {
               _.set(draft, attr, event.target.value);
+
+              if (
+                Array.isArray(attr) &&
+                attr[0] === "scheme" &&
+                attr[1] === "type"
+              ) {
+                draft.scheme.value = // "Default";
+                  cytoModel.node.schemeMap[
+                    event.target.value as cytoModel.node.SchemeType
+                  ].DEFAULT;
+              }
             })
           );
         }
@@ -179,41 +194,46 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
   if (elementType() === "scheme") {
     fields = (
       <>
-        {/* TODO */}
-        {/* <FormControl fullWidth>
+        <FormControl fullWidth>
           <InputLabel>Scheme Type</InputLabel>
           <Select
-            value={element.type}
+            value={element.scheme.type}
             label="Scheme Type"
-            onChange={produceHandleChange("type")}
+            onChange={produceHandleChange(["scheme", "type"])}
             defaultValue={NULL_VALUE}
           >
             <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
             {Object.entries(cytoModel.node.SchemeType).map(([key, value]) => (
               <MenuItem key={key} value={value}>
-                {value}
+                {startCase(value)}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth>
-          <InputLabel>Argumentation Scheme</InputLabel>
-          <Select
-            value={element.argumentationScheme}
-            label="Argumentation Scheme"
-            onChange={produceHandleChange("argumentationScheme")}
-            defaultValue={NULL_VALUE}
-          >
-            <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
-            {Object.entries(cytoModel.node.Scheme).map(([key, value]) => {
-              return (
-                <MenuItem key={key} value={value}>
-                  {value}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl> */}
+        {element.scheme.type && (
+          <FormControl fullWidth>
+            <InputLabel>Argumentation Scheme</InputLabel>
+            <Select
+              value={element.scheme.value}
+              label="Argumentation Scheme"
+              onChange={produceHandleChange(["scheme", "value"])}
+              defaultValue={NULL_VALUE}
+            >
+              {/* <MenuItem value={NULL_VALUE}>Unknown</MenuItem> */}
+              {Object.entries(
+                cytoModel.node.schemeMap[
+                  element.scheme.type as cytoModel.node.SchemeType
+                ]
+              ).map(([key, value]) => {
+                return (
+                  <MenuItem key={key} value={value}>
+                    {value}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        )}
         {deleteButton}
       </>
     );
