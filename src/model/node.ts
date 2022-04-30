@@ -380,7 +380,7 @@ export function toProtobuf(data: Node): arguebuf.Node {
     return {
       metadata: meta.toProtobuf(data.metadata),
       userdata: Struct.fromJson(data.userdata),
-      node: {
+      type: {
         oneofKind: "atom",
         atom: arguebuf.Atom.create({
           text: data.text,
@@ -393,7 +393,7 @@ export function toProtobuf(data: Node): arguebuf.Node {
     };
   } else if (isScheme(data)) {
     const type = data.scheme?.type;
-    let scheme: arguebuf.Scheme["scheme"] = { oneofKind: undefined };
+    let scheme: arguebuf.Scheme["type"] = { oneofKind: undefined };
 
     if (data.scheme) {
       switch (type) {
@@ -431,11 +431,11 @@ export function toProtobuf(data: Node): arguebuf.Node {
     return {
       metadata: meta.toProtobuf(data.metadata),
       userdata: Struct.fromJson(data.userdata),
-      node: {
+      type: {
         oneofKind: "scheme",
         scheme: arguebuf.Scheme.create({
           premiseDescriptors: data.premiseDescriptors,
-          scheme,
+          type: scheme,
         }),
       },
     };
@@ -527,50 +527,50 @@ export function fromAif(obj: aif.Node): Node | undefined {
 }
 
 export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
-  if (obj.node.oneofKind === "atom") {
+  if (obj.type.oneofKind === "atom") {
     const node: AtomNode = {
       id,
       metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
       userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
       type: "atom",
-      text: obj.node.atom.text,
-      participant: obj.node.atom.participant,
-      reference: obj.node.atom.reference
-        ? ref.fromProtobuf(obj.node.atom.reference)
+      text: obj.type.atom.text,
+      participant: obj.type.atom.participant,
+      reference: obj.type.atom.reference
+        ? ref.fromProtobuf(obj.type.atom.reference)
         : undefined,
     };
 
     return node;
-  } else if (obj.node.oneofKind === "scheme") {
-    const type = obj.node.scheme.scheme.oneofKind;
+  } else if (obj.type.oneofKind === "scheme") {
+    const type = obj.type.scheme.type.oneofKind;
     let scheme: Scheme | undefined = undefined;
 
     switch (type) {
       case "support": {
         scheme = {
           type: SchemeType.SUPPORT,
-          value: protobuf2support[obj.node.scheme.scheme.support],
+          value: protobuf2support[obj.type.scheme.type.support],
         };
         break;
       }
       case "attack": {
         scheme = {
           type: SchemeType.ATTACK,
-          value: protobuf2attack[obj.node.scheme.scheme.attack],
+          value: protobuf2attack[obj.type.scheme.type.attack],
         };
         break;
       }
       case "rephrase": {
         scheme = {
           type: SchemeType.REPHRASE,
-          value: protobuf2rephrase[obj.node.scheme.scheme.rephrase],
+          value: protobuf2rephrase[obj.type.scheme.type.rephrase],
         };
         break;
       }
       case "preference": {
         scheme = {
           type: SchemeType.PREFERENCE,
-          value: protobuf2preference[obj.node.scheme.scheme.preference],
+          value: protobuf2preference[obj.type.scheme.type.preference],
         };
         break;
       }
@@ -582,7 +582,7 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
       userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
       type: "scheme",
       scheme,
-      premiseDescriptors: obj.node.scheme.premiseDescriptors,
+      premiseDescriptors: obj.type.scheme.premiseDescriptors,
     };
 
     return node;
