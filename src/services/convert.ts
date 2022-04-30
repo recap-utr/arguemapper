@@ -1,5 +1,5 @@
 import { JsonValue } from "@protobuf-ts/runtime";
-import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
+import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import * as aif from "../model/aif";
 import * as cytoModel from "../model/cytoWrapper";
 
@@ -46,18 +46,14 @@ export function cyto2aif(cyto: cytoModel.CytoGraph): aif.Graph {
 }
 
 function aif2cyto(obj: aif.Graph): cytoModel.CytoGraph {
-  // const nodes: Array<aif.Node | aif.Locution> = (
-  //   [] as Array<aif.Node | aif.Locution>
-  // ).concat(obj.nodes, obj.locutions);
-
   const nodes = obj.nodes
-    // .filter((node) => node.type !== "L")
-    .map((node) => ({ data: cytoModel.node.fromAif(node) }));
+    .map((node) => ({ data: cytoModel.node.fromAif(node) }))
+    .filter((node): node is cytoModel.CytoNode => !!node);
   const nodeIds = new Set(nodes.map((node) => node.data.id));
 
   return {
     data: {
-      ...cytoModel.graph.init(),
+      ...cytoModel.graph.init({}),
     },
     elements: {
       nodes,

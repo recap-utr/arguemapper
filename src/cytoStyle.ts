@@ -1,5 +1,6 @@
 import { Theme } from "@mui/material";
 import * as color from "@mui/material/colors";
+import { startCase } from "lodash";
 import textMetrics from "text-metrics";
 import * as cytoModel from "./model/cytoWrapper";
 import { SchemeNode } from "./model/node";
@@ -17,7 +18,7 @@ const style = (theme: Theme) => {
 
   return [
     {
-      selector: 'node[kind="atom"], node[kind="scheme"]',
+      selector: 'node[type="atom"], node[type="scheme"]',
       style: {
         width: (ele: cytoscape.NodeSingular) => {
           const data = ele.data() as cytoModel.node.Node;
@@ -63,7 +64,7 @@ const style = (theme: Theme) => {
       },
     },
     {
-      selector: 'node[kind="atom"]',
+      selector: 'node[type="atom"]',
       style: {
         content: "data(text)",
         // "background-color": theme.palette.primary.main,
@@ -98,15 +99,13 @@ const style = (theme: Theme) => {
       },
     },
     {
-      selector: 'node[kind="scheme"]',
+      selector: 'node[type="scheme"]',
       style: {
         content: (ele: cytoscape.NodeSingular) => {
           const data = ele.data() as SchemeNode;
 
-          if (data.argumentationScheme) {
-            return data.argumentationScheme;
-          } else if (data.type) {
-            return data.type;
+          if (data.scheme) {
+            return `${startCase(data.scheme.type)}\n${data.scheme?.value}`;
           } else {
             return "Unknown";
           }
@@ -116,13 +115,13 @@ const style = (theme: Theme) => {
       },
     },
     {
-      selector: 'node[kind="scheme"][type="Support"]',
+      selector: 'node[type="scheme"][scheme.type="support"]',
       style: {
         "background-color": color.green[500],
       },
     },
     {
-      selector: 'node[kind="scheme"][type="Attack"]',
+      selector: 'node[type="scheme"][scheme.type="attack"]',
       style: {
         "background-color": color.red[500],
       },

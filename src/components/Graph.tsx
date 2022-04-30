@@ -108,15 +108,23 @@ function initEdgeHandles(
         y: (sourcePos.y + targetPos.y) / 2,
       };
 
-      const schemeData = cytoModel.node.initScheme(
-        cytoModel.node.SchemeType.SUPPORT
-      );
+      const schemeData = cytoModel.node.initScheme({});
 
       cy.add({
         nodes: [{ data: schemeData, position }],
         edges: [
-          { data: cytoModel.edge.init(sourceData.id, schemeData.id) },
-          { data: cytoModel.edge.init(schemeData.id, targetData.id) },
+          {
+            data: cytoModel.edge.init({
+              source: sourceData.id,
+              target: schemeData.id,
+            }),
+          },
+          {
+            data: cytoModel.edge.init({
+              source: schemeData.id,
+              target: targetData.id,
+            }),
+          },
         ],
       });
     } else {
@@ -125,7 +133,10 @@ function initEdgeHandles(
         // @ts-ignore
         edges: [
           {
-            data: cytoModel.edge.init(sourceData.id, targetData.id),
+            data: cytoModel.edge.init({
+              source: sourceData.id,
+              target: targetData.id,
+            }),
           },
         ],
       });
@@ -322,7 +333,7 @@ export default function Cytoscape({
     try {
       initCy();
     } catch {
-      resetGraph(cytoModel.init());
+      resetGraph(cytoModel.init({}));
       initCy();
       enqueueSnackbar(
         "There was an error loading your stored graph. We have created an empty graph for you.",
@@ -429,7 +440,7 @@ export default function Cytoscape({
       >
         <MenuItem
           onClick={() => {
-            const newElem = cytoModel.node.initAtom();
+            const newElem = cytoModel.node.initAtom({ text: "" });
             const size = containerSize();
             // @ts-ignore
             cy?.add({
@@ -456,7 +467,7 @@ export default function Cytoscape({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            const newElem = cytoModel.node.initScheme();
+            const newElem = cytoModel.node.initScheme({});
             const size = containerSize();
             // @ts-ignore
             cy?.add({
@@ -528,7 +539,7 @@ export default function Cytoscape({
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
-            const newElem = cytoModel.node.initAtom();
+            const newElem = cytoModel.node.initAtom({ text: "" });
             // @ts-ignore
             cy?.add({
               // @ts-ignore
@@ -555,7 +566,7 @@ export default function Cytoscape({
         <MenuItem
           {...showFor(["graph"])}
           onClick={() => {
-            const newElem = cytoModel.node.initScheme();
+            const newElem = cytoModel.node.initScheme({});
             // @ts-ignore
             cy?.add({
               // @ts-ignore

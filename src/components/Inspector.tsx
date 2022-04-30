@@ -18,11 +18,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
   SelectChangeEvent,
   Stack,
   styled,
@@ -183,7 +179,8 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
   if (elementType() === "scheme") {
     fields = (
       <>
-        <FormControl fullWidth>
+        {/* TODO */}
+        {/* <FormControl fullWidth>
           <InputLabel>Scheme Type</InputLabel>
           <Select
             value={element.type}
@@ -216,7 +213,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
               );
             })}
           </Select>
-        </FormControl>
+        </FormControl> */}
         {deleteButton}
       </>
     );
@@ -298,7 +295,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
                   variant="contained"
                   onClick={() => {
-                    confirm().then(() => resetGraph(cytoModel.init()));
+                    confirm().then(() => resetGraph(cytoModel.init({})));
                   }}
                 >
                   Load Empty

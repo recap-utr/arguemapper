@@ -1,7 +1,7 @@
 import { JsonValue } from "@protobuf-ts/runtime";
-import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
-import * as date from "../services/date";
+import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import { Struct } from "arg-services/google/protobuf/struct_pb";
+import * as meta from "./metadata";
 
 export interface Participant {
   name?: string;
@@ -10,22 +10,31 @@ export interface Participant {
   url?: string;
   location?: string;
   description?: string;
-  created: string;
-  updated: string;
-  metadata: JsonValue;
+  metadata: meta.Metadata;
+  userdata: JsonValue;
 }
 
-export function init(
-  name?: string,
-  username?: string,
-  email?: string,
-  url?: string,
-  location?: string,
-  description?: string,
-  metadata: JsonValue = {}
-): Participant {
-  const now = date.now();
+interface Props {
+  name?: string;
+  username?: string;
+  email?: string;
+  url?: string;
+  location?: string;
+  description?: string;
+  metadata?: meta.Metadata;
+  userdata?: JsonValue;
+}
 
+export function init({
+  name,
+  username,
+  email,
+  url,
+  location,
+  description,
+  metadata,
+  userdata,
+}: Props): Participant {
   return {
     name,
     username,
@@ -33,24 +42,22 @@ export function init(
     url,
     location,
     description,
-    created: now,
-    updated: now,
-    metadata,
+    metadata: metadata ?? meta.init({}),
+    userdata: userdata ?? {},
   };
 }
 
 export function toProtobuf(data: Participant): arguebuf.Participant {
-  return {
+  return arguebuf.Participant.create({
     name: data.name,
     username: data.username,
     email: data.email,
     url: data.url,
     location: data.location,
     description: data.description,
-    created: date.toProtobuf(data.created),
-    updated: date.toProtobuf(data.updated),
-    metadata: Struct.fromJson(data.metadata),
-  };
+    metadata: meta.toProtobuf(data.metadata),
+    userdata: Struct.fromJson(data.userdata),
+  });
 }
 
 export function fromProtobuf(obj: arguebuf.Participant): Participant {
@@ -61,8 +68,7 @@ export function fromProtobuf(obj: arguebuf.Participant): Participant {
     url: obj.url,
     location: obj.location,
     description: obj.description,
-    created: date.fromProtobuf(obj.created),
-    updated: date.fromProtobuf(obj.updated),
-    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+    metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
+    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
   };
 }

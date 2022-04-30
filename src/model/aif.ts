@@ -7,8 +7,9 @@ export interface Graph {
 export interface Node {
   nodeID: string;
   text: string;
-  type: string;
+  type: NodeType;
   timestamp: string;
+  scheme?: string;
 }
 
 export interface Edge {
@@ -27,6 +28,8 @@ export interface Locution {
   source?: string;
 }
 
-export type SchemeType = "RA" | "CA" | "MA" | "TA" | "PA" | "YA";
+export type NodeType = "I" | "L" | "RA" | "CA" | "MA" | "TA" | "PA" | "YA" | "";
+
+export type SchemeType = "RA" | "CA" | "MA" | "PA" | "";
 
 export const DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";

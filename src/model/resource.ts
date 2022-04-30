@@ -1,53 +1,56 @@
 import { JsonValue } from "@protobuf-ts/runtime";
-import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
-import * as date from "../services/date";
+import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import { Struct } from "arg-services/google/protobuf/struct_pb";
+import * as meta from "./metadata";
 
 export interface Resource {
   text: string;
   title?: string;
   source?: string;
-  created: string;
-  updated: string;
-  metadata: JsonValue;
+  metadata: meta.Metadata;
+  userdata: JsonValue;
 }
 
-export function init(
-  text: string,
-  title?: string,
-  source?: string,
-  metadata: JsonValue = {}
-): Resource {
-  const now = date.now();
+interface Props {
+  text: string;
+  title?: string;
+  source?: string;
+  metadata?: meta.Metadata;
+  userdata?: JsonValue;
+}
 
+export function init({
+  text,
+  title,
+  source,
+  metadata,
+  userdata,
+}: Props): Resource {
   return {
     text,
     title,
     source,
-    created: now,
-    updated: now,
-    metadata,
+    metadata: metadata ?? meta.init({}),
+    userdata: userdata ?? {},
   };
 }
 
 export function toProtobuf(data: Resource): arguebuf.Resource {
-  return {
-    metadata: Struct.fromJson(data.metadata),
+  return arguebuf.Resource.create({
     text: data.text,
     title: data.title,
     source: data.source,
-    created: date.toProtobuf(data.created),
-    updated: date.toProtobuf(data.updated),
-  };
+    metadata: meta.toProtobuf(data.metadata),
+    userdata: Struct.fromJson(data.userdata),
+  });
 }
 
 export function fromProtobuf(obj: arguebuf.Resource): Resource {
   return {
-    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
     text: obj.text,
     title: obj.title,
     source: obj.source,
-    created: date.fromProtobuf(obj.created),
-    updated: date.fromProtobuf(obj.updated),
+    metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
+    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
   };
 }

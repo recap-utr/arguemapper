@@ -1,4 +1,4 @@
-import { Timestamp } from "@recap-utr/arg-services/google/protobuf/timestamp_pb";
+import { Timestamp } from "arg-services/google/protobuf/timestamp_pb";
 import * as dateHelper from "date-fns";
 
 export function now(): string {

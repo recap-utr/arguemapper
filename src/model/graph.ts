@@ -1,64 +1,77 @@
 import { JsonValue } from "@protobuf-ts/runtime";
-import * as arguebuf from "@recap-utr/arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "@recap-utr/arg-services/google/protobuf/struct_pb";
-import argServices from "@recap-utr/arg-services/package.json";
-import * as date from "../services/date";
-import {
-  fromProtobuf as participantFromProtobuf,
-  Participant,
-  toProtobuf as participantToProtobuf,
-} from "./participant";
-import {
-  fromProtobuf as resourceFromProtobuf,
-  Resource,
-  toProtobuf as resourceToProtobuf,
-} from "./resource";
+import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import { Struct } from "arg-services/google/protobuf/struct_pb";
+import argServices from "arg-services/package.json";
+import * as analyst from "./analyst";
+import * as meta from "./metadata";
+import * as participant from "./participant";
+import * as resource from "./resource";
 
 export interface Graph {
-  resources: { [x: string]: Resource };
-  participants: { [x: string]: Participant };
+  resources: { [x: string]: resource.Resource };
+  participants: { [x: string]: participant.Participant };
   majorClaim?: string;
-  analysts: Participant[];
-  version: string;
-  created: string;
-  updated: string;
-  metadata: JsonValue;
+  analysts: { [x: string]: analyst.Analyst };
+  libraryVersion: string;
+  schemaVersion: number;
+  metadata: meta.Metadata;
+  userdata: JsonValue;
 }
 
-export function init(): Graph {
-  const now = date.now();
+export interface Props {
+  resources?: { [x: string]: resource.Resource };
+  participants?: { [x: string]: participant.Participant };
+  majorClaim?: string;
+  analysts?: { [x: string]: analyst.Analyst };
+  libraryVersion?: string;
+  schemaVersion?: number;
+  metadata?: meta.Metadata;
+  userdata?: JsonValue;
+}
 
+export function init({
+  resources,
+  participants,
+  majorClaim,
+  analysts,
+  metadata,
+  userdata,
+}: Props): Graph {
   return {
-    created: now,
-    updated: now,
-    metadata: {},
-    resources: {},
-    participants: {},
-    analysts: [],
-    version: argServices.version,
+    metadata: metadata ?? meta.init({}),
+    userdata: userdata ?? {},
+    resources: resources ?? {},
+    participants: participants ?? {},
+    analysts: analysts ?? {},
+    majorClaim: majorClaim,
+    libraryVersion: argServices.version,
+    schemaVersion: 1,
   };
 }
 
-export function toProtobuf(
-  data: Graph
-): Omit<arguebuf.Graph, "nodes" | "edges"> {
-  return {
+export function toProtobuf(data: Graph): arguebuf.Graph {
+  return arguebuf.Graph.create({
     resources: Object.fromEntries(
-      Object.entries(data.resources).map(([k, v]) => [k, resourceToProtobuf(v)])
+      Object.entries(data.resources).map(([k, v]) => [
+        k,
+        resource.toProtobuf(v),
+      ])
     ),
     participants: Object.fromEntries(
       Object.entries(data.participants).map(([k, v]) => [
         k,
-        participantToProtobuf(v),
+        participant.toProtobuf(v),
       ])
     ),
     majorClaim: data.majorClaim,
-    analysts: data.analysts.map((v) => participantToProtobuf(v)),
-    version: data.version,
-    created: date.toProtobuf(data.created),
-    updated: date.toProtobuf(data.updated),
-    metadata: Struct.fromJson(data.metadata),
-  };
+    analysts: Object.fromEntries(
+      Object.entries(data.analysts).map(([k, v]) => [k, analyst.toProtobuf(v)])
+    ),
+    libraryVersion: data.libraryVersion,
+    schemaVersion: data.schemaVersion,
+    metadata: meta.toProtobuf(data.metadata),
+    userdata: Struct.fromJson(data.userdata),
+  });
 }
 
 export function fromProtobuf(obj: arguebuf.Graph): Graph {
@@ -66,20 +79,22 @@ export function fromProtobuf(obj: arguebuf.Graph): Graph {
     resources: Object.fromEntries(
       Object.entries(obj.resources).map(([k, v]) => [
         k,
-        resourceFromProtobuf(v),
+        resource.fromProtobuf(v),
       ])
     ),
     participants: Object.fromEntries(
       Object.entries(obj.participants).map(([k, v]) => [
         k,
-        participantFromProtobuf(v),
+        participant.fromProtobuf(v),
       ])
     ),
     majorClaim: obj.majorClaim,
-    analysts: obj.analysts.map((v) => participantFromProtobuf(v)),
-    version: obj.version,
-    created: date.fromProtobuf(obj.created),
-    updated: date.fromProtobuf(obj.updated),
-    metadata: obj.metadata ? Struct.toJson(obj.metadata) : {},
+    analysts: Object.fromEntries(
+      Object.entries(obj.analysts).map(([k, v]) => [k, analyst.fromProtobuf(v)])
+    ),
+    libraryVersion: obj.libraryVersion,
+    schemaVersion: obj.schemaVersion,
+    metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
+    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
   };
 }

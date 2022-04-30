@@ -35,12 +35,12 @@ const GraphContext = createContext<{
   cy: null,
   _setCy: () => {},
   _setCyRef: () => {},
-  loadGraph: () => cytoModel.init(),
+  loadGraph: () => cytoModel.init({}),
   updateGraph: () => {},
   redo: () => {},
   undo: () => {},
   resetStates: () => {},
-  exportState: () => cytoModel.init(),
+  exportState: () => cytoModel.init({}),
   resetGraph: () => {},
   undoable: false,
   redoable: false,
@@ -57,7 +57,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   storageName,
 }) => {
   const [initialGraph, setInitialGraph] = useState<cytoModel.CytoGraph>(
-    cytoModel.init()
+    cytoModel.init({})
   );
   const [cy, _setCy] = useState<cytoscape.Core | null>(null);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -126,7 +126,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         };
       }
 
-      return cytoModel.init();
+      return cytoModel.init({});
     },
     []
   );
@@ -185,7 +185,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     (graph: cytoModel.CytoGraph) => {
       localStorage.removeItem(storageName);
       // Make the graph unique, otherwise React could skip rerendering
-      graph.data.updated = date.now();
+      graph.data.metadata.updated = date.now();
       setInitialGraph(graph);
     },
     [storageName]

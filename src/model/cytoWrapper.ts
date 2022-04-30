@@ -7,15 +7,19 @@ export * as reference from "./reference";
 export * as resource from "./resource";
 export { node, graph, edge };
 
+export interface CytoNode {
+  data: node.Node;
+  [x: string]: unknown;
+}
+
+export interface CytoEdge {
+  data: edge.Edge;
+  [x: string]: unknown;
+}
+
 export interface CytoElements {
-  nodes: Array<{
-    data: node.Node;
-    [x: string]: unknown;
-  }>;
-  edges: Array<{
-    data: edge.Edge;
-    [x: string]: unknown;
-  }>;
+  nodes: Array<CytoNode>;
+  edges: Array<CytoEdge>;
 }
 
 export interface CytoGraph {
@@ -24,9 +28,11 @@ export interface CytoGraph {
   elements: CytoElements;
 }
 
-export function init(): CytoGraph {
+interface Props {}
+
+export function init({}: Props): CytoGraph {
   return {
-    data: graph.init(),
+    data: graph.init({}),
     elements: {
       nodes: [],
       edges: [],

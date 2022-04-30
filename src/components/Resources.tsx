@@ -63,8 +63,12 @@ const Resources: React.FC<Props> = ({ containerSize }) => {
   const addAtom = useCallback(
     (resourceId: string, text: string, offset: number) => {
       if (cy) {
-        const newElem = cytoModel.node.initAtom(text);
-        newElem.reference = cytoModel.reference.init(text, resourceId, offset);
+        const newElem = cytoModel.node.initAtom({ text });
+        newElem.reference = cytoModel.reference.init({
+          text,
+          resource: resourceId,
+          offset,
+        });
         const size = containerSize();
 
         // @ts-ignore
@@ -124,7 +128,7 @@ const Resources: React.FC<Props> = ({ containerSize }) => {
   const addResource = useCallback(() => {
     setResources(
       produce((draft) => {
-        draft[uuid()] = cytoModel.resource.init("");
+        draft[uuid()] = cytoModel.resource.init({ text: "" });
       })
     );
     writeResources();
