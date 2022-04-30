@@ -225,6 +225,8 @@ function Resource({
     null
   );
   const [hasChanged, setHasChanged] = useState(false);
+  // const [textHasFocus, setTextHasFocus] = useState(false);
+  // const [hoverAddButton, setHoverAddButton] = useState(false);
 
   const highlight = useCallback(
     (text: string, callback: (start: number, end: number) => void) => {
@@ -302,9 +304,26 @@ function Resource({
           inputProps: {
             selection: systemSelection,
             highlight: highlight,
+            // onFocus: () => {
+            //   setTextHasFocus(true);
+            // },
+            // onBlur: () => {
+            //   setTextHasFocus(false);
+            // },
           },
         }}
       />
+      <Button
+        fullWidth
+        variant="contained"
+        color="error"
+        startIcon={<FontAwesomeIcon icon={faTrash} />}
+        onClick={() => {
+          deleteResource(id);
+        }}
+      >
+        Delete Resource
+      </Button>
       {hasChanged && (
         <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
           <Button
@@ -333,36 +352,33 @@ function Resource({
         </Stack>
       )}
       {!hasChanged && (
-        <>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-            onClick={() => {
-              addAtom(
-                id,
-                resource.text.substring(
-                  userSelection.anchor,
-                  userSelection.focus
-                ),
-                userSelection.anchor
-              );
-            }}
-          >
-            Add selected text
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            color="error"
-            startIcon={<FontAwesomeIcon icon={faTrash} />}
-            onClick={() => {
-              deleteResource(id);
-            }}
-          >
-            Delete Resource
-          </Button>
-        </>
+        // userSelection.anchor !== userSelection.focus &&
+        // (textHasFocus || hoverAddButton) && (
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+          onClick={() => {
+            addAtom(
+              id,
+              resource.text.substring(
+                userSelection.anchor,
+                userSelection.focus
+              ),
+              userSelection.anchor
+            );
+            // setHoverAddButton(false);
+            // setUserSelection({
+            //   anchor: 0,
+            //   focus: 0,
+            // });
+          }}
+          // onMouseDown={() => {
+          //   setHoverAddButton(true);
+          // }}
+        >
+          Add selected text
+        </Button>
       )}
     </Stack>
   );

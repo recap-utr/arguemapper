@@ -148,7 +148,7 @@ function initEdgeHandles(
   return eh;
 }
 
-type ElementKind = null | "atom" | "scheme" | "edge" | "graph";
+type ElementType = null | "atom" | "scheme" | "edge" | "graph";
 
 interface CtxMenuProps {
   mouseX: null | number;
@@ -156,7 +156,7 @@ interface CtxMenuProps {
   cytoX: null | number;
   cytoY: null | number;
   target: null | any;
-  kind: ElementKind;
+  type: ElementType;
 }
 
 const initialCtxMenu: CtxMenuProps = {
@@ -165,7 +165,7 @@ const initialCtxMenu: CtxMenuProps = {
   cytoX: null,
   cytoY: null,
   target: null,
-  kind: null,
+  type: null,
 };
 
 export default function Cytoscape({
@@ -235,8 +235,8 @@ export default function Cytoscape({
       cytoX: event.position.x,
       cytoY: event.position.y,
       target: event.target,
-      kind: data.kind
-        ? data.kind
+      type: data.type
+        ? data.type
         : data.source && data.target
         ? "edge"
         : "graph",
@@ -244,24 +244,24 @@ export default function Cytoscape({
   }, []);
 
   const closeContextMenu = useCallback(() => {
-    setCtxMenu((menu) => ({ ...initialCtxMenu, kind: menu.kind }));
+    setCtxMenu((menu) => ({ ...initialCtxMenu, type: menu.type }));
   }, []);
 
   const showFor = useCallback(
-    (kind: ElementKind | ElementKind[] | null) => {
+    (kind: ElementType | ElementType[] | null) => {
       if (kind === null) {
         return { sx: { display: "flex" } };
       } else if (Array.isArray(kind)) {
         return {
-          sx: { display: kind.includes(ctxMenu.kind) ? "flex" : "none" },
+          sx: { display: kind.includes(ctxMenu.type) ? "flex" : "none" },
         };
       }
 
       return {
-        sx: { display: kind === ctxMenu.kind ? "flex" : "none" },
+        sx: { display: kind === ctxMenu.type ? "flex" : "none" },
       };
     },
-    [ctxMenu.kind]
+    [ctxMenu.type]
   );
 
   const initCy = useCallback(() => {
