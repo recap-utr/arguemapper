@@ -71,12 +71,18 @@ function demoGraph(): cytoModel.CytoGraph {
     },
     {
       data: cytoModel.node.initScheme({
-        scheme: { type: "support", value: cytoModel.node.Support.DEFAULT },
+        scheme: {
+          type: cytoModel.node.SchemeType.SUPPORT,
+          value: cytoModel.node.Support.DEFAULT,
+        },
       }),
     },
     {
       data: cytoModel.node.initScheme({
-        scheme: { type: "attack", value: cytoModel.node.Attack.DEFAULT },
+        scheme: {
+          type: cytoModel.node.SchemeType.ATTACK,
+          value: cytoModel.node.Attack.DEFAULT,
+        },
       }),
     },
   ];

@@ -93,13 +93,31 @@ export enum Rephrase {
   DEFAULT = "Default",
 }
 
-type SchemeType = "support" | "attack" | "rephrase" | "preference";
+export enum SchemeType {
+  SUPPORT = "support",
+  ATTACK = "attack",
+  REPHRASE = "rephrase",
+  PREFERENCE = "preference",
+}
 
-type Scheme =
-  | { type: "support"; value: Support }
-  | { type: "attack"; value: Attack }
-  | { type: "rephrase"; value: Rephrase }
-  | { type: "preference"; value: Preference };
+export type Scheme =
+  | { type: SchemeType.SUPPORT; value: Support }
+  | { type: SchemeType.ATTACK; value: Attack }
+  | { type: SchemeType.REPHRASE; value: Rephrase }
+  | { type: SchemeType.PREFERENCE; value: Preference };
+
+export const schemeMap: {
+  [key in SchemeType]:
+    | typeof Support
+    | typeof Attack
+    | typeof Rephrase
+    | typeof Preference;
+} = {
+  support: Support,
+  attack: Attack,
+  rephrase: Rephrase,
+  preference: Preference,
+};
 
 const support2protobuf = Object.fromEntries(
   Object.entries(Support).map(([key, value]) => [
@@ -153,10 +171,10 @@ const scheme2aif: { [key in SchemeType]: aif.SchemeType } = {
 };
 
 const aif2scheme: { [key in aif.SchemeType]: SchemeType | undefined } = {
-  RA: "support",
-  CA: "attack",
-  MA: "rephrase",
-  PA: "preference",
+  RA: SchemeType.SUPPORT,
+  CA: SchemeType.ATTACK,
+  MA: SchemeType.REPHRASE,
+  PA: SchemeType.PREFERENCE,
   "": undefined,
 };
 
@@ -374,28 +392,28 @@ export function toProtobuf(data: Node): arguebuf.Node {
 
     if (data.scheme) {
       switch (type) {
-        case "support": {
+        case SchemeType.SUPPORT: {
           scheme = {
             oneofKind: type,
             support: support2protobuf[data.scheme?.value],
           };
           break;
         }
-        case "attack": {
+        case SchemeType.ATTACK: {
           scheme = {
             oneofKind: type,
             attack: attack2protobuf[data.scheme?.value],
           };
           break;
         }
-        case "rephrase": {
+        case SchemeType.REPHRASE: {
           scheme = {
             oneofKind: type,
             rephrase: rephrase2protobuf[data.scheme?.value],
           };
           break;
         }
-        case "preference": {
+        case SchemeType.PREFERENCE: {
           scheme = {
             oneofKind: type,
             preference: preference2protobuf[data.scheme?.value],
@@ -525,28 +543,28 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
     switch (type) {
       case "support": {
         scheme = {
-          type: type,
+          type: SchemeType.SUPPORT,
           value: protobuf2support[obj.node.scheme.scheme.support],
         };
         break;
       }
       case "attack": {
         scheme = {
-          type: type,
+          type: SchemeType.ATTACK,
           value: protobuf2attack[obj.node.scheme.scheme.attack],
         };
         break;
       }
       case "rephrase": {
         scheme = {
-          type: type,
+          type: SchemeType.REPHRASE,
           value: protobuf2rephrase[obj.node.scheme.scheme.rephrase],
         };
         break;
       }
       case "preference": {
         scheme = {
-          type: type,
+          type: SchemeType.PREFERENCE,
           value: protobuf2preference[obj.node.scheme.scheme.preference],
         };
         break;
