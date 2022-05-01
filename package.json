@@ -33,7 +33,7 @@
     "react": "^17.0.0",
     "react-cache-buster": "^0.1.6",
     "react-dom": "^17.0.0",
-    "react-highlight-within-textarea": "^3.0.3-alpha",
+    "react-highlight-within-textarea": "^3.0.4-alpha",
     "react-scripts": "5.0.1",
     "react-use": "^17.3.2",
     "text-metrics": "^3.0.0",
