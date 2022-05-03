@@ -142,6 +142,7 @@ function initEdgeHandles(
       });
     }
 
+    eh.disableDrawMode();
     updateGraph();
   });
 
@@ -491,6 +492,17 @@ export default function Cytoscape({
             <FontAwesomeIcon icon={faPlus} />
           </ListItemIcon>
           <ListItemText>Add Scheme</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            eh?.enableDrawMode();
+            closePlusMenu();
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlus} />
+          </ListItemIcon>
+          <ListItemText>Add Edge</ListItemText>
         </MenuItem>
       </Menu>
       <Menu
