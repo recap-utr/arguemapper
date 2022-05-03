@@ -320,6 +320,10 @@ export default function Cytoscape({
       //   // rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
       // });
 
+      if (layout.name === "preset") {
+        updateGraph();
+        resetStates();
+      }
       setZoom(_cy.zoom());
 
       return () => _cy.destroy();
