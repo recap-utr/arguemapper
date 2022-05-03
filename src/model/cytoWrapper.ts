@@ -9,6 +9,10 @@ export { node, graph, edge };
 
 export interface CytoNode {
   data: node.Node;
+  position?: {
+    x: number;
+    y: number;
+  };
   [x: string]: unknown;
 }
 

@@ -22,7 +22,7 @@ import {
   Tooltip,
   useTheme,
 } from "@mui/material";
-import type { Core, EventObject, NodeSingular } from "cytoscape";
+import type { Core, EventObject } from "cytoscape";
 import cytoscape from "cytoscape";
 import edgehandles, { EdgeHandlesInstance } from "cytoscape-edgehandles";
 import elk, { ElkLayoutOptions } from "cytoscape-elk";
@@ -222,7 +222,7 @@ export default function Cytoscape({
 
   const layout = useCallback(() => {
     if (cy) {
-      cy.layout(defaultLayout).run();
+      cy.layout({ ...defaultLayout, animate: true }).run();
       updateGraph();
     }
   }, [cy, updateGraph]);
@@ -271,10 +271,17 @@ export default function Cytoscape({
 
   const initCy = useCallback(() => {
     if (container !== null) {
+      const existingGraph = loadGraph();
+      let layout = defaultLayout;
+
+      if (existingGraph.elements.nodes.every((node) => node.position)) {
+        layout = { name: "preset" };
+      }
+
       const _cy = cytoscape({
         container: container,
-        ...loadGraph(),
-        layout: { name: "preset" },
+        ...existingGraph,
+        layout,
         // @ts-ignore
         style: style(theme),
         boxSelectionEnabled: true,
@@ -296,6 +303,11 @@ export default function Cytoscape({
       _cy.on("zoom", () => {
         setZoom(_cy.zoom());
       });
+      _cy.on("layoutstop", () => {
+        updateGraph();
+        resetStates();
+        _cy.removeListener("layoutstop");
+      });
 
       // // @ts-ignore
       // _cy.navigator({
@@ -308,17 +320,6 @@ export default function Cytoscape({
       //   // rerenderDelay: 0, // ms to throttle rerender updates to the panzoom for performance
       // });
 
-      if (
-        _cy.nodes("[metadata]").every((node) => {
-          const pos = (node as NodeSingular).position();
-          return pos.x === 0 && pos.y === 0;
-        })
-      ) {
-        _cy.layout(defaultLayout).run();
-      }
-
-      updateGraph();
-      resetStates();
       setZoom(_cy.zoom());
 
       return () => _cy.destroy();
