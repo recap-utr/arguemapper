@@ -227,22 +227,26 @@ export default function Cytoscape({
     }
   }, [cy, updateGraph]);
 
-  const openContextMenu = useCallback((event: EventObject) => {
-    const data = event.target.data();
+  const openContextMenu = useCallback(
+    (event: EventObject) => {
+      const data = event.target.data();
+      const size = containerSize();
 
-    setCtxMenu({
-      mouseX: event.originalEvent.clientX,
-      mouseY: event.originalEvent.clientY,
-      cytoX: event.position.x,
-      cytoY: event.position.y,
-      target: event.target,
-      type: data.type
-        ? data.type
-        : data.source && data.target
-        ? "edge"
-        : "graph",
-    });
-  }, []);
+      setCtxMenu({
+        mouseX: event.originalEvent.clientX || size.width / 2,
+        mouseY: event.originalEvent.clientY || size.height / 2,
+        cytoX: event.position.x,
+        cytoY: event.position.y,
+        target: event.target,
+        type: data.type
+          ? data.type
+          : data.source && data.target
+          ? "edge"
+          : "graph",
+      });
+    },
+    [containerSize]
+  );
 
   const closeContextMenu = useCallback(() => {
     setCtxMenu((menu) => ({ ...initialCtxMenu, type: menu.type }));
@@ -511,7 +515,10 @@ export default function Cytoscape({
         anchorReference="anchorPosition"
         anchorPosition={
           ctxMenu.mouseY !== null && ctxMenu.mouseX !== null
-            ? { top: ctxMenu.mouseY, left: ctxMenu.mouseX }
+            ? {
+                top: ctxMenu.mouseY,
+                left: ctxMenu.mouseX,
+              }
             : undefined
         }
       >
