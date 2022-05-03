@@ -1,6 +1,7 @@
 import {
   faBan,
   faCaretDown,
+  faCommentDots,
   faDownload,
   faFileArrowUp,
   faFileCirclePlus,
@@ -256,6 +257,20 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           value={element.reference?.text}
           onChange={produceHandleChange(["reference", "text"])}
         />
+        <Button
+          startIcon={<FontAwesomeIcon icon={faCommentDots} />}
+          variant="contained"
+          onClick={() => {
+            const nodeId = cy?.$(":selected").id();
+
+            if (cy && nodeId) {
+              cy.data("majorClaim", nodeId);
+              updateGraph();
+            }
+          }}
+        >
+          Set as Major Claim
+        </Button>
         {deleteButton}
       </>
     );
