@@ -166,7 +166,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                 draft.scheme.value = // "Default";
                   cytoModel.node.schemeMap[
                     event.target.value as cytoModel.node.SchemeType
-                  ].DEFAULT;
+                  ]?.DEFAULT ?? NULL_VALUE;
               }
             })
           );
@@ -198,7 +198,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
         <FormControl fullWidth>
           <InputLabel>Scheme Type</InputLabel>
           <Select
-            value={element.scheme.type}
+            value={element.scheme?.type}
             label="Scheme Type"
             onChange={produceHandleChange(["scheme", "type"])}
             defaultValue={NULL_VALUE}
@@ -211,11 +211,11 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
             ))}
           </Select>
         </FormControl>
-        {element.scheme.type && (
+        {element.scheme?.type && element.scheme?.type !== NULL_VALUE && (
           <FormControl fullWidth>
             <InputLabel>Argumentation Scheme</InputLabel>
             <Select
-              value={element.scheme.value}
+              value={element.scheme?.value}
               label="Argumentation Scheme"
               onChange={produceHandleChange(["scheme", "value"])}
               defaultValue={NULL_VALUE}
@@ -506,6 +506,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   // Could improve performance when avoiding deep clone
                   const elem = _.cloneDeep(element);
 
+                  // TODO: This hack does not work with scheme type!
                   modifiedAttrs.forEach((attr) => {
                     if (_.get(elem, attr) === NULL_VALUE) {
                       _.set(elem, attr, undefined);
