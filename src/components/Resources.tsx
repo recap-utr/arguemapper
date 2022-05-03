@@ -275,7 +275,9 @@ function Resource({
   const handleTextChange = useCallback(
     (value: string, selection: Selection) => {
       if (value === resource.text) {
-        setUserSelection(selection);
+        const start = Math.min(selection.anchor, selection.focus);
+        const end = Math.max(selection.anchor, selection.focus);
+        setUserSelection({ anchor: start, focus: end });
         setSystemSelection(null);
       } else {
         setHasChanged(true);
