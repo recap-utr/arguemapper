@@ -1,6 +1,6 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
 import { GraphProvider } from "./components/GraphContext";
@@ -11,9 +11,25 @@ import Sidebar from "./components/Sidebar";
 
 const drawerWidth = 300;
 
+function useWindowSize() {
+  const [size, setSize] = useState([0, 0]);
+  useLayoutEffect(() => {
+    function updateSize() {
+      setSize([window.innerWidth, window.innerHeight]);
+    }
+    window.addEventListener("resize", updateSize);
+    updateSize();
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+  return size;
+}
+
+// https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
+
 export default function App() {
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
   const initialSidebarOpen = isMobile ? false : true;
+  const [, windowHeight] = useWindowSize();
 
   const [leftSidebarOpen, setLeftSidebarOpen] =
     useLocalStorage<boolean>("leftSidebarOpen");
@@ -37,7 +53,7 @@ export default function App() {
 
   return (
     <GraphProvider storageName="graph">
-      <Stack direction="row" sx={{ height: "100vh" }}>
+      <Stack direction="row" sx={{ height: windowHeight }}>
         <Sidebar
           side="left"
           drawerWidth={drawerWidth}
