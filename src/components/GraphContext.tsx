@@ -104,10 +104,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       const currentCy = cyRef.current;
 
       if (currentCy) {
-        if (update) {
-          currentCy.data("updated", date.now());
-        }
-
         const cytoMetadata = pick(currentCy.json(), [
           // "pan",
           // "zoom",
@@ -116,6 +112,10 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
           data: cytoModel.graph.Graph;
           [x: string]: unknown;
         };
+
+        if (update) {
+          cytoMetadata.data.metadata.updated = date.now();
+        }
 
         return {
           ...cytoMetadata,
