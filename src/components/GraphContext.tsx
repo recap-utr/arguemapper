@@ -135,9 +135,9 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     const currState = stateRef.current;
 
     if (currState) {
-      setFutureStates([]);
       setPreviousStates((states) => [currState, ...states]);
     }
+    setFutureStates([]);
 
     const newState = exportState(true);
     setCurrentState(newState);
