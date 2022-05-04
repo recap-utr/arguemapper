@@ -32,11 +32,13 @@ export interface CytoGraph {
   elements: CytoElements;
 }
 
-interface Props {}
+interface Props {
+  data: graph.Props;
+}
 
-export function init({}: Props): CytoGraph {
+export function init({ data }: Props): CytoGraph {
   return {
-    data: graph.init({}),
+    data: graph.init(data),
     elements: {
       nodes: [],
       edges: [],
