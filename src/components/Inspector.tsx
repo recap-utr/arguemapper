@@ -365,7 +365,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                     downloadJson(proto2json(cyto2protobuf(exportState())));
                   }}
                 >
-                  ProtoArg
+                  Arguebuf
                 </Button>
                 <Button
                   startIcon={<FontAwesomeIcon icon={faFileCode} />}

@@ -15,7 +15,7 @@ interface State {
   errorInfo: ErrorInfo | null;
   graph: string | null;
   aif: string | null;
-  protoarg: string | null;
+  arguebuf: string | null;
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
@@ -26,14 +26,14 @@ class ErrorBoundary extends React.Component<Props, State> {
       errorInfo: null,
       graph: null,
       aif: null,
-      protoarg: null,
+      arguebuf: null,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const graph = localStorage.getItem("graph");
     let aif = null;
-    let protoarg = null;
+    let arguebuf = null;
 
     if (graph) {
       try {
@@ -41,7 +41,7 @@ class ErrorBoundary extends React.Component<Props, State> {
       } catch {}
 
       try {
-        protoarg = JSON.stringify(proto2json(cyto2protobuf(JSON.parse(graph))));
+        arguebuf = JSON.stringify(proto2json(cyto2protobuf(JSON.parse(graph))));
       } catch {}
     }
 
@@ -50,7 +50,7 @@ class ErrorBoundary extends React.Component<Props, State> {
       errorInfo,
       graph,
       aif,
-      protoarg,
+      arguebuf,
     });
   }
 
@@ -104,7 +104,7 @@ class ErrorBoundary extends React.Component<Props, State> {
             )}
             {this.state.graph && (
               <Stack spacing={1}>
-                <Typography variant="h3">ProtoArg Export</Typography>
+                <Typography variant="h3">Arguebuf Export</Typography>
                 <Typography variant="h6">
                   Please copy this code to backup your work!
                 </Typography>
@@ -114,7 +114,7 @@ class ErrorBoundary extends React.Component<Props, State> {
                     multiline
                     maxRows={5}
                     fullWidth
-                    value={this.state.protoarg}
+                    value={this.state.arguebuf}
                   />
                 </Box>
               </Stack>
