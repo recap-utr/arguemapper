@@ -8,6 +8,8 @@ import {
   faFileCode,
   faFileImage,
   faFilePen,
+  faMinusCircle,
+  faPlusCircle,
   faSave,
   faTrash,
   faUpload,
@@ -38,6 +40,8 @@ import _, { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
+import { uuid } from "../model/cytoWrapper";
+import { Graph } from "../model/graph";
 import { isAtom, isScheme } from "../model/node";
 import * as convert from "../services/convert";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
@@ -418,6 +422,83 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                     background, please switch to light mode.
                   </Typography>
                 )}
+              </Stack>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion defaultExpanded>
+            <AccordionSummary
+              expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
+            >
+              <Typography variant="h6">
+                <FontAwesomeIcon icon={faUpload} />
+                &nbsp;Analysts
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={1}>
+                {Object.entries((element as Graph).analysts).map(
+                  ([id, analyst]) => (
+                    <Accordion key={id}>
+                      <AccordionSummary>
+                        <Typography variant="h6">{analyst.name}</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Stack spacing={1}>
+                          <TextField
+                            fullWidth
+                            label="Name"
+                            value={analyst.name}
+                            onChange={produceHandleChange([
+                              "analysts",
+                              id,
+                              "name",
+                            ])}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Email"
+                            value={analyst.email}
+                            onChange={produceHandleChange([
+                              "analysts",
+                              id,
+                              "email",
+                            ])}
+                          />
+                          <Button
+                            startIcon={<FontAwesomeIcon icon={faMinusCircle} />}
+                            color="error"
+                            variant="contained"
+                            onClick={() => {
+                              setElement(
+                                produce((draft: any) => {
+                                  delete draft.analysts[id];
+                                })
+                              );
+                            }}
+                          >
+                            Remove Analyst
+                          </Button>
+                        </Stack>
+                      </AccordionDetails>
+                    </Accordion>
+                  )
+                )}
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+                  variant="contained"
+                  onClick={() => {
+                    setElement(
+                      produce((draft: any) => {
+                        draft.analysts[uuid()] = cytoModel.analyst.init({
+                          name: "Unknown",
+                          email: "",
+                        });
+                      })
+                    );
+                  }}
+                >
+                  Add Analyst
+                </Button>
               </Stack>
             </AccordionDetails>
           </Accordion>
