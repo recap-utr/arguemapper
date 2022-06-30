@@ -196,6 +196,10 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
     </Button>
   );
 
+  const participantFields: {
+    [x in keyof cytoModel.participant.Participant]?: string;
+  } = { name: "Name", email: "Email", username: "Username" };
+
   if (elementType() === "scheme") {
     fields = (
       <>
@@ -431,39 +435,38 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
             >
               <Typography variant="h6">
                 <FontAwesomeIcon icon={faUpload} />
-                &nbsp;Analysts
+                &nbsp;Participants
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Stack spacing={1}>
-                {Object.entries((element as Graph).analysts).map(
-                  ([id, analyst]) => (
+                {Object.entries((element as Graph).participants).map(
+                  ([id, participant]) => (
                     <Accordion key={id}>
                       <AccordionSummary>
-                        <Typography variant="h6">{analyst.name}</Typography>
+                        <Typography variant="h6">{participant.name}</Typography>
                       </AccordionSummary>
                       <AccordionDetails>
                         <Stack spacing={1}>
-                          <TextField
-                            fullWidth
-                            label="Name"
-                            value={analyst.name}
-                            onChange={produceHandleChange([
-                              "analysts",
-                              id,
-                              "name",
-                            ])}
-                          />
-                          <TextField
-                            fullWidth
-                            label="Email"
-                            value={analyst.email}
-                            onChange={produceHandleChange([
-                              "analysts",
-                              id,
-                              "email",
-                            ])}
-                          />
+                          {Object.entries(participantFields).map(
+                            ([attr, label]) => (
+                              <TextField
+                                fullWidth
+                                key={attr}
+                                label={label}
+                                value={
+                                  participant[
+                                    attr as keyof cytoModel.participant.Participant
+                                  ]
+                                }
+                                onChange={produceHandleChange([
+                                  "participants",
+                                  id,
+                                  attr,
+                                ])}
+                              />
+                            )
+                          )}
                           <Button
                             startIcon={<FontAwesomeIcon icon={faMinusCircle} />}
                             color="error"
@@ -471,12 +474,12 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                             onClick={() => {
                               setElement(
                                 produce((draft: any) => {
-                                  delete draft.analysts[id];
+                                  delete draft.participants[id];
                                 })
                               );
                             }}
                           >
-                            Remove Analyst
+                            Remove Participant
                           </Button>
                         </Stack>
                       </AccordionDetails>
@@ -489,15 +492,16 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   onClick={() => {
                     setElement(
                       produce((draft: any) => {
-                        draft.analysts[uuid()] = cytoModel.analyst.init({
-                          name: "Unknown",
-                          email: "",
-                        });
+                        draft.participants[uuid()] = cytoModel.participant.init(
+                          {
+                            name: "Unknown",
+                          }
+                        );
                       })
                     );
                   }}
                 >
-                  Add Analyst
+                  Add Participant
                 </Button>
               </Stack>
             </AccordionDetails>
