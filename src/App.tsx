@@ -1,6 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
+import { ReactFlowProvider } from "react-flow-renderer";
 import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
 import { GraphProvider } from "./components/GraphContext";
@@ -35,66 +36,49 @@ export default function App() {
     useLocalStorage<boolean>("leftSidebarOpen");
   const [rightSidebarOpen, setRightSidebarOpen] =
     useLocalStorage<boolean>("rightSidebarOpen");
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  const containerRef = useCallback((node: HTMLElement | null) => {
-    if (node !== null) {
-      // node.oncontextmenu = () => false;
-      setContainer(node);
-    }
-  }, []);
-
-  const containerSize = useCallback(
-    () =>
-      container
-        ? { width: container.clientWidth, height: container.clientHeight }
-        : { width: window.innerWidth, height: window.innerHeight },
-    [container]
-  );
 
   return (
-    <GraphProvider storageName="graph">
-      <Stack direction="row" sx={{ height: windowHeight }}>
-        <Sidebar
-          side="left"
-          drawerWidth={drawerWidth}
-          isMobile={isMobile}
-          isOpen={leftSidebarOpen ?? initialSidebarOpen}
-          setIsOpen={setLeftSidebarOpen}
-        >
-          <Resources containerSize={containerSize} />
-        </Sidebar>
-        <Stack sx={{ flexGrow: 1 }}>
-          <Header
-            toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
-            toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
-          />
-          <Box
-            onContextMenu={(e) => e.preventDefault()}
-            sx={{ position: "relative", height: 1 }}
+    <ReactFlowProvider>
+      <GraphProvider storageName="graph">
+        <Stack direction="row" sx={{ height: windowHeight }}>
+          <Sidebar
+            side="left"
+            drawerWidth={drawerWidth}
+            isMobile={isMobile}
+            isOpen={leftSidebarOpen ?? initialSidebarOpen}
+            setIsOpen={setLeftSidebarOpen}
           >
-            <Graph
-              containerSize={containerSize}
-              container={container}
-              containerRef={containerRef}
+            <Resources />
+          </Sidebar>
+          <Stack sx={{ flexGrow: 1 }}>
+            <Header
+              toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
+              toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
             />
-          </Box>
+            <Box
+              onContextMenu={(e) => e.preventDefault()}
+              sx={{ position: "relative", height: 1 }}
+            >
+              <Graph />
+            </Box>
+          </Stack>
+          <Sidebar
+            side="right"
+            drawerWidth={drawerWidth}
+            isMobile={isMobile}
+            isOpen={rightSidebarOpen ?? initialSidebarOpen}
+            setIsOpen={setRightSidebarOpen}
+          >
+            <Inspector
+              openSidebar={(value) => {
+                if (isMobile) {
+                  setRightSidebarOpen(value);
+                }
+              }}
+            />
+          </Sidebar>
         </Stack>
-        <Sidebar
-          side="right"
-          drawerWidth={drawerWidth}
-          isMobile={isMobile}
-          isOpen={rightSidebarOpen ?? initialSidebarOpen}
-          setIsOpen={setRightSidebarOpen}
-        >
-          <Inspector
-            openSidebar={(value) => {
-              if (isMobile) {
-                setRightSidebarOpen(value);
-              }
-            }}
-          />
-        </Sidebar>
-      </Stack>
-    </GraphProvider>
+      </GraphProvider>
+    </ReactFlowProvider>
   );
 }

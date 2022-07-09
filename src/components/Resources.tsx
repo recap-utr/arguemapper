@@ -10,11 +10,11 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
+import { useViewport } from "react-flow-renderer";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
-import { v1 as uuid } from "uuid";
-import * as cytoModel from "../model/cytoWrapper";
+import * as model from "../model";
 import { useGraph } from "./GraphContext";
 
 interface Selection {
@@ -22,118 +22,83 @@ interface Selection {
   focus: number;
 }
 
-interface Props {
-  containerSize: () => { width: number; height: number };
-}
+interface Props {}
 
-const Resources: React.FC<Props> = ({ containerSize }) => {
-  const { cy, updateGraph, currentState } = useGraph();
+const Resources: React.FC<Props> = ({}) => {
+  const { graph, setGraph, saveState } = useGraph();
+  const { x, y } = useViewport();
 
-  const [resources, setResources] = useState<{
-    [x: string]: cytoModel.resource.Resource;
-  }>({});
-  const [allowTabChange, setAllowTabChange] = useState(true);
+  const resources = graph.resources;
+  // const setResources = (resources: { [x: string]: model.Resource }) =>
+  //   setGraph(produce((draft) => (draft.resources = resources)));
   const [activeTab, setActiveTab] = useState("1");
-  const [shouldWrite, setShouldWrite] = useState(false);
 
-  const references = currentState
-    ? Object.fromEntries(
-        Object.entries(currentState.elements.nodes)
-          .filter(
-            ([key, node]) =>
-              cytoModel.node.isAtom(node.data) && node.data.reference
-          )
-          .map(([key, node]) => [
-            key,
-            (node.data as cytoModel.node.AtomNode)
-              .reference as cytoModel.reference.Reference,
-          ])
-      )
-    : {};
+  const references = Object.fromEntries(
+    graph.nodes
+      .filter((node) => model.isAtom(node) && node.data.reference)
+      .map((node) => [
+        node.id,
+        (node.data as model.AtomData).reference as model.Reference,
+      ])
+  );
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
-      if (allowTabChange) {
-        setActiveTab(newValue);
-      }
+      setActiveTab(newValue);
     },
-    [allowTabChange]
+    []
   );
 
   const addAtom = useCallback(
     (resourceId: string, text: string, offset: number) => {
-      if (cy) {
-        const newElem = cytoModel.node.initAtom({ text });
-        newElem.reference = cytoModel.reference.init({
-          text,
-          resource: resourceId,
-          offset,
-        });
-        const size = containerSize();
-
-        // @ts-ignore
-        cy.add({
-          // @ts-ignore
-          nodes: [
-            {
-              data: newElem,
-              renderedPosition: {
-                x: size.width / 2,
-                y: size.height / 2,
-              },
-            },
-          ],
-        });
-        updateGraph();
-        cy.$id(newElem.id).select();
-      }
+      //   if (cy) {
+      //     const newElem = cytoModel.node.initAtom({ text });
+      //     newElem.reference = cytoModel.reference.init({
+      //       text,
+      //       resource: resourceId,
+      //       offset,
+      //     });
+      //     const size = containerSize();
+      //     // @ts-ignore
+      //     cy.add({
+      //       // @ts-ignore
+      //       nodes: [
+      //         {
+      //           data: newElem,
+      //           renderedPosition: {
+      //             x: size.width / 2,
+      //             y: size.height / 2,
+      //           },
+      //         },
+      //       ],
+      //     });
+      //     saveState();
+      //     cy.$id(newElem.id).select();
+      //   }
     },
-    [cy, updateGraph, containerSize]
+    [saveState]
   );
-
-  const writeResources = useCallback(() => {
-    setShouldWrite(true);
-  }, []);
-
-  useEffect(() => {
-    if (cy && shouldWrite) {
-      cy.data("resources", resources);
-      updateGraph();
-      setShouldWrite(false);
-    }
-  }, [resources, cy, updateGraph, shouldWrite]);
-
-  const resetResources = useCallback(() => {
-    setResources(currentState?.data.resources || {});
-  }, [currentState?.data.resources]);
-
-  // Ensure that the data is consistent!
-  useEffect(() => {
-    resetResources();
-  }, [resetResources]);
 
   const deleteResource = useCallback(
     (key: string) => {
-      setResources(
+      setGraph(
         produce((draft) => {
-          delete draft[key];
+          delete draft.resources[key];
         })
       );
-      writeResources();
-      setAllowTabChange(true);
+      saveState();
     },
-    [writeResources]
+    [saveState, setGraph]
   );
 
   const addResource = useCallback(() => {
-    setResources(
+    setGraph(
       produce((draft) => {
-        draft[uuid()] = cytoModel.resource.init({ text: "" });
+        draft.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
-    writeResources();
-    setAllowTabChange(true);
-  }, [writeResources]);
+    saveState();
+  }, [saveState, setGraph]);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
@@ -167,10 +132,7 @@ const Resources: React.FC<Props> = ({ containerSize }) => {
             resource={resource}
             index={index + 1}
             deleteResource={deleteResource}
-            setAllowTabChange={setAllowTabChange}
-            setResources={setResources}
-            resetResources={resetResources}
-            writeResources={writeResources}
+            setGraph={setGraph}
             addAtom={addAtom}
             references={references}
           />
@@ -195,27 +157,17 @@ function Resource({
   resource,
   index,
   deleteResource,
-  setAllowTabChange,
-  setResources,
-  resetResources,
-  writeResources,
+  setGraph,
   addAtom,
   references,
 }: {
   id: string;
-  resource: cytoModel.resource.Resource;
+  resource: model.Resource;
   index: number;
   deleteResource: (key: string) => void;
-  setAllowTabChange: (value: boolean) => void;
-  setResources: React.Dispatch<
-    React.SetStateAction<{
-      [x: string]: cytoModel.resource.Resource;
-    }>
-  >;
-  resetResources: () => void;
-  writeResources: () => void;
+  setGraph: React.Dispatch<React.SetStateAction<model.Graph>>;
   addAtom: (id: string, text: string, offset: number) => void;
-  references: { [k: string]: cytoModel.reference.Reference };
+  references: { [k: string]: model.Reference };
 }) {
   const [userSelection, setUserSelection] = useState<Selection>({
     anchor: 0,
@@ -249,10 +201,6 @@ function Resource({
     [id, references]
   );
 
-  useEffect(() => {
-    setAllowTabChange(!hasChanged);
-  }, [setAllowTabChange, hasChanged]);
-
   // const produceHandleChange = useCallback(
   //   (attr: string | string[]) => {
   //     // We need to return a function here, thus the nested callbacks
@@ -272,24 +220,24 @@ function Resource({
   //   [setResources]
   // );
 
-  const handleTextChange = useCallback(
-    (value: string, selection: Selection) => {
-      if (value === resource.text) {
-        const start = Math.min(selection.anchor, selection.focus);
-        const end = Math.max(selection.anchor, selection.focus);
-        setUserSelection({ anchor: start, focus: end });
-        setSystemSelection(null);
-      } else {
-        setHasChanged(true);
-        setResources(
-          produce((draft) => {
-            draft[id].text = value;
-          })
-        );
-      }
-    },
-    [setResources, id, resource.text]
-  );
+  // const handleTextChange = useCallback(
+  //   (value: string, selection: Selection) => {
+  //     if (value === resource.text) {
+  //       const start = Math.min(selection.anchor, selection.focus);
+  //       const end = Math.max(selection.anchor, selection.focus);
+  //       setUserSelection({ anchor: start, focus: end });
+  //       setSystemSelection(null);
+  //     } else {
+  //       setHasChanged(true);
+  //       setResources(
+  //         produce((draft) => {
+  //           draft[id].text = value;
+  //         })
+  //       );
+  //     }
+  //   },
+  //   [setResources, id, resource.text]
+  // );
 
   return (
     <Stack spacing={2}>
@@ -300,7 +248,7 @@ function Resource({
         multiline
         minRows={5}
         value={resource.text}
-        onChange={handleTextChange as any}
+        // onChange={handleTextChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,
           inputProps: {
@@ -333,9 +281,9 @@ function Resource({
             color="error"
             startIcon={<FontAwesomeIcon icon={faBan} />}
             onClick={() => {
-              resetResources();
-              setHasChanged(false);
-              setAllowTabChange(true);
+              // resetResources();
+              // setHasChanged(false);
+              // setAllowTabChange(true);
             }}
           >
             Discard
@@ -344,9 +292,9 @@ function Resource({
             variant="contained"
             startIcon={<FontAwesomeIcon icon={faSave} />}
             onClick={() => {
-              writeResources();
-              setHasChanged(false);
-              setAllowTabChange(true);
+              // writeResources();
+              // setHasChanged(false);
+              // setAllowTabChange(true);
             }}
           >
             Save

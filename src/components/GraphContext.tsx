@@ -1,51 +1,46 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, IconButton, Stack } from "@mui/material";
-import cytoscape from "cytoscape";
-import { pick } from "lodash";
+import produce from "immer";
 import { useSnackbar } from "notistack";
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from "react";
-import * as cytoModel from "../model/cytoWrapper";
-import * as date from "../services/date";
-import demoGraph from "../services/demo";
+import { useReactFlow } from "react-flow-renderer";
+import * as model from "../model";
+import generateDemo from "../services/demo";
+import layout from "../services/layout";
 
 const GraphContext = createContext<{
-  cy: cytoscape.Core | null;
-  _setCy: (instance: cytoscape.Core | null) => void;
-  _setCyRef: (instance: cytoscape.Core | null) => void;
-  loadGraph: () => cytoModel.CytoGraph;
-  updateGraph: () => void;
+  graph: model.Graph;
+  setGraph: React.Dispatch<React.SetStateAction<model.Graph>>;
+  resetGraph: (graph?: model.Graph) => void;
+  saveState: () => void;
   redo: () => void;
   undo: () => void;
   resetStates: () => void;
-  exportState: () => cytoModel.CytoGraph;
-  resetGraph: (graph: cytoModel.CytoGraph) => void;
   undoable: boolean;
   redoable: boolean;
   clearCache: () => void;
-  currentState: cytoModel.CytoGraph | null;
+  selection: model.Selection;
+  setSelection: React.Dispatch<React.SetStateAction<model.Selection>>;
 }>({
-  cy: null,
-  _setCy: () => {},
-  _setCyRef: () => {},
-  loadGraph: () => cytoModel.init({}),
-  updateGraph: () => {},
+  graph: model.initGraph({}),
+  setGraph: () => {},
+  resetGraph: () => {},
+  saveState: () => {},
   redo: () => {},
   undo: () => {},
   resetStates: () => {},
-  exportState: () => cytoModel.init({}),
-  resetGraph: () => {},
   undoable: false,
   redoable: false,
   clearCache: () => {},
-  currentState: null,
+  selection: { nodes: [], edges: [] },
+  setSelection: () => {},
 });
 
 interface GraphProviderProps {
@@ -56,27 +51,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   children,
   storageName,
 }) => {
-  const [initialGraph, setInitialGraph] = useState<cytoModel.CytoGraph>(
-    cytoModel.init({})
-  );
-  const [cy, _setCy] = useState<cytoscape.Core | null>(null);
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [currentState, setCurrentState] = useState<cytoModel.CytoGraph | null>(
-    null
-  );
-  const [previousStates, setPreviousStates] = useState<cytoModel.CytoGraph[]>(
-    []
-  );
-  const [futureStates, setFutureStates] = useState<cytoModel.CytoGraph[]>([]);
-
-  // IMPORTANT!
-  // For two useState variables, we store another one with useRef.
-  // This enables to use the current value without causing a chain of rerenderings due to changed callbacks
-  // Otherwise, we would end up with an infinite loop that would break the application
-  // The refs are for internal use of this context only and should not be exported!
-  const stateRef = useRef<cytoModel.CytoGraph | null>(null);
-  const cyRef = useRef<cytoscape.Core | null>(null);
-
+  // Load the current state from storage when (re)loading the app
   const loadGraph = useCallback(() => {
     const storedGraph = localStorage.getItem(storageName);
 
@@ -86,122 +61,77 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       } catch {}
     }
 
-    return initialGraph;
-  }, [storageName, initialGraph]);
+    return model.initGraph({});
+  }, [storageName]);
 
-  // Here, we persist the current state every time it changes
-  useEffect(() => {
-    if (currentState !== null) {
-      localStorage.setItem(storageName, JSON.stringify(currentState));
-    }
-  }, [currentState, storageName]);
+  const [graph, setGraph] = useState<model.Graph>(loadGraph);
+  const [selection, setSelection] = useState<model.Selection>({
+    nodes: [],
+    edges: [],
+  });
+  const [previousStates, setPreviousStates] = useState<model.Graph[]>([]);
+  const [futureStates, setFutureStates] = useState<model.Graph[]>([]);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [shouldSave, setShouldSave] = useState(false);
+  const flow = useReactFlow();
 
-  const exportState = useCallback(
-    (update: boolean = false): cytoModel.CytoGraph => {
-      // We cannot use cyRef.current?.json() because it may contain unwanted nodes/edges.
-      // For instance, the preview of edge handles could be serialized.
-      // Also, the style cannot be serialized properly because we use callback functions.
-      const currentCy = cyRef.current;
-
-      if (currentCy) {
-        const cytoMetadata = pick(currentCy.json(), [
-          // "pan",
-          // "zoom",
-          "data",
-        ]) as {
-          data: cytoModel.graph.Graph;
-          [x: string]: unknown;
-        };
-
-        if (update) {
-          cytoMetadata.data.metadata.updated = date.now();
-        }
-
-        return {
-          ...cytoMetadata,
-          elements: {
-            nodes: currentCy.nodes("[metadata]").jsons() as any,
-            edges: currentCy.edges("[metadata]").jsons() as any,
-          },
-        };
-      }
-
-      return cytoModel.init({});
-    },
-    []
-  );
-
-  const updateGraph = useCallback(() => {
-    const currState = stateRef.current;
-
-    if (currState) {
-      setPreviousStates((states) => [currState, ...states]);
-    }
-    setFutureStates([]);
-
-    const newState = exportState(true);
-    setCurrentState(newState);
-    stateRef.current = newState;
-  }, [exportState]);
+  const saveState = useCallback(() => {
+    setShouldSave(true);
+  }, []);
 
   const undo = useCallback(() => {
-    const currState = stateRef.current;
-
-    if (currState) {
-      cy?.json(previousStates[0]);
-      cy?.elements().selectify();
-      cy?.elements().unselect();
-
-      setFutureStates((states) => [currState, ...states]);
-      const newState = previousStates[0];
-      setCurrentState(newState);
-      stateRef.current = newState;
-      setPreviousStates((states) => states.slice(1));
-    }
-  }, [cy, previousStates]);
+    setFutureStates((states) => [graph, ...states]);
+    setGraph(previousStates[0]);
+    setPreviousStates((states) => states.slice(1));
+    localStorage.setItem(storageName, JSON.stringify(graph));
+  }, [setGraph, graph, previousStates]);
 
   const redo = useCallback(() => {
-    const currState = stateRef.current;
-
-    if (currState) {
-      cy?.json(futureStates[0]);
-      cy?.elements().selectify();
-      cy?.elements().unselect();
-
-      setPreviousStates((states) => [currState, ...states]);
-      const newState = futureStates[0];
-      setCurrentState(newState);
-      stateRef.current = newState;
-      setFutureStates((states) => states.slice(1));
-    }
-  }, [cy, futureStates]);
+    setPreviousStates((states) => [graph, ...states]);
+    setGraph(futureStates[0]);
+    setFutureStates((states) => states.slice(1));
+    localStorage.setItem(storageName, JSON.stringify(graph));
+  }, [setGraph, graph, futureStates]);
 
   const resetStates = useCallback(() => {
     setPreviousStates([]);
     setFutureStates([]);
   }, []);
 
-  const resetGraph = useCallback(
-    (graph: cytoModel.CytoGraph) => {
-      localStorage.removeItem(storageName);
-      // Make the graph unique, otherwise React could skip rerendering
-      graph.data.metadata.updated = date.now();
-      setInitialGraph(graph);
-    },
-    [storageName]
-  );
-
   const clearCache = useCallback(() => {
     localStorage.clear();
     window.location.reload();
   }, []);
 
+  const resetGraph = useCallback(
+    (inputGraph?: model.Graph) => {
+      const g = inputGraph ?? model.initGraph({});
+      layout(g).then((layoutedNodes) => {
+        setGraph(
+          produce(g, (draft) => {
+            draft.nodes = layoutedNodes;
+          })
+        );
+        localStorage.setItem(storageName, JSON.stringify(g));
+        resetStates();
+        flow.fitView();
+      });
+    },
+    [resetStates, setGraph]
+  );
+
   const undoable = previousStates.length > 0;
   const redoable = futureStates.length > 0;
 
-  const _setCyRef = useCallback((instance: cytoscape.Core | null) => {
-    cyRef.current = instance;
-  }, []);
+  // Persist the current state every time it changes
+  useEffect(() => {
+    if (shouldSave) {
+      localStorage.setItem(storageName, JSON.stringify(graph));
+      setPreviousStates((states) => [graph, ...states]);
+      setFutureStates([]);
+      setShouldSave(false);
+    }
+  }, [graph, shouldSave, storageName]);
 
   // If the user visits the app for the first time, show a little banner
   useEffect(() => {
@@ -219,7 +149,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
                 disableElevation
                 variant="contained"
                 onClick={() => {
-                  resetGraph(demoGraph());
+                  resetGraph(generateDemo());
                   closeSnackbar(key);
                 }}
               >
@@ -237,25 +167,23 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         }
       );
     }
-  }, [closeSnackbar, enqueueSnackbar, resetGraph, storageName]);
+  }, [resetGraph, closeSnackbar, enqueueSnackbar, storageName]);
 
   return (
     <GraphContext.Provider
       value={{
-        cy,
-        _setCy,
-        _setCyRef,
-        loadGraph,
-        updateGraph,
+        graph,
+        setGraph,
+        resetGraph,
+        saveState,
         undo,
         redo,
         undoable,
         redoable,
         resetStates,
-        resetGraph,
-        exportState,
         clearCache,
-        currentState,
+        selection,
+        setSelection,
       }}
     >
       {children}
