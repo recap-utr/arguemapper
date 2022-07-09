@@ -1,13 +1,13 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import * as aif from "../model/aif";
-import * as cytoModel from "../model/cytoWrapper";
+import { fromAif, fromProtobuf, Graph } from "../model/graph";
+import * as date from "./date";
 
-export function importGraph(obj: any): cytoModel.CytoGraph {
+export function importGraph(obj: any): Graph {
   if ("locutions" in obj) {
-    return aif2cyto(obj);
+    return fromAif(obj);
   } else {
-    return proto2cyto(obj);
+    return fromProtobuf(obj);
   }
 }
 
@@ -19,63 +19,23 @@ export function json2proto(graph: JsonValue): arguebuf.Graph {
   return arguebuf.Graph.fromJson(graph);
 }
 
-export function cyto2protobuf(cyto: cytoModel.CytoGraph): arguebuf.Graph {
-  return {
-    ...cytoModel.graph.toProtobuf(cyto.data),
-    nodes: Object.fromEntries(
-      cyto.elements.nodes.map((node) => [
-        node.data.id,
-        cytoModel.node.toProtobuf(node.data),
-      ])
-    ),
-    edges: Object.fromEntries(
-      cyto.elements.edges.map((edge) => [
-        edge.data.id,
-        cytoModel.edge.toProtobuf(edge.data),
-      ])
-    ),
-  };
+export function generateFilename() {
+  return date.format(date.now(), "yyyy-MM-dd-HH-mm-ss");
 }
 
-export function cyto2aif(cyto: cytoModel.CytoGraph): aif.Graph {
-  return {
-    nodes: cyto.elements.nodes.map((node) => cytoModel.node.toAif(node.data)),
-    edges: cyto.elements.edges.map((edge) => cytoModel.edge.toAif(edge.data)),
-    locutions: [],
-  };
+// https://stackoverflow.com/a/55613750/7626878
+export async function downloadJson(data: any) {
+  const json = JSON.stringify(data);
+  const blob = new Blob([json], { type: "application/json" });
+  downloadBlob(blob, ".json");
 }
 
-function aif2cyto(obj: aif.Graph): cytoModel.CytoGraph {
-  const nodes = obj.nodes
-    .map((node) => ({ data: cytoModel.node.fromAif(node) }))
-    .filter((node): node is cytoModel.CytoNode => !!node);
-  const nodeIds = new Set(nodes.map((node) => node.data.id));
-
-  return {
-    data: {
-      ...cytoModel.graph.init({}),
-    },
-    elements: {
-      nodes,
-      edges: obj.edges
-        .filter((edge) => nodeIds.has(edge.fromID) && nodeIds.has(edge.toID))
-        .map((edge) => ({ data: cytoModel.edge.fromAif(edge) })),
-    },
-  };
-}
-
-function proto2cyto(obj: arguebuf.Graph): cytoModel.CytoGraph {
-  return {
-    data: {
-      ...cytoModel.graph.fromProtobuf(obj),
-    },
-    elements: {
-      nodes: Object.entries(obj.nodes).map(([id, node]) => ({
-        data: cytoModel.node.fromProtobuf(id, node),
-      })),
-      edges: Object.entries(obj.edges).map(([id, edge]) => ({
-        data: cytoModel.edge.fromProtobuf(id, edge),
-      })),
-    },
-  };
+export async function downloadBlob(data: Blob, suffix: string) {
+  const href = URL.createObjectURL(data);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = generateFilename() + suffix;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }

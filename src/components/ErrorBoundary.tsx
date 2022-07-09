@@ -7,7 +7,8 @@ import {
   Typography,
 } from "@mui/material";
 import React, { ErrorInfo } from "react";
-import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
+import * as model from "../model";
+import { proto2json } from "../services/convert";
 
 interface Props {}
 interface State {
@@ -37,11 +38,13 @@ class ErrorBoundary extends React.Component<Props, State> {
 
     if (graph) {
       try {
-        aif = JSON.stringify(cyto2aif(JSON.parse(graph)));
+        aif = JSON.stringify(model.graph.toAif(JSON.parse(graph)));
       } catch {}
 
       try {
-        arguebuf = JSON.stringify(proto2json(cyto2protobuf(JSON.parse(graph))));
+        arguebuf = JSON.stringify(
+          proto2json(model.graph.toProtobuf(JSON.parse(graph)))
+        );
       } catch {}
     }
 
