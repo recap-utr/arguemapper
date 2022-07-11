@@ -59,7 +59,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   }, [setClick]);
   const { x, y } = useViewport();
 
-  const { setGraph, saveState } = useGraph();
+  const { setState } = useGraph();
   const clickedType = model.elemType(click.target);
 
   const showFor = useCallback(
@@ -94,12 +94,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
         visible={showFor("atom")}
         callback={() => {
           const target = click.target as model.AtomNode;
-          setGraph(
+          setState(
             produce((draft) => {
-              draft.majorClaim = target.id;
+              draft.graph.majorClaim = target.id;
             })
           );
-          saveState();
         }}
         close={close}
         icon={faCommentDots}
@@ -114,7 +113,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
             | model.SchemeNode;
 
           if ("source" in target && "target" in target) {
-            setGraph(
+            setState(
               produce((draft) => {
                 draft.edges = draft.edges.filter(
                   (edge) => target.id !== edge.id
@@ -122,7 +121,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
               })
             );
           } else {
-            setGraph(
+            setState(
               produce((draft) => {
                 draft.nodes = draft.nodes.filter(
                   (node) => target.id !== node.id
@@ -130,7 +129,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
               })
             );
           }
-          saveState();
         }}
         close={close}
         icon={faTrash}
@@ -142,13 +140,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
           const node = model.initAtom({ text: "", position: { x, y } });
           node.selected = true;
 
-          setGraph(
+          setState(
             produce((draft) => {
               draft.nodes.push(node);
             })
           );
-
-          saveState();
         }}
         close={close}
         icon={faPlus}
@@ -160,12 +156,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
           const node = model.initScheme({ position: { x, y } });
           node.selected = true;
 
-          setGraph(
+          setState(
             produce((draft) => {
               draft.nodes.push(node);
             })
           );
-          saveState();
         }}
         close={close}
         icon={faPlus}

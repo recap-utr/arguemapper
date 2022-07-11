@@ -16,10 +16,15 @@ import generateDemo from "../services/demo";
 import layout from "../services/layout";
 
 const GraphContext = createContext<{
+  nodes: Array<model.Node>;
+  setNodes: React.Dispatch<React.SetStateAction<Array<model.Node>>>;
+  edges: Array<model.Edge>;
+  setEdges: React.Dispatch<React.SetStateAction<Array<model.Edge>>>;
   graph: model.Graph;
   setGraph: React.Dispatch<React.SetStateAction<model.Graph>>;
-  resetGraph: (graph?: model.Graph) => void;
-  saveState: () => void;
+  state: model.State;
+  setState: React.Dispatch<React.SetStateAction<model.State>>;
+  resetState: (state?: model.State) => void;
   redo: () => void;
   undo: () => void;
   resetStates: () => void;
@@ -29,10 +34,15 @@ const GraphContext = createContext<{
   selection: model.Selection;
   setSelection: React.Dispatch<React.SetStateAction<model.Selection>>;
 }>({
+  nodes: [],
+  setNodes: () => {},
+  edges: [],
+  setEdges: () => {},
   graph: model.initGraph({}),
   setGraph: () => {},
-  resetGraph: () => {},
-  saveState: () => {},
+  state: model.initState({}),
+  setState: () => {},
+  resetState: () => {},
   redo: () => {},
   undo: () => {},
   resetStates: () => {},
@@ -52,25 +62,29 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   storageName,
 }) => {
   // Load the current state from storage when (re)loading the app
-  const loadGraph = useCallback(() => {
-    const storedGraph = localStorage.getItem(storageName);
+  const loadState = useCallback(() => {
+    const storedState = localStorage.getItem(storageName);
 
-    if (storedGraph) {
+    if (storedState) {
       try {
-        return JSON.parse(storedGraph);
+        return JSON.parse(storedState);
       } catch {}
     }
 
-    return model.initGraph({});
+    return model.initState({});
   }, [storageName]);
 
-  const [graph, setGraph] = useState<model.Graph>(loadGraph);
+  // TODO
+  const [graph, setGraph] = useState<model.Graph>(model.initGraph({}));
+  const [nodes, setNodes] = useState<Array<model.Node>>([]);
+  const [edges, setEdges] = useState<Array<model.Edge>>([]);
+  const [state, setState] = useState<model.State>(loadState);
   const [selection, setSelection] = useState<model.Selection>({
     nodes: [],
     edges: [],
   });
-  const [previousStates, setPreviousStates] = useState<model.Graph[]>([]);
-  const [futureStates, setFutureStates] = useState<model.Graph[]>([]);
+  const [previousStates, setPreviousStates] = useState<model.State[]>([]);
+  const [futureStates, setFutureStates] = useState<model.State[]>([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [shouldSave, setShouldSave] = useState(false);
   const flow = useReactFlow();
@@ -80,18 +94,18 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   }, []);
 
   const undo = useCallback(() => {
-    setFutureStates((states) => [graph, ...states]);
-    setGraph(previousStates[0]);
+    setFutureStates((states) => [state, ...states]);
+    setState(previousStates[0]);
     setPreviousStates((states) => states.slice(1));
-    localStorage.setItem(storageName, JSON.stringify(graph));
-  }, [setGraph, graph, previousStates]);
+    localStorage.setItem(storageName, JSON.stringify(state));
+  }, [setState, state, previousStates]);
 
   const redo = useCallback(() => {
-    setPreviousStates((states) => [graph, ...states]);
-    setGraph(futureStates[0]);
+    setPreviousStates((states) => [state, ...states]);
+    setState(futureStates[0]);
     setFutureStates((states) => states.slice(1));
-    localStorage.setItem(storageName, JSON.stringify(graph));
-  }, [setGraph, graph, futureStates]);
+    localStorage.setItem(storageName, JSON.stringify(state));
+  }, [setState, state, futureStates]);
 
   const resetStates = useCallback(() => {
     setPreviousStates([]);
@@ -103,21 +117,22 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     window.location.reload();
   }, []);
 
-  const resetGraph = useCallback(
-    (inputGraph?: model.Graph) => {
-      const g = inputGraph ?? model.initGraph({});
-      layout(g).then((layoutedNodes) => {
-        setGraph(
-          produce(g, (draft) => {
+  const resetState = useCallback(
+    (preset?: model.State) => {
+      const s = preset ?? model.initState({});
+      layout(s).then((layoutedNodes) => {
+        setState(
+          produce((draft) => {
             draft.nodes = layoutedNodes;
           })
         );
-        localStorage.setItem(storageName, JSON.stringify(g));
+        // TODO
+        // localStorage.setItem(storageName, JSON.stringify(g));
         resetStates();
         flow.fitView();
       });
     },
-    [resetStates, setGraph]
+    [resetStates, setState]
   );
 
   const undoable = previousStates.length > 0;
@@ -125,13 +140,13 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
 
   // Persist the current state every time it changes
   useEffect(() => {
-    if (shouldSave) {
-      localStorage.setItem(storageName, JSON.stringify(graph));
-      setPreviousStates((states) => [graph, ...states]);
-      setFutureStates([]);
-      setShouldSave(false);
-    }
-  }, [graph, shouldSave, storageName]);
+    localStorage.setItem(storageName, JSON.stringify(state));
+    setPreviousStates((states) => [state, ...states]);
+    setFutureStates([]);
+    setNodes(state.nodes);
+    setEdges(state.edges);
+    setGraph(state.graph);
+  }, [state]);
 
   // If the user visits the app for the first time, show a little banner
   useEffect(() => {
@@ -149,7 +164,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
                 disableElevation
                 variant="contained"
                 onClick={() => {
-                  resetGraph(generateDemo());
+                  resetState(generateDemo());
                   closeSnackbar(key);
                 }}
               >
@@ -167,15 +182,20 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         }
       );
     }
-  }, [resetGraph, closeSnackbar, enqueueSnackbar, storageName]);
+  }, [resetState, closeSnackbar, enqueueSnackbar, storageName]);
 
   return (
     <GraphContext.Provider
       value={{
+        nodes,
+        setNodes,
+        edges,
+        setEdges,
         graph,
         setGraph,
-        resetGraph,
-        saveState,
+        state,
+        setState,
+        resetState,
         undo,
         redo,
         undoable,

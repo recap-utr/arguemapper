@@ -35,21 +35,18 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 export interface ToolbarProps {}
 
 const Toolbar: React.FC<ToolbarProps> = () => {
-  const { graph, setGraph, undo, undoable, redo, redoable, saveState } =
-    useGraph();
+  const { state, setState, undo, undoable, redo, redoable } = useGraph();
   const flow = useReactFlow();
 
   const onLayout = useCallback(() => {
-    layout(graph).then((layoutedNodes) => {
-      setGraph(
+    layout(state).then((layoutedNodes) => {
+      setState(
         produce((draft) => {
           draft.nodes = layoutedNodes;
         })
       );
-
-      saveState();
     });
-  }, [setGraph, saveState]);
+  }, [setState]);
 
   return (
     <Box position="absolute" left={0} bottom={0} zIndex={10}>
