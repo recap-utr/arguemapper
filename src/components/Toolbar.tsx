@@ -46,7 +46,7 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         })
       );
     });
-  }, [setState]);
+  }, [setState, state]);
 
   return (
     <Box position="absolute" left={0} bottom={0} zIndex={10}>
