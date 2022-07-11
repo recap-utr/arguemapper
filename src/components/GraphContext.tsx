@@ -86,12 +86,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const [previousStates, setPreviousStates] = useState<model.State[]>([]);
   const [futureStates, setFutureStates] = useState<model.State[]>([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [shouldSave, setShouldSave] = useState(false);
-  const flow = useReactFlow();
-
-  const saveState = useCallback(() => {
-    setShouldSave(true);
-  }, []);
 
   const undo = useCallback(() => {
     setFutureStates((states) => [state, ...states]);
