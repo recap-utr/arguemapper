@@ -192,9 +192,9 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
     </Button>
   );
 
-  const participantFields: {
-    [x in keyof cytoModel.participant.Participant]?: string;
-  } = { name: "Name", email: "Email", username: "Username" };
+  // const participantFields: {
+  //   [x in keyof cytoModel.participant.Participant]?: string;
+  // } = { name: "Name", email: "Email", username: "Username" };
 
   if (elementType() === "scheme") {
     fields = (
