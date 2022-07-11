@@ -8,8 +8,6 @@ import {
   faFileCode,
   faFileImage,
   faFilePen,
-  faMinusCircle,
-  faPlusCircle,
   faSave,
   faTrash,
   faUpload,
@@ -40,8 +38,6 @@ import _, { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useEffect, useState } from "react";
 import * as cytoModel from "../model/cytoWrapper";
-import { uuid } from "../model/cytoWrapper";
-import { Graph } from "../model/graph";
 import { isAtom, isScheme } from "../model/node";
 import * as convert from "../services/convert";
 import { cyto2aif, cyto2protobuf, proto2json } from "../services/convert";
@@ -429,7 +425,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
               </Stack>
             </AccordionDetails>
           </Accordion>
-          <Accordion defaultExpanded>
+          {/* <Accordion defaultExpanded>
             <AccordionSummary
               expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
             >
@@ -505,7 +501,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                 </Button>
               </Stack>
             </AccordionDetails>
-          </Accordion>
+          </Accordion> */}
         </div>
         <Tooltip
           title="If errors occur, you can clear your browser's cache and reload the page with this button"
