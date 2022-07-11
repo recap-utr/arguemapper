@@ -10,7 +10,6 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { useReactFlow } from "react-flow-renderer";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
@@ -123,7 +122,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         // TODO
         // localStorage.setItem(storageName, JSON.stringify(g));
         resetStates();
-        flow.fitView();
+        // flow.fitView();
       });
     },
     [resetStates, setState]
