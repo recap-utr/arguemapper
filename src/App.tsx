@@ -38,8 +38,8 @@ export default function App() {
     useLocalStorage<boolean>("rightSidebarOpen");
 
   return (
-    <ReactFlowProvider>
-      <GraphProvider storageName="graph">
+    <GraphProvider storageName="graph">
+      <ReactFlowProvider>
         <Stack direction="row" sx={{ height: windowHeight }}>
           <Sidebar
             side="left"
@@ -78,7 +78,7 @@ export default function App() {
             />
           </Sidebar>
         </Stack>
-      </GraphProvider>
-    </ReactFlowProvider>
+      </ReactFlowProvider>
+    </GraphProvider>
   );
 }
