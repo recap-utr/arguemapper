@@ -24,7 +24,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   Stack,
   styled,
   TextField,
@@ -34,9 +33,9 @@ import {
   useTheme,
 } from "@mui/material";
 import produce from "immer";
-import _, { startCase } from "lodash";
+import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback } from "react";
+import React from "react";
 import { useReactFlow } from "react-flow-renderer";
 import * as model from "../model";
 import * as convert from "../services/convert";
@@ -54,8 +53,19 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ openSidebar }) => {
-  const { selection, saveState, clearCache, setGraph, graph, resetGraph } =
-    useGraph();
+  const {
+    selection,
+    setState,
+    state,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    clearCache,
+    setGraph,
+    graph,
+    resetState,
+  } = useGraph();
   const confirm = useConfirm();
   const theme = useTheme();
   const flow = useReactFlow();
@@ -94,39 +104,6 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
   //   }
   // }, [cy, openSidebar]);
 
-  const produceHandleChange = useCallback((attr: string | string[]) => {
-    // We need to return a function here, thus the nested callbacks
-    return (
-      event:
-        | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-        | React.ChangeEvent<{
-            name?: string;
-            value: any;
-            event: Event | React.SyntheticEvent<Element, Event>;
-          }>
-        | SelectChangeEvent<HTMLInputElement | string>
-    ) => {
-      setGraph(
-        produce((draft) => {
-          const value =
-            event.target.value === NULL_VALUE ? undefined : event.target.value;
-          _.set(draft, attr, value);
-
-          // if (
-          //   Array.isArray(attr) &&
-          //   attr[0] === "scheme" &&
-          //   attr[1] === "type"
-          // ) {
-          //   draft.scheme.value = // "Default";
-          //     cytoModel.node.schemeMap[
-          //       event.target.value as cytoModel.node.SchemeType
-          //     ]?.DEFAULT ?? NULL_VALUE;
-          // }
-        })
-      );
-    };
-  }, []);
-
   let fields = null;
 
   const deleteButton = (
@@ -135,7 +112,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
       startIcon={<FontAwesomeIcon icon={faTrash} />}
       variant="contained"
       onClick={() => {
-        setGraph(
+        setState(
           produce((draft) => {
             draft.nodes = draft.nodes.filter(
               (node) => !(node.id in selection.nodes.map((x) => x.id))
@@ -145,7 +122,6 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
             );
           })
         );
-        saveState();
       }}
     >
       Delete selection
@@ -167,7 +143,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           <Select
             value={schemeType}
             label="Scheme Type"
-            onChange={produceHandleChange(["scheme", "type"])}
+            onChange={(event) => {}}
             defaultValue={NULL_VALUE}
           >
             <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
@@ -184,7 +160,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
             <Select
               value={element.data.scheme?.value ?? NULL_VALUE}
               label="Argumentation Scheme"
-              onChange={produceHandleChange(["scheme", "value"])}
+              onChange={(event) => {}}
               defaultValue={NULL_VALUE}
             >
               {Object.entries(model.schemeMap[schemeType]).map(
@@ -213,7 +189,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           minRows={3}
           label="Text"
           value={element.data.text}
-          onChange={produceHandleChange("text")}
+          onChange={(event) => {}}
         />
         <TextField
           fullWidth
@@ -221,18 +197,17 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           minRows={3}
           label="Original Text"
           value={element.data.reference?.text}
-          onChange={produceHandleChange(["reference", "text"])}
+          onChange={(event) => {}}
         />
         <Button
           startIcon={<FontAwesomeIcon icon={faCommentDots} />}
           variant="contained"
           onClick={() => {
-            setGraph(
+            setState(
               produce((draft) => {
-                draft.majorClaim = element.id;
+                draft.graph.majorClaim = element.id;
               })
             );
-            saveState();
           }}
         >
           Set as Major Claim
@@ -274,7 +249,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                           if (e.target && typeof e.target.result === "string") {
                             const parsedGraph = JSON.parse(e.target.result);
                             confirm().then(() => {
-                              resetGraph(convert.importGraph(parsedGraph));
+                              resetState(convert.importGraph(parsedGraph));
                             });
                           }
                         };
@@ -297,7 +272,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   variant="contained"
                   onClick={() => {
                     confirm().then(() => {
-                      resetGraph();
+                      resetState();
                     });
                   }}
                 >
@@ -308,7 +283,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   variant="contained"
                   onClick={() => {
                     confirm().then(() => {
-                      resetGraph(demoGraph());
+                      resetState(demoGraph());
                     });
                   }}
                 >
@@ -333,7 +308,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   variant="contained"
                   onClick={() => {
                     convert.downloadJson(
-                      convert.proto2json(model.graph.toProtobuf(graph))
+                      convert.proto2json(model.toProtobuf(state))
                     );
                   }}
                 >
@@ -343,7 +318,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   startIcon={<FontAwesomeIcon icon={faFileCode} />}
                   variant="contained"
                   onClick={() => {
-                    convert.downloadJson(model.graph.toAif(graph));
+                    convert.downloadJson(model.toAif(state));
                   }}
                 >
                   AIF
@@ -420,11 +395,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                               value={
                                 participant[attr as keyof model.Participant]
                               }
-                              onChange={produceHandleChange([
-                                "participants",
-                                id,
-                                attr,
-                              ])}
+                              onChange={(event) => {}}
                             />
                           )
                         )}
@@ -433,12 +404,11 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                           color="error"
                           variant="contained"
                           onClick={() => {
-                            setGraph(
+                            setState(
                               produce((draft) => {
-                                delete draft.participants[id];
+                                delete draft.graph.participants[id];
                               })
                             );
-                            saveState();
                           }}
                         >
                           Remove Participant
@@ -451,15 +421,14 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
                   startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
                   variant="contained"
                   onClick={() => {
-                    setGraph(
+                    setState(
                       produce((draft) => {
-                        draft.participants[model.uuid()] =
+                        draft.graph.participants[model.uuid()] =
                           model.initParticipant({
                             name: "Unknown",
                           });
                       })
                     );
-                    saveState();
                   }}
                 >
                   Add Participant

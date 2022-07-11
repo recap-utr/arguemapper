@@ -4,7 +4,6 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  OnConnect,
   OnInit,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
@@ -77,8 +76,20 @@ export default function Graph() {
   const [redoPressed] = useKeyboardJs("mod + shift + z");
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
 
-  const { graph, setGraph, undo, redo, undoable, redoable, saveState } =
-    useGraph();
+  const {
+    graph,
+    setGraph,
+    undo,
+    redo,
+    undoable,
+    redoable,
+    setNodes,
+    setEdges,
+    state,
+    setState,
+    nodes,
+    edges,
+  } = useGraph();
 
   useEffect(() => {
     if (undoPressed && undoable) {
@@ -114,37 +125,23 @@ export default function Graph() {
   // );
 
   const onNodesChange = useCallback(
-    (changes) => {
-      setGraph(
-        produce((draft) => {
-          draft.nodes = applyNodeChanges(changes, draft.nodes);
-        })
-      );
-    },
-    [setGraph]
+    (changes) => setNodes((n) => applyNodeChanges(changes, n)),
+    [setNodes]
   );
 
   const onEdgesChange = useCallback(
-    (changes) => {
-      setGraph(
-        produce((draft) => {
-          draft.edges = applyEdgeChanges(changes, draft.edges);
-        })
-      );
-    },
-    [setGraph]
+    (changes) => setEdges((e) => applyEdgeChanges(changes, e)),
+    [setEdges]
   );
 
-  const onConnect: OnConnect = useCallback(
-    (connection) => {
-      setGraph(
+  const onConnect = useCallback(
+    (connection) =>
+      setState(
         produce((draft) => {
           draft.edges = addEdge(connection, draft.edges);
         })
-      );
-      saveState();
-    },
-    [setGraph, saveState]
+      ),
+    [setState]
   );
 
   const onInit: OnInit = useCallback((instance) => {
@@ -163,8 +160,8 @@ export default function Graph() {
 
   return (
     <ReactFlow
-      nodes={graph.nodes}
-      edges={graph.edges}
+      nodes={nodes}
+      edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
@@ -172,13 +169,13 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onContextMenu={onContextMenu}
-      onNodeDragStop={saveState}
-      onEdgeUpdateEnd={saveState}
-      onConnectEnd={saveState}
+      // onNodeDragStop={saveState}
+      // onEdgeUpdateEnd={saveState}
+      // onConnectEnd={saveState}
       nodeTypes={NodeTypes}
       minZoom={0.01}
       maxZoom={3}
-      onlyRenderVisibleElements={true}
+      // onlyRenderVisibleElements={true}
       attributionPosition="bottom-center"
       onSelectionChange={undefined}
     >

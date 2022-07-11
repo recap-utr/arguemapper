@@ -1,7 +1,7 @@
 import { v1 as uuid } from "uuid";
 import * as model from "../model";
 
-function demoGraph(): model.Graph {
+function demoGraph(): model.State {
   const resourceId = uuid();
   const resources = {
     [resourceId]: model.initResource({
@@ -70,13 +70,15 @@ function demoGraph(): model.Graph {
     }),
   ];
 
-  return model.initGraph({
+  return model.initState({
     nodes,
     edges,
-    majorClaim: nodes[0].id,
-    resources,
-    participants,
-    analysts,
+    graph: model.initGraph({
+      majorClaim: nodes[0].id,
+      resources,
+      participants,
+      analysts,
+    }),
   });
 }
 

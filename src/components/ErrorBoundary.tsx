@@ -38,12 +38,12 @@ class ErrorBoundary extends React.Component<Props, State> {
 
     if (graph) {
       try {
-        aif = JSON.stringify(model.graph.toAif(JSON.parse(graph)));
+        aif = JSON.stringify(model.toAif(JSON.parse(graph)));
       } catch {}
 
       try {
         arguebuf = JSON.stringify(
-          proto2json(model.graph.toProtobuf(JSON.parse(graph)))
+          proto2json(model.toProtobuf(JSON.parse(graph)))
         );
       } catch {}
     }

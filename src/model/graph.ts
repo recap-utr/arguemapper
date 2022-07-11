@@ -2,19 +2,14 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import argServices from "arg-services/package.json";
-import * as aif from "./aif";
 import * as analyst from "./analyst";
-import * as edge from "./edge";
 import { Edge } from "./edge";
 import * as meta from "./metadata";
-import * as node from "./node";
 import { Node } from "./node";
 import * as participant from "./participant";
 import * as resource from "./resource";
 
 export interface Graph {
-  nodes: Array<Node>;
-  edges: Array<Edge>;
   resources: { [x: string]: resource.Resource };
   participants: { [x: string]: participant.Participant };
   majorClaim?: string;
@@ -39,8 +34,6 @@ export interface Props {
 }
 
 export function init({
-  nodes,
-  edges,
   resources,
   participants,
   majorClaim,
@@ -49,8 +42,6 @@ export function init({
   userdata,
 }: Props): Graph {
   return {
-    nodes: nodes ?? [],
-    edges: edges ?? [],
     metadata: metadata ?? meta.init({}),
     userdata: userdata ?? {},
     resources: resources ?? {},
@@ -62,34 +53,10 @@ export function init({
   };
 }
 
-export function toAif(obj: Graph): aif.Graph {
-  return {
-    nodes: obj.nodes.map((n) => node.toAif(n)),
-    edges: obj.edges.map((e) => edge.toAif(e)),
-    locutions: [],
-  };
-}
-
-export function fromAif(obj: aif.Graph): Graph {
-  const nodes = obj.nodes
-    .map((n) => node.fromAif(n))
-    .filter((n): n is Node => !!n);
-  const nodeIds = new Set(nodes.map((node) => node.id));
-
-  const edges = obj.edges
-    .filter((e) => nodeIds.has(e.fromID) && nodeIds.has(e.toID))
-    .map((e) => edge.fromAif(e));
-
-  return init({
-    nodes,
-    edges,
-  });
-}
-
-export function toProtobuf(obj: Graph): arguebuf.Graph {
+export function toProtobuf(
+  obj: Graph
+): Omit<arguebuf.Graph, "nodes" | "edges"> {
   return arguebuf.Graph.create({
-    nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
-    edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),
     resources: Object.fromEntries(
       Object.entries(obj.resources).map(([k, v]) => [k, resource.toProtobuf(v)])
     ),
@@ -110,10 +77,10 @@ export function toProtobuf(obj: Graph): arguebuf.Graph {
   });
 }
 
-export function fromProtobuf(obj: arguebuf.Graph): Graph {
+export function fromProtobuf(
+  obj: arguebuf.Graph
+): Omit<Graph, "nodes" | "edges"> {
   return {
-    nodes: Object.entries(obj.nodes).map(([id, n]) => node.fromProtobuf(id, n)),
-    edges: Object.entries(obj.edges).map(([id, e]) => edge.fromProtobuf(id, e)),
     resources: Object.fromEntries(
       Object.entries(obj.resources).map(([k, v]) => [
         k,

@@ -46,7 +46,7 @@ export interface PlusMenuProps {
 
 const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
   const theme = useTheme();
-  const { setGraph, saveState } = useGraph();
+  const { setState } = useGraph();
   const isOpen = Boolean(plusButton);
   const open = (event: React.MouseEvent<HTMLButtonElement>) => {
     setPlusButton(event.currentTarget);
@@ -86,13 +86,11 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
             const node = model.initAtom({ text: "", position: { x, y } });
             node.selected = true;
 
-            setGraph(
+            setState(
               produce((draft) => {
                 draft.nodes.push(node);
               })
             );
-
-            saveState();
           }}
           close={close}
           icon={faPlus}
@@ -103,13 +101,11 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
             const node = model.initScheme({ position: { x, y } });
             node.selected = true;
 
-            setGraph(
+            setState(
               produce((draft) => {
                 draft.nodes.push(node);
               })
             );
-
-            saveState();
           }}
           close={close}
           icon={faPlus}

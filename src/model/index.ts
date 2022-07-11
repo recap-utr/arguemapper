@@ -1,7 +1,11 @@
+import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import * as aif from "./aif";
 import type { Edge } from "./edge";
 import * as edge from "./edge";
+import type { Graph } from "./graph";
 import * as graph from "./graph";
-import type { AtomNode, SchemeNode } from "./node";
+import { init as initGraph } from "./graph";
+import type { AtomNode, Node, SchemeNode } from "./node";
 import * as node from "./node";
 import { isAtom, isScheme } from "./node";
 
@@ -42,6 +46,66 @@ export type OptionalElement = Element | undefined;
 export type Element = AtomNode | SchemeNode | Edge;
 export type Elements = Array<Element> | OptionalElement;
 export type ElementType = "atom" | "scheme" | "edge" | "graph";
+
+export interface State {
+  nodes: Array<Node>;
+  edges: Array<Edge>;
+  graph: Graph;
+}
+
+export interface StateInitProps {
+  nodes?: Array<Node>;
+  edges?: Array<Edge>;
+  graph?: Graph;
+}
+
+export function initState({ nodes, edges, graph }: StateInitProps): State {
+  return {
+    nodes: nodes ?? [],
+    edges: edges ?? [],
+    graph: graph ?? initGraph({}),
+  };
+}
+
+export function toAif(obj: State): aif.Graph {
+  return {
+    nodes: obj.nodes.map((n) => node.toAif(n)),
+    edges: obj.edges.map((e) => edge.toAif(e)),
+    locutions: [],
+  };
+}
+
+export function fromAif(obj: aif.Graph): State {
+  const nodes = obj.nodes
+    .map((n) => node.fromAif(n))
+    .filter((n): n is Node => !!n);
+  const nodeIds = new Set(nodes.map((node) => node.id));
+
+  const edges = obj.edges
+    .filter((e) => nodeIds.has(e.fromID) && nodeIds.has(e.toID))
+    .map((e) => edge.fromAif(e));
+
+  return initState({
+    nodes,
+    edges,
+  });
+}
+
+export function toProtobuf(obj: State): arguebuf.Graph {
+  return arguebuf.Graph.create({
+    nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
+    edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),
+    ...graph.toProtobuf(obj.graph),
+  });
+}
+
+export function fromProtobuf(obj: arguebuf.Graph): State {
+  return {
+    nodes: Object.entries(obj.nodes).map(([id, n]) => node.fromProtobuf(id, n)),
+    edges: Object.entries(obj.edges).map(([id, e]) => edge.fromProtobuf(id, e)),
+    graph: graph.fromProtobuf(obj),
+  };
+}
 
 export const elemType = (elem?: OptionalElement): ElementType => {
   if (elem === undefined) {

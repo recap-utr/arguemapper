@@ -25,8 +25,10 @@ interface Selection {
 interface Props {}
 
 const Resources: React.FC<Props> = ({}) => {
-  const { graph, setGraph, saveState } = useGraph();
+  const { graph, setGraph, setState, nodes } = useGraph();
   const { x, y } = useViewport();
+  // TODO
+  const saveState = useCallback(() => {}, []);
 
   const resources = graph.resources;
   // const setResources = (resources: { [x: string]: model.Resource }) =>
@@ -34,7 +36,7 @@ const Resources: React.FC<Props> = ({}) => {
   const [activeTab, setActiveTab] = useState("1");
 
   const references = Object.fromEntries(
-    graph.nodes
+    nodes
       .filter((node) => model.isAtom(node) && node.data.reference)
       .map((node) => [
         node.id,

@@ -16,18 +16,18 @@ const elk = new Elk({
 });
 
 // https://github.com/wbkd/react-flow/issues/5#issuecomment-1026515350
-const layout = async (graph: model.Graph): Promise<Array<model.Node>> => {
-  if (graph.nodes.length === 0) {
+const layout = async (state: model.State): Promise<Array<model.Node>> => {
+  if (state.nodes.length === 0) {
     return [];
   }
 
-  const elkNodes: ElkNode[] = graph.nodes.map((node) => ({
+  const elkNodes: ElkNode[] = state.nodes.map((node) => ({
     id: node.id,
     width: node.width ?? DEFAULT_WIDTH,
     height: node.height ?? DEFAULT_HEIGHT,
   }));
 
-  const elkEdges: ElkPrimitiveEdge[] = graph.edges.map((edge) => ({
+  const elkEdges: ElkPrimitiveEdge[] = state.edges.map((edge) => ({
     id: edge.id,
     target: edge.target,
     source: edge.source,
@@ -39,7 +39,7 @@ const layout = async (graph: model.Graph): Promise<Array<model.Node>> => {
     edges: elkEdges,
   });
 
-  return graph.nodes.map((node) =>
+  return state.nodes.map((node) =>
     produce(node, (draft) => {
       const elkNode = elkGraph?.children?.find((n) => n.id === node.id);
 
