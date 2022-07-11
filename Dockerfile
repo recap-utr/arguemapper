@@ -2,7 +2,7 @@
 # https://dev.to/guha/dockerize-a-react-app-and-deploy-it-on-an-aws-ec2-instance-2knm
 # https://mherman.org/blog/dockerizing-a-react-app/
 
-FROM node:17-alpine as builder
+FROM node:16-alpine as builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --silent
