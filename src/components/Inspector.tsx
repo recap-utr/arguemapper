@@ -34,7 +34,6 @@ import produce from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React from "react";
-import { useReactFlow } from "react-flow-renderer";
 import * as model from "../model";
 import * as convert from "../services/convert";
 import demoGraph from "../services/demo";
@@ -66,7 +65,6 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
   } = useGraph();
   const confirm = useConfirm();
   const theme = useTheme();
-  const flow = useReactFlow();
 
   const selectionType = model.selectionType(selection);
 
