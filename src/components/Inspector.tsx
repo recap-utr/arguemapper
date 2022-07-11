@@ -7,8 +7,6 @@ import {
   faFileCode,
   faFileImage,
   faFilePen,
-  faMinusCircle,
-  faPlusCircle,
   faTrash,
   faUpload,
   faXmark,
@@ -128,13 +126,13 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
     </Button>
   );
 
-  const participantFields: {
-    [x in keyof model.Participant]?: string;
-  } = { name: "Name", email: "Email", username: "Username" };
-
   // const participantFields: {
   //   [x in keyof cytoModel.participant.Participant]?: string;
   // } = { name: "Name", email: "Email", username: "Username" };
+
+  if (selectionType === "scheme") {
+    const element = selection.nodes[0] as model.SchemeNode;
+    const schemeType = element.data.scheme?.type ?? NULL_VALUE;
 
     fields = (
       <>
