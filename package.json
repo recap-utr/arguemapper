@@ -45,7 +45,8 @@
     "build": "npm run generate-meta-tag && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js"
+    "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
+    "lint": "eslint ."
   },
   "eslintConfig": {
     "extends": [
