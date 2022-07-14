@@ -11,7 +11,6 @@ import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
 import React, { useCallback, useState } from "react";
-import { useViewport } from "react-flow-renderer";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
@@ -24,9 +23,9 @@ interface Selection {
 
 interface Props {}
 
-const Resources: React.FC<Props> = ({}) => {
-  const { graph, setGraph, setState, nodes } = useGraph();
-  const { x, y } = useViewport();
+const Resources: React.FC<Props> = () => {
+  const { graph, setGraph, nodes } = useGraph();
+  // const { x, y } = useViewport();
   // TODO
   const saveState = useCallback(() => {}, []);
 
@@ -78,7 +77,7 @@ const Resources: React.FC<Props> = ({}) => {
       //     cy.$id(newElem.id).select();
       //   }
     },
-    [saveState]
+    []
   );
 
   const deleteResource = useCallback(
@@ -171,14 +170,12 @@ function Resource({
   addAtom: (id: string, text: string, offset: number) => void;
   references: { [k: string]: model.Reference };
 }) {
-  const [userSelection, setUserSelection] = useState<Selection>({
+  const [userSelection] = useState<Selection>({
     anchor: 0,
     focus: 0,
   });
-  const [systemSelection, setSystemSelection] = useState<Selection | null>(
-    null
-  );
-  const [hasChanged, setHasChanged] = useState(false);
+  const [systemSelection] = useState<Selection | null>(null);
+  const [hasChanged] = useState(false);
   // const [textHasFocus, setTextHasFocus] = useState(false);
   // const [hoverAddButton, setHoverAddButton] = useState(false);
 

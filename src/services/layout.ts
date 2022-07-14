@@ -4,7 +4,6 @@ import * as model from "../model";
 
 const DEFAULT_WIDTH = 330;
 const DEFAULT_HEIGHT = 75;
-const DEFAULT_WIDTH_FOR_ROOT = 170;
 
 const elk = new Elk({
   defaultLayoutOptions: {

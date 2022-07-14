@@ -90,14 +90,12 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setFutureStates((states) => [state, ...states]);
     setState(previousStates[0]);
     setPreviousStates((states) => states.slice(1));
-    localStorage.setItem(storageName, JSON.stringify(state));
   }, [setState, state, previousStates]);
 
   const redo = useCallback(() => {
     setPreviousStates((states) => [state, ...states]);
     setState(futureStates[0]);
     setFutureStates((states) => states.slice(1));
-    localStorage.setItem(storageName, JSON.stringify(state));
   }, [setState, state, futureStates]);
 
   const resetStates = useCallback(() => {
@@ -120,7 +118,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
           })
         );
         // TODO
-        // localStorage.setItem(storageName, JSON.stringify(g));
         resetStates();
         // flow.fitView();
       });
@@ -139,7 +136,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setNodes(state.nodes);
     setEdges(state.edges);
     setGraph(state.graph);
-  }, [state]);
+  }, [state, storageName]);
 
   // If the user visits the app for the first time, show a little banner
   useEffect(() => {
