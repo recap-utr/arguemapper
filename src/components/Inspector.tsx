@@ -50,19 +50,7 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ openSidebar }) => {
-  const {
-    selection,
-    setState,
-    state,
-    nodes,
-    edges,
-    setNodes,
-    setEdges,
-    clearCache,
-    setGraph,
-    graph,
-    resetState,
-  } = useGraph();
+  const { selection, setState, state, clearCache, resetState } = useGraph();
   const confirm = useConfirm();
   const theme = useTheme();
 

@@ -77,15 +77,15 @@ export default function Graph() {
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
 
   const {
-    graph,
-    setGraph,
+    // graph,
+    // setGraph,
     undo,
     redo,
     undoable,
     redoable,
     setNodes,
     setEdges,
-    state,
+    // state,
     setState,
     nodes,
     edges,
