@@ -10,7 +10,7 @@ import React, { ErrorInfo } from "react";
 import * as model from "../model";
 import { proto2json } from "../services/convert";
 
-interface Props {}
+interface Props extends React.PropsWithChildren {}
 interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
