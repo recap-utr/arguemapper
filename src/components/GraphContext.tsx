@@ -52,7 +52,7 @@ const GraphContext = createContext<{
   setSelection: () => {},
 });
 
-interface GraphProviderProps {
+interface GraphProviderProps extends React.PropsWithChildren {
   storageName: string;
 }
 

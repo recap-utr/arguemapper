@@ -4,7 +4,10 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  OnConnect,
+  OnEdgesChange,
   OnInit,
+  OnNodesChange,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
@@ -124,17 +127,17 @@ export default function Graph() {
   //   [containerSize]
   // );
 
-  const onNodesChange = useCallback(
+  const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((n) => applyNodeChanges(changes, n)),
     [setNodes]
   );
 
-  const onEdgesChange = useCallback(
+  const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setEdges((e) => applyEdgeChanges(changes, e)),
     [setEdges]
   );
 
-  const onConnect = useCallback(
+  const onConnect: OnConnect = useCallback(
     (connection) =>
       setState(
         produce((draft) => {

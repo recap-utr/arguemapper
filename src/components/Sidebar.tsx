@@ -1,13 +1,22 @@
 import { Drawer, DrawerProps, useTheme } from "@mui/material";
 import React from "react";
 
-const Sidebar: React.FC<{
+interface SidebarProps extends React.PropsWithChildren {
   side: DrawerProps["anchor"];
   drawerWidth: number;
   isMobile: boolean;
   isOpen: boolean;
   setIsOpen: (x: boolean) => void;
-}> = ({ side, drawerWidth, isMobile, isOpen, setIsOpen, children }) => {
+}
+
+const Sidebar: React.FC<SidebarProps> = ({
+  side,
+  drawerWidth,
+  isMobile,
+  isOpen,
+  setIsOpen,
+  children,
+}) => {
   const theme = useTheme();
   return (
     <Drawer
