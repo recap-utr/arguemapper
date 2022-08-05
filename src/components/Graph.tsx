@@ -4,6 +4,7 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  NodeDragHandler,
   OnConnect,
   OnEdgesChange,
   OnInit,
@@ -88,7 +89,7 @@ export default function Graph() {
     redoable,
     setNodes,
     setEdges,
-    // state,
+    saveState,
     setState,
     nodes,
     edges,
@@ -147,6 +148,22 @@ export default function Graph() {
     [setState]
   );
 
+  const onNodeDragStop: NodeDragHandler = useCallback(() => {
+    setState(
+      produce((draft) => {
+        draft.nodes = nodes;
+      })
+    );
+  }, [setState, nodes]);
+
+  const onEdgeUpdateEnd = useCallback(() => {
+    setState(
+      produce((draft) => {
+        draft.edges = edges;
+      })
+    );
+  }, [setState, edges]);
+
   const onInit: OnInit = useCallback((instance) => {
     instance.fitView();
   }, []);
@@ -172,9 +189,8 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onContextMenu={onContextMenu}
-      // onNodeDragStop={saveState}
-      // onEdgeUpdateEnd={saveState}
-      // onConnectEnd={saveState}
+      onNodeDragStop={onNodeDragStop}
+      onEdgeUpdateEnd={onEdgeUpdateEnd}
       nodeTypes={NodeTypes}
       minZoom={0.01}
       maxZoom={3}
