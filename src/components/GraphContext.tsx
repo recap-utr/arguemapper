@@ -24,6 +24,7 @@ const GraphContext = createContext<{
   state: model.State;
   setState: React.Dispatch<React.SetStateAction<model.State>>;
   resetState: (state?: model.State) => void;
+  saveState: () => void;
   redo: () => void;
   undo: () => void;
   resetStates: () => void;
@@ -42,6 +43,7 @@ const GraphContext = createContext<{
   state: model.initState({}),
   setState: () => {},
   resetState: () => {},
+  saveState: () => {},
   redo: () => {},
   undo: () => {},
   resetStates: () => {},
@@ -73,11 +75,15 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     return model.initState({});
   }, [storageName]);
 
-  // TODO
-  const [graph, setGraph] = useState<model.Graph>(model.initGraph({}));
-  const [nodes, setNodes] = useState<Array<model.Node>>([]);
-  const [edges, setEdges] = useState<Array<model.Edge>>([]);
   const [state, setState] = useState<model.State>(loadState);
+  const [graph, setGraph] = useState<model.Graph>(state.graph);
+  const [nodes, setNodes] = useState<Array<model.Node>>(state.nodes);
+  const [edges, setEdges] = useState<Array<model.Edge>>(state.edges);
+
+  // const [graph, setGraph] = useState<model.Graph>(model.initGraph({}));
+  // const [nodes, setNodes] = useState<Array<model.Node>>([]);
+  // const [edges, setEdges] = useState<Array<model.Edge>>([]);
+
   const [selection, setSelection] = useState<model.Selection>({
     nodes: [],
     edges: [],
@@ -112,11 +118,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     (preset?: model.State) => {
       const s = preset ?? model.initState({});
       layout(s).then((layoutedNodes) => {
-        setState(
-          produce((draft) => {
-            draft.nodes = layoutedNodes;
-          })
-        );
+        setState({
+          nodes: layoutedNodes,
+          edges: s.edges,
+          graph: s.graph,
+        });
         // TODO
         resetStates();
         // flow.fitView();
@@ -124,6 +130,16 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     },
     [resetStates, setState]
   );
+
+  const saveState = useCallback(() => {
+    setState(
+      produce((draft) => {
+        draft.edges = edges;
+        draft.nodes = nodes;
+        draft.graph = graph;
+      })
+    );
+  }, [edges, nodes, graph]);
 
   const undoable = previousStates.length > 0;
   const redoable = futureStates.length > 0;
@@ -186,6 +202,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         state,
         setState,
         resetState,
+        saveState,
         undo,
         redo,
         undoable,
