@@ -2,7 +2,7 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import { startCase } from "lodash";
-import { Node as FlowNode, XYPosition } from "react-flow-renderer";
+import { Node as FlowNode, NodeProps, XYPosition } from "react-flow-renderer";
 import { v1 as uuid } from "uuid";
 import * as date from "../services/date";
 import * as aif from "./aif";
@@ -287,13 +287,11 @@ const text2rephrase: { [k: string]: Rephrase } = {};
 const text2preference: { [k: string]: Preference } = {};
 
 export interface NodeData {
-  type: "atom" | "scheme";
   metadata: meta.Metadata;
   userdata: JsonValue;
 }
 
 export interface AtomData extends NodeData {
-  type: "atom";
   text: string;
   reference?: ref.Reference;
   participant?: string;
@@ -320,8 +318,8 @@ export function initAtom({
 }: AtomProps): AtomNode {
   return {
     id: id ?? uuid(),
+    type: "atom",
     data: {
-      type: "atom",
       metadata: metadata ?? meta.init({}),
       userdata: userdata ?? {},
       text,
@@ -356,8 +354,8 @@ export function initScheme({
 }: SchemeProps): SchemeNode {
   return {
     id: id ?? uuid(),
+    type: "scheme",
     data: {
-      type: "scheme",
       metadata: metadata ?? meta.init({}),
       userdata: userdata ?? {},
       scheme,
@@ -367,33 +365,23 @@ export function initScheme({
   };
 }
 
-export function isAtom(node: Node): node is AtomNode {
-  return node.data.type === "atom";
+export function isAtom(node: Node | NodeProps<NodeData>): node is AtomNode {
+  return node.type === "atom";
 }
 
-export function isAtomData(data: NodeData): data is AtomData {
-  return data.type === "atom";
+export function isScheme(node: Node | NodeProps<NodeData>): node is SchemeNode {
+  return node.type === "scheme";
 }
 
-export function isScheme(node: Node): node is SchemeNode {
-  return node.data.type === "scheme";
-}
-
-export function isSchemeData(data: NodeData): data is SchemeData {
-  return data.type === "atom";
-}
-
-export function label(node: Node | NodeData): string {
-  const data = "id" in node ? node.data : node;
-
-  if (isAtomData(data)) {
-    return data.text;
-  } else if (isSchemeData(data) && data.scheme) {
-    if (data.scheme.value !== schemeMap[data.scheme.type].DEFAULT) {
-      return data.scheme.value;
+export function label(node: Node | NodeProps<NodeData>): string {
+  if (isAtom(node)) {
+    return node.data.text;
+  } else if (isScheme(node) && node.data.scheme) {
+    if (node.data.scheme.value !== schemeMap[node.data.scheme.type].DEFAULT) {
+      return node.data.scheme.value;
     }
 
-    return startCase(data.scheme.type);
+    return startCase(node.data.scheme.type);
   }
 
   return NO_SCHEME_LABEL;
@@ -495,10 +483,10 @@ export function fromAif(obj: aif.Node): Node | undefined {
   if (obj.type === "I") {
     const node: AtomNode = {
       id: obj.nodeID,
+      type: "atom",
       data: {
         userdata: {},
         metadata,
-        type: "atom",
         text: obj.text,
       },
       position: { x: 0, y: 0 },
@@ -540,10 +528,10 @@ export function fromAif(obj: aif.Node): Node | undefined {
 
     const node: SchemeNode = {
       id: obj.nodeID,
+      type: "scheme",
       data: {
         userdata: {},
         metadata,
-        type: "scheme",
         scheme,
         premiseDescriptors: [],
       },
@@ -560,12 +548,12 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
   if (obj.type.oneofKind === "atom") {
     const node: AtomNode = {
       id,
+      type: "atom",
       data: {
         metadata: obj.metadata
           ? meta.fromProtobuf(obj.metadata)
           : meta.init({}),
         userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
-        type: "atom",
         text: obj.type.atom.text,
         participant: obj.type.atom.participant,
         reference: obj.type.atom.reference
@@ -613,12 +601,12 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
 
     const node: SchemeNode = {
       id,
+      type: "scheme",
       data: {
         metadata: obj.metadata
           ? meta.fromProtobuf(obj.metadata)
           : meta.init({}),
         userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
-        type: "scheme",
         scheme,
         premiseDescriptors: obj.type.scheme.premiseDescriptors,
       },
