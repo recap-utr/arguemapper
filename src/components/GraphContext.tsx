@@ -152,6 +152,16 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setNodes(state.nodes);
     setEdges(state.edges);
     setGraph(state.graph);
+
+    setSelection((sel) => {
+      const nodeIds = sel.nodes.map((node) => node.id);
+      const edgeIds = sel.edges.map((edge) => edge.id);
+
+      return {
+        nodes: state.nodes.filter((node) => nodeIds.includes(node.id)),
+        edges: state.edges.filter((edge) => edgeIds.includes(edge.id)),
+      };
+    });
   }, [state, storageName]);
 
   // If the user visits the app for the first time, show a little banner

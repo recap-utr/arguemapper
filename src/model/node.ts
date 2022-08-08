@@ -112,6 +112,8 @@ export type Scheme =
   | { type: SchemeType.REPHRASE; value: Rephrase }
   | { type: SchemeType.PREFERENCE; value: Preference };
 
+export type SchemeValue = Support | Attack | Rephrase | Preference;
+
 export const schemeMap: {
   [key in SchemeType]:
     | typeof Support
