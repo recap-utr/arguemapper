@@ -40,12 +40,6 @@
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
     "lint": "eslint ."
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -66,7 +60,10 @@
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-react": "^2.0.0",
+    "eslint": "^8.21.0",
+    "eslint-config-react-app": "^7.0.1",
     "vite": "^3.0.4",
+    "vite-plugin-eslint": "^1.7.0",
     "web-worker": "^1.2.0"
   }
 }
