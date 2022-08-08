@@ -81,17 +81,19 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
   const [nodes, setNodes] = useState<Array<model.Node>>(state.nodes);
   const [edges, setEdges] = useState<Array<model.Edge>>(state.edges);
 
-  // const [graph, setGraph] = useState<model.Graph>(model.initGraph({}));
-  // const [nodes, setNodes] = useState<Array<model.Node>>([]);
-  // const [edges, setEdges] = useState<Array<model.Edge>>([]);
-
   const [selection, setSelection] = useState<model.Selection>({
     nodes: [],
     edges: [],
   });
+  const [firstVisit, setFirstVisit] = useLocalStorage<boolean>(
+    "firstVisit",
+    true
+  );
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  // const flow = useReactFlow();
+
   const [previousStates, setPreviousStates] = useState<model.State[]>([]);
   const [futureStates, setFutureStates] = useState<model.State[]>([]);
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const undo = useCallback(() => {
     setFutureStates((states) => [state, ...states]);
@@ -124,7 +126,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
           edges: s.edges,
           graph: s.graph,
         });
-        // TODO
         resetUndoRedo();
         // flow.fitView();
       });
@@ -164,11 +165,6 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
       };
     });
   }, [state, storageName]);
-
-  const [firstVisit, setFirstVisit] = useLocalStorage<boolean>(
-    "firstVisit",
-    true
-  );
 
   // If the user visits the app for the first time, show a little banner
   useEffect(() => {

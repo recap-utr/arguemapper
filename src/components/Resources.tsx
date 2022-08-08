@@ -100,7 +100,7 @@ interface ResourceProps {
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const { setGraph, graph, setState } = useGraph();
   const { x, y } = useViewport();
-  const resource = graph.resources[id];
+  const resource: model.Resource = graph.resources[id];
 
   const [userSelection, setUserSelection] = useState<TextSelection>({
     anchor: 0,
@@ -146,7 +146,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         );
       }
     },
-    [setGraph, id, resource.text]
+    [setGraph, id, resource]
   );
 
   const onBlur = useCallback(() => {
@@ -198,7 +198,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         fullWidth
         multiline
         minRows={5}
-        value={resource.text}
+        value={resource?.text ?? ""}
         onChange={onChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,
