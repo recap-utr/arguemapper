@@ -97,6 +97,7 @@ export default function Graph() {
     setState,
     nodes,
     edges,
+    resetUndoRedo,
   } = useGraph();
 
   useEffect(() => {
@@ -182,9 +183,13 @@ export default function Graph() {
     );
   }, [setState, edges]);
 
-  const onInit: OnInit = useCallback((instance) => {
-    instance.fitView();
-  }, []);
+  const onInit: OnInit = useCallback(
+    (instance) => {
+      instance.fitView();
+      resetUndoRedo();
+    },
+    [resetUndoRedo]
+  );
 
   const onContextMenu = (
     event: React.MouseEvent,
