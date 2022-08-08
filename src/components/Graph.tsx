@@ -85,19 +85,17 @@ export default function Graph() {
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
 
   const {
-    // graph,
-    // setGraph,
     undo,
     redo,
     undoable,
     redoable,
     setNodes,
     setEdges,
-    saveState,
     setState,
     nodes,
     edges,
     resetUndoRedo,
+    setSelection,
   } = useGraph();
 
   useEffect(() => {
@@ -222,7 +220,7 @@ export default function Graph() {
       maxZoom={3}
       // onlyRenderVisibleElements={true}
       attributionPosition="bottom-center"
-      onSelectionChange={undefined}
+      onSelectionChange={setSelection}
     >
       {/* <MiniMap
         // style={}
@@ -237,7 +235,7 @@ export default function Graph() {
       <MarkerDefinition
         id="arguemapper-marker"
         color={color.grey[500]}
-        strokeWidth={5}
+        strokeWidth={2.5}
       />
       <Toolbar />
       <ContextMenu click={ctxMenu} setClick={setCtxMenu} />
