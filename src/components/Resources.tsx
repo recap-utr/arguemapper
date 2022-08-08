@@ -9,7 +9,7 @@ import React, { useCallback, useState } from "react";
 import { useViewport } from "react-flow-renderer";
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
-import { useGraph } from "./GraphContext";
+import useStore, { State } from "../store";
 
 interface TextSelection {
   anchor: number;
@@ -19,12 +19,14 @@ interface TextSelection {
 interface Props {}
 
 const Resources: React.FC<Props> = () => {
-  const { state, setState } = useGraph();
-  const resources = state.graph.resources;
+  const nodes = useStore((state) => state.nodes);
+  const graph = useStore((state) => state.graph);
+  const setState = useStore((state) => state.setState);
+  const resources = graph.resources;
   const [activeTab, setActiveTab] = useState("1");
 
   const references = Object.fromEntries(
-    state.nodes
+    nodes
       .filter((node) => model.isAtom(node) && node.data.reference)
       .map((node) => [
         node.id,
@@ -41,7 +43,7 @@ const Resources: React.FC<Props> = () => {
 
   const addResource = useCallback(() => {
     setState(
-      produce((draft) => {
+      produce((draft: State) => {
         draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
@@ -98,7 +100,8 @@ interface ResourceProps {
 }
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
-  const { setGraph, graph, setState } = useGraph();
+  const graph = useStore((state) => state.graph);
+  const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
   const resource: model.Resource = graph.resources[id];
 
@@ -139,33 +142,29 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         setUserSelection({ anchor: start, focus: end });
         setSystemSelection(undefined);
       } else {
-        setGraph(
-          produce((draft) => {
-            draft.resources[id].text = value;
+        setState(
+          produce((draft: State) => {
+            draft.graph.resources[id].text = value;
           })
         );
       }
     },
-    [setGraph, id, resource]
+    [setState, id, resource]
   );
 
-  const onBlur = useCallback(() => {
-    setState(
-      produce((draft) => {
-        draft.graph.resources[id] = resource;
-      })
-    );
-  }, [setState, id, resource]);
+  // const onBlur = useCallback(() => {
+  //   setState(
+  //     produce((draft) => {
+  //       draft.graph.resources[id] = resource;
+  //     })
+  //   );
+  // }, [setState, id, resource]);
 
   const addAtom = useCallback(() => {
     const text = resource.text.substring(
       userSelection.anchor,
       userSelection.focus
     );
-    console.log({
-      resource,
-      text,
-    });
     const offset = userSelection.anchor;
 
     const node = model.initAtom({
@@ -176,7 +175,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     node.selected = true;
 
     setState(
-      produce((draft) => {
+      produce((draft: State) => {
         draft.nodes.push(node);
       })
     );
@@ -184,7 +183,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
 
   const deleteResource = useCallback(() => {
     setState(
-      produce((draft) => {
+      produce((draft: State) => {
         delete draft.graph.resources[id];
       })
     );
@@ -205,7 +204,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           inputProps: {
             selection: systemSelection,
             highlight,
-            onBlur,
+            // onBlur,
           },
         }}
       />

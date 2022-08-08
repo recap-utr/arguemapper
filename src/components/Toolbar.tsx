@@ -13,12 +13,12 @@ import produce from "immer";
 import React, { useCallback } from "react";
 import { useReactFlow } from "react-flow-renderer";
 import layout from "../services/layout";
-import { useGraph } from "./GraphContext";
+import useStore, { State } from "../store";
 
 interface ItemProps {
   disabled?: boolean;
   text: string;
-  callback: () => void;
+  callback?: () => void;
   icon: IconProp;
 }
 
@@ -37,18 +37,26 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 export interface ToolbarProps {}
 
 const Toolbar: React.FC<ToolbarProps> = () => {
-  const { state, setState, undo, undoable, redo, redoable } = useGraph();
+  const [undo, redo, undoable, redoable] = useStore((state) => [
+    state.undo,
+    state.redo,
+    state.undoable,
+    state.redoable,
+  ]);
+  const nodes = useStore((state) => state.nodes);
+  const edges = useStore((state) => state.edges);
+  const setState = useStore((state) => state.setState);
   const flow = useReactFlow();
 
   const onLayout = useCallback(() => {
-    layout(state).then((layoutedNodes) => {
+    layout(nodes, edges).then((layoutedNodes) => {
       setState(
-        produce((draft) => {
+        produce((draft: State) => {
           draft.nodes = layoutedNodes;
         })
       );
     });
-  }, [setState, state]);
+  }, [setState, nodes, edges]);
 
   return (
     <Box position="absolute" left={0} bottom={0} zIndex={10}>
@@ -60,13 +68,13 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         />
         <Item
           text="Undo last action"
-          disabled={!undoable}
+          disabled={!undoable()}
           callback={undo}
           icon={faUndo}
         />
         <Item
           text="Redo last action"
-          disabled={!redoable}
+          disabled={!redoable()}
           callback={redo}
           icon={faRedo}
         />

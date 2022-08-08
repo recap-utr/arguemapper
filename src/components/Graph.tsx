@@ -11,12 +11,13 @@ import ReactFlow, {
   OnInit,
   OnNodesChange,
   OnNodesDelete,
+  OnSelectionChangeFunc,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
+import useStore, { State } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
-import { useGraph } from "./GraphContext";
 import MarkerDefinition from "./Marker";
 import NodeTypes from "./NodeTypes";
 import PlusMenu from "./PlusMenu";
@@ -84,67 +85,63 @@ export default function Graph() {
   const [redoPressed] = useKeyboardJs("mod + shift + z");
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
 
-  const {
-    undo,
-    redo,
-    undoable,
-    redoable,
-    setNodes,
-    setEdges,
-    setState,
-    nodes,
-    edges,
-    resetUndoRedo,
-    setSelection,
-  } = useGraph();
+  const [undo, redo, resetUndoRedo] = useStore((state) => [
+    state.undo,
+    state.redo,
+    state.resetUndoRedo,
+  ]);
+  const nodes = useStore((state) => state.nodes);
+  const edges = useStore((state) => state.edges);
+  const setState = useStore((state) => state.setState);
 
   useEffect(() => {
-    if (undoPressed && undoable) {
+    if (undoPressed && undo !== undefined) {
       undo();
     }
-  }, [undo, undoPressed, undoable]);
+  }, [undo, undoPressed]);
 
   useEffect(() => {
-    if (redoPressed && redoable) {
+    if (redoPressed && redo !== undefined) {
       redo();
     }
-  }, [redo, redoPressed, redoable]);
+  }, [redo, redoPressed]);
 
-  // const openContextMenu = useCallback(
-  //   (event: EventObject) => {
-  //     const data = event.target.data();
-  //     const size = containerSize();
+  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([]);
 
-  //     setCtxMenu({
-  //       mouseX: event.originalEvent.clientX || size.width / 2,
-  //       mouseY: event.originalEvent.clientY || size.height / 2,
-  //       cytoX: event.position.x,
-  //       cytoY: event.position.y,
-  //       target: event.target,
-  //       type: data.type
-  //         ? data.type
-  //         : data.source && data.target
-  //         ? "edge"
-  //         : "graph",
-  //     });
-  //   },
-  //   [containerSize]
-  // );
+  useEffect(() => {
+    setTmpNodes(nodes);
+
+    // setSelection((sel) => {
+    //   const nodeIds = sel.nodes.map((node) => node.id);
+    //   const edgeIds = sel.edges.map((edge) => edge.id);
+
+    //   return {
+    //     nodes: state.nodes.filter((node) => nodeIds.includes(node.id)),
+    //     edges: state.edges.filter((edge) => edgeIds.includes(edge.id)),
+    //   };
+    // });
+  }, [nodes]);
 
   const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((n) => applyNodeChanges(changes, n)),
-    [setNodes]
+    (changes) => setTmpNodes((n) => applyNodeChanges(changes, n)),
+    [setTmpNodes]
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((e) => applyEdgeChanges(changes, e)),
-    [setEdges]
+    (changes) =>
+      setState(
+        produce(
+          (draft: State) =>
+            (draft.edges = applyEdgeChanges(changes, draft.edges))
+        )
+      ),
+    [setState]
   );
 
   const onConnect: OnConnect = useCallback(
     (connection) =>
       setState(
-        produce((draft) => {
+        produce((draft: State) => {
           draft.edges = addEdge(connection, draft.edges);
         })
       ),
@@ -153,17 +150,17 @@ export default function Graph() {
 
   const onNodeDragStop: NodeDragHandler = useCallback(() => {
     setState(
-      produce((draft) => {
-        draft.nodes = nodes;
+      produce((draft: State) => {
+        draft.nodes = tmpNodes;
       })
     );
-  }, [setState, nodes]);
+  }, [setState, tmpNodes]);
 
   const onNodesDelete: OnNodesDelete = useCallback(
     (deletedNodes) => {
       const deletedNodeIds = deletedNodes.map((node) => node.id);
       setState(
-        produce((draft) => {
+        produce((draft: State) => {
           draft.nodes = draft.nodes.filter(
             (node) => !deletedNodeIds.includes(node.id)
           );
@@ -173,18 +170,13 @@ export default function Graph() {
     [setState]
   );
 
-  const onEdgeUpdateEnd = useCallback(() => {
-    setState(
-      produce((draft) => {
-        draft.edges = edges;
-      })
-    );
-  }, [setState, edges]);
-
   const onInit: OnInit = useCallback(
     (instance) => {
       instance.fitView();
-      resetUndoRedo();
+
+      if (resetUndoRedo !== undefined) {
+        resetUndoRedo();
+      }
     },
     [resetUndoRedo]
   );
@@ -200,9 +192,20 @@ export default function Graph() {
     });
   };
 
+  const onSelectionChange: OnSelectionChangeFunc = (elems) =>
+    setState(
+      produce((draft: State) => {
+        draft.nodes = tmpNodes;
+        draft.selection = {
+          nodes: elems.nodes.map((node) => node.id),
+          edges: elems.edges.map((edge) => edge.id),
+        };
+      })
+    );
+
   return (
     <ReactFlow
-      nodes={nodes}
+      nodes={tmpNodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
@@ -213,14 +216,13 @@ export default function Graph() {
       onPaneContextMenu={onContextMenu}
       onNodeDragStop={onNodeDragStop}
       onNodesDelete={onNodesDelete}
-      onEdgeUpdateEnd={onEdgeUpdateEnd}
+      onSelectionChange={onSelectionChange}
+      selectNodesOnDrag={true}
       nodeTypes={NodeTypes}
       edgeTypes={EdgeTypes}
       minZoom={0.01}
       maxZoom={3}
-      // onlyRenderVisibleElements={true}
       attributionPosition="bottom-center"
-      onSelectionChange={setSelection}
     >
       {/* <MiniMap
         // style={}

@@ -8,7 +8,7 @@ import {
   Position,
 } from "react-flow-renderer";
 import * as model from "../model";
-import { useGraph } from "./GraphContext";
+import useStore from "../store";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
@@ -52,7 +52,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 
 const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
   const body = <div>{model.nodeLabel(node)}</div>;
-  const { graph } = useGraph();
+  const graph = useStore((state) => state.graph);
   let bg: string = color.blue[500];
 
   if (graph.majorClaim === node.id) {

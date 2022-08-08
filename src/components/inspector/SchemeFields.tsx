@@ -3,7 +3,7 @@ import produce from "immer";
 import { startCase } from "lodash";
 import React from "react";
 import * as model from "../../model";
-import { useGraph } from "../GraphContext";
+import useStore, { State } from "../../store";
 
 const NULL_VALUE = "###NULL###";
 
@@ -12,8 +12,13 @@ export interface Props extends React.PropsWithChildren {
 }
 
 const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const { selection, setState } = useGraph();
-  const element = selection.nodes[idx] as model.SchemeNode;
+  const nodes = useStore((state) => state.nodes);
+  const selection = useStore((state) => state.selection);
+  const setState = useStore((state) => state.setState);
+
+  const element = nodes.find(
+    (node) => node.id === selection.nodes[idx]
+  ) as model.SchemeNode;
   const schemeType = element.data.scheme?.type ?? NULL_VALUE;
 
   return (
@@ -29,7 +34,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
               | typeof NULL_VALUE;
 
             setState(
-              produce((draft) => {
+              produce((draft: State) => {
                 const idx = draft.nodes.findIndex(
                   (node) => node.id === element.id
                 );
@@ -62,7 +67,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
             label="Argumentation Scheme"
             onChange={(event) => {
               setState(
-                produce((draft) => {
+                produce((draft: State) => {
                   const idx = draft.nodes.findIndex(
                     (node) => node.id === element.id
                   );

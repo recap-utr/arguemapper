@@ -14,7 +14,7 @@ import produce from "immer";
 import React from "react";
 import { useViewport } from "react-flow-renderer";
 import * as model from "../model";
-import { useGraph } from "./GraphContext";
+import useStore, { State } from "../store";
 
 interface ItemProps {
   callback: () => void;
@@ -46,7 +46,7 @@ export interface PlusMenuProps {
 
 const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
   const theme = useTheme();
-  const { setState } = useGraph();
+  const setState = useStore((state) => state.setState);
   const isOpen = Boolean(plusButton);
   const open = (event: React.MouseEvent<HTMLButtonElement>) => {
     setPlusButton(event.currentTarget);
@@ -87,7 +87,7 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
             node.selected = true;
 
             setState(
-              produce((draft) => {
+              produce((draft: State) => {
                 draft.nodes.push(node);
               })
             );
@@ -102,7 +102,7 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
             node.selected = true;
 
             setState(
-              produce((draft) => {
+              produce((draft: State) => {
                 draft.nodes.push(node);
               })
             );

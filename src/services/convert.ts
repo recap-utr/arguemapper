@@ -1,9 +1,9 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import { fromAif, fromProtobuf, State } from "../model";
+import { fromAif, fromProtobuf, Wrapper } from "../model";
 import * as date from "./date";
 
-export function importGraph(obj: any): State {
+export function importGraph(obj: any): Wrapper {
   if ("locutions" in obj) {
     return fromAif(obj);
   } else {

@@ -48,19 +48,23 @@ export type Element = AtomNode | SchemeNode | Edge;
 export type Elements = Array<Element> | OptionalElement;
 export type ElementType = "atom" | "scheme" | "edge" | "graph";
 
-export interface State {
+export interface Wrapper {
   nodes: Array<Node>;
   edges: Array<Edge>;
   graph: Graph;
 }
 
-export interface StateInitProps {
+export interface WrapperInitProps {
   nodes?: Array<Node>;
   edges?: Array<Edge>;
   graph?: Graph;
 }
 
-export function initState({ nodes, edges, graph }: StateInitProps): State {
+export function initWrapper({
+  nodes,
+  edges,
+  graph,
+}: WrapperInitProps): Wrapper {
   return {
     nodes: nodes ?? [],
     edges: edges ?? [],
@@ -68,7 +72,7 @@ export function initState({ nodes, edges, graph }: StateInitProps): State {
   };
 }
 
-export function toAif(obj: State): aif.Graph {
+export function toAif(obj: Wrapper): aif.Graph {
   return {
     nodes: obj.nodes.map((n) => node.toAif(n)),
     edges: obj.edges.map((e) => edge.toAif(e)),
@@ -76,7 +80,7 @@ export function toAif(obj: State): aif.Graph {
   };
 }
 
-export function fromAif(obj: aif.Graph): State {
+export function fromAif(obj: aif.Graph): Wrapper {
   const nodes = obj.nodes
     .map((n) => node.fromAif(n))
     .filter((n): n is Node => !!n);
@@ -86,13 +90,13 @@ export function fromAif(obj: aif.Graph): State {
     .filter((e) => nodeIds.has(e.fromID) && nodeIds.has(e.toID))
     .map((e) => edge.fromAif(e));
 
-  return initState({
+  return initWrapper({
     nodes,
     edges,
   });
 }
 
-export function toProtobuf(obj: State): arguebuf.Graph {
+export function toProtobuf(obj: Wrapper): arguebuf.Graph {
   return arguebuf.Graph.create({
     nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
     edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),
@@ -100,7 +104,7 @@ export function toProtobuf(obj: State): arguebuf.Graph {
   });
 }
 
-export function fromProtobuf(obj: arguebuf.Graph): State {
+export function fromProtobuf(obj: arguebuf.Graph): Wrapper {
   return {
     nodes: Object.entries(obj.nodes).map(([id, n]) => node.fromProtobuf(id, n)),
     edges: Object.entries(obj.edges).map(([id, e]) => edge.fromProtobuf(id, e)),
@@ -123,21 +127,25 @@ export const elemType = (elem?: OptionalElement): ElementType => {
 };
 
 export interface Selection {
-  nodes: Array<Node>;
-  edges: Array<Edge>;
+  nodes: Array<string>;
+  edges: Array<string>;
 }
 
 export type SelectionType = ElementType | "multiple";
 
-export const selectionType = (sel: Selection): SelectionType => {
+export const selectionType = (
+  sel: Selection,
+  nodes: Array<Node>
+): SelectionType => {
   if (sel.nodes.length === 0 && sel.edges.length === 0) {
     return "graph";
   } else if (sel.nodes.length === 0 && sel.edges.length === 1) {
     return "edge";
   } else if (sel.nodes.length === 1 && sel.edges.length === 0) {
-    const node = sel.nodes[0];
+    const nodeId = sel.nodes[0];
+    const node = nodes.find((x) => x.id === nodeId);
 
-    if (isAtom(node)) {
+    if (node !== undefined && isAtom(node)) {
       return "atom";
     } else {
       return "scheme";
