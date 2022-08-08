@@ -10,6 +10,7 @@ import ReactFlow, {
   OnEdgesChange,
   OnInit,
   OnNodesChange,
+  OnNodesDelete,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
@@ -159,6 +160,20 @@ export default function Graph() {
     );
   }, [setState, nodes]);
 
+  const onNodesDelete: OnNodesDelete = useCallback(
+    (deletedNodes) => {
+      const deletedNodeIds = deletedNodes.map((node) => node.id);
+      setState(
+        produce((draft) => {
+          draft.nodes = draft.nodes.filter(
+            (node) => !deletedNodeIds.includes(node.id)
+          );
+        })
+      );
+    },
+    [setState]
+  );
+
   const onEdgeUpdateEnd = useCallback(() => {
     setState(
       produce((draft) => {
@@ -193,6 +208,7 @@ export default function Graph() {
       onEdgeContextMenu={onContextMenu}
       onContextMenu={onContextMenu}
       onNodeDragStop={onNodeDragStop}
+      onNodesDelete={onNodesDelete}
       onEdgeUpdateEnd={onEdgeUpdateEnd}
       nodeTypes={NodeTypes}
       edgeTypes={EdgeTypes}
