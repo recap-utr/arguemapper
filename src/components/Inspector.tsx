@@ -11,7 +11,7 @@ import {
 import produce from "immer";
 import React from "react";
 import * as model from "../model";
-import { useGraph } from "./GraphContext";
+import useStore, { State } from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
@@ -21,8 +21,10 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ openSidebar }) => {
-  const { selection, setState } = useGraph();
-  const selectionType = model.selectionType(selection);
+  const nodes = useStore((state) => state.nodes);
+  const selection = useStore((state) => state.selection);
+  const setState = useStore((state) => state.setState);
+  const selectionType = model.selectionType(selection, nodes);
 
   const deleteButton = (
     <Button
@@ -30,15 +32,13 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
       startIcon={<FontAwesomeIcon icon={faTrash} />}
       variant="contained"
       onClick={() => {
-        const nodeIds = selection.nodes.map((x) => x.id);
-        const edgeIds = selection.edges.map((x) => x.id);
         setState(
-          produce((draft) => {
+          produce((draft: State) => {
             draft.nodes = draft.nodes.filter(
-              (node) => !nodeIds.includes(node.id)
+              (node) => !selection.nodes.includes(node.id)
             );
             draft.edges = draft.edges.filter(
-              (edge) => !edgeIds.includes(edge.id)
+              (edge) => !selection.edges.includes(edge.id)
             );
           })
         );

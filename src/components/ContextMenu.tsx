@@ -10,7 +10,7 @@ import produce from "immer";
 import React, { MouseEvent, useCallback } from "react";
 import { useViewport } from "react-flow-renderer";
 import * as model from "../model";
-import { useGraph } from "./GraphContext";
+import useStore, { State } from "../store";
 
 interface ItemProps {
   callback: () => void;
@@ -56,7 +56,7 @@ export interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   const { x, y } = useViewport();
-  const { setState } = useGraph();
+  const setState = useStore((state) => state.setState);
   const clickedType = model.elemType(click.target);
 
   const close = useCallback(() => {
@@ -100,7 +100,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
         callback={() => {
           const target = click.target as model.AtomNode;
           setState(
-            produce((draft) => {
+            produce((draft: State) => {
               draft.graph.majorClaim = target.id;
             })
           );
@@ -119,7 +119,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
 
           if ("source" in target && "target" in target) {
             setState(
-              produce((draft) => {
+              produce((draft: State) => {
                 draft.edges = draft.edges.filter(
                   (edge) => target.id !== edge.id
                 );
@@ -127,7 +127,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
             );
           } else {
             setState(
-              produce((draft) => {
+              produce((draft: State) => {
                 draft.nodes = draft.nodes.filter(
                   (node) => target.id !== node.id
                 );
@@ -146,7 +146,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
           node.selected = true;
 
           setState(
-            produce((draft) => {
+            produce((draft: State) => {
               draft.nodes.push(node);
             })
           );
@@ -162,7 +162,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
           node.selected = true;
 
           setState(
-            produce((draft) => {
+            produce((draft: State) => {
               draft.nodes.push(node);
             })
           );

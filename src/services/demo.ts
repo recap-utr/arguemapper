@@ -1,7 +1,7 @@
 import { v1 as uuid } from "uuid";
 import * as model from "../model";
 
-function demoGraph(): model.State {
+function demoGraph(): model.Wrapper {
   const resourceId = uuid();
   const resources = {
     [resourceId]: model.initResource({
@@ -70,7 +70,7 @@ function demoGraph(): model.State {
     }),
   ];
 
-  return model.initState({
+  return model.initWrapper({
     nodes,
     edges,
     graph: model.initGraph({

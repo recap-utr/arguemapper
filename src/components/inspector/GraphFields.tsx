@@ -24,7 +24,7 @@ import React, { useCallback } from "react";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";
-import { useGraph } from "../GraphContext";
+import useStore from "../../store";
 
 const Input = styled("input")({
   display: "none",
@@ -32,10 +32,15 @@ const Input = styled("input")({
 
 export interface Props extends React.PropsWithChildren {}
 
-export const GraphFields: React.FC<Props> = ({ children }) => {
-  const { state, resetState, clearCache } = useGraph();
+export const GraphFields: React.FC<Props> = () => {
+  const nodes = useStore((state) => state.nodes);
+  const edges = useStore((state) => state.edges);
+  const graph = useStore((state) => state.graph);
+  const resetState = useStore((state) => state.resetState);
   const confirm = useConfirm();
   // const theme = useTheme();
+
+  const state = { nodes, edges, graph };
 
   const upload: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -255,7 +260,10 @@ export const GraphFields: React.FC<Props> = ({ children }) => {
           startIcon={<FontAwesomeIcon icon={faTrash} />}
           variant="contained"
           onClick={() => {
-            confirm().then(clearCache);
+            confirm().then(() => {
+              localStorage.clear();
+              window.location.reload();
+            });
           }}
         >
           Clear cache
