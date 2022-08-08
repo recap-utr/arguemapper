@@ -25,9 +25,11 @@ interface ItemProps {
 const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
   return (
     <Tooltip describeChild title={text} placement="right">
-      <IconButton disabled={disabled ?? false} onClick={callback}>
-        <FontAwesomeIcon icon={icon} />
-      </IconButton>
+      <span>
+        <IconButton disabled={disabled ?? false} onClick={callback}>
+          <FontAwesomeIcon icon={icon} />
+        </IconButton>
+      </span>
     </Tooltip>
   );
 };
