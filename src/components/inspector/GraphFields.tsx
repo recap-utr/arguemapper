@@ -54,7 +54,7 @@ export const GraphFields: React.FC<Props> = ({ children }) => {
         reader.readAsText(event.target.files[0]);
       }
     },
-    []
+    [confirm, resetState]
   );
 
   // const participantFields: {
