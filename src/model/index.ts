@@ -33,6 +33,7 @@ export type {
   Scheme,
   SchemeData,
   SchemeNode,
+  SchemeValue,
 } from "./node";
 export { init as initParticipant } from "./participant";
 export type { Participant } from "./participant";
@@ -122,7 +123,7 @@ export const elemType = (elem?: OptionalElement): ElementType => {
 };
 
 export interface Selection {
-  nodes: Array<SchemeNode | AtomNode>;
+  nodes: Array<Node>;
   edges: Array<Edge>;
 }
 
