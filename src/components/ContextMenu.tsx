@@ -46,6 +46,7 @@ const Item: React.FC<ItemProps> = ({
 export interface Click {
   event?: MouseEvent;
   target?: model.AtomNode | model.SchemeNode | model.Edge;
+  open: boolean;
 }
 
 export interface ContextMenuProps {
@@ -54,13 +55,17 @@ export interface ContextMenuProps {
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
-  const close = useCallback(() => {
-    setClick({});
-  }, [setClick]);
   const { x, y } = useViewport();
-
   const { setState } = useGraph();
   const clickedType = model.elemType(click.target);
+
+  const close = useCallback(() => {
+    setClick(
+      produce((draft) => {
+        draft.open = false;
+      })
+    );
+  }, [setClick]);
 
   const showFor = useCallback(
     (type?: model.ElementType | model.ElementType[]) => {
@@ -78,11 +83,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   return (
     <Menu
       sx={{ zIndex: 10 }}
-      open={click.event !== undefined}
+      open={click.open}
       onClose={close}
       anchorReference="anchorPosition"
       anchorPosition={
-        click.event !== undefined
+        click.event
           ? {
               top: click.event.clientY,
               left: click.event.clientX,
