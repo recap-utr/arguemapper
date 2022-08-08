@@ -12,7 +12,7 @@ export interface Props extends React.PropsWithChildren {
 }
 
 const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const { selection, setState, setSelection } = useGraph();
+  const { selection, setState } = useGraph();
   const element = selection.nodes[idx] as model.SchemeNode;
   const schemeType = element.data.scheme?.type ?? NULL_VALUE;
 
