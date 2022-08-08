@@ -10,6 +10,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { useLocalStorage } from "react-use";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
@@ -164,9 +165,14 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     });
   }, [state, storageName]);
 
+  const [firstVisit, setFirstVisit] = useLocalStorage<boolean>(
+    "firstVisit",
+    true
+  );
+
   // If the user visits the app for the first time, show a little banner
   useEffect(() => {
-    if (localStorage.getItem(storageName) === null) {
+    if (firstVisit) {
       enqueueSnackbar(
         "Hi there! If you are using this app for the first time, you may want to load our demo.",
         {
@@ -182,6 +188,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
                 onClick={() => {
                   resetState(generateDemo());
                   closeSnackbar(key);
+                  setFirstVisit(false);
                 }}
               >
                 Load Demo
@@ -189,6 +196,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
               <IconButton
                 onClick={() => {
                   closeSnackbar(key);
+                  setFirstVisit(false);
                 }}
               >
                 <FontAwesomeIcon icon={faXmark} />
@@ -198,7 +206,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         }
       );
     }
-  }, [resetState, closeSnackbar, enqueueSnackbar, storageName]);
+  }, [resetState, closeSnackbar, enqueueSnackbar, firstVisit, setFirstVisit]);
 
   return (
     <GraphContext.Provider
