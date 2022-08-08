@@ -1,3 +1,4 @@
+import * as color from "@mui/material/colors";
 import produce from "immer";
 import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
@@ -13,7 +14,9 @@ import ReactFlow, {
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
+import EdgeTypes from "./EdgeTypes";
 import { useGraph } from "./GraphContext";
+import MarkerDefinition from "./Marker";
 import NodeTypes from "./NodeTypes";
 import PlusMenu from "./PlusMenu";
 import Toolbar from "./Toolbar";
@@ -192,6 +195,7 @@ export default function Graph() {
       onNodeDragStop={onNodeDragStop}
       onEdgeUpdateEnd={onEdgeUpdateEnd}
       nodeTypes={NodeTypes}
+      edgeTypes={EdgeTypes}
       minZoom={0.01}
       maxZoom={3}
       // onlyRenderVisibleElements={true}
@@ -208,6 +212,11 @@ export default function Graph() {
         maskColor="#eee"
       /> */}
       {/* <Controls/> */}
+      <MarkerDefinition
+        id="arguemapper-marker"
+        color={color.grey[500]}
+        strokeWidth={5}
+      />
       <Toolbar />
       <ContextMenu click={ctxMenu} setClick={setCtxMenu} />
       <PlusMenu plusButton={plusButton} setPlusButton={setPlusButton} />
