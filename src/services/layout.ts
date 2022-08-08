@@ -2,8 +2,8 @@ import Elk, { ElkNode, ElkPrimitiveEdge } from "elkjs";
 import produce from "immer";
 import * as model from "../model";
 
-const DEFAULT_WIDTH = 330;
-const DEFAULT_HEIGHT = 75;
+const DEFAULT_WIDTH = 300;
+const DEFAULT_HEIGHT = 50;
 
 const elk = new Elk({
   defaultLayoutOptions: {

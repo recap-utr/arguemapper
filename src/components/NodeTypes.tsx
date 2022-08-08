@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Stack, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import React, { ComponentType } from "react";
 import {
@@ -9,6 +9,10 @@ import {
 } from "react-flow-renderer";
 import * as model from "../model";
 import { useGraph } from "./GraphContext";
+
+const MAX_WIDTH = 300;
+const MIN_WIDTH = 100;
+const MIN_HEIGHT = 50;
 
 interface NodeComponentProps extends React.PropsWithChildren {
   node: NodeProps<model.NodeData>;
@@ -23,7 +27,9 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   const theme = useTheme();
 
   return (
-    <Box
+    <Stack
+      direction="column"
+      justifyContent="center"
       sx={{
         background: bg,
         padding: 1,
@@ -31,12 +37,16 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
         borderColor: node.selected ? theme.palette.text.primary : bg,
         borderStyle: "solid",
         borderWidth: 2,
+        minWidth: MIN_WIDTH,
+        maxWidth: MAX_WIDTH,
+        minHeight: MIN_HEIGHT,
+        textAlign: "center",
       }}
     >
       <Handle type="source" position={Position.Top} />
       {children}
       <Handle type="target" position={Position.Bottom} />
-    </Box>
+    </Stack>
   );
 };
 
