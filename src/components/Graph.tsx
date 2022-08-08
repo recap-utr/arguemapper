@@ -79,7 +79,7 @@ import Toolbar from "./Toolbar";
 // });
 
 export default function Graph() {
-  const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({});
+  const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
   const [undoPressed] = useKeyboardJs("mod + z");
   const [redoPressed] = useKeyboardJs("mod + shift + z");
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
@@ -198,6 +198,7 @@ export default function Graph() {
     setCtxMenu({
       event,
       target,
+      open: true,
     });
   };
 
@@ -211,7 +212,7 @@ export default function Graph() {
       onInit={onInit}
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
-      onContextMenu={onContextMenu}
+      onPaneContextMenu={onContextMenu}
       onNodeDragStop={onNodeDragStop}
       onNodesDelete={onNodesDelete}
       onEdgeUpdateEnd={onEdgeUpdateEnd}
