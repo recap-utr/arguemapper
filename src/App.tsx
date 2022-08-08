@@ -42,7 +42,7 @@ export default function App() {
   );
 
   return (
-    <GraphProvider storageName="graph">
+    <GraphProvider storageName="state">
       <ReactFlowProvider>
         <Stack direction="row" sx={{ height: windowHeight }}>
           <Sidebar
