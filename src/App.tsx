@@ -32,10 +32,14 @@ export default function App() {
   const initialSidebarOpen = isMobile ? false : true;
   const [, windowHeight] = useWindowSize();
 
-  const [leftSidebarOpen, setLeftSidebarOpen] =
-    useLocalStorage<boolean>("leftSidebarOpen");
-  const [rightSidebarOpen, setRightSidebarOpen] =
-    useLocalStorage<boolean>("rightSidebarOpen");
+  const [leftSidebarOpen, setLeftSidebarOpen] = useLocalStorage<boolean>(
+    "leftSidebarOpen",
+    initialSidebarOpen
+  );
+  const [rightSidebarOpen, setRightSidebarOpen] = useLocalStorage<boolean>(
+    "rightSidebarOpen",
+    initialSidebarOpen
+  );
 
   return (
     <GraphProvider storageName="graph">
@@ -45,7 +49,7 @@ export default function App() {
             side="left"
             drawerWidth={drawerWidth}
             isMobile={isMobile}
-            isOpen={leftSidebarOpen ?? initialSidebarOpen}
+            isOpen={leftSidebarOpen!}
             setIsOpen={setLeftSidebarOpen}
           >
             <Resources />
@@ -66,7 +70,7 @@ export default function App() {
             side="right"
             drawerWidth={drawerWidth}
             isMobile={isMobile}
-            isOpen={rightSidebarOpen ?? initialSidebarOpen}
+            isOpen={rightSidebarOpen!}
             setIsOpen={setRightSidebarOpen}
           >
             <Inspector
