@@ -5,7 +5,7 @@ import {
   Handle,
   NodeProps,
   NodeTypes as FlowNodeTypes,
-  Position
+  Position,
 } from "react-flow-renderer";
 import * as model from "../model";
 import { useGraph } from "./GraphContext";
@@ -23,7 +23,16 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   const theme = useTheme();
 
   return (
-    <Box sx={{ background: bg, padding: 1, borderRadius: 2 }}>
+    <Box
+      sx={{
+        background: bg,
+        padding: 1,
+        borderRadius: 2,
+        borderColor: node.selected ? theme.palette.text.primary : bg,
+        borderStyle: "solid",
+        borderWidth: 2,
+      }}
+    >
       <Handle type="source" position={Position.Top} />
       {children}
       <Handle type="target" position={Position.Bottom} />
@@ -34,10 +43,10 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
   const body = <div>{model.nodeLabel(node)}</div>;
   const { graph } = useGraph();
-  let bg: string = color.blue[500]
+  let bg: string = color.blue[500];
 
   if (graph.majorClaim === node.id) {
-    bg = color.blue[900]
+    bg = color.blue[900];
   }
 
   return (
@@ -54,8 +63,7 @@ const SchemeComponent: ComponentType<NodeProps<model.SchemeData>> = (node) => {
   if (node.data.scheme !== undefined) {
     if (node.data.scheme.type === model.SchemeType.SUPPORT) {
       bg = color.green[500];
-    }
-    else if (node.data.scheme.type === model.SchemeType.ATTACK) {
+    } else if (node.data.scheme.type === model.SchemeType.ATTACK) {
       bg = color.red[500];
     }
   }
