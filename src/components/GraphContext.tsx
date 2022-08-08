@@ -27,7 +27,7 @@ const GraphContext = createContext<{
   saveState: () => void;
   redo: () => void;
   undo: () => void;
-  resetStates: () => void;
+  resetUndoRedo: () => void;
   undoable: boolean;
   redoable: boolean;
   clearCache: () => void;
@@ -46,7 +46,7 @@ const GraphContext = createContext<{
   saveState: () => {},
   redo: () => {},
   undo: () => {},
-  resetStates: () => {},
+  resetUndoRedo: () => {},
   undoable: false,
   redoable: false,
   clearCache: () => {},
@@ -104,7 +104,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
     setFutureStates((states) => states.slice(1));
   }, [setState, state, futureStates]);
 
-  const resetStates = useCallback(() => {
+  const resetUndoRedo = useCallback(() => {
     setPreviousStates([]);
     setFutureStates([]);
   }, []);
@@ -124,11 +124,11 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
           graph: s.graph,
         });
         // TODO
-        resetStates();
+        resetUndoRedo();
         // flow.fitView();
       });
     },
-    [resetStates, setState]
+    [resetUndoRedo, setState]
   );
 
   const saveState = useCallback(() => {
@@ -207,7 +207,7 @@ export const GraphProvider: React.FC<GraphProviderProps> = ({
         redo,
         undoable,
         redoable,
-        resetStates,
+        resetUndoRedo,
         clearCache,
         selection,
         setSelection,
