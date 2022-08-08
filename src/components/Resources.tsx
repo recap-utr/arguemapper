@@ -1,9 +1,4 @@
-import {
-  faBan,
-  faPlusCircle,
-  faSave,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
@@ -11,12 +6,12 @@ import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
 import React, { useCallback, useState } from "react";
-// @ts-ignore
+import { useViewport } from "react-flow-renderer";
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
 import { useGraph } from "./GraphContext";
 
-interface Selection {
+interface TextSelection {
   anchor: number;
   focus: number;
 }
@@ -24,18 +19,12 @@ interface Selection {
 interface Props {}
 
 const Resources: React.FC<Props> = () => {
-  const { graph, setGraph, nodes } = useGraph();
-  // const { x, y } = useViewport();
-  // TODO
-  const saveState = useCallback(() => {}, []);
-
-  const resources = graph.resources;
-  // const setResources = (resources: { [x: string]: model.Resource }) =>
-  //   setGraph(produce((draft) => (draft.resources = resources)));
+  const { state, setState } = useGraph();
+  const resources = state.graph.resources;
   const [activeTab, setActiveTab] = useState("1");
 
   const references = Object.fromEntries(
-    nodes
+    state.nodes
       .filter((node) => model.isAtom(node) && node.data.reference)
       .map((node) => [
         node.id,
@@ -50,56 +39,13 @@ const Resources: React.FC<Props> = () => {
     []
   );
 
-  const addAtom = useCallback(
-    (resourceId: string, text: string, offset: number) => {
-      //   if (cy) {
-      //     const newElem = cytoModel.node.initAtom({ text });
-      //     newElem.reference = cytoModel.reference.init({
-      //       text,
-      //       resource: resourceId,
-      //       offset,
-      //     });
-      //     const size = containerSize();
-      //     // @ts-ignore
-      //     cy.add({
-      //       // @ts-ignore
-      //       nodes: [
-      //         {
-      //           data: newElem,
-      //           renderedPosition: {
-      //             x: size.width / 2,
-      //             y: size.height / 2,
-      //           },
-      //         },
-      //       ],
-      //     });
-      //     saveState();
-      //     cy.$id(newElem.id).select();
-      //   }
-    },
-    []
-  );
-
-  const deleteResource = useCallback(
-    (key: string) => {
-      setGraph(
-        produce((draft) => {
-          delete draft.resources[key];
-        })
-      );
-      saveState();
-    },
-    [saveState, setGraph]
-  );
-
   const addResource = useCallback(() => {
-    setGraph(
+    setState(
       produce((draft) => {
-        draft.resources[model.uuid()] = model.initResource({ text: "" });
+        draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
-    saveState();
-  }, [saveState, setGraph]);
+  }, [setState]);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
@@ -128,15 +74,7 @@ const Resources: React.FC<Props> = () => {
       </Box>
       {Object.entries(resources).map(([key, resource], index) => (
         <TabPanel key={index + 1} value={(index + 1).toString()}>
-          <Resource
-            id={key}
-            resource={resource}
-            index={index + 1}
-            deleteResource={deleteResource}
-            setGraph={setGraph}
-            addAtom={addAtom}
-            references={references}
-          />
+          <Resource id={key} index={index + 1} references={references} />
         </TabPanel>
       ))}
       <TabPanel value={lastResourceIndex}>
@@ -153,31 +91,24 @@ const Resources: React.FC<Props> = () => {
   );
 };
 
-function Resource({
-  id,
-  resource,
-  index,
-  deleteResource,
-  setGraph,
-  addAtom,
-  references,
-}: {
+interface ResourceProps {
   id: string;
-  resource: model.Resource;
   index: number;
-  deleteResource: (key: string) => void;
-  setGraph: React.Dispatch<React.SetStateAction<model.Graph>>;
-  addAtom: (id: string, text: string, offset: number) => void;
   references: { [k: string]: model.Reference };
-}) {
-  const [userSelection] = useState<Selection>({
+}
+
+const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
+  const { setGraph, graph, setState } = useGraph();
+  const { x, y } = useViewport();
+  const resource = graph.resources[id];
+
+  const [userSelection, setUserSelection] = useState<TextSelection>({
     anchor: 0,
     focus: 0,
   });
-  const [systemSelection] = useState<Selection | null>(null);
-  const [hasChanged] = useState(false);
-  // const [textHasFocus, setTextHasFocus] = useState(false);
-  // const [hoverAddButton, setHoverAddButton] = useState(false);
+  const [systemSelection, setSystemSelection] = useState<
+    TextSelection | undefined
+  >(undefined);
 
   const highlight = useCallback(
     (text: string, callback: (start: number, end: number) => void) => {
@@ -200,43 +131,64 @@ function Resource({
     [id, references]
   );
 
-  // const produceHandleChange = useCallback(
-  //   (attr: string | string[]) => {
-  //     // We need to return a function here, thus the nested callbacks
-  //     return (
-  //       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  //     ) => {
-  //       // Prevent the user switching to another tab.
-  //       // Otherwise, the local changes would be lost.
-  //       setHasChanged(true);
-  //       setResources(
-  //         produce((draft) => {
-  //           _.set(draft, attr, event.target.value);
-  //         })
-  //       );
-  //     };
-  //   },
-  //   [setResources]
-  // );
+  const onChange = useCallback(
+    (value: string, selection: TextSelection) => {
+      if (value === resource.text) {
+        const start = Math.min(selection.anchor, selection.focus);
+        const end = Math.max(selection.anchor, selection.focus);
+        setUserSelection({ anchor: start, focus: end });
+        setSystemSelection(undefined);
+      } else {
+        setGraph(
+          produce((draft) => {
+            draft.resources[id].text = value;
+          })
+        );
+      }
+    },
+    [setGraph, id, resource.text]
+  );
 
-  // const handleTextChange = useCallback(
-  //   (value: string, selection: Selection) => {
-  //     if (value === resource.text) {
-  //       const start = Math.min(selection.anchor, selection.focus);
-  //       const end = Math.max(selection.anchor, selection.focus);
-  //       setUserSelection({ anchor: start, focus: end });
-  //       setSystemSelection(null);
-  //     } else {
-  //       setHasChanged(true);
-  //       setResources(
-  //         produce((draft) => {
-  //           draft[id].text = value;
-  //         })
-  //       );
-  //     }
-  //   },
-  //   [setResources, id, resource.text]
-  // );
+  const onBlur = useCallback(() => {
+    setState(
+      produce((draft) => {
+        draft.graph.resources[id] = resource;
+      })
+    );
+  }, [setState, id, resource]);
+
+  const addAtom = useCallback(() => {
+    const text = resource.text.substring(
+      userSelection.anchor,
+      userSelection.focus
+    );
+    console.log({
+      resource,
+      text,
+    });
+    const offset = userSelection.anchor;
+
+    const node = model.initAtom({
+      text,
+      reference: model.initReference({ offset, text, resource: id }),
+      position: { x, y },
+    });
+    node.selected = true;
+
+    setState(
+      produce((draft) => {
+        draft.nodes.push(node);
+      })
+    );
+  }, [resource, userSelection, setState, id, x, y]);
+
+  const deleteResource = useCallback(() => {
+    setState(
+      produce((draft) => {
+        delete draft.graph.resources[id];
+      })
+    );
+  }, [setState, id]);
 
   return (
     <Stack spacing={2}>
@@ -247,18 +199,13 @@ function Resource({
         multiline
         minRows={5}
         value={resource.text}
-        // onChange={handleTextChange as any}
+        onChange={onChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,
           inputProps: {
             selection: systemSelection,
-            highlight: highlight,
-            // onFocus: () => {
-            //   setTextHasFocus(true);
-            // },
-            // onBlur: () => {
-            //   setTextHasFocus(false);
-            // },
+            highlight,
+            onBlur,
           },
         }}
       />
@@ -267,70 +214,20 @@ function Resource({
         variant="contained"
         color="error"
         startIcon={<FontAwesomeIcon icon={faTrash} />}
-        onClick={() => {
-          deleteResource(id);
-        }}
+        onClick={deleteResource}
       >
         Delete Resource
       </Button>
-      {hasChanged && (
-        <Stack justifyContent="space-around" direction="row" sx={{ width: 1 }}>
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={<FontAwesomeIcon icon={faBan} />}
-            onClick={() => {
-              // resetResources();
-              // setHasChanged(false);
-              // setAllowTabChange(true);
-            }}
-          >
-            Discard
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faSave} />}
-            onClick={() => {
-              // writeResources();
-              // setHasChanged(false);
-              // setAllowTabChange(true);
-            }}
-          >
-            Save
-          </Button>
-        </Stack>
-      )}
-      {!hasChanged && (
-        // userSelection.anchor !== userSelection.focus &&
-        // (textHasFocus || hoverAddButton) && (
-        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-          onClick={() => {
-            addAtom(
-              id,
-              resource.text.substring(
-                userSelection.anchor,
-                userSelection.focus
-              ),
-              userSelection.anchor
-            );
-            // setHoverAddButton(false);
-            // setUserSelection({
-            //   anchor: 0,
-            //   focus: 0,
-            // });
-          }}
-          // onMouseDown={() => {
-          //   setHoverAddButton(true);
-          // }}
-        >
-          Add selected text
-        </Button>
-      )}
+      <Button
+        fullWidth
+        variant="contained"
+        startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+        onClick={addAtom}
+      >
+        Add selected text
+      </Button>
     </Stack>
   );
-}
+};
 
 export default Resources;
