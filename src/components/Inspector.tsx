@@ -30,13 +30,15 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
       startIcon={<FontAwesomeIcon icon={faTrash} />}
       variant="contained"
       onClick={() => {
+        const nodeIds = selection.nodes.map((x) => x.id);
+        const edgeIds = selection.edges.map((x) => x.id);
         setState(
           produce((draft) => {
             draft.nodes = draft.nodes.filter(
-              (node) => !(node.id in selection.nodes.map((x) => x.id))
+              (node) => !nodeIds.includes(node.id)
             );
             draft.edges = draft.edges.filter(
-              (edge) => !(edge.id in selection.edges.map((x) => x.id))
+              (edge) => !edgeIds.includes(edge.id)
             );
           })
         );
