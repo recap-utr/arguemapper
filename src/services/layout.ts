@@ -31,8 +31,6 @@ const layout = async (
     height: node.height ?? DEFAULT_HEIGHT,
   }));
 
-  console.log(JSON.stringify(elkNodes));
-
   const elkEdges: ElkPrimitiveEdge[] = edges.map((edge) => ({
     id: edge.id,
     target: edge.target,
