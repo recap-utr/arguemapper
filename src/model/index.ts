@@ -98,9 +98,9 @@ export function fromAif(obj: aif.Graph): Wrapper {
 
 export function toProtobuf(obj: Wrapper): arguebuf.Graph {
   return arguebuf.Graph.create({
+    ...graph.toProtobuf(obj.graph),
     nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
     edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),
-    ...graph.toProtobuf(obj.graph),
   });
 }
 
