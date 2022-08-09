@@ -3,13 +3,18 @@ import { undoMiddleware, UndoState } from "zundo";
 import create from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import * as model from "./model";
-import layout from "./services/layout";
 
 export interface State extends UndoState {
   nodes: Array<model.Node>;
   edges: Array<model.Edge>;
   graph: model.Graph;
   resetState: (state?: model.Wrapper) => void;
+  firstVisit: boolean;
+  disableFirstVisit: () => void;
+  shouldLayout: boolean;
+  setShouldLayout: (value: boolean) => void;
+  // leftSidebarOpen: boolean;
+  // rightSidebarOpen: boolean;
   selection: model.Selection;
   setState: (func: (draft: State) => State | Partial<State>) => void;
   resetUndoRedo: () => void;
@@ -25,17 +30,22 @@ const useStore = create<State>()(
           nodes: [],
           edges: [],
           graph: model.initGraph({}),
+          firstVisit: true,
+          disableFirstVisit: () => {
+            set({ firstVisit: false });
+          },
+          shouldLayout: false,
+          setShouldLayout: (value) => {
+            set({ shouldLayout: value });
+          },
           selection: { nodes: [], edges: [] },
           resetState: (preset) => {
             const s = preset ?? model.initWrapper({});
-            layout(s.nodes, s.edges).then((layoutedNodes) => {
-              set({
-                nodes: layoutedNodes,
-                edges: s.edges,
-                graph: s.graph,
-              });
-              get().clear?.();
-              // flow.fitView();
+            set({
+              nodes: s.nodes,
+              edges: s.edges,
+              graph: s.graph,
+              shouldLayout: true,
             });
           },
           // setState: (func) => {
@@ -82,6 +92,7 @@ const useStore = create<State>()(
           nodes: state.nodes,
           edges: state.edges,
           graph: state.graph,
+          firstVisit: state.firstVisit,
         }),
       }
     )

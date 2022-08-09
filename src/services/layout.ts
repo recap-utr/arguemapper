@@ -2,8 +2,8 @@ import Elk, { ElkNode, ElkPrimitiveEdge } from "elkjs";
 import produce from "immer";
 import * as model from "../model";
 
-const DEFAULT_WIDTH = 300;
-const DEFAULT_HEIGHT = 50;
+const DEFAULT_WIDTH = 500;
+const DEFAULT_HEIGHT = 100;
 
 const elk = new Elk({
   defaultLayoutOptions: {
@@ -11,6 +11,8 @@ const elk = new Elk({
     "elk.direction": "UP",
     "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
     "elk.layered.layering.strategy": "NETWORK_SIMPLEX",
+    "elk.layered.spacing.nodeNodeBetweenLayers": "50",
+    "elk.spacing.nodeNode": "50",
   },
 });
 
@@ -29,6 +31,8 @@ const layout = async (
     height: node.height ?? DEFAULT_HEIGHT,
   }));
 
+  console.log(JSON.stringify(elkNodes));
+
   const elkEdges: ElkPrimitiveEdge[] = edges.map((edge) => ({
     id: edge.id,
     target: edge.target,
@@ -45,10 +49,16 @@ const layout = async (
     produce(node, (draft) => {
       const elkNode = elkGraph?.children?.find((n) => n.id === node.id);
 
-      if (elkNode?.x && elkNode?.y && elkNode?.width && elkNode?.height) {
+      if (
+        elkNode &&
+        elkNode.x &&
+        elkNode.y &&
+        elkNode.width &&
+        elkNode.height
+      ) {
         draft.position = {
-          x: elkNode.x - elkNode.width / 2 + Math.random() / 1000,
-          y: elkNode.y - elkNode.height / 2,
+          x: elkNode.x + Math.random() / 1000,
+          y: elkNode.y,
         };
       }
     })

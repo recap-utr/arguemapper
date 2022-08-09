@@ -1,5 +1,9 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, IconButton, Stack } from "@mui/material";
 import * as color from "@mui/material/colors";
 import produce from "immer";
+import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   addEdge,
@@ -12,9 +16,12 @@ import ReactFlow, {
   OnNodesChange,
   OnNodesDelete,
   OnSelectionChangeFunc,
+  useReactFlow,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
+import generateDemo from "../services/demo";
+import layout from "../services/layout";
 import useStore, { State } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
@@ -84,6 +91,8 @@ export default function Graph() {
   const [undoPressed] = useKeyboardJs("mod + z");
   const [redoPressed] = useKeyboardJs("mod + shift + z");
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const flow = useReactFlow();
 
   const [undo, redo, resetUndoRedo] = useStore((state) => [
     state.undo,
@@ -93,6 +102,98 @@ export default function Graph() {
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const setState = useStore((state) => state.setState);
+  const resetState = useStore((state) => state.resetState);
+  const [firstVisit, disableFirstVisit] = useStore((state) => [
+    state.firstVisit,
+    state.disableFirstVisit,
+  ]);
+  const [shouldLayout, setShouldLayout] = useStore((state) => [
+    state.shouldLayout,
+    state.setShouldLayout,
+  ]);
+  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([...nodes]);
+  const [shouldFit, setShouldFit] = useState(false);
+
+  useEffect(() => {
+    if (firstVisit) {
+      enqueueSnackbar(
+        "Hi there! If you are using this app for the first time, you may want to load our demo.",
+        {
+          key: "welcome",
+          persist: true,
+          variant: "info",
+          action: (key) => (
+            <Stack direction="row" spacing={1}>
+              <Button
+                size="small"
+                disableElevation
+                variant="contained"
+                onClick={() => {
+                  resetState(generateDemo());
+                  closeSnackbar(key);
+                  disableFirstVisit();
+                }}
+              >
+                Load Demo
+              </Button>
+              <IconButton
+                onClick={() => {
+                  closeSnackbar(key);
+                  disableFirstVisit();
+                }}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </IconButton>
+            </Stack>
+          ),
+        }
+      );
+    }
+  }, [
+    resetState,
+    closeSnackbar,
+    enqueueSnackbar,
+    firstVisit,
+    disableFirstVisit,
+    flow,
+  ]);
+
+  useEffect(() => {
+    if (shouldFit) {
+      flow.fitView();
+      setShouldFit(false);
+    }
+  }, [shouldFit, setShouldFit, flow]);
+
+  const nodeHasDimension = (el: model.Node) => el.width && el.height;
+
+  useEffect(() => {
+    if (
+      shouldLayout &&
+      tmpNodes.length &&
+      tmpNodes.length > 0 &&
+      tmpNodes.every(nodeHasDimension)
+    ) {
+      layout(tmpNodes, edges).then((layoutedNodes) => {
+        setState(
+          produce((draft: State) => {
+            draft.nodes = layoutedNodes;
+          })
+        );
+        resetUndoRedo();
+        setShouldLayout(false);
+        setShouldFit(true);
+      });
+    }
+  }, [
+    setShouldFit,
+    shouldLayout,
+    edges,
+    setShouldLayout,
+    tmpNodes,
+    setState,
+    resetUndoRedo,
+  ]);
 
   useEffect(() => {
     if (undoPressed && undo !== undefined) {
@@ -106,20 +207,8 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([...nodes]);
-
   useEffect(() => {
-    setTmpNodes(nodes);
-
-    // setSelection((sel) => {
-    //   const nodeIds = sel.nodes.map((node) => node.id);
-    //   const edgeIds = sel.edges.map((edge) => edge.id);
-
-    //   return {
-    //     nodes: state.nodes.filter((node) => nodeIds.includes(node.id)),
-    //     edges: state.edges.filter((edge) => edgeIds.includes(edge.id)),
-    //   };
-    // });
+    setTmpNodes([...nodes]);
   }, [nodes]);
 
   const onNodesChange: OnNodesChange = useCallback(

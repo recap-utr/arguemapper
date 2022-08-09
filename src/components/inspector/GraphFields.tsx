@@ -37,6 +37,7 @@ export const GraphFields: React.FC<Props> = () => {
   const edges = useStore((state) => state.edges);
   const graph = useStore((state) => state.graph);
   const resetState = useStore((state) => state.resetState);
+
   const confirm = useConfirm();
   // const theme = useTheme();
 

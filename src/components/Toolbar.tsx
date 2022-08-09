@@ -9,11 +9,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
-import produce from "immer";
 import React, { useCallback } from "react";
 import { useReactFlow } from "react-flow-renderer";
-import layout from "../services/layout";
-import useStore, { State } from "../store";
+import useStore from "../store";
 
 interface ItemProps {
   disabled?: boolean;
@@ -43,20 +41,15 @@ const Toolbar: React.FC<ToolbarProps> = () => {
     state.undoable,
     state.redoable,
   ]);
-  const nodes = useStore((state) => state.nodes);
-  const edges = useStore((state) => state.edges);
-  const setState = useStore((state) => state.setState);
+  // const nodes = useStore((state) => state.nodes);
+  // const edges = useStore((state) => state.edges);
+  // const setState = useStore((state) => state.setState);
+  const setShouldLayout = useStore((state) => state.setShouldLayout);
   const flow = useReactFlow();
 
   const onLayout = useCallback(() => {
-    layout(nodes, edges).then((layoutedNodes) => {
-      setState(
-        produce((draft: State) => {
-          draft.nodes = layoutedNodes;
-        })
-      );
-    });
-  }, [setState, nodes, edges]);
+    setShouldLayout(true);
+  }, [setShouldLayout]);
 
   return (
     <Box position="absolute" left={0} bottom={0} zIndex={10}>
