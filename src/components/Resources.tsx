@@ -233,6 +233,21 @@ const Resource: React.FC<ResourceProps> = ({
       >
         Add selected text
       </Button>
+      <Button
+        fullWidth
+        variant="contained"
+        startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+        onClick={() => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.resources[id].text =
+                draft.graph.resources[id].text + " Hello";
+            })
+          );
+        }}
+      >
+        DEBUG: Append text
+      </Button>
     </Stack>
   );
 };
