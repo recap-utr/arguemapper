@@ -30,62 +30,6 @@ import NodeTypes from "./NodeTypes";
 import PlusMenu from "./PlusMenu";
 import Toolbar from "./Toolbar";
 
-// @ts-ignore
-// cy.on("ehcomplete", (event, sourceNode, targetNode, addedEdge) => {
-//   const sourceData = sourceNode.data() as cytoModel.node.Node;
-//   const targetData = targetNode.data() as cytoModel.node.Node;
-//   addedEdge.remove();
-
-//   if (
-//     cytoModel.node.isAtom(sourceData) &&
-//     cytoModel.node.isAtom(targetData)
-//   ) {
-//     const sourcePos = sourceNode.position();
-//     const targetPos = targetNode.position();
-
-//     const position = {
-//       x: (sourcePos.x + targetPos.x) / 2,
-//       y: (sourcePos.y + targetPos.y) / 2,
-//     };
-
-//     const schemeData = cytoModel.node.initScheme({});
-
-//     cy.add({
-//       nodes: [{ data: schemeData, position }],
-//       edges: [
-//         {
-//           data: cytoModel.edge.init({
-//             source: sourceData.id,
-//             target: schemeData.id,
-//           }),
-//         },
-//         {
-//           data: cytoModel.edge.init({
-//             source: schemeData.id,
-//             target: targetData.id,
-//           }),
-//         },
-//       ],
-//     });
-//   } else {
-//     // @ts-ignore
-//     cy.add({
-//       // @ts-ignore
-//       edges: [
-//         {
-//           data: cytoModel.edge.init({
-//             source: sourceData.id,
-//             target: targetData.id,
-//           }),
-//         },
-//       ],
-//     });
-//   }
-
-//   eh.disableDrawMode();
-//   updateGraph();
-// });
-
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
   const [undoPressed] = useKeyboardJs("mod + z");
@@ -228,13 +172,37 @@ export default function Graph() {
   );
 
   const onConnect: OnConnect = useCallback(
-    (connection) =>
-      setState(
-        produce((draft: State) => {
-          draft.edges = addEdge(connection, draft.edges);
-        })
-      ),
-    [setState]
+    (connection) => {
+      const source = tmpNodes.find((node) => node.id === connection.source);
+      const target = tmpNodes.find((node) => node.id === connection.target);
+
+      if (source && target && model.isAtom(source) && model.isAtom(target)) {
+        const schemePos = {
+          x: (source.position.x + target.position.x) / 2,
+          y: (source.position.y + target.position.y) / 2,
+        };
+        const scheme = model.initScheme({ position: schemePos });
+
+        setState(
+          produce((draft: State) => {
+            draft.nodes.push(scheme);
+            draft.edges.push(
+              model.initEdge({ source: source.id, target: scheme.id })
+            );
+            draft.edges.push(
+              model.initEdge({ source: scheme.id, target: target.id })
+            );
+          })
+        );
+      } else {
+        setState(
+          produce((draft: State) => {
+            draft.edges = addEdge(connection, draft.edges);
+          })
+        );
+      }
+    },
+    [setState, tmpNodes]
   );
 
   const onNodeDragStop: NodeDragHandler = useCallback(() => {
