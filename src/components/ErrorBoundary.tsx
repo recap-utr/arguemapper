@@ -14,7 +14,7 @@ interface Props extends React.PropsWithChildren {}
 interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
-  graph: string | null;
+  state: string | null;
   aif: string | null;
   arguebuf: string | null;
 }
@@ -25,33 +25,38 @@ class ErrorBoundary extends React.Component<Props, State> {
     this.state = {
       error: null,
       errorInfo: null,
-      graph: null,
+      state: null,
       aif: null,
       arguebuf: null,
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const graph = localStorage.getItem("graph");
+    const stateString = localStorage.getItem("state");
     let aif = null;
     let arguebuf = null;
 
-    if (graph) {
+    if (stateString) {
+      const state = JSON.parse(stateString).state;
+      const wrapper = {
+        nodes: state.nodes,
+        edges: state.edges,
+        graph: state.graph,
+      };
+
       try {
-        aif = JSON.stringify(model.toAif(JSON.parse(graph)));
+        aif = JSON.stringify(model.toAif(wrapper));
       } catch {}
 
       try {
-        arguebuf = JSON.stringify(
-          proto2json(model.toProtobuf(JSON.parse(graph)))
-        );
+        arguebuf = JSON.stringify(proto2json(model.toProtobuf(wrapper)));
       } catch {}
     }
 
     this.setState({
       error,
       errorInfo,
-      graph,
+      state: stateString,
       aif,
       arguebuf,
     });
@@ -71,7 +76,7 @@ class ErrorBoundary extends React.Component<Props, State> {
                 {this.state.errorInfo.componentStack}
               </Typography>
             </Stack>
-            {this.state.graph && (
+            {this.state.state && (
               <Stack spacing={1}>
                 <Typography variant="h3">Application State</Typography>
                 <Typography variant="h6">
@@ -83,7 +88,7 @@ class ErrorBoundary extends React.Component<Props, State> {
                     multiline
                     maxRows={5}
                     fullWidth
-                    value={this.state.graph}
+                    value={this.state.state}
                   />
                 </Box>
               </Stack>
@@ -105,7 +110,7 @@ class ErrorBoundary extends React.Component<Props, State> {
                 </Box>
               </Stack>
             )}
-            {this.state.graph && (
+            {this.state.arguebuf && (
               <Stack spacing={1}>
                 <Typography variant="h3">Arguebuf Export</Typography>
                 <Typography variant="h6">
