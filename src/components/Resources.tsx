@@ -20,9 +20,8 @@ interface Props {}
 
 const Resources: React.FC<Props> = () => {
   const nodes = useStore((state) => state.nodes);
-  const graph = useStore((state) => state.graph);
+  const resources = useStore((state) => state.graph.resources);
   const setState = useStore((state) => state.setState);
-  const resources = graph.resources;
   const [activeTab, setActiveTab] = useState("1");
 
   const references = Object.fromEntries(
@@ -74,9 +73,14 @@ const Resources: React.FC<Props> = () => {
           />
         </TabList>
       </Box>
-      {Object.entries(resources).map(([key, resource], index) => (
+      {Object.entries(resources).map(([id, resource], index) => (
         <TabPanel key={index + 1} value={(index + 1).toString()}>
-          <Resource id={key} index={index + 1} references={references} />
+          <Resource
+            id={id}
+            index={index + 1}
+            resource={resource}
+            references={references}
+          />
         </TabPanel>
       ))}
       <TabPanel value={lastResourceIndex}>
@@ -95,20 +99,25 @@ const Resources: React.FC<Props> = () => {
 
 interface ResourceProps {
   id: string;
+  resource: model.Resource;
   index: number;
   references: { [k: string]: model.Reference };
 }
 
-const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
-  const graph = useStore((state) => state.graph);
+const Resource: React.FC<ResourceProps> = ({
+  id,
+  resource,
+  index,
+  references,
+}) => {
   const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
-  const resource: model.Resource = graph.resources[id];
 
   const [userSelection, setUserSelection] = useState<TextSelection>({
     anchor: 0,
     focus: 0,
   });
+
   const [systemSelection, setSystemSelection] = useState<
     TextSelection | undefined
   >(undefined);
@@ -135,8 +144,8 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   );
 
   const onChange = useCallback(
-    (value: string, selection: TextSelection) => {
-      if (value === resource.text) {
+    (value: string, selection?: TextSelection) => {
+      if (selection !== undefined && value === resource.text) {
         const start = Math.min(selection.anchor, selection.focus);
         const end = Math.max(selection.anchor, selection.focus);
         setUserSelection({ anchor: start, focus: end });
@@ -197,14 +206,13 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         fullWidth
         multiline
         minRows={5}
-        value={resource?.text ?? ""}
+        value={resource.text}
         onChange={onChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,
           inputProps: {
             selection: systemSelection,
             highlight,
-            // onBlur,
           },
         }}
       />
