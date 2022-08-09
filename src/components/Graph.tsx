@@ -106,7 +106,7 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([]);
+  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([...nodes]);
 
   useEffect(() => {
     setTmpNodes(nodes);
