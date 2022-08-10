@@ -6,10 +6,11 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ConfirmProvider } from "material-ui-confirm";
 import { SnackbarProvider } from "notistack";
 import React from "react";
-// import CacheBuster from "react-cache-buster";
+import CacheBuster from "react-cache-buster";
 import { createRoot } from "react-dom/client";
 import { ReactFlowProvider } from "react-flow-renderer";
 import { useMedia } from "react-use";
+import { version as npmVersion } from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
 import theme from "./theme";
@@ -29,35 +30,35 @@ function Layout() {
   // query.addEventListener("change", (e) => setDarkMode(e.matches));
 
   const darkMode = useMedia("(prefers-color-scheme: dark)");
-  // const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = process.env.NODE_ENV === "production";
 
   return (
-    // <CacheBuster
-    //   currentVersion={npmPackage.version}
-    //   isEnabled={isProduction}
-    //   isVerboseMode={false}
-    //   loadingComponent={undefined}
-    // >
-    <ThemeProvider theme={theme(darkMode)}>
-      <CssBaseline />
-      <ConfirmProvider
-        defaultOptions={{
-          title: "Are you sure?",
-          description: "This action is destructive and cannot be undone!",
-          confirmationText: "OK",
-          cancellationText: "Cancel",
-          confirmationButtonProps: { autoFocus: true },
-        }}
-      >
-        <SnackbarProvider maxSnack={3} preventDuplicate>
-          <ErrorBoundary>
-            <ReactFlowProvider>
-              <App />
-            </ReactFlowProvider>
-          </ErrorBoundary>
-        </SnackbarProvider>
-      </ConfirmProvider>
-    </ThemeProvider>
-    // </CacheBuster>
+    <CacheBuster
+      currentVersion={npmVersion}
+      isEnabled={isProduction}
+      isVerboseMode={false}
+      loadingComponent={undefined}
+    >
+      <ThemeProvider theme={theme(darkMode)}>
+        <CssBaseline />
+        <ConfirmProvider
+          defaultOptions={{
+            title: "Are you sure?",
+            description: "This action is destructive and cannot be undone!",
+            confirmationText: "OK",
+            cancellationText: "Cancel",
+            confirmationButtonProps: { autoFocus: true },
+          }}
+        >
+          <SnackbarProvider maxSnack={3} preventDuplicate>
+            <ErrorBoundary>
+              <ReactFlowProvider>
+                <App />
+              </ReactFlowProvider>
+            </ErrorBoundary>
+          </SnackbarProvider>
+        </ConfirmProvider>
+      </ThemeProvider>
+    </CacheBuster>
   );
 }

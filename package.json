@@ -26,6 +26,7 @@
     "node-sass": "^7.0.1",
     "notistack": "^2.0.5",
     "react": "^18.2.0",
+    "react-cache-buster": "^0.1.6",
     "react-dom": "^18.2.0",
     "react-flow-renderer": "^10.3.14",
     "react-highlight-within-textarea": "^2.2.0",
@@ -40,7 +41,7 @@
   "scripts": {
     "start": "vite",
     "preview": "vite preview",
-    "build": "tsc && vite build",
+    "build": "npm run generate-meta-tag && tsc && vite build",
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
     "lint": "eslint ."
   },
