@@ -16,7 +16,13 @@ export interface State extends UndoState {
   // leftSidebarOpen: boolean;
   // rightSidebarOpen: boolean;
   selection: model.Selection;
-  setState: (func: (draft: State) => State | Partial<State>) => void;
+  setState: (
+    partial:
+      | State
+      | Partial<State>
+      | ((state: State) => State | Partial<State>),
+    replace?: boolean | undefined
+  ) => void;
   resetUndoRedo: () => void;
   undoable: () => boolean;
   redoable: () => boolean;
