@@ -2,14 +2,19 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/options";
-import { fromAif, fromProtobuf, Wrapper } from "../model";
+import { v1 as uuid } from "uuid";
+import * as model from "../model";
+import { toProtobuf as analystToProtobuf } from "../model/analyst";
+import useStore from "../store";
 import * as date from "./date";
 
-export function importGraph(obj: any): Wrapper {
+export { fromAif, fromProtobuf, toAif } from "../model";
+
+export function importGraph(obj: any): model.Wrapper {
   if ("locutions" in obj) {
-    return fromAif(obj);
+    return model.fromAif(obj);
   } else {
-    return fromProtobuf(obj);
+    return model.fromProtobuf(obj);
   }
 }
 
@@ -19,6 +24,22 @@ export function proto2json(graph: arguebuf.Graph): JsonValue {
 
 export function json2proto(graph: JsonValue): arguebuf.Graph {
   return arguebuf.Graph.fromJson(graph);
+}
+
+export function toProtobuf(obj: model.Wrapper): arguebuf.Graph {
+  const proto = model.toProtobuf(obj);
+
+  const currentAnalyst = analystToProtobuf(useStore.getState().analyst);
+
+  if (
+    !Object.values(proto.analysts).some(
+      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+    )
+  ) {
+    proto.analysts[uuid()] = currentAnalyst;
+  }
+
+  return proto;
 }
 
 export function generateFilename() {

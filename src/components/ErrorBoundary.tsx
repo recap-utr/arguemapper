@@ -7,8 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { ErrorInfo } from "react";
-import * as model from "../model";
-import { proto2json } from "../services/convert";
+import * as convert from "../services/convert";
 
 interface Props extends React.PropsWithChildren {}
 interface State {
@@ -45,11 +44,13 @@ class ErrorBoundary extends React.Component<Props, State> {
       };
 
       try {
-        aif = JSON.stringify(model.toAif(wrapper));
+        aif = JSON.stringify(convert.toAif(wrapper));
       } catch {}
 
       try {
-        arguebuf = JSON.stringify(proto2json(model.toProtobuf(wrapper)));
+        arguebuf = JSON.stringify(
+          convert.proto2json(convert.toProtobuf(wrapper))
+        );
       } catch {}
     }
 

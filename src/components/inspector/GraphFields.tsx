@@ -175,7 +175,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.proto2json(model.toProtobuf(getState()))
+                      convert.proto2json(convert.toProtobuf(getState()))
                     );
                   });
                 }}
@@ -186,7 +186,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
-                  convert.downloadJson(model.toAif(getState()));
+                  convert.downloadJson(convert.toAif(getState()));
                 }}
               >
                 AIF
