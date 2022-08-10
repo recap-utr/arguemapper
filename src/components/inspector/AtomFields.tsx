@@ -25,7 +25,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={3}
         label="Text"
-        value={element.data.text}
+        value={element.data.text ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
@@ -40,7 +40,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={3}
         label="Original Text"
-        value={element.data.reference?.text}
+        value={element.data.reference?.text ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
