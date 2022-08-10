@@ -2,6 +2,8 @@ import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import argServices from "arg-services/package.json";
+import { v1 as uuid } from "uuid";
+import useStore from "../store";
 import * as analyst from "./analyst";
 import { Edge } from "./edge";
 import * as meta from "./metadata";
@@ -56,6 +58,17 @@ export function init({
 export function toProtobuf(
   obj: Graph
 ): Omit<arguebuf.Graph, "nodes" | "edges"> {
+  const currentAnalyst = useStore.getState().analyst;
+  const analysts = { ...obj.analysts };
+
+  if (
+    !Object.values(obj.analysts).some(
+      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+    )
+  ) {
+    analysts[uuid()] = currentAnalyst;
+  }
+
   return arguebuf.Graph.create({
     resources: Object.fromEntries(
       Object.entries(obj.resources).map(([k, v]) => [k, resource.toProtobuf(v)])
@@ -68,7 +81,7 @@ export function toProtobuf(
     ),
     majorClaim: obj.majorClaim,
     analysts: Object.fromEntries(
-      Object.entries(obj.analysts).map(([k, v]) => [k, analyst.toProtobuf(v)])
+      Object.entries(analysts).map(([k, v]) => [k, analyst.toProtobuf(v)])
     ),
     libraryVersion: obj.libraryVersion,
     schemaVersion: obj.schemaVersion,

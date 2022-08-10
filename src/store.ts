@@ -8,6 +8,7 @@ export interface State extends UndoState {
   nodes: Array<model.Node>;
   edges: Array<model.Edge>;
   graph: model.Graph;
+  analyst: model.Analyst;
   resetState: (state?: model.Wrapper) => void;
   firstVisit: boolean;
   disableFirstVisit: () => void;
@@ -36,6 +37,7 @@ const useStore = create<State>()(
           nodes: [],
           edges: [],
           graph: model.initGraph({}),
+          analyst: model.initAnalyst({}),
           firstVisit: true,
           disableFirstVisit: () => {
             set({ firstVisit: false });
@@ -99,6 +101,7 @@ const useStore = create<State>()(
           edges: state.edges,
           graph: state.graph,
           firstVisit: state.firstVisit,
+          analyst: state.analyst,
         }),
       }
     )

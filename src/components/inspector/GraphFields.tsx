@@ -2,6 +2,7 @@ import { faFileImage } from "@fortawesome/free-regular-svg-icons";
 import {
   faCaretDown,
   faDownload,
+  faEdit,
   faFileArrowUp,
   faFileCirclePlus,
   faFileCode,
@@ -15,19 +16,25 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Stack,
   styled,
+  TextField,
   Tooltip,
   Typography,
-  useTheme,
 } from "@mui/material";
+import produce from "immer";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useReactFlow } from "react-flow-renderer";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";
-import useStore from "../../store";
+import useStore, { State } from "../../store";
 
 const Input = styled("input")({
   display: "none",
@@ -39,11 +46,19 @@ export const GraphFields: React.FC<Props> = () => {
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const graph = useStore((state) => state.graph);
+  const analyst = useStore((state) => state.analyst);
   const resetState = useStore((state) => state.resetState);
 
   const confirm = useConfirm();
-  const theme = useTheme();
   const flow = useReactFlow();
+
+  // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
+  const [analystCallback, setAnalystCallback] = useState<
+    (() => void) | undefined
+  >(undefined);
+  const disableAnalystCallback = () => {
+    setAnalystCallback(undefined);
+  };
 
   const state = { nodes, edges, graph };
 
@@ -65,6 +80,17 @@ export const GraphFields: React.FC<Props> = () => {
       }
     },
     [confirm, resetState]
+  );
+
+  const verifyAnalyst = useCallback(
+    (callback: () => void) => {
+      if (!(analyst.name && analyst.email)) {
+        setAnalystCallback(() => callback);
+      } else {
+        callback();
+      }
+    },
+    [analyst]
   );
 
   // const participantFields: {
@@ -142,9 +168,11 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
-                  convert.downloadJson(
-                    convert.proto2json(model.toProtobuf(state))
-                  );
+                  verifyAnalyst(() => {
+                    convert.downloadJson(
+                      convert.proto2json(model.toProtobuf(state))
+                    );
+                  });
                 }}
               >
                 Arguebuf
@@ -250,6 +278,19 @@ export const GraphFields: React.FC<Props> = () => {
             </AccordionDetails>
           </Accordion> */}
       </div>
+      <Button
+        startIcon={<FontAwesomeIcon icon={faEdit} />}
+        variant="contained"
+        onClick={() => {
+          setAnalystCallback(() => () => {});
+        }}
+      >
+        Edit Analyst
+      </Button>
+      <AnalystDialog
+        callback={analystCallback}
+        disableCallback={disableAnalystCallback}
+      />
       <Tooltip
         title="If errors occur, you can clear your browser's cache and reload the page with this button"
         describeChild
@@ -269,6 +310,79 @@ export const GraphFields: React.FC<Props> = () => {
         </Button>
       </Tooltip>
     </>
+  );
+};
+
+interface AnalystDialogProps {
+  callback: (() => void) | undefined;
+  disableCallback: () => void;
+}
+
+const AnalystDialog: React.FC<AnalystDialogProps> = ({
+  callback,
+  disableCallback,
+}) => {
+  const analyst = useStore((state) => state.analyst);
+  const setState = useStore((state) => state.setState);
+
+  const callbackIsFunction = typeof callback === "function";
+  const onClose = () => disableCallback();
+  const onConfirm = () => {
+    if (callbackIsFunction) {
+      callback();
+    }
+    disableCallback();
+  };
+
+  const description = !(analyst.name && analyst.email)
+    ? "Before exporting your work, you need to provide your name and email to be exported with the graph. Afterwards, click the export button again."
+    : "Please enter your name and and email for storing together with the exported argument graph.";
+
+  return (
+    <Dialog open={callbackIsFunction} onClose={onClose}>
+      <DialogTitle>Analyst Information</DialogTitle>
+      <DialogContent>
+        <DialogContentText>{description}</DialogContentText>
+        <TextField
+          label="Name"
+          fullWidth
+          margin="dense"
+          value={analyst.name ?? ""}
+          onChange={(event) => {
+            setState(
+              produce((draft: State) => {
+                draft.analyst.name = event.target.value;
+              })
+            );
+          }}
+        />
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          margin="dense"
+          value={analyst.email ?? ""}
+          onChange={(event) => {
+            setState(
+              produce((draft: State) => {
+                draft.analyst.email = event.target.value;
+              })
+            );
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          color="error"
+          onClick={() => {
+            setState({ analyst: model.initAnalyst({}) });
+          }}
+        >
+          Clear
+        </Button>
+        <Button onClick={onConfirm}>Save and close</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 
