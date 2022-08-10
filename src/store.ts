@@ -18,13 +18,6 @@ export interface State extends UndoState {
   leftSidebarOpen: boolean | undefined;
   rightSidebarOpen: boolean | undefined;
   selection: model.Selection;
-  setState: (
-    partial:
-      | State
-      | Partial<State>
-      | ((state: State) => State | Partial<State>),
-    replace?: boolean | undefined
-  ) => void;
   resetUndoRedo: () => void;
   undoable: () => boolean;
   redoable: () => boolean;
@@ -60,12 +53,6 @@ const useStore = create<State>()(
               shouldLayout: true,
             });
           },
-          // setState: (func) => {
-          //   set((draft) => {
-          //     return func(draft);
-          //   });
-          // },
-          setState: set,
           resetUndoRedo: () => {
             const clear = get().clear;
 
@@ -116,3 +103,5 @@ const useStore = create<State>()(
 );
 
 export default useStore;
+
+export const { getState, setState, subscribe, destroy } = useStore;

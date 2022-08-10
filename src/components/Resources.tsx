@@ -10,7 +10,7 @@ import { useViewport } from "react-flow-renderer";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
-import useStore, { State } from "../store";
+import useStore, { setState, State } from "../store";
 
 interface TextSelection {
   anchor: number;
@@ -31,7 +31,6 @@ const Resources: React.FC<Props> = () => {
     )
   );
   const resources = useStore((state) => state.graph.resources);
-  const setState = useStore((state) => state.setState);
   const [activeTab, setActiveTab] = useState("1");
 
   const handleTabChange = useCallback(
@@ -47,7 +46,7 @@ const Resources: React.FC<Props> = () => {
         draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
-  }, [setState]);
+  }, []);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
@@ -111,7 +110,6 @@ const Resource: React.FC<ResourceProps> = ({
   index,
   references,
 }) => {
-  const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
 
   const [userSelection, setUserSelection] = useState<TextSelection>({
@@ -159,7 +157,7 @@ const Resource: React.FC<ResourceProps> = ({
         );
       }
     },
-    [setState, id, resource]
+    [id, resource]
   );
 
   // const onBlur = useCallback(() => {
@@ -189,7 +187,7 @@ const Resource: React.FC<ResourceProps> = ({
         draft.nodes.push(node);
       })
     );
-  }, [resource, userSelection, setState, id, x, y]);
+  }, [resource, userSelection, id, x, y]);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -197,7 +195,7 @@ const Resource: React.FC<ResourceProps> = ({
         delete draft.graph.resources[id];
       })
     );
-  }, [setState, id]);
+  }, [id]);
 
   return (
     <Stack spacing={2}>

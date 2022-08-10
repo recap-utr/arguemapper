@@ -21,7 +21,7 @@ import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
-import useStore, { State } from "../store";
+import useStore, { setState, State } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
 import MarkerDefinition from "./Marker";
@@ -44,7 +44,6 @@ export default function Graph() {
   ]);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
-  const setState = useStore((state) => state.setState);
   const resetState = useStore((state) => state.resetState);
   const [firstVisit, disableFirstVisit] = useStore((state) => [
     state.firstVisit,
@@ -134,7 +133,6 @@ export default function Graph() {
     edges,
     setShouldLayout,
     nodes,
-    setState,
     resetUndoRedo,
     layoutAlgorithm,
   ]);
@@ -151,27 +149,21 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => {
-      setState(
-        produce((draft: State) => {
-          draft.nodes = applyNodeChanges(changes, draft.nodes);
-        })
-      );
-    },
-    [setState]
-  );
+  const onNodesChange: OnNodesChange = useCallback((changes) => {
+    setState(
+      produce((draft: State) => {
+        draft.nodes = applyNodeChanges(changes, draft.nodes);
+      })
+    );
+  }, []);
 
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      setState(
-        produce((draft: State) => {
-          draft.edges = applyEdgeChanges(changes, draft.edges);
-        })
-      );
-    },
-    [setState]
-  );
+  const onEdgesChange: OnEdgesChange = useCallback((changes) => {
+    setState(
+      produce((draft: State) => {
+        draft.edges = applyEdgeChanges(changes, draft.edges);
+      })
+    );
+  }, []);
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
@@ -204,22 +196,19 @@ export default function Graph() {
         );
       }
     },
-    [setState, nodes]
+    [nodes]
   );
 
-  const onNodesDelete: OnNodesDelete = useCallback(
-    (deletedNodes) => {
-      const deletedNodeIds = deletedNodes.map((node) => node.id);
-      setState(
-        produce((draft: State) => {
-          draft.nodes = draft.nodes.filter(
-            (node) => !deletedNodeIds.includes(node.id)
-          );
-        })
-      );
-    },
-    [setState]
-  );
+  const onNodesDelete: OnNodesDelete = useCallback((deletedNodes) => {
+    const deletedNodeIds = deletedNodes.map((node) => node.id);
+    setState(
+      produce((draft: State) => {
+        draft.nodes = draft.nodes.filter(
+          (node) => !deletedNodeIds.includes(node.id)
+        );
+      })
+    );
+  }, []);
 
   const onInit: OnInit = useCallback(
     (instance) => {

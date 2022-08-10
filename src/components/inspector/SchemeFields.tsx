@@ -3,7 +3,7 @@ import produce from "immer";
 import { startCase } from "lodash";
 import React from "react";
 import * as model from "../../model";
-import useStore, { State } from "../../store";
+import useStore, { setState, State } from "../../store";
 
 const NULL_VALUE = "###NULL###";
 
@@ -17,8 +17,6 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
     (state) => state.nodes[selectedIndex]
   ) as model.SchemeNode;
   const schemeType = element.data.scheme?.type ?? NULL_VALUE;
-
-  const setState = useStore((state) => state.setState);
 
   return (
     <>

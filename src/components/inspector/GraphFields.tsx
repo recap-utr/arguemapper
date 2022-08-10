@@ -40,7 +40,7 @@ import { useReactFlow } from "react-flow-renderer";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";
-import useStore, { State } from "../../store";
+import useStore, { setState, State } from "../../store";
 
 const Input = styled("input")({
   display: "none",
@@ -56,7 +56,6 @@ export const GraphFields: React.FC<Props> = () => {
   const flow = useReactFlow();
 
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
-  const setState = useStore((state) => state.setState);
 
   // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
   const [analystCallback, setAnalystCallback] = useState<
@@ -386,7 +385,6 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
   disableCallback,
 }) => {
   const analyst = useStore((state) => state.analyst);
-  const setState = useStore((state) => state.setState);
 
   const callbackIsFunction = typeof callback === "function";
   const onClose = () => disableCallback();

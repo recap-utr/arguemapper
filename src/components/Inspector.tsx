@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import produce from "immer";
 import React from "react";
-import useStore, { State } from "../store";
+import useStore, { setState, State } from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
@@ -21,7 +21,6 @@ interface Props {
 
 const Inspector: React.FC<Props> = ({ close }) => {
   const selectionType = useStore((state) => state.selection.type);
-  const setState = useStore((state) => state.setState);
 
   const deleteButton = (
     <Button

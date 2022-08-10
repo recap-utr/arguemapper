@@ -7,7 +7,7 @@ import Header from "./components/Header";
 import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
-import useStore from "./store";
+import useStore, { setState } from "./store";
 
 const drawerWidth = 300;
 
@@ -28,7 +28,6 @@ function useWindowSize() {
 
 export default function App() {
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
-  const setState = useStore((state) => state.setState);
   const initialSidebarOpen = isMobile ? false : true;
   const [, windowHeight] = useWindowSize();
 
