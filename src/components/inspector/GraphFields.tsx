@@ -350,28 +350,28 @@ export const GraphFields: React.FC<Props> = () => {
                     ))}
                 </Select>
               </FormControl>
+              <Tooltip
+                title="If errors occur, you can clear your browser's cache and reload the page with this button"
+                describeChild
+              >
+                <Button
+                  color="error"
+                  startIcon={<FontAwesomeIcon icon={faTrash} />}
+                  variant="contained"
+                  onClick={() => {
+                    confirm().then(() => {
+                      localStorage.clear();
+                      window.location.reload();
+                    });
+                  }}
+                >
+                  Clear cache
+                </Button>
+              </Tooltip>
             </Stack>
           </AccordionDetails>
         </Accordion>
       </div>
-      <Tooltip
-        title="If errors occur, you can clear your browser's cache and reload the page with this button"
-        describeChild
-      >
-        <Button
-          color="error"
-          startIcon={<FontAwesomeIcon icon={faTrash} />}
-          variant="contained"
-          onClick={() => {
-            confirm().then(() => {
-              localStorage.clear();
-              window.location.reload();
-            });
-          }}
-        >
-          Clear cache
-        </Button>
-      </Tooltip>
     </>
   );
 };
