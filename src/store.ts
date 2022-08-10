@@ -12,6 +12,7 @@ export interface State extends UndoState {
   resetState: (state?: model.Wrapper) => void;
   firstVisit: boolean;
   disableFirstVisit: () => void;
+  layoutAlgorithm: model.LayoutAlgorithm;
   shouldLayout: boolean;
   setShouldLayout: (value: boolean) => void;
   // leftSidebarOpen: boolean;
@@ -42,6 +43,7 @@ const useStore = create<State>()(
           disableFirstVisit: () => {
             set({ firstVisit: false });
           },
+          layoutAlgorithm: model.LayoutAlgorithm.TREE,
           shouldLayout: false,
           setShouldLayout: (value) => {
             set({ shouldLayout: value });
@@ -102,6 +104,7 @@ const useStore = create<State>()(
           graph: state.graph,
           firstVisit: state.firstVisit,
           analyst: state.analyst,
+          layoutAlgorithm: state.layoutAlgorithm,
         }),
       }
     )

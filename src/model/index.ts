@@ -148,3 +148,10 @@ export const selectionType = (
 
   return "multiple";
 };
+
+export enum LayoutAlgorithm {
+  LAYERED = "layered",
+  TREE = "tree",
+  FORCE = "force",
+  RADIAL = "radial",
+}

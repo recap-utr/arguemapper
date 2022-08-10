@@ -7,6 +7,7 @@ import {
   faFileCirclePlus,
   faFileCode,
   faFilePen,
+  faGear,
   faTrash,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +22,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   styled,
   TextField,
@@ -28,6 +33,7 @@ import {
   Typography,
 } from "@mui/material";
 import produce from "immer";
+import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useState } from "react";
 import { useReactFlow } from "react-flow-renderer";
@@ -48,6 +54,9 @@ export const GraphFields: React.FC<Props> = () => {
 
   const confirm = useConfirm();
   const flow = useReactFlow();
+
+  const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+  const setState = useStore((state) => state.setState);
 
   // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
   const [analystCallback, setAnalystCallback] = useState<
@@ -282,20 +291,54 @@ export const GraphFields: React.FC<Props> = () => {
               </Stack>
             </AccordionDetails>
           </Accordion> */}
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faGear} />}>
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faDownload} />
+              &nbsp;Configuration
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <Button
+                startIcon={<FontAwesomeIcon icon={faEdit} />}
+                variant="contained"
+                onClick={() => {
+                  setAnalystCallback(() => () => {});
+                }}
+              >
+                Edit Analyst
+              </Button>
+              <AnalystDialog
+                callback={analystCallback}
+                disableCallback={disableAnalystCallback}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Layout</InputLabel>
+                <Select
+                  value={layoutAlgorithm}
+                  label="Layout"
+                  onChange={(event) => {
+                    setState({
+                      layoutAlgorithm: event.target
+                        .value as model.LayoutAlgorithm,
+                      shouldLayout: true,
+                    });
+                  }}
+                >
+                  {Object.values(model.LayoutAlgorithm)
+                    .sort((alg1, alg2) => alg1.localeCompare(alg2))
+                    .map((alg) => (
+                      <MenuItem key={alg} value={alg}>
+                        {startCase(alg)}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
       </div>
-      <Button
-        startIcon={<FontAwesomeIcon icon={faEdit} />}
-        variant="contained"
-        onClick={() => {
-          setAnalystCallback(() => () => {});
-        }}
-      >
-        Edit Analyst
-      </Button>
-      <AnalystDialog
-        callback={analystCallback}
-        disableCallback={disableAnalystCallback}
-      />
       <Tooltip
         title="If errors occur, you can clear your browser's cache and reload the page with this button"
         describeChild

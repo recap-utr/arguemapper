@@ -1,29 +1,48 @@
-import Elk, { ElkNode, ElkPrimitiveEdge } from "elkjs";
+import Elk, { ElkNode, ElkPrimitiveEdge, LayoutOptions } from "elkjs";
 import produce from "immer";
 import * as model from "../model";
 
-const DEFAULT_WIDTH = 500;
-const DEFAULT_HEIGHT = 100;
+const DEFAULT_WIDTH = 300;
+const DEFAULT_HEIGHT = 50;
 
-const elk = new Elk({
-  defaultLayoutOptions: {
+const commonOptions: LayoutOptions = {
+  "elk.direction": "UP",
+  "elk.spacing.nodeNode": "50",
+};
+
+const layoutOptions: { [key in model.LayoutAlgorithm]: LayoutOptions } = {
+  layered: {
+    ...commonOptions,
     algorithm: "layered",
-    "elk.direction": "UP",
     "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
     "elk.layered.layering.strategy": "NETWORK_SIMPLEX",
     "elk.layered.spacing.nodeNodeBetweenLayers": "50",
-    "elk.spacing.nodeNode": "50",
   },
-});
+  tree: {
+    ...commonOptions,
+    algorithm: "mrtree",
+  },
+  force: {
+    ...commonOptions,
+    algorithm: "force",
+  },
+  radial: {
+    ...commonOptions,
+    algorithm: "radial",
+  },
+};
 
 // https://github.com/wbkd/react-flow/issues/5#issuecomment-1026515350
 const layout = async (
   nodes: Array<model.Node>,
-  edges: Array<model.Edge>
+  edges: Array<model.Edge>,
+  algorithm: model.LayoutAlgorithm
 ): Promise<Array<model.Node>> => {
   if (nodes.length === 0) {
     return [];
   }
+
+  const invertEdges = algorithm === model.LayoutAlgorithm.TREE;
 
   const elkNodes: ElkNode[] = nodes.map((node) => ({
     id: node.id,
@@ -33,10 +52,11 @@ const layout = async (
 
   const elkEdges: ElkPrimitiveEdge[] = edges.map((edge) => ({
     id: edge.id,
-    target: edge.target,
-    source: edge.source,
+    target: invertEdges ? edge.source : edge.target,
+    source: invertEdges ? edge.target : edge.source,
   }));
 
+  const elk = new Elk({ defaultLayoutOptions: layoutOptions[algorithm] });
   const elkGraph = await elk.layout({
     id: "root",
     children: elkNodes,

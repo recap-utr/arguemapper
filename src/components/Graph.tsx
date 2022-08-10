@@ -55,6 +55,7 @@ export default function Graph() {
     state.setShouldLayout,
   ]);
   const [shouldFit, setShouldFit] = useState(false);
+  const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
 
   useEffect(() => {
     if (firstVisit) {
@@ -116,7 +117,7 @@ export default function Graph() {
       nodes.length > 0 &&
       nodes.every(nodeHasDimension)
     ) {
-      layout(nodes, edges).then((layoutedNodes) => {
+      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState(
           produce((draft: State) => {
             draft.nodes = layoutedNodes;
@@ -135,6 +136,7 @@ export default function Graph() {
     nodes,
     setState,
     resetUndoRedo,
+    layoutAlgorithm,
   ]);
 
   useEffect(() => {
