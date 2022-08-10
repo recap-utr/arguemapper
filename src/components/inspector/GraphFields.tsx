@@ -292,9 +292,9 @@ export const GraphFields: React.FC<Props> = () => {
             </AccordionDetails>
           </Accordion> */}
         <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faGear} />}>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="h6">
-              <FontAwesomeIcon icon={faDownload} />
+              <FontAwesomeIcon icon={faGear} />
               &nbsp;Configuration
             </Typography>
           </AccordionSummary>
