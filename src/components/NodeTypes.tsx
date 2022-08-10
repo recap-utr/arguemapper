@@ -32,6 +32,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
       justifyContent="center"
       sx={{
         background: bg,
+        color: "white",
         padding: 1,
         borderRadius: 2,
         borderColor: node.selected ? theme.palette.text.primary : bg,
