@@ -178,14 +178,6 @@ export const GraphFields: React.FC<Props> = () => {
               >
                 JPG
               </Button>
-              {theme.palette.mode === "dark" && (
-                <Typography variant="caption">
-                  <b>Please note:</b>
-                  <br />
-                  The rendering respects dark mode. If you want a white
-                  background, please switch to light mode.
-                </Typography>
-              )}
             </Stack>
           </AccordionDetails>
         </Accordion>
