@@ -82,6 +82,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
 
   return (
     <Menu
+      className="arguemapper-hidden"
       sx={{ zIndex: 10 }}
       open={click.open}
       onClose={close}

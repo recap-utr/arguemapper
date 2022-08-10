@@ -1,3 +1,4 @@
+import { faFileImage } from "@fortawesome/free-regular-svg-icons";
 import {
   faCaretDown,
   faDownload,
@@ -18,9 +19,11 @@ import {
   styled,
   Tooltip,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback } from "react";
+import { useReactFlow } from "react-flow-renderer";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";
@@ -39,7 +42,8 @@ export const GraphFields: React.FC<Props> = () => {
   const resetState = useStore((state) => state.resetState);
 
   const confirm = useConfirm();
-  // const theme = useTheme();
+  const theme = useTheme();
+  const flow = useReactFlow();
 
   const state = { nodes, edges, graph };
 
@@ -154,11 +158,12 @@ export const GraphFields: React.FC<Props> = () => {
               >
                 AIF
               </Button>
-              {/* <Button
+              <Button
                 startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
-                  // TODO: Download PNG
+                  flow.fitView();
+                  convert.downloadImage(convert.ImgFormat.PNG);
                 }}
               >
                 PNG
@@ -167,19 +172,20 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
-                  // TODO: Download JPG
+                  flow.fitView();
+                  convert.downloadImage(convert.ImgFormat.JPG);
                 }}
               >
                 JPG
-              </Button> */}
-              {/* {theme.palette.mode === "dark" && (
+              </Button>
+              {theme.palette.mode === "dark" && (
                 <Typography variant="caption">
                   <b>Please note:</b>
                   <br />
                   The rendering respects dark mode. If you want a white
                   background, please switch to light mode.
                 </Typography>
-              )} */}
+              )}
             </Stack>
           </AccordionDetails>
         </Accordion>

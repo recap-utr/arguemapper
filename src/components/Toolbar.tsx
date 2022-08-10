@@ -52,7 +52,13 @@ const Toolbar: React.FC<ToolbarProps> = () => {
   }, [setShouldLayout]);
 
   return (
-    <Box position="absolute" left={0} bottom={0} zIndex={10}>
+    <Box
+      className="arguemapper-hidden"
+      position="absolute"
+      left={0}
+      bottom={0}
+      zIndex={10}
+    >
       <Stack direction="column">
         <Item
           text="Automatically layout graph elements"

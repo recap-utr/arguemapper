@@ -58,7 +58,13 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
 
   return (
     <>
-      <Box position="absolute" right={10} bottom={10} zIndex={10}>
+      <Box
+        className="arguemapper-hidden"
+        position="absolute"
+        right={10}
+        bottom={10}
+        zIndex={10}
+      >
         <IconButton
           size="large"
           sx={{ backgroundColor: theme.palette.primary.dark }}

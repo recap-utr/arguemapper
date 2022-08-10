@@ -262,6 +262,7 @@ export default function Graph() {
 
   return (
     <ReactFlow
+      id="react-flow"
       nodes={tmpNodes}
       edges={edges}
       onNodesChange={onNodesChange}

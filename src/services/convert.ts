@@ -1,5 +1,7 @@
 import { JsonValue } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import { toJpeg, toPng } from "html-to-image";
+import { Options as ImgOptions } from "html-to-image/lib/options";
 import { fromAif, fromProtobuf, Wrapper } from "../model";
 import * as date from "./date";
 
@@ -32,10 +34,64 @@ export async function downloadJson(data: any) {
 
 export async function downloadBlob(data: Blob, suffix: string) {
   const href = URL.createObjectURL(data);
+  const filename = generateFilename() + suffix;
+  downloadFile(href, filename);
+}
+
+export const downloadImage = async (format: ImgFormat) => {
+  const selectors = ["#react-flow"];
+  const excludedClasses = [
+    "react-flow__handle",
+    "arguemapper-hidden",
+    "react-flow__attribution",
+  ];
+
+  const elem = document.querySelector(
+    selectors.join(" ")
+  ) as HTMLElement | null;
+  const func = imgFormatMap[format];
+
+  if (elem !== null) {
+    const href = await func(elem, {
+      backgroundColor: "white",
+      cacheBust: true,
+      quality: 1.0,
+      pixelRatio: 3,
+      // https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
+      filter: (domNode) => {
+        const classList = domNode.classList
+          ? Array.from(domNode.classList)
+          : [];
+        return !excludedClasses.some((className) =>
+          classList.includes(className)
+        );
+      },
+    });
+    const filename = `${generateFilename()}.${format}`;
+    downloadFile(href, filename);
+  }
+};
+
+export enum ImgFormat {
+  PNG = "png",
+  JPG = "jpg",
+}
+
+const imgFormatMap: {
+  [key in ImgFormat]: (
+    elem: HTMLElement,
+    options?: ImgOptions
+  ) => Promise<string>;
+} = {
+  png: toPng,
+  jpg: toJpeg,
+};
+
+const downloadFile = async (href: string, filename: string) => {
   const link = document.createElement("a");
   link.href = href;
-  link.download = generateFilename() + suffix;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-}
+};
