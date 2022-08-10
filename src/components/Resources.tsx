@@ -234,7 +234,7 @@ const Resource: React.FC<ResourceProps> = ({
       >
         Add selected text
       </Button>
-      <Button
+      {/* <Button
         fullWidth
         variant="contained"
         startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
@@ -248,7 +248,7 @@ const Resource: React.FC<ResourceProps> = ({
         }}
       >
         DEBUG: Append text
-      </Button>
+      </Button> */}
     </Stack>
   );
 };
