@@ -2,12 +2,12 @@ import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useLayoutEffect, useState } from "react";
 import { useStore as useFlowStore } from "react-flow-renderer";
-import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
 import Header from "./components/Header";
 import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
+import useStore from "./store";
 
 const drawerWidth = 300;
 
@@ -28,17 +28,25 @@ function useWindowSize() {
 
 export default function App() {
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
+  const setState = useStore((state) => state.setState);
   const initialSidebarOpen = isMobile ? false : true;
   const [, windowHeight] = useWindowSize();
 
-  const [leftSidebarOpen, setLeftSidebarOpen] = useLocalStorage<boolean>(
-    "leftSidebarOpen",
-    initialSidebarOpen
-  );
-  const [rightSidebarOpen, setRightSidebarOpen] = useLocalStorage<boolean>(
-    "rightSidebarOpen",
-    initialSidebarOpen
-  );
+  const _leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
+  const _rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
+  const leftSidebarOpen =
+    _leftSidebarOpen === undefined ? initialSidebarOpen : _leftSidebarOpen;
+  const rightSidebarOpen =
+    _rightSidebarOpen === undefined ? initialSidebarOpen : _rightSidebarOpen;
+
+  const setLeftSidebarOpen = (value: boolean) => {
+    setState({ leftSidebarOpen: value });
+  };
+
+  const setRightSidebarOpen = (value: boolean) => {
+    setState({ rightSidebarOpen: value });
+  };
+
   const flowStore = useFlowStore();
 
   return (

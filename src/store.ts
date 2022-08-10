@@ -15,8 +15,8 @@ export interface State extends UndoState {
   layoutAlgorithm: model.LayoutAlgorithm;
   shouldLayout: boolean;
   setShouldLayout: (value: boolean) => void;
-  // leftSidebarOpen: boolean;
-  // rightSidebarOpen: boolean;
+  leftSidebarOpen: boolean | undefined;
+  rightSidebarOpen: boolean | undefined;
   selection: model.Selection;
   setState: (
     partial:
@@ -40,6 +40,8 @@ const useStore = create<State>()(
           graph: model.initGraph({}),
           analyst: model.initAnalyst({}),
           firstVisit: true,
+          leftSidebarOpen: undefined,
+          rightSidebarOpen: undefined,
           disableFirstVisit: () => {
             set({ firstVisit: false });
           },
@@ -105,6 +107,8 @@ const useStore = create<State>()(
           firstVisit: state.firstVisit,
           analyst: state.analyst,
           layoutAlgorithm: state.layoutAlgorithm,
+          leftSidebarOpen: state.leftSidebarOpen,
+          rightSidebarOpen: state.rightSidebarOpen,
         }),
       }
     )
