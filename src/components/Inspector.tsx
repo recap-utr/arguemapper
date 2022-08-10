@@ -16,10 +16,10 @@ import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
 
 interface Props {
-  openSidebar: (value: boolean) => void;
+  close: () => void;
 }
 
-const Inspector: React.FC<Props> = ({ openSidebar }) => {
+const Inspector: React.FC<Props> = ({ close }) => {
   const selectionType = useStore((state) => state.selection.type);
   const setState = useStore((state) => state.setState);
 
@@ -57,11 +57,7 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
           <Typography variant="h5">Inspector</Typography>
           {selectionType !== "graph" && (
             <Tooltip describeChild title="Close inspector for current element">
-              <IconButton
-                onClick={() => {
-                  openSidebar(false);
-                }}
-              >
+              <IconButton onClick={close}>
                 <FontAwesomeIcon icon={faXmark} />
               </IconButton>
             </Tooltip>

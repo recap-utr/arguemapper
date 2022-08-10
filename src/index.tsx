@@ -8,6 +8,7 @@ import { SnackbarProvider } from "notistack";
 import React from "react";
 // import CacheBuster from "react-cache-buster";
 import { createRoot } from "react-dom/client";
+import { ReactFlowProvider } from "react-flow-renderer";
 import { useMedia } from "react-use";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -50,7 +51,9 @@ function Layout() {
       >
         <SnackbarProvider maxSnack={3} preventDuplicate>
           <ErrorBoundary>
-            <App />
+            <ReactFlowProvider>
+              <App />
+            </ReactFlowProvider>
           </ErrorBoundary>
         </SnackbarProvider>
       </ConfirmProvider>

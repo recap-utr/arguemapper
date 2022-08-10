@@ -1,7 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useLayoutEffect, useState } from "react";
-import { ReactFlowProvider } from "react-flow-renderer";
+import { useStore as useFlowStore } from "react-flow-renderer";
 import { useLocalStorage } from "react-use";
 import Graph from "./components/Graph";
 import Header from "./components/Header";
@@ -39,47 +39,47 @@ export default function App() {
     "rightSidebarOpen",
     initialSidebarOpen
   );
+  const flowStore = useFlowStore();
 
   return (
-    <ReactFlowProvider>
-      <Stack direction="row" sx={{ height: windowHeight }}>
-        <Sidebar
-          side="left"
-          drawerWidth={drawerWidth}
-          isMobile={isMobile}
-          isOpen={leftSidebarOpen!}
-          setIsOpen={setLeftSidebarOpen}
+    <Stack direction="row" sx={{ height: windowHeight }}>
+      <Sidebar
+        side="left"
+        drawerWidth={drawerWidth}
+        isMobile={isMobile}
+        isOpen={leftSidebarOpen!}
+        setIsOpen={setLeftSidebarOpen}
+      >
+        <Resources />
+      </Sidebar>
+      <Stack sx={{ flexGrow: 1 }}>
+        <Header
+          toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
+          toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
+        />
+        <Box
+          onContextMenu={(e) => e.preventDefault()}
+          sx={{ position: "relative", height: 1 }}
         >
-          <Resources />
-        </Sidebar>
-        <Stack sx={{ flexGrow: 1 }}>
-          <Header
-            toggleLeft={() => setLeftSidebarOpen(!leftSidebarOpen)}
-            toggleRight={() => setRightSidebarOpen(!rightSidebarOpen)}
-          />
-          <Box
-            onContextMenu={(e) => e.preventDefault()}
-            sx={{ position: "relative", height: 1 }}
-          >
-            <Graph />
-          </Box>
-        </Stack>
-        <Sidebar
-          side="right"
-          drawerWidth={drawerWidth}
-          isMobile={isMobile}
-          isOpen={rightSidebarOpen!}
-          setIsOpen={setRightSidebarOpen}
-        >
-          <Inspector
-            openSidebar={(value) => {
-              if (isMobile) {
-                setRightSidebarOpen(value);
-              }
-            }}
-          />
-        </Sidebar>
+          <Graph />
+        </Box>
       </Stack>
-    </ReactFlowProvider>
+      <Sidebar
+        side="right"
+        drawerWidth={drawerWidth}
+        isMobile={isMobile}
+        isOpen={rightSidebarOpen!}
+        setIsOpen={setRightSidebarOpen}
+      >
+        <Inspector
+          close={() => {
+            if (isMobile) {
+              setRightSidebarOpen(false);
+            }
+            flowStore.resetSelectedElements();
+          }}
+        />
+      </Sidebar>
+    </Stack>
   );
 }
