@@ -9,6 +9,7 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  NodeDragHandler,
   OnConnect,
   OnEdgesChange,
   OnInit,
@@ -56,6 +57,7 @@ export default function Graph() {
   ]);
   const [shouldFit, setShouldFit] = useState(false);
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+  const [localNodes, setLocalNodes] = useState<Array<model.Node>>([...nodes]);
 
   useEffect(() => {
     if (firstVisit) {
@@ -113,11 +115,11 @@ export default function Graph() {
   useEffect(() => {
     if (
       shouldLayout &&
-      nodes.length &&
-      nodes.length > 0 &&
-      nodes.every(nodeHasDimension)
+      localNodes.length &&
+      localNodes.length > 0 &&
+      localNodes.every(nodeHasDimension)
     ) {
-      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
+      layout(localNodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
         resetUndoRedo();
         setShouldLayout(false);
@@ -129,7 +131,7 @@ export default function Graph() {
     shouldLayout,
     edges,
     setShouldLayout,
-    nodes,
+    localNodes,
     resetUndoRedo,
     layoutAlgorithm,
     setState,
@@ -147,12 +149,31 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => {
-      setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+  useEffect(() => {
+    setLocalNodes([...nodes]);
+  }, [nodes]);
+
+  const onNodeDragStop: NodeDragHandler = useCallback(
+    (event: React.MouseEvent, node: model.Node, nodes: model.Node[]) => {
+      setState(
+        produce((draft: State) => {
+          draft.nodes.forEach((stateNode) => {
+            const draggedNode = nodes.find((n) => n.id === stateNode.id);
+
+            if (draggedNode !== undefined) {
+              Object.assign(stateNode, draggedNode);
+            }
+          });
+        })
+      );
     },
     [setState]
   );
+
+  const onNodesChange: OnNodesChange = useCallback((changes) => {
+    // setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+    setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
+  }, []);
 
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
@@ -251,7 +272,7 @@ export default function Graph() {
   return (
     <ReactFlow
       id="react-flow"
-      nodes={nodes}
+      nodes={localNodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
@@ -260,6 +281,7 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onPaneContextMenu={onContextMenu}
+      onNodeDragStop={onNodeDragStop}
       onNodesDelete={onNodesDelete}
       onSelectionChange={onSelectionChange}
       selectNodesOnDrag={true}
