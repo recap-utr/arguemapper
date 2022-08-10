@@ -8,9 +8,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import produce from "immer";
 import React from "react";
-import useStore, { setState, State } from "../store";
+import useStore, { setState } from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
@@ -28,16 +27,14 @@ const Inspector: React.FC<Props> = ({ close }) => {
       startIcon={<FontAwesomeIcon icon={faTrash} />}
       variant="contained"
       onClick={() => {
-        setState(
-          produce((draft: State) => {
-            draft.nodes = draft.nodes.filter(
-              (_node, idx) => !draft.selection.nodes.includes(idx)
-            );
-            draft.edges = draft.edges.filter(
-              (_edge, idx) => !draft.selection.edges.includes(idx)
-            );
-          })
-        );
+        setState((state) => ({
+          nodes: state.nodes.filter(
+            (_node, idx) => !state.selection.nodes.includes(idx)
+          ),
+          edges: state.edges.filter(
+            (_edge, idx) => !state.selection.edges.includes(idx)
+          ),
+        }));
       }}
     >
       Delete selection

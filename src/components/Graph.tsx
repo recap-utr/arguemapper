@@ -117,11 +117,7 @@ export default function Graph() {
       nodes.every(nodeHasDimension)
     ) {
       layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
-        setState(
-          produce((draft: State) => {
-            draft.nodes = layoutedNodes;
-          })
-        );
+        setState({ nodes: layoutedNodes });
         resetUndoRedo();
         setShouldLayout(false);
         setShouldFit(true);
@@ -150,19 +146,11 @@ export default function Graph() {
   }, [redo, redoPressed]);
 
   const onNodesChange: OnNodesChange = useCallback((changes) => {
-    setState(
-      produce((draft: State) => {
-        draft.nodes = applyNodeChanges(changes, draft.nodes);
-      })
-    );
+    setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
   }, []);
 
   const onEdgesChange: OnEdgesChange = useCallback((changes) => {
-    setState(
-      produce((draft: State) => {
-        draft.edges = applyEdgeChanges(changes, draft.edges);
-      })
-    );
+    setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
   }, []);
 
   const onConnect: OnConnect = useCallback(
@@ -189,11 +177,9 @@ export default function Graph() {
           })
         );
       } else {
-        setState(
-          produce((draft: State) => {
-            draft.edges = addEdge(connection, draft.edges);
-          })
-        );
+        setState((state) => ({
+          edges: addEdge(connection, state.edges),
+        }));
       }
     },
     [nodes]
@@ -201,13 +187,9 @@ export default function Graph() {
 
   const onNodesDelete: OnNodesDelete = useCallback((deletedNodes) => {
     const deletedNodeIds = deletedNodes.map((node) => node.id);
-    setState(
-      produce((draft: State) => {
-        draft.nodes = draft.nodes.filter(
-          (node) => !deletedNodeIds.includes(node.id)
-        );
-      })
-    );
+    setState((state) => ({
+      nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+    }));
   }, []);
 
   const onInit: OnInit = useCallback(
@@ -233,27 +215,27 @@ export default function Graph() {
   };
 
   const onSelectionChange: OnSelectionChangeFunc = (elems) =>
-    setState(
-      produce((draft: State) => {
-        const partialSelection = {
-          nodes: elems.nodes.map((selectedNode) =>
-            draft.nodes.findIndex((node) => node.id === selectedNode.id)
-          ),
-          edges: elems.edges.map((selectedEdge) =>
-            draft.edges.findIndex((edge) => edge.id === selectedEdge.id)
-          ),
-        };
+    setState((state) => {
+      const partialSelection = {
+        nodes: elems.nodes.map((selectedNode) =>
+          state.nodes.findIndex((node) => node.id === selectedNode.id)
+        ),
+        edges: elems.edges.map((selectedEdge) =>
+          state.edges.findIndex((edge) => edge.id === selectedEdge.id)
+        ),
+      };
 
-        const nodeTypes = elems.nodes.map(
-          (node) => node.type as "scheme" | "atom"
-        );
+      const nodeTypes = elems.nodes.map(
+        (node) => node.type as "scheme" | "atom"
+      );
 
-        draft.selection = {
+      return {
+        selection: {
           ...partialSelection,
           type: model.selectionType(partialSelection, nodeTypes),
-        };
-      })
-    );
+        },
+      };
+    });
 
   return (
     <ReactFlow
