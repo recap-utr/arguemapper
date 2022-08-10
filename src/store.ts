@@ -5,6 +5,13 @@ import { devtools, persist } from "zustand/middleware";
 import * as model from "./model";
 
 export interface State extends UndoState {
+  setState: (
+    partial:
+      | State
+      | Partial<State>
+      | ((state: State) => State | Partial<State>),
+    replace?: boolean | undefined
+  ) => void;
   nodes: Array<model.Node>;
   edges: Array<model.Edge>;
   graph: model.Graph;
@@ -28,6 +35,7 @@ const useStore = create<State>()(
     persist(
       undoMiddleware(
         (set, get) => ({
+          setState: set,
           nodes: [],
           edges: [],
           graph: model.initGraph({}),

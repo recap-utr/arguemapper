@@ -21,7 +21,7 @@ import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
-import useStore, { setState, State } from "../store";
+import useStore, { State } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
 import MarkerDefinition from "./Marker";
@@ -44,6 +44,7 @@ export default function Graph() {
   ]);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
+  const setState = useStore((state) => state.setState);
   const resetState = useStore((state) => state.resetState);
   const [firstVisit, disableFirstVisit] = useStore((state) => [
     state.firstVisit,
@@ -131,6 +132,7 @@ export default function Graph() {
     nodes,
     resetUndoRedo,
     layoutAlgorithm,
+    setState,
   ]);
 
   useEffect(() => {
@@ -145,13 +147,19 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  const onNodesChange: OnNodesChange = useCallback((changes) => {
-    setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
-  }, []);
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+    },
+    [setState]
+  );
 
-  const onEdgesChange: OnEdgesChange = useCallback((changes) => {
-    setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
-  }, []);
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => {
+      setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
+    },
+    [setState]
+  );
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
@@ -182,15 +190,18 @@ export default function Graph() {
         }));
       }
     },
-    [nodes]
+    [nodes, setState]
   );
 
-  const onNodesDelete: OnNodesDelete = useCallback((deletedNodes) => {
-    const deletedNodeIds = deletedNodes.map((node) => node.id);
-    setState((state) => ({
-      nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
-    }));
-  }, []);
+  const onNodesDelete: OnNodesDelete = useCallback(
+    (deletedNodes) => {
+      const deletedNodeIds = deletedNodes.map((node) => node.id);
+      setState((state) => ({
+        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+      }));
+    },
+    [setState]
+  );
 
   const onInit: OnInit = useCallback(
     (instance) => {

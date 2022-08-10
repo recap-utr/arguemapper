@@ -10,7 +10,7 @@ import produce from "immer";
 import React, { MouseEvent, useCallback } from "react";
 import { useViewport } from "react-flow-renderer";
 import * as model from "../model";
-import { setState, State } from "../store";
+import useStore, { State } from "../store";
 
 interface ItemProps {
   callback: () => void;
@@ -56,6 +56,7 @@ export interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   const { x, y } = useViewport();
+  const setState = useStore((state) => state.setState);
   const clickedType = model.elemType(click.target);
 
   const close = useCallback(() => {

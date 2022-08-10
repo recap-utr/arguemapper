@@ -4,13 +4,14 @@ import { Button, TextField } from "@mui/material";
 import produce from "immer";
 import React from "react";
 import * as model from "../../model";
-import useStore, { setState, State } from "../../store";
+import useStore, { State } from "../../store";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
 }
 
 export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
+  const setState = useStore((state) => state.setState);
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex]

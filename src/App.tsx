@@ -7,7 +7,7 @@ import Header from "./components/Header";
 import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
-import useStore, { setState } from "./store";
+import useStore from "./store";
 
 const drawerWidth = 300;
 
@@ -27,6 +27,7 @@ function useWindowSize() {
 // https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
 
 export default function App() {
+  const setState = useStore((state) => state.setState);
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
   const initialSidebarOpen = isMobile ? false : true;
   const [, windowHeight] = useWindowSize();

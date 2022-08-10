@@ -40,7 +40,7 @@ import { useReactFlow } from "react-flow-renderer";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";
-import useStore, { setState, State } from "../../store";
+import useStore, { State } from "../../store";
 
 const Input = styled("input")({
   display: "none",
@@ -49,6 +49,7 @@ const Input = styled("input")({
 export interface Props extends React.PropsWithChildren {}
 
 export const GraphFields: React.FC<Props> = () => {
+  const setState = useStore((state) => state.setState);
   const analyst = useStore((state) => state.analyst);
   const resetState = useStore((state) => state.resetState);
 
@@ -384,6 +385,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
   callback,
   disableCallback,
 }) => {
+  const setState = useStore((state) => state.setState);
   const analyst = useStore((state) => state.analyst);
 
   const callbackIsFunction = typeof callback === "function";

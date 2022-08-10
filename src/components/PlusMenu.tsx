@@ -14,7 +14,7 @@ import produce from "immer";
 import React from "react";
 import { useViewport } from "react-flow-renderer";
 import * as model from "../model";
-import { setState, State } from "../store";
+import useStore, { State } from "../store";
 
 interface ItemProps {
   callback: () => void;
@@ -45,6 +45,7 @@ export interface PlusMenuProps {
 }
 
 const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
+  const setState = useStore((state) => state.setState);
   const theme = useTheme();
   const isOpen = Boolean(plusButton);
   const open = (event: React.MouseEvent<HTMLButtonElement>) => {

@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import useStore, { setState } from "../store";
+import useStore from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
@@ -19,6 +19,7 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ close }) => {
+  const setState = useStore((state) => state.setState);
   const selectionType = useStore((state) => state.selection.type);
 
   const deleteButton = (

@@ -10,7 +10,7 @@ import { useViewport } from "react-flow-renderer";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
-import useStore, { setState, State } from "../store";
+import useStore, { State } from "../store";
 
 interface TextSelection {
   anchor: number;
@@ -20,6 +20,7 @@ interface TextSelection {
 interface Props {}
 
 const Resources: React.FC<Props> = () => {
+  const setState = useStore((state) => state.setState);
   const references = useStore((state) =>
     Object.fromEntries(
       state.nodes
@@ -46,7 +47,7 @@ const Resources: React.FC<Props> = () => {
         draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
-  }, []);
+  }, [setState]);
 
   const lastResourceIndex = (Object.keys(resources).length + 1).toString();
 
@@ -110,6 +111,7 @@ const Resource: React.FC<ResourceProps> = ({
   index,
   references,
 }) => {
+  const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
 
   const [userSelection, setUserSelection] = useState<TextSelection>({
@@ -157,7 +159,7 @@ const Resource: React.FC<ResourceProps> = ({
         );
       }
     },
-    [id, resource]
+    [id, resource.text, setState]
   );
 
   // const onBlur = useCallback(() => {
@@ -187,7 +189,15 @@ const Resource: React.FC<ResourceProps> = ({
         draft.nodes.push(node);
       })
     );
-  }, [resource, userSelection, id, x, y]);
+  }, [
+    resource.text,
+    userSelection.anchor,
+    userSelection.focus,
+    id,
+    x,
+    y,
+    setState,
+  ]);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -195,7 +205,7 @@ const Resource: React.FC<ResourceProps> = ({
         delete draft.graph.resources[id];
       })
     );
-  }, [id]);
+  }, [id, setState]);
 
   return (
     <Stack spacing={2}>
