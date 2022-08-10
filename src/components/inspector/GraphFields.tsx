@@ -107,6 +107,12 @@ export const GraphFields: React.FC<Props> = () => {
     [analyst]
   );
 
+  const [expanded, setExpanded] = React.useState<string | false>("import");
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
   // const participantFields: {
   //   [x in keyof cytoModel.participant.Participant]?: string;
   // } = { name: "Name", email: "Email", username: "Username" };
@@ -114,7 +120,10 @@ export const GraphFields: React.FC<Props> = () => {
   return (
     <>
       <div>
-        <Accordion defaultExpanded>
+        <Accordion
+          expanded={expanded === "import"}
+          onChange={handleChange("import")}
+        >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="h6">
               <FontAwesomeIcon icon={faUpload} />
@@ -169,7 +178,10 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
-        <Accordion defaultExpanded>
+        <Accordion
+          expanded={expanded === "export"}
+          onChange={handleChange("export")}
+        >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="h6">
               <FontAwesomeIcon icon={faDownload} />
@@ -223,7 +235,7 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
-        {/* <Accordion defaultExpanded>
+        {/* <Accordion>
             <AccordionSummary
               expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
             >
@@ -291,7 +303,10 @@ export const GraphFields: React.FC<Props> = () => {
               </Stack>
             </AccordionDetails>
           </Accordion> */}
-        <Accordion defaultExpanded>
+        <Accordion
+          expanded={expanded === "configuration"}
+          onChange={handleChange("configuration")}
+        >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="h6">
               <FontAwesomeIcon icon={faGear} />
