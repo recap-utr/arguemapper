@@ -143,8 +143,7 @@ export const selectionType = (
   } else if (sel.nodes.length === 0 && sel.edges.length === 1) {
     return "edge";
   } else if (sel.nodes.length === 1 && sel.edges.length === 0) {
-    const nodeIndex = sel.nodes[0];
-    return nodeTypes[nodeIndex] ?? "graph";
+    return nodeTypes[0];
   }
 
   return "multiple";
