@@ -9,7 +9,6 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  NodeDragHandler,
   OnConnect,
   OnEdgesChange,
   OnInit,
@@ -55,7 +54,6 @@ export default function Graph() {
     state.shouldLayout,
     state.setShouldLayout,
   ]);
-  const [tmpNodes, setTmpNodes] = useState<Array<model.Node>>([...nodes]);
   const [shouldFit, setShouldFit] = useState(false);
 
   useEffect(() => {
@@ -114,11 +112,11 @@ export default function Graph() {
   useEffect(() => {
     if (
       shouldLayout &&
-      tmpNodes.length &&
-      tmpNodes.length > 0 &&
-      tmpNodes.every(nodeHasDimension)
+      nodes.length &&
+      nodes.length > 0 &&
+      nodes.every(nodeHasDimension)
     ) {
-      layout(tmpNodes, edges).then((layoutedNodes) => {
+      layout(nodes, edges).then((layoutedNodes) => {
         setState(
           produce((draft: State) => {
             draft.nodes = layoutedNodes;
@@ -134,7 +132,7 @@ export default function Graph() {
     shouldLayout,
     edges,
     setShouldLayout,
-    tmpNodes,
+    nodes,
     setState,
     resetUndoRedo,
   ]);
@@ -151,30 +149,32 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  useEffect(() => {
-    setTmpNodes([...nodes]);
-  }, [nodes]);
-
   const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setTmpNodes((n) => applyNodeChanges(changes, n)),
-    [setTmpNodes]
+    (changes) => {
+      setState(
+        produce((draft: State) => {
+          draft.nodes = applyNodeChanges(changes, draft.nodes);
+        })
+      );
+    },
+    [setState]
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) =>
+    (changes) => {
       setState(
-        produce(
-          (draft: State) =>
-            (draft.edges = applyEdgeChanges(changes, draft.edges))
-        )
-      ),
+        produce((draft: State) => {
+          draft.edges = applyEdgeChanges(changes, draft.edges);
+        })
+      );
+    },
     [setState]
   );
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      const source = tmpNodes.find((node) => node.id === connection.source);
-      const target = tmpNodes.find((node) => node.id === connection.target);
+      const source = nodes.find((node) => node.id === connection.source);
+      const target = nodes.find((node) => node.id === connection.target);
 
       if (source && target && model.isAtom(source) && model.isAtom(target)) {
         const schemePos = {
@@ -202,16 +202,8 @@ export default function Graph() {
         );
       }
     },
-    [setState, tmpNodes]
+    [setState, nodes]
   );
-
-  const onNodeDragStop: NodeDragHandler = useCallback(() => {
-    setState(
-      produce((draft: State) => {
-        draft.nodes = tmpNodes;
-      })
-    );
-  }, [setState, tmpNodes]);
 
   const onNodesDelete: OnNodesDelete = useCallback(
     (deletedNodes) => {
@@ -252,10 +244,22 @@ export default function Graph() {
   const onSelectionChange: OnSelectionChangeFunc = (elems) =>
     setState(
       produce((draft: State) => {
-        draft.nodes = tmpNodes;
+        const partialSelection = {
+          nodes: elems.nodes.map((selectedNode) =>
+            draft.nodes.findIndex((node) => node.id === selectedNode.id)
+          ),
+          edges: elems.edges.map((selectedEdge) =>
+            draft.edges.findIndex((edge) => edge.id === selectedEdge.id)
+          ),
+        };
+
+        const nodeTypes = elems.nodes.map(
+          (node) => node.type as "scheme" | "atom"
+        );
+
         draft.selection = {
-          nodes: elems.nodes.map((node) => node.id),
-          edges: elems.edges.map((edge) => edge.id),
+          ...partialSelection,
+          type: model.selectionType(partialSelection, nodeTypes),
         };
       })
     );
@@ -263,7 +267,7 @@ export default function Graph() {
   return (
     <ReactFlow
       id="react-flow"
-      nodes={tmpNodes}
+      nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
@@ -272,7 +276,6 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onPaneContextMenu={onContextMenu}
-      onNodeDragStop={onNodeDragStop}
       onNodesDelete={onNodesDelete}
       onSelectionChange={onSelectionChange}
       selectNodesOnDrag={true}

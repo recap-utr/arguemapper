@@ -12,14 +12,13 @@ export interface Props extends React.PropsWithChildren {
 }
 
 const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const nodes = useStore((state) => state.nodes);
-  const selection = useStore((state) => state.selection);
-  const setState = useStore((state) => state.setState);
-
-  const element = nodes.find(
-    (node) => node.id === selection.nodes[idx]
+  const selectedIndex = useStore((state) => state.selection.nodes[idx]);
+  const element = useStore(
+    (state) => state.nodes[selectedIndex]
   ) as model.SchemeNode;
   const schemeType = element.data.scheme?.type ?? NULL_VALUE;
+
+  const setState = useStore((state) => state.setState);
 
   return (
     <>

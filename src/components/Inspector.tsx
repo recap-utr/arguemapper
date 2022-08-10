@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import produce from "immer";
 import React from "react";
-import * as model from "../model";
 import useStore, { State } from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
@@ -21,10 +20,8 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ openSidebar }) => {
-  const nodes = useStore((state) => state.nodes);
-  const selection = useStore((state) => state.selection);
+  const selectionType = useStore((state) => state.selection.type);
   const setState = useStore((state) => state.setState);
-  const selectionType = model.selectionType(selection, nodes);
 
   const deleteButton = (
     <Button
@@ -35,10 +32,10 @@ const Inspector: React.FC<Props> = ({ openSidebar }) => {
         setState(
           produce((draft: State) => {
             draft.nodes = draft.nodes.filter(
-              (node) => !selection.nodes.includes(node.id)
+              (_node, idx) => !draft.selection.nodes.includes(idx)
             );
             draft.edges = draft.edges.filter(
-              (edge) => !selection.edges.includes(edge.id)
+              (_edge, idx) => !draft.selection.edges.includes(idx)
             );
           })
         );

@@ -127,29 +127,24 @@ export const elemType = (elem?: OptionalElement): ElementType => {
 };
 
 export interface Selection {
-  nodes: Array<string>;
-  edges: Array<string>;
+  nodes: Array<number>;
+  edges: Array<number>;
+  type: SelectionType;
 }
 
 export type SelectionType = ElementType | "multiple";
 
 export const selectionType = (
-  sel: Selection,
-  nodes: Array<Node>
+  sel: Omit<Selection, "type">,
+  nodeTypes: Array<"atom" | "scheme">
 ): SelectionType => {
   if (sel.nodes.length === 0 && sel.edges.length === 0) {
     return "graph";
   } else if (sel.nodes.length === 0 && sel.edges.length === 1) {
     return "edge";
   } else if (sel.nodes.length === 1 && sel.edges.length === 0) {
-    const nodeId = sel.nodes[0];
-    const node = nodes.find((x) => x.id === nodeId);
-
-    if (node !== undefined && isAtom(node)) {
-      return "atom";
-    } else {
-      return "scheme";
-    }
+    const nodeIndex = sel.nodes[0];
+    return nodeTypes[nodeIndex] ?? "graph";
   }
 
   return "multiple";

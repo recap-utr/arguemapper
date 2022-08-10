@@ -43,9 +43,6 @@ const Input = styled("input")({
 export interface Props extends React.PropsWithChildren {}
 
 export const GraphFields: React.FC<Props> = () => {
-  const nodes = useStore((state) => state.nodes);
-  const edges = useStore((state) => state.edges);
-  const graph = useStore((state) => state.graph);
   const analyst = useStore((state) => state.analyst);
   const resetState = useStore((state) => state.resetState);
 
@@ -60,7 +57,15 @@ export const GraphFields: React.FC<Props> = () => {
     setAnalystCallback(undefined);
   };
 
-  const state = { nodes, edges, graph };
+  const getState = () => {
+    const state = useStore.getState();
+
+    return {
+      nodes: state.nodes,
+      edges: state.edges,
+      graph: state.graph,
+    };
+  };
 
   const upload: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -170,7 +175,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.proto2json(model.toProtobuf(state))
+                      convert.proto2json(model.toProtobuf(getState()))
                     );
                   });
                 }}
@@ -181,7 +186,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
-                  convert.downloadJson(model.toAif(state));
+                  convert.downloadJson(model.toAif(getState()));
                 }}
               >
                 AIF

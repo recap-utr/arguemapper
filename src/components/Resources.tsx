@@ -19,19 +19,20 @@ interface TextSelection {
 interface Props {}
 
 const Resources: React.FC<Props> = () => {
-  const nodes = useStore((state) => state.nodes);
+  // const references = useStore((state) =>
+  //   Object.fromEntries(
+  //     state.nodes
+  //       .filter((node) => model.isAtom(node) && node.data.reference)
+  //       .map((node) => [
+  //         node.id,
+  //         (node.data as model.AtomData).reference as model.Reference,
+  //       ])
+  //   )
+  // );
+  const references = {};
   const resources = useStore((state) => state.graph.resources);
   const setState = useStore((state) => state.setState);
   const [activeTab, setActiveTab] = useState("1");
-
-  const references = Object.fromEntries(
-    nodes
-      .filter((node) => model.isAtom(node) && node.data.reference)
-      .map((node) => [
-        node.id,
-        (node.data as model.AtomData).reference as model.Reference,
-      ])
-  );
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {

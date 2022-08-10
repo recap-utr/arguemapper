@@ -53,10 +53,10 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 
 const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
   const body = <div>{model.nodeLabel(node)}</div>;
-  const graph = useStore((state) => state.graph);
+  const majorClaim = useStore((state) => state.graph.majorClaim);
   let bg: string = color.blue[500];
 
-  if (graph.majorClaim === node.id) {
+  if (majorClaim === node.id) {
     bg = color.blue[900];
   }
 

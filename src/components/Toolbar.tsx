@@ -41,9 +41,6 @@ const Toolbar: React.FC<ToolbarProps> = () => {
     state.undoable,
     state.redoable,
   ]);
-  // const nodes = useStore((state) => state.nodes);
-  // const edges = useStore((state) => state.edges);
-  // const setState = useStore((state) => state.setState);
   const setShouldLayout = useStore((state) => state.setShouldLayout);
   const flow = useReactFlow();
 

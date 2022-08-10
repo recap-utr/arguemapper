@@ -11,13 +11,12 @@ export interface Props extends React.PropsWithChildren {
 }
 
 export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const nodes = useStore((state) => state.nodes);
-  const selection = useStore((state) => state.selection);
-  const setState = useStore((state) => state.setState);
-
-  const element = nodes.find(
-    (node) => node.id === selection.nodes[idx]
+  const selectedIndex = useStore((state) => state.selection.nodes[idx]);
+  const element = useStore(
+    (state) => state.nodes[selectedIndex]
   ) as model.AtomNode;
+
+  const setState = useStore((state) => state.setState);
 
   return (
     <>
@@ -30,9 +29,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         onChange={(event) => {
           setState(
             produce((draft: State) => {
-              const node = draft.nodes.find(
-                (node) => node.id === draft.selection.nodes[idx]
-              ) as model.AtomNode;
+              const node = draft.nodes[selectedIndex] as model.AtomNode;
               node.data.text = event.target.value;
             })
           );
@@ -47,9 +44,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         onChange={(event) => {
           setState(
             produce((draft: State) => {
-              const node = draft.nodes.find(
-                (node) => node.id === draft.selection.nodes[idx]
-              ) as model.AtomNode;
+              const node = draft.nodes[selectedIndex] as model.AtomNode;
 
               if (node.data.reference === undefined) {
                 node.data.reference = model.initReference({
