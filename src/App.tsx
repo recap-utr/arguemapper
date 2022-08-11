@@ -47,7 +47,9 @@ export default function App() {
     setState({ rightSidebarOpen: value });
   };
 
-  const flowStore = useFlowStore();
+  const resetSelectedElements = useFlowStore(
+    (state) => state.resetSelectedElements
+  );
 
   return (
     <Stack direction="row" sx={{ height: windowHeight }}>
@@ -84,7 +86,7 @@ export default function App() {
             if (isMobile) {
               setRightSidebarOpen(false);
             }
-            flowStore.resetSelectedElements();
+            resetSelectedElements();
           }}
         />
       </Sidebar>
