@@ -40,6 +40,7 @@ export default function Graph() {
     // state.redo,
     state.resetUndoRedo,
   ]);
+  const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const setState = useStore((state) => state.setState);
@@ -53,6 +54,7 @@ export default function Graph() {
     state.setShouldLayout,
   ]);
   const [shouldFit, setShouldFit] = useState(false);
+  const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
   // const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
 
@@ -330,6 +332,7 @@ export default function Graph() {
       minZoom={0.01}
       maxZoom={3}
       elevateEdgesOnSelect={true}
+      onlyRenderVisibleElements={onlyRenderVisibleElements}
       attributionPosition="bottom-center"
     >
       {/* <MiniMap
