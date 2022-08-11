@@ -8,13 +8,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
-  NodeDragHandler,
+  applyNodeChanges,
   OnConnect,
   OnEdgesChange,
   OnInit,
+  OnNodesChange,
   OnNodesDelete,
   OnSelectionChangeFunc,
-  useNodesState,
   useReactFlow,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
@@ -56,7 +56,7 @@ export default function Graph() {
   ]);
   const [shouldFit, setShouldFit] = useState(false);
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
-  const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
+  // const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
 
   useEffect(() => {
     if (firstVisit) {
@@ -114,11 +114,11 @@ export default function Graph() {
   useEffect(() => {
     if (
       shouldLayout &&
-      localNodes.length &&
-      localNodes.length > 0 &&
-      localNodes.every(nodeHasDimension)
+      nodes.length &&
+      nodes.length > 0 &&
+      nodes.every(nodeHasDimension)
     ) {
-      layout(localNodes, edges, layoutAlgorithm).then((layoutedNodes) => {
+      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
         resetUndoRedo();
         setShouldLayout(false);
@@ -130,7 +130,7 @@ export default function Graph() {
     shouldLayout,
     edges,
     setShouldLayout,
-    localNodes,
+    nodes,
     resetUndoRedo,
     layoutAlgorithm,
     setState,
@@ -148,34 +148,37 @@ export default function Graph() {
     }
   }, [redo, redoPressed]);
 
-  useEffect(() => {
-    setLocalNodes([...nodes]);
-  }, [nodes, setLocalNodes]);
+  // useEffect(() => {
+  //   setLocalNodes([...nodes]);
+  // }, [nodes, setLocalNodes]);
 
-  const onNodeDragStop: NodeDragHandler = useCallback(
-    (event: React.MouseEvent, node: model.Node, nodes: model.Node[]) => {
-      setState(
-        { nodes: localNodes }
-        // produce((draft: State) => {
-        //   draft.nodes.forEach((stateNode) => {
-        //     const draggedNode = nodes.find((n) => n.id === stateNode.id);
+  // const onNodeDragStop: NodeDragHandler = useCallback(
+  //   (event: React.MouseEvent, node: model.Node, nodes: model.Node[]) => {
+  //     setState(
+  //       { nodes: localNodes }
+  //       // produce((draft: State) => {
+  //       //   draft.nodes.forEach((stateNode) => {
+  //       //     const draggedNode = nodes.find((n) => n.id === stateNode.id);
 
-        //     if (draggedNode !== undefined) {
-        //       // Object.assign(stateNode, draggedNode);
-        //       stateNode.position = draggedNode.position;
-        //       stateNode.selected = draggedNode.selected;
-        //     }
-        //   });
-        // })
-      );
+  //       //     if (draggedNode !== undefined) {
+  //       //       // Object.assign(stateNode, draggedNode);
+  //       //       stateNode.position = draggedNode.position;
+  //       //       stateNode.selected = draggedNode.selected;
+  //       //     }
+  //       //   });
+  //       // })
+  //     );
+  //   },
+  //   [setState, localNodes]
+  // );
+
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+      // setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
     },
-    [setState, localNodes]
+    [setState]
   );
-
-  // const onNodesChange: OnNodesChange = useCallback((changes) => {
-  //   // setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
-  //   setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
-  // }, []);
 
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
@@ -274,7 +277,7 @@ export default function Graph() {
   return (
     <ReactFlow
       id="react-flow"
-      nodes={localNodes}
+      nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
@@ -283,7 +286,7 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onPaneContextMenu={onContextMenu}
-      onNodeDragStop={onNodeDragStop}
+      // onNodeDragStop={onNodeDragStop}
       onNodesDelete={onNodesDelete}
       onSelectionChange={onSelectionChange}
       selectNodesOnDrag={true}
