@@ -2,14 +2,13 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
 import { ConfirmProvider } from "material-ui-confirm";
 import { SnackbarProvider } from "notistack";
 import React from "react";
 import CacheBuster from "react-cache-buster";
 import { createRoot } from "react-dom/client";
 import { ReactFlowProvider } from "react-flow-renderer";
-import { useMedia } from "react-use";
 import { version as npmVersion } from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -29,7 +28,7 @@ function Layout() {
   // const [darkMode, setDarkMode] = useState(query.matches);
   // query.addEventListener("change", (e) => setDarkMode(e.matches));
 
-  const darkMode = useMedia("(prefers-color-scheme: dark)");
+  const darkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const isProduction = process.env.NODE_ENV === "production";
 
   return (
