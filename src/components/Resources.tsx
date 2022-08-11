@@ -31,7 +31,7 @@ const Resources: React.FC<Props> = () => {
         ])
     )
   );
-  const resources = useStore((state) => state.graph.resources);
+  const resourceIds = useStore((state) => Object.keys(state.graph.resources));
   const [activeTab, setActiveTab] = useState("1");
 
   const handleTabChange = useCallback(
@@ -49,7 +49,7 @@ const Resources: React.FC<Props> = () => {
     );
   }, [setState]);
 
-  const lastResourceIndex = (Object.keys(resources).length + 1).toString();
+  const lastResourceIndex = (resourceIds.length + 1).toString();
 
   return (
     <TabContext value={activeTab}>
@@ -59,7 +59,7 @@ const Resources: React.FC<Props> = () => {
           variant="scrollable"
           scrollButtons={true}
         >
-          {Object.keys(resources).map((key, index) => (
+          {resourceIds.map((key, index) => (
             <Tab
               key={index + 1}
               label={(index + 1).toString()}
@@ -74,14 +74,9 @@ const Resources: React.FC<Props> = () => {
           />
         </TabList>
       </Box>
-      {Object.entries(resources).map(([id, resource], index) => (
+      {resourceIds.map((id, index) => (
         <TabPanel key={index + 1} value={(index + 1).toString()}>
-          <Resource
-            id={id}
-            index={index + 1}
-            resource={resource}
-            references={references}
-          />
+          <Resource id={id} index={index + 1} references={references} />
         </TabPanel>
       ))}
       <TabPanel value={lastResourceIndex}>
@@ -100,17 +95,12 @@ const Resources: React.FC<Props> = () => {
 
 interface ResourceProps {
   id: string;
-  resource: model.Resource;
   index: number;
   references: { [k: string]: model.Reference };
 }
 
-const Resource: React.FC<ResourceProps> = ({
-  id,
-  resource,
-  index,
-  references,
-}) => {
+const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
+  const resource = useStore((state) => state.graph.resources[id]);
   const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
 
