@@ -1,4 +1,4 @@
-import { Stack, useTheme } from "@mui/material";
+import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import React, { ComponentType } from "react";
 import {
@@ -17,16 +17,18 @@ const MIN_HEIGHT = 50;
 
 const NodeHandle: React.FC<HandleProps> = (props) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const size = isMobile ? 15 : 10;
 
   return (
     <Handle
       {...props}
       style={{
-        width: 15,
-        height: 15,
+        width: size,
+        height: size,
         backgroundColor: color.grey[500],
         borderColor: theme.palette.text.primary,
-        borderWidth: 3,
+        borderWidth: size / 5,
       }}
     />
   );
