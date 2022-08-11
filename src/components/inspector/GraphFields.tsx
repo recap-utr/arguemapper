@@ -84,16 +84,14 @@ export const GraphFields: React.FC<Props> = () => {
         reader.onload = (e) => {
           if (e.target && typeof e.target.result === "string") {
             const parsedGraph = JSON.parse(e.target.result);
-            confirm().then(() => {
-              resetState(convert.importGraph(parsedGraph));
-            });
+            resetState(convert.importGraph(parsedGraph));
           }
         };
 
         reader.readAsText(event.target.files[0]);
       }
     },
-    [confirm, resetState]
+    [resetState]
   );
 
   const verifyAnalyst = useCallback(
@@ -157,9 +155,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
                 variant="contained"
                 onClick={() => {
-                  confirm().then(() => {
-                    resetState();
-                  });
+                  resetState();
                 }}
               >
                 Load Empty
@@ -168,9 +164,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFilePen} />}
                 variant="contained"
                 onClick={() => {
-                  confirm().then(() => {
-                    resetState(demoGraph());
-                  });
+                  resetState(demoGraph());
                 }}
               >
                 Load Demo

@@ -121,7 +121,7 @@ export default function Graph() {
     ) {
       layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
-        resetUndoRedo();
+        // resetUndoRedo();
         setShouldLayout(false);
         setShouldFit(true);
       });
