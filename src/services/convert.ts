@@ -14,7 +14,7 @@ export function importGraph(obj: any): model.Wrapper {
   if ("locutions" in obj) {
     return model.fromAif(obj);
   } else {
-    return model.fromProtobuf(obj);
+    return model.fromProtobuf(json2proto(obj));
   }
 }
 
