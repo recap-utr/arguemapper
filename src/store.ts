@@ -71,7 +71,11 @@ const useStore = create<State>()(
           undoable: () => (get().getState?.().prevStates.length ?? 0) > 0,
           redoable: () => (get().getState?.().futureStates.length ?? 0) > 0,
         }),
-        { include: ["nodes", "edges", "graph"], coolOffDurationMs: 1000 }
+        {
+          include: ["nodes", "edges", "graph"],
+          coolOffDurationMs: 1000,
+          historyDepthLimit: 100,
+        }
       ),
       {
         name: "state",
