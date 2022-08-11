@@ -128,16 +128,28 @@ class ErrorBoundary extends React.Component<Props, State> {
                 </Box>
               </Stack>
             )}
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => {
-                localStorage.clear();
-                window.location.reload();
-              }}
-            >
-              Clear cache and reload page
-            </Button>
+            <Stack direction="column" spacing={2}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  window.location.reload();
+                }}
+              >
+                Reload page
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+              >
+                Clear cache and reload page
+              </Button>
+            </Stack>
           </Stack>
         </Container>
       );
