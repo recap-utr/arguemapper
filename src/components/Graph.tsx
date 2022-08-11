@@ -17,7 +17,6 @@ import ReactFlow, {
   OnSelectionChangeFunc,
   useReactFlow,
 } from "react-flow-renderer";
-import useKeyboardJs from "react-use/lib/useKeyboardJs";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
@@ -31,16 +30,14 @@ import Toolbar from "./Toolbar";
 
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
-  const [undoPressed] = useKeyboardJs("mod + z");
-  const [redoPressed] = useKeyboardJs("mod + shift + z");
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const [undo, redo, resetUndoRedo] = useStore((state) => [
-    state.undo,
-    state.redo,
+  const [resetUndoRedo] = useStore((state) => [
+    // state.undo,
+    // state.redo,
     state.resetUndoRedo,
   ]);
   const nodes = useStore((state) => state.nodes);
@@ -58,6 +55,18 @@ export default function Graph() {
   const [shouldFit, setShouldFit] = useState(false);
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
   // const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
+
+  // useHotkeys("shift+z", () => {
+  //   if (typeof undo === "function") {
+  //     undo();
+  //   }
+  // });
+
+  // useHotkeys("shift+y", () => {
+  //   if (typeof redo === "function") {
+  //     redo();
+  //   }
+  // });
 
   useEffect(() => {
     if (firstVisit) {
@@ -136,18 +145,6 @@ export default function Graph() {
     layoutAlgorithm,
     setState,
   ]);
-
-  useEffect(() => {
-    if (undoPressed && undo !== undefined) {
-      undo();
-    }
-  }, [undo, undoPressed]);
-
-  useEffect(() => {
-    if (redoPressed && redo !== undefined) {
-      redo();
-    }
-  }, [redo, redoPressed]);
 
   // useEffect(() => {
   //   setLocalNodes([...nodes]);
