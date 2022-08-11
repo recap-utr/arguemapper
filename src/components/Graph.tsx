@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Stack } from "@mui/material";
+import { Button, IconButton, Stack, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import produce from "immer";
 import { useSnackbar } from "notistack";
@@ -24,7 +24,7 @@ import layout from "../services/layout";
 import useStore, { State } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
-import MarkerDefinition from "./Marker";
+import { Marker, MarkerDefinition } from "./Marker";
 import NodeTypes from "./NodeTypes";
 import PlusMenu from "./PlusMenu";
 import Toolbar from "./Toolbar";
@@ -36,6 +36,7 @@ export default function Graph() {
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const flow = useReactFlow();
+  const theme = useTheme();
 
   const [undo, redo, resetUndoRedo] = useStore((state) => [
     state.undo,
@@ -303,6 +304,7 @@ export default function Graph() {
       edgeTypes={EdgeTypes}
       minZoom={0.01}
       maxZoom={3}
+      elevateEdgesOnSelect={true}
       attributionPosition="bottom-center"
     >
       {/* <MiniMap
@@ -315,11 +317,13 @@ export default function Graph() {
         maskColor="#eee"
       /> */}
       {/* <Controls/> */}
-      <MarkerDefinition
-        id="arguemapper-marker"
-        color={color.grey[500]}
-        strokeWidth={2.5}
-      />
+      <MarkerDefinition>
+        <Marker id="arguemapper-marker" color={color.grey[500]} />
+        <Marker
+          id="arguemapper-marker-selected"
+          color={theme.palette.text.primary}
+        />
+      </MarkerDefinition>
       <Toolbar />
       <ContextMenu click={ctxMenu} setClick={setCtxMenu} />
       <PlusMenu plusButton={plusButton} setPlusButton={setPlusButton} />
