@@ -9,6 +9,7 @@ import ReactFlow, {
   applyEdgeChanges,
   applyNodeChanges,
   OnConnect,
+  OnConnectStart,
   OnEdgesChange,
   OnInit,
   OnNodesChange,
@@ -281,6 +282,32 @@ export default function Graph() {
     [setState]
   );
 
+  const onClickConnectStart: OnConnectStart = useCallback(
+    (event, params) => {
+      const { nodeId } = params;
+      setState(
+        produce((draft: State) => {
+          const node = draft.nodes.find((node) => node.id === nodeId);
+
+          if (node !== undefined) {
+            node.data.clickConnect = true;
+          }
+        })
+      );
+    },
+    [setState]
+  );
+
+  const onClickConnectStop = useCallback(() => {
+    setState(
+      produce((draft: State) => {
+        draft.nodes
+          .filter((node) => node.data.clickConnect)
+          .map((node) => (node.data.clickConnect = undefined));
+      })
+    );
+  }, [setState]);
+
   return (
     <ReactFlow
       id="react-flow"
@@ -298,6 +325,8 @@ export default function Graph() {
       onEdgeClick={onElementClick}
       onNodesDelete={onNodesDelete}
       onSelectionChange={onSelectionChange}
+      onClickConnectStart={onClickConnectStart}
+      onClickConnectStop={onClickConnectStop}
       selectNodesOnDrag={true}
       nodeTypes={NodeTypes}
       edgeTypes={EdgeTypes}

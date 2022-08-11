@@ -43,17 +43,18 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   children,
 }) => {
   const theme = useTheme();
+  const background = node.data.clickConnect ? color.orange[500] : bg;
 
   return (
     <Stack
       direction="column"
       justifyContent="center"
       sx={{
-        background: bg,
+        background,
         color: "white",
         padding: 1,
         borderRadius: 2,
-        borderColor: node.selected ? theme.palette.text.primary : bg,
+        borderColor: node.selected ? theme.palette.text.primary : background,
         borderStyle: "solid",
         borderWidth: 2,
         minWidth: MIN_WIDTH,

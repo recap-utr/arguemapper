@@ -291,6 +291,7 @@ const text2preference: { [k: string]: Preference } = {};
 export interface NodeData {
   metadata: meta.Metadata;
   userdata: JsonValue;
+  clickConnect?: boolean | undefined;
 }
 
 export interface AtomData extends NodeData {
