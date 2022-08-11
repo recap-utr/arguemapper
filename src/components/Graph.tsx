@@ -274,6 +274,13 @@ export default function Graph() {
       };
     });
 
+  const onElementClick = useCallback(
+    (event: React.MouseEvent, elem: model.Node | model.Edge) => {
+      setState({ rightSidebarOpen: true });
+    },
+    [setState]
+  );
+
   return (
     <ReactFlow
       id="react-flow"
@@ -287,6 +294,8 @@ export default function Graph() {
       onEdgeContextMenu={onContextMenu}
       onPaneContextMenu={onContextMenu}
       // onNodeDragStop={onNodeDragStop}
+      onNodeClick={onElementClick}
+      onEdgeClick={onElementClick}
       onNodesDelete={onNodesDelete}
       onSelectionChange={onSelectionChange}
       selectNodesOnDrag={true}
