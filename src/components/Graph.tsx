@@ -8,14 +8,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
-  applyNodeChanges,
   NodeDragHandler,
   OnConnect,
   OnEdgesChange,
   OnInit,
-  OnNodesChange,
   OnNodesDelete,
   OnSelectionChangeFunc,
+  useNodesState,
   useReactFlow,
 } from "react-flow-renderer";
 import useKeyboardJs from "react-use/lib/useKeyboardJs";
@@ -57,7 +56,7 @@ export default function Graph() {
   ]);
   const [shouldFit, setShouldFit] = useState(false);
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
-  const [localNodes, setLocalNodes] = useState<Array<model.Node>>([...nodes]);
+  const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
 
   useEffect(() => {
     if (firstVisit) {
@@ -151,29 +150,32 @@ export default function Graph() {
 
   useEffect(() => {
     setLocalNodes([...nodes]);
-  }, [nodes]);
+  }, [nodes, setLocalNodes]);
 
   const onNodeDragStop: NodeDragHandler = useCallback(
     (event: React.MouseEvent, node: model.Node, nodes: model.Node[]) => {
       setState(
-        produce((draft: State) => {
-          draft.nodes.forEach((stateNode) => {
-            const draggedNode = nodes.find((n) => n.id === stateNode.id);
+        { nodes: localNodes }
+        // produce((draft: State) => {
+        //   draft.nodes.forEach((stateNode) => {
+        //     const draggedNode = nodes.find((n) => n.id === stateNode.id);
 
-            if (draggedNode !== undefined) {
-              Object.assign(stateNode, draggedNode);
-            }
-          });
-        })
+        //     if (draggedNode !== undefined) {
+        //       // Object.assign(stateNode, draggedNode);
+        //       stateNode.position = draggedNode.position;
+        //       stateNode.selected = draggedNode.selected;
+        //     }
+        //   });
+        // })
       );
     },
-    [setState]
+    [setState, localNodes]
   );
 
-  const onNodesChange: OnNodesChange = useCallback((changes) => {
-    // setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
-    setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
-  }, []);
+  // const onNodesChange: OnNodesChange = useCallback((changes) => {
+  //   // setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+  //   setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
+  // }, []);
 
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
