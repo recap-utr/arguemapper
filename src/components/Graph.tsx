@@ -1,7 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, IconButton, Stack, useTheme } from "@mui/material";
-import * as color from "@mui/material/colors";
 import produce from "immer";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useState } from "react";
@@ -318,7 +317,7 @@ export default function Graph() {
       /> */}
       {/* <Controls/> */}
       <MarkerDefinition>
-        <Marker id="arguemapper-marker" color={color.grey[500]} />
+        <Marker id="arguemapper-marker" />
         <Marker
           id="arguemapper-marker-selected"
           color={theme.palette.text.primary}

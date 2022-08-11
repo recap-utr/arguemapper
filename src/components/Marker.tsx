@@ -1,6 +1,7 @@
 // https://github.com/wbkd/react-flow/issues/915#issuecomment-782581438
 // https://gist.github.com/ambroseus/2f1ea898f39e8460e49cd80c9b5e9f5c
 
+import * as muiColor from "@mui/material/colors";
 import React from "react";
 
 interface MarkerProps extends MarkerSymbolProps {
@@ -13,7 +14,7 @@ interface MarkerProps extends MarkerSymbolProps {
 export const Marker: React.FC<MarkerProps> = ({
   id,
   className = "react-flow__arrowhead",
-  color,
+  color = muiColor.grey[500],
   strokeWidth = 1,
   size = 15,
 }) => (
@@ -33,7 +34,7 @@ export const Marker: React.FC<MarkerProps> = ({
 );
 
 interface MarkerSymbolProps {
-  color: string;
+  color?: string;
   strokeWidth?: number;
 }
 

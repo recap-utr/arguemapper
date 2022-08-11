@@ -3,6 +3,7 @@ import * as color from "@mui/material/colors";
 import React, { ComponentType } from "react";
 import {
   Handle,
+  HandleProps,
   NodeProps,
   NodeTypes as FlowNodeTypes,
   Position,
@@ -13,6 +14,23 @@ import useStore from "../store";
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
 const MIN_HEIGHT = 50;
+
+const NodeHandle: React.FC<HandleProps> = (props) => {
+  const theme = useTheme();
+
+  return (
+    <Handle
+      {...props}
+      style={{
+        width: 15,
+        height: 15,
+        backgroundColor: color.grey[500],
+        borderColor: theme.palette.text.primary,
+        borderWidth: 3,
+      }}
+    />
+  );
+};
 
 interface NodeComponentProps extends React.PropsWithChildren {
   node: NodeProps<model.NodeData>;
@@ -44,9 +62,9 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
         textAlign: "center",
       }}
     >
-      <Handle type="source" position={Position.Top} />
+      <NodeHandle type="source" position={Position.Top} />
       {children}
-      <Handle type="target" position={Position.Bottom} />
+      <NodeHandle type="target" position={Position.Bottom} />
     </Stack>
   );
 };
