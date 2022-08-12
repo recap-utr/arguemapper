@@ -7,7 +7,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import produce from "immer";
-import React, { MouseEvent, useCallback } from "react";
+import React, { MouseEvent, useCallback, useMemo } from "react";
 import { useViewport } from "react-flow-renderer";
 import * as model from "../model";
 import useStore, { State } from "../store";
@@ -57,7 +57,7 @@ export interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   const { x, y } = useViewport();
   const setState = useStore((state) => state.setState);
-  const clickedType = model.elemType(click.target);
+  const clickedType = useMemo(() => model.elemType(click.target), [click]);
 
   const close = useCallback(() => {
     setClick(

@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useCallback } from "react";
 import useStore from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
@@ -21,26 +21,16 @@ interface Props {
 const Inspector: React.FC<Props> = ({ close }) => {
   const setState = useStore((state) => state.setState);
   const selectionType = useStore((state) => state.selection.type);
-
-  const deleteButton = (
-    <Button
-      color="error"
-      startIcon={<FontAwesomeIcon icon={faTrash} />}
-      variant="contained"
-      onClick={() => {
-        setState((state) => ({
-          nodes: state.nodes.filter(
-            (_node, idx) => !state.selection.nodes.includes(idx)
-          ),
-          edges: state.edges.filter(
-            (_edge, idx) => !state.selection.edges.includes(idx)
-          ),
-        }));
-      }}
-    >
-      Delete selection
-    </Button>
-  );
+  const onDelete = useCallback(() => {
+    setState((state) => ({
+      nodes: state.nodes.filter(
+        (_node, idx) => !state.selection.nodes.includes(idx)
+      ),
+      edges: state.edges.filter(
+        (_edge, idx) => !state.selection.edges.includes(idx)
+      ),
+    }));
+  }, [setState]);
 
   return (
     <>
@@ -75,7 +65,16 @@ const Inspector: React.FC<Props> = ({ close }) => {
             </Typography>
           </>
         )}
-        {selectionType !== "graph" && deleteButton}
+        {selectionType !== "graph" && (
+          <Button
+            color="error"
+            startIcon={<FontAwesomeIcon icon={faTrash} />}
+            variant="contained"
+            onClick={onDelete}
+          >
+            Delete selection
+          </Button>
+        )}
       </Stack>
     </>
   );

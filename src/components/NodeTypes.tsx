@@ -1,6 +1,6 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
-import React, { ComponentType } from "react";
+import React, { ComponentType, useMemo } from "react";
 import {
   Handle,
   HandleProps,
@@ -45,7 +45,14 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   children,
 }) => {
   const theme = useTheme();
-  const background = node.data.clickConnect ? color.orange[500] : bg;
+  const background = useMemo(
+    () => (node.data.clickConnect ? color.orange[500] : bg),
+    [node.data.clickConnect, bg]
+  );
+  const borderColor = useMemo(
+    () => (node.selected ? theme.palette.text.primary : background),
+    [background, node.selected, theme.palette.text.primary]
+  );
 
   return (
     <Stack
@@ -56,7 +63,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
         color: "white",
         padding: 1,
         borderRadius: 2,
-        borderColor: node.selected ? theme.palette.text.primary : background,
+        borderColor,
         borderStyle: "solid",
         borderWidth: 2,
         minWidth: MIN_WIDTH,
@@ -75,11 +82,14 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
   const body = <div>{model.nodeLabel(node)}</div>;
   const majorClaim = useStore((state) => state.graph.majorClaim);
-  let bg: string = color.blue[500];
 
-  if (majorClaim === node.id) {
-    bg = color.blue[900];
-  }
+  const bg = useMemo(() => {
+    if (majorClaim === node.id) {
+      return color.blue[900];
+    }
+
+    return color.blue[500];
+  }, [majorClaim, node.id]);
 
   return (
     <NodeComponent node={node} bg={bg}>
@@ -90,15 +100,18 @@ const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
 
 const SchemeComponent: ComponentType<NodeProps<model.SchemeData>> = (node) => {
   const body = <div>{model.nodeLabel(node)}</div>;
-  let bg: string = color.teal[500];
 
-  if (node.data.scheme !== undefined) {
-    if (node.data.scheme.type === model.SchemeType.SUPPORT) {
-      bg = color.green[500];
-    } else if (node.data.scheme.type === model.SchemeType.ATTACK) {
-      bg = color.red[500];
+  const bg = useMemo(() => {
+    if (node.data.scheme !== undefined) {
+      if (node.data.scheme.type === model.SchemeType.SUPPORT) {
+        return color.green[500];
+      } else if (node.data.scheme.type === model.SchemeType.ATTACK) {
+        return color.red[500];
+      }
     }
-  }
+
+    return color.teal[500];
+  }, [node.data.scheme]);
 
   return (
     <NodeComponent node={node} bg={bg}>

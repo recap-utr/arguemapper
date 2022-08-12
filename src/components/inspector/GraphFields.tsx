@@ -66,7 +66,7 @@ export const GraphFields: React.FC<Props> = () => {
     setAnalystCallback(undefined);
   };
 
-  const getState = () => {
+  const getState = useCallback(() => {
     const state = useStore.getState();
 
     return {
@@ -74,7 +74,7 @@ export const GraphFields: React.FC<Props> = () => {
       edges: state.edges,
       graph: state.graph,
     };
-  };
+  }, []);
 
   const upload: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (event) => {
