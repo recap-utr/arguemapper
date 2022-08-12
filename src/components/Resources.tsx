@@ -5,7 +5,7 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import produce from "immer";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useViewport } from "react-flow-renderer";
 // @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
@@ -49,7 +49,10 @@ const Resources: React.FC<Props> = () => {
     );
   }, [setState]);
 
-  const lastResourceIndex = (resourceIds.length + 1).toString();
+  const lastResourceIndex = useMemo(
+    () => (resourceIds.length + 1).toString(),
+    [resourceIds]
+  );
 
   return (
     <TabContext value={activeTab}>
