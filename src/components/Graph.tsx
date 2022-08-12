@@ -1,6 +1,13 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Stack, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  LinearProgress,
+  Stack,
+  useTheme,
+} from "@mui/material";
 import produce from "immer";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useState } from "react";
@@ -49,6 +56,13 @@ export default function Graph() {
     state.firstVisit,
     state.disableFirstVisit,
   ]);
+  const isLoading = useStore((state) => state.isLoading);
+  const setIsLoading = useCallback(
+    (value: boolean) => {
+      setState({ isLoading: value });
+    },
+    [setState]
+  );
   const [shouldLayout, setShouldLayout] = useStore((state) => [
     state.shouldLayout,
     state.setShouldLayout,
@@ -124,22 +138,39 @@ export default function Graph() {
   const nodeHasDimension = (el: model.Node) => el.width && el.height;
 
   useEffect(() => {
+    const domNode = document.querySelector(
+      "#react-flow .react-flow__renderer"
+    ) as HTMLElement | null;
+
+    if (domNode) {
+      if (isLoading) {
+        domNode.style.opacity = "0";
+      } else {
+        domNode.style.opacity = "1";
+      }
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
     if (
       shouldLayout &&
       nodes.length &&
       nodes.length > 0 &&
       nodes.every(nodeHasDimension)
     ) {
+      setIsLoading(true);
       layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
         // resetUndoRedo();
         setShouldLayout(false);
         setShouldFit(true);
+        setIsLoading(false);
       });
     }
   }, [
     setShouldFit,
     shouldLayout,
+    setIsLoading,
     edges,
     setShouldLayout,
     nodes,
@@ -236,8 +267,10 @@ export default function Graph() {
       if (resetUndoRedo !== undefined) {
         resetUndoRedo();
       }
+
+      setIsLoading(false);
     },
-    [resetUndoRedo]
+    [resetUndoRedo, setIsLoading]
   );
 
   const onContextMenu = (
@@ -335,6 +368,7 @@ export default function Graph() {
       onlyRenderVisibleElements={onlyRenderVisibleElements}
       attributionPosition="bottom-center"
     >
+      {false && <Loader />}
       {/* <MiniMap
         // style={}
         nodeStrokeColor=""
@@ -358,3 +392,11 @@ export default function Graph() {
     </ReactFlow>
   );
 }
+
+const Loader: React.FC = () => (
+  <Box position="absolute" zIndex={10} top={0} bottom={0} right={10} left={10}>
+    <Box position="relative" top="50%" sx={{ transform: "translateY(-50%)" }}>
+      <LinearProgress />
+    </Box>
+  </Box>
+);

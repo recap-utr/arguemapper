@@ -21,6 +21,7 @@ export interface State extends UndoState {
   disableFirstVisit: () => void;
   layoutAlgorithm: model.LayoutAlgorithm;
   shouldLayout: boolean;
+  isLoading: boolean;
   setShouldLayout: (value: boolean) => void;
   leftSidebarOpen: boolean | undefined;
   rightSidebarOpen: boolean | undefined;
@@ -48,6 +49,7 @@ const useStore = create<State>()(
           },
           layoutAlgorithm: model.LayoutAlgorithm.TREE,
           shouldLayout: false,
+          isLoading: true,
           setShouldLayout: (value) => {
             set({ shouldLayout: value });
           },
