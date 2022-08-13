@@ -1,4 +1,4 @@
-import { JsonValue } from "@protobuf-ts/runtime";
+import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import * as meta from "./metadata";
@@ -8,7 +8,7 @@ export interface Resource {
   title?: string;
   source?: string;
   metadata: meta.Metadata;
-  userdata: JsonValue;
+  userdata: JsonObject;
 }
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
   title?: string;
   source?: string;
   metadata?: meta.Metadata;
-  userdata?: JsonValue;
+  userdata?: JsonObject;
 }
 
 export function init({

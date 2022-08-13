@@ -1,4 +1,4 @@
-import { JsonValue } from "@protobuf-ts/runtime";
+import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import { startCase } from "lodash";
@@ -290,7 +290,7 @@ const text2preference: { [k: string]: Preference } = {};
 
 export interface NodeData {
   metadata: meta.Metadata;
-  userdata: JsonValue;
+  userdata: JsonObject;
   clickConnect?: boolean | undefined;
 }
 
@@ -303,7 +303,7 @@ export interface AtomData extends NodeData {
 export interface AtomProps {
   id?: string;
   metadata?: meta.Metadata;
-  userdata?: JsonValue;
+  userdata?: JsonObject;
   text: string;
   reference?: ref.Reference;
   participant?: string;
@@ -341,7 +341,7 @@ export interface SchemeData extends NodeData {
 export interface SchemeProps {
   id?: string;
   metadata?: meta.Metadata;
-  userdata?: JsonValue;
+  userdata?: JsonObject;
   scheme?: Scheme;
   premiseDescriptors?: Array<string>;
   position?: XYPosition;
@@ -391,10 +391,17 @@ export function label(node: Node | NodeProps<NodeData>): string {
 }
 
 export function toProtobuf(node: Node): arguebuf.Node {
+  const userdata: JsonObject = {
+    ...node.data.userdata,
+    arguebuf: {
+      position: { ...node.position },
+    },
+  };
+
   if (isAtom(node)) {
     return {
       metadata: meta.toProtobuf(node.data.metadata),
-      userdata: Struct.fromJson(node.data.userdata),
+      userdata: Struct.fromJson(userdata),
       type: {
         oneofKind: "atom",
         atom: arguebuf.Atom.create({
@@ -445,7 +452,7 @@ export function toProtobuf(node: Node): arguebuf.Node {
 
     return {
       metadata: meta.toProtobuf(node.data.metadata),
-      userdata: Struct.fromJson(node.data.userdata),
+      userdata: Struct.fromJson(userdata),
       type: {
         oneofKind: "scheme",
         scheme: arguebuf.Scheme.create({
@@ -548,22 +555,30 @@ export function fromAif(obj: aif.Node): Node | undefined {
 }
 
 export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
+  const metadata = obj.metadata
+    ? meta.fromProtobuf(obj.metadata)
+    : meta.init({});
+  const userdata = obj.userdata
+    ? (Struct.toJson(obj.userdata) as JsonObject)
+    : {};
+  const position = ((userdata.arguebuf as JsonObject | undefined)?.position as
+    | XYPosition
+    | undefined) ?? { x: 0, y: 0 };
+
   if (obj.type.oneofKind === "atom") {
     const node: AtomNode = {
       id,
       type: "atom",
       data: {
-        metadata: obj.metadata
-          ? meta.fromProtobuf(obj.metadata)
-          : meta.init({}),
-        userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+        metadata,
+        userdata,
         text: obj.type.atom.text,
         participant: obj.type.atom.participant,
         reference: obj.type.atom.reference
           ? ref.fromProtobuf(obj.type.atom.reference)
           : undefined,
       },
-      position: { x: 0, y: 0 },
+      position,
     };
 
     return node;
@@ -606,14 +621,12 @@ export function fromProtobuf(id: string, obj: arguebuf.Node): Node {
       id,
       type: "scheme",
       data: {
-        metadata: obj.metadata
-          ? meta.fromProtobuf(obj.metadata)
-          : meta.init({}),
-        userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+        metadata,
+        userdata,
         scheme,
         premiseDescriptors: obj.type.scheme.premiseDescriptors,
       },
-      position: { x: 0, y: 0 },
+      position,
     };
 
     return node;

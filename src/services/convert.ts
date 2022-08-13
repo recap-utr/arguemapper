@@ -1,4 +1,4 @@
-import { JsonValue } from "@protobuf-ts/runtime";
+import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/options";
@@ -18,11 +18,11 @@ export function importGraph(obj: any): model.Wrapper {
   }
 }
 
-export function proto2json(graph: arguebuf.Graph): JsonValue {
+export function proto2json(graph: arguebuf.Graph): JsonObject {
   return arguebuf.Graph.toJson(graph);
 }
 
-export function json2proto(graph: JsonValue): arguebuf.Graph {
+export function json2proto(graph: JsonObject): arguebuf.Graph {
   return arguebuf.Graph.fromJson(graph);
 }
 

@@ -1,4 +1,4 @@
-import { JsonValue } from "@protobuf-ts/runtime";
+import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import { Edge as FlowEdge } from "react-flow-renderer";
@@ -10,7 +10,7 @@ export type Edge = FlowEdge<EdgeData>;
 
 export interface EdgeData {
   metadata: meta.Metadata;
-  userdata: JsonValue;
+  userdata: JsonObject;
 }
 
 export interface Props {
@@ -18,7 +18,7 @@ export interface Props {
   source: string;
   target: string;
   metadata?: meta.Metadata;
-  userdata?: JsonValue;
+  userdata?: JsonObject;
 }
 
 export function init({ id, source, target, metadata, userdata }: Props): Edge {

@@ -60,7 +60,9 @@ const useStore = create<State>()(
               nodes: s.nodes,
               edges: s.edges,
               graph: s.graph,
-              shouldLayout: true,
+              shouldLayout: s.nodes.every(
+                (node) => node.position.x === 0 && node.position.y === 0
+              ),
             });
           },
           resetUndoRedo: () => {
