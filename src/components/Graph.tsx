@@ -137,19 +137,19 @@ export default function Graph() {
 
   const nodeHasDimension = (el: model.Node) => el.width && el.height;
 
-  useEffect(() => {
-    const domNode = document.querySelector(
-      "#react-flow .react-flow__renderer"
-    ) as HTMLElement | null;
+  // useEffect(() => {
+  //   const domNode = document.querySelector(
+  //     "#react-flow .react-flow__renderer"
+  //   ) as HTMLElement | null;
 
-    if (domNode) {
-      if (isLoading) {
-        domNode.style.opacity = "0";
-      } else {
-        domNode.style.opacity = "1";
-      }
-    }
-  }, [isLoading]);
+  //   if (domNode) {
+  //     if (isLoading) {
+  //       domNode.style.opacity = "0";
+  //     } else {
+  //       domNode.style.opacity = "1";
+  //     }
+  //   }
+  // }, [isLoading]);
 
   useEffect(() => {
     if (
