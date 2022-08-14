@@ -23,11 +23,13 @@ import {
   DialogContentText,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
   Stack,
   styled,
+  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -57,6 +59,7 @@ export const GraphFields: React.FC<Props> = () => {
   const flow = useReactFlow();
 
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+  const prettifyJson = useStore((state) => state.prettifyJson);
 
   // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
   const [analystCallback, setAnalystCallback] = useState<
@@ -344,6 +347,17 @@ export const GraphFields: React.FC<Props> = () => {
                     ))}
                 </Select>
               </FormControl>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={prettifyJson}
+                    onChange={(event) => {
+                      setState({ prettifyJson: event.target.checked });
+                    }}
+                  />
+                }
+                label="Prettify JSON"
+              />
               <Tooltip
                 title="If errors occur, you can clear your browser's cache and reload the page with this button"
                 describeChild

@@ -29,6 +29,7 @@ export interface State extends UndoState {
   resetUndoRedo: () => void;
   undoable: () => boolean;
   redoable: () => boolean;
+  prettifyJson: boolean;
 }
 
 const useStore = create<State>()(
@@ -74,6 +75,7 @@ const useStore = create<State>()(
           },
           undoable: () => (get().getState?.().prevStates.length ?? 0) > 0,
           redoable: () => (get().getState?.().futureStates.length ?? 0) > 0,
+          prettifyJson: true,
         }),
         {
           include: ["nodes", "edges", "graph"],

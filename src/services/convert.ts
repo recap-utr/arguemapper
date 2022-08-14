@@ -19,7 +19,7 @@ export function importGraph(obj: any): model.Wrapper {
 }
 
 export function proto2json(graph: arguebuf.Graph): JsonObject {
-  return arguebuf.Graph.toJson(graph);
+  return arguebuf.Graph.toJson(graph) as JsonObject;
 }
 
 export function json2proto(graph: JsonObject): arguebuf.Graph {
@@ -48,7 +48,8 @@ export function generateFilename() {
 
 // https://stackoverflow.com/a/55613750/7626878
 export async function downloadJson(data: any) {
-  const json = JSON.stringify(data);
+  const prettify = useStore.getState().prettifyJson;
+  const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
   const blob = new Blob([json], { type: "application/json" });
   downloadBlob(blob, ".json");
 }
