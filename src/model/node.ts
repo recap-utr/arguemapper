@@ -9,7 +9,7 @@ import * as aif from "./aif";
 import * as meta from "./metadata";
 import * as ref from "./reference";
 
-const NO_SCHEME_LABEL = "Unknown";
+const NO_SCHEME_LABEL = "Unknown Inference";
 
 export type Node = FlowNode<NodeData>;
 export type AtomNode = FlowNode<AtomData>;
