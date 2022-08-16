@@ -38,13 +38,19 @@ const Resources: React.FC<Props> = () => {
     (state) => Object.keys(state.graph.resources),
     dequal
   );
-  const [activeTab, setActiveTab] = useState("1");
+  const activeTab = useStore((state) => state.selectedResource);
+  const setActiveTab = useCallback(
+    (value: string) => {
+      setState({ selectedResource: value });
+    },
+    [setState]
+  );
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
       setActiveTab(newValue);
     },
-    []
+    [setActiveTab]
   );
 
   const addResource = useCallback(() => {

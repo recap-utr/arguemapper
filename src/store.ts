@@ -29,6 +29,7 @@ export interface State extends UndoState {
   undoable: () => boolean;
   redoable: () => boolean;
   prettifyJson: boolean;
+  selectedResource: string;
 }
 
 const useStore = create<State>()(
@@ -72,10 +73,11 @@ const useStore = create<State>()(
           undoable: () => (get().getState?.().prevStates.length ?? 0) > 0,
           redoable: () => (get().getState?.().futureStates.length ?? 0) > 0,
           prettifyJson: true,
+          selectedResource: "1",
         }),
         {
-          include: ["nodes", "edges", "graph"],
-          coolOffDurationMs: 1000,
+          include: ["nodes", "edges", "graph", "selectedResource"],
+          coolOffDurationMs: 200,
           historyDepthLimit: 100,
         }
       ),
@@ -110,6 +112,7 @@ const useStore = create<State>()(
           layoutAlgorithm: state.layoutAlgorithm,
           leftSidebarOpen: state.leftSidebarOpen,
           rightSidebarOpen: state.rightSidebarOpen,
+          selectedResource: state.selectedResource,
         }),
       }
     )
