@@ -153,8 +153,6 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           const lastIndex = merged.length - 1;
           const [prevStart, prevEnd] = merged[lastIndex];
 
-          console.log(`${nextStart},${nextEnd}; ${prevStart},${prevEnd}`);
-
           if (nextStart > prevEnd) {
             merged.push([nextStart, nextEnd]);
           } else if (nextEnd > prevEnd) {
