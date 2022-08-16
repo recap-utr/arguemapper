@@ -40,7 +40,7 @@
     "zustand": "^4.0.0"
   },
   "scripts": {
-    "start": "vite",
+    "start": "vite --open",
     "preview": "vite preview",
     "build": "npm run generate-meta-tag && tsc && vite build",
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
