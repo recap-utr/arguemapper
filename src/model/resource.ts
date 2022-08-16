@@ -51,6 +51,6 @@ export function fromProtobuf(obj: arguebuf.Resource): Resource {
     title: obj.title,
     source: obj.source,
     metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+    userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
   };
 }

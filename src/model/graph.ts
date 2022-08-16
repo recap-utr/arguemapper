@@ -100,6 +100,6 @@ export function fromProtobuf(
     libraryVersion: obj.libraryVersion,
     schemaVersion: obj.schemaVersion,
     metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+    userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
   };
 }

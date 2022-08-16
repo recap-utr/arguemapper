@@ -70,7 +70,7 @@ export function fromProtobuf(id: string, obj: arguebuf.Edge): Edge {
     target: obj.target,
     data: {
       metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-      userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+      userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
     },
   };
 }

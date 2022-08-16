@@ -69,6 +69,6 @@ export function fromProtobuf(obj: arguebuf.Participant): Participant {
     location: obj.location,
     description: obj.description,
     metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+    userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
   };
 }

@@ -34,6 +34,6 @@ export function fromProtobuf(obj: arguebuf.Analyst): Analyst {
   return {
     name: obj.name,
     email: obj.email,
-    userdata: obj.userdata ? Struct.toJson(obj.userdata) : {},
+    userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
   };
 }
