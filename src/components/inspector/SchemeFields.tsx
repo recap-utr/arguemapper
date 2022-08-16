@@ -1,4 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { dequal } from "dequal";
 import produce from "immer";
 import { startCase } from "lodash";
 import React from "react";
@@ -15,8 +16,9 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const setState = useStore((state) => state.setState);
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
-    (state) => state.nodes[selectedIndex]
-  ) as model.SchemeNode;
+    (state) => state.nodes[selectedIndex] as model.SchemeNode,
+    dequal
+  );
   const schemeType = element.data.scheme?.type ?? NULL_VALUE;
 
   return (

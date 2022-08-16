@@ -41,7 +41,13 @@ const Toolbar: React.FC<ToolbarProps> = () => {
     state.undoable,
     state.redoable,
   ]);
-  const setShouldLayout = useStore((state) => state.setShouldLayout);
+  const setState = useStore((state) => state.setState);
+  const setShouldLayout = useCallback(
+    (value: boolean) => {
+      setState({ shouldLayout: value });
+    },
+    [setState]
+  );
   const flow = useReactFlow();
 
   const onLayout = useCallback(() => {

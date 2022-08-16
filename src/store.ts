@@ -22,7 +22,6 @@ export interface State extends UndoState {
   layoutAlgorithm: model.LayoutAlgorithm;
   shouldLayout: boolean;
   isLoading: boolean;
-  setShouldLayout: (value: boolean) => void;
   leftSidebarOpen: boolean | undefined;
   rightSidebarOpen: boolean | undefined;
   selection: model.Selection;
@@ -51,9 +50,6 @@ const useStore = create<State>()(
           layoutAlgorithm: model.LayoutAlgorithm.TREE,
           shouldLayout: false,
           isLoading: true,
-          setShouldLayout: (value) => {
-            set({ shouldLayout: value });
-          },
           selection: model.initSelection(),
           resetState: (preset) => {
             const s = preset ?? model.initWrapper({});

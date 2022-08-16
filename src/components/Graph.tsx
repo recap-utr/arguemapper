@@ -64,10 +64,13 @@ export default function Graph() {
     },
     [setState]
   );
-  const [shouldLayout, setShouldLayout] = useStore((state) => [
-    state.shouldLayout,
-    state.setShouldLayout,
-  ]);
+  const shouldLayout = useStore((state) => state.shouldLayout);
+  const setShouldLayout = useCallback(
+    (value: boolean) => {
+      setState({ shouldLayout: value });
+    },
+    [setState]
+  );
   const [shouldFit, setShouldFit] = useState(false);
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
