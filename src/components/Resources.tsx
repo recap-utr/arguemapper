@@ -4,6 +4,7 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
+import { dequal } from "dequal";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { useViewport } from "react-flow-renderer";
@@ -21,17 +22,22 @@ interface Props {}
 
 const Resources: React.FC<Props> = () => {
   const setState = useStore((state) => state.setState);
-  const references = useStore((state) =>
-    Object.fromEntries(
-      state.nodes
-        .filter((node) => model.isAtom(node) && node.data.reference)
-        .map((node) => [
-          node.id,
-          (node.data as model.AtomData).reference as model.Reference,
-        ])
-    )
+  const references = useStore(
+    (state) =>
+      Object.fromEntries(
+        state.nodes
+          .filter((node) => model.isAtom(node) && node.data.reference)
+          .map((node) => [
+            node.id,
+            (node.data as model.AtomData).reference as model.Reference,
+          ])
+      ),
+    dequal
   );
-  const resourceIds = useStore((state) => Object.keys(state.graph.resources));
+  const resourceIds = useStore(
+    (state) => Object.keys(state.graph.resources),
+    dequal
+  );
   const [activeTab, setActiveTab] = useState("1");
 
   const handleTabChange = useCallback(
