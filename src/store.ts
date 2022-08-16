@@ -54,7 +54,7 @@ const useStore = create<State>()(
           setShouldLayout: (value) => {
             set({ shouldLayout: value });
           },
-          selection: { nodes: [], edges: [], type: "graph" },
+          selection: model.initSelection(),
           resetState: (preset) => {
             const s = preset ?? model.initWrapper({});
             set({

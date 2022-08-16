@@ -149,6 +149,9 @@ export const selectionType = (
   return "multiple";
 };
 
+export const initSelection = () =>
+  ({ nodes: [], edges: [], type: "graph" } as Selection);
+
 export enum LayoutAlgorithm {
   LAYERED = "layered",
   TREE = "tree",

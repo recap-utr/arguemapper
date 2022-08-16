@@ -18,6 +18,7 @@ import ReactFlow, {
   OnConnect,
   OnConnectStart,
   OnEdgesChange,
+  OnEdgesDelete,
   OnInit,
   OnNodesChange,
   OnNodesDelete,
@@ -255,6 +256,17 @@ export default function Graph() {
       const deletedNodeIds = deletedNodes.map((node) => node.id);
       setState((state) => ({
         nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+        selection: model.initSelection(),
+      }));
+    },
+    [setState]
+  );
+  const onEdgesDelete: OnEdgesDelete = useCallback(
+    (deletedEdges) => {
+      const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
+      setState((state) => ({
+        edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
+        selection: model.initSelection(),
       }));
     },
     [setState]
@@ -356,6 +368,7 @@ export default function Graph() {
       onNodeClick={onElementClick}
       onEdgeClick={onElementClick}
       onNodesDelete={onNodesDelete}
+      onEdgesDelete={onEdgesDelete}
       onSelectionChange={onSelectionChange}
       onClickConnectStart={onClickConnectStart}
       onClickConnectStop={onClickConnectStop}
