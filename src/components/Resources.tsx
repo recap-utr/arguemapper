@@ -124,21 +124,48 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
 
   const highlight = useCallback(
     (text: string, callback: (start: number, end: number) => void) => {
-      const filteredReferences = Object.values(references).filter(
-        (reference) => reference.resource === id
-      );
+      const raw = Object.values(references)
+        .filter((ref) => ref.resource === id)
+        .map((ref) => {
+          const start = ref.offset;
+          const end = start !== undefined ? start + ref.text.length : undefined;
 
-      for (const reference of filteredReferences) {
-        const start = reference.offset;
-
-        if (start !== undefined) {
-          const end = start + reference.text.length;
-
-          if (end && text.substring(start, end) === reference.text) {
-            callback(start, end);
+          if (
+            start !== undefined &&
+            end !== undefined &&
+            text.substring(start, end) === ref.text
+          ) {
+            return [start, end];
           }
-        }
+
+          return undefined;
+        })
+        .filter((entry): entry is number[] => entry !== undefined)
+        .sort((a, b) => a[0] - b[0]);
+
+      const merged = [] as number[][];
+      const firstHighlight = raw.shift();
+
+      if (firstHighlight !== undefined) {
+        merged.push(firstHighlight);
+
+        raw.forEach(([nextStart, nextEnd]) => {
+          const lastIndex = merged.length - 1;
+          const [prevStart, prevEnd] = merged[lastIndex];
+
+          console.log(`${nextStart},${nextEnd}; ${prevStart},${prevEnd}`);
+
+          if (nextStart > prevEnd) {
+            merged.push([nextStart, nextEnd]);
+          } else if (nextEnd > prevEnd) {
+            merged[lastIndex] = [prevStart, nextEnd];
+          }
+        });
       }
+
+      merged.forEach(([start, end]) => {
+        callback(start, end);
+      });
     },
     [id, references]
   );
