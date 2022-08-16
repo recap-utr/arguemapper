@@ -10,8 +10,8 @@
     "@fortawesome/free-regular-svg-icons": "^6.1.2",
     "@fortawesome/free-solid-svg-icons": "^6.1.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/lab": "^5.0.0-alpha.94",
-    "@mui/material": "^5.10.0",
+    "@mui/lab": "^5.0.0-alpha.95",
+    "@mui/material": "^5.10.1",
     "arg-services": "^0.3.9",
     "date-fns": "^2.29.1",
     "dequal": "^2.0.3",
@@ -29,7 +29,7 @@
     "react": "^18.2.0",
     "react-cache-buster": "^0.1.6",
     "react-dom": "^18.2.0",
-    "react-flow-renderer": "^10.3.14",
+    "react-flow-renderer": "^10.3.15",
     "react-highlight-within-textarea": "^2.2.0",
     "react-hotkeys-hook": "^3.4.7",
     "text-metrics": "^3.0.0",
@@ -61,7 +61,7 @@
   "devDependencies": {
     "@types/jest": "^28.1.7",
     "@types/lodash": "^4.14.182",
-    "@types/node": "^18.7.5",
+    "@types/node": "^18.7.6",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^8.3.4",
@@ -69,7 +69,7 @@
     "eslint": "^8.22.0",
     "eslint-config-react-app": "^7.0.1",
     "vite": "^3.0.8",
-    "vite-plugin-eslint": "^1.8.0",
+    "vite-plugin-eslint": "^1.8.1",
     "web-worker": "^1.2.0"
   }
 }
