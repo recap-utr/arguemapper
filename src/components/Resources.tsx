@@ -8,7 +8,6 @@ import { dequal } from "dequal";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { useViewport } from "react-flow-renderer";
-// @ts-ignore
 import { HighlightWithinTextarea } from "react-highlight-within-textarea";
 import * as model from "../model";
 import useStore, { State } from "../store";
