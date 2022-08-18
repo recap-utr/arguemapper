@@ -53,10 +53,10 @@ export default function Graph() {
   const edges = useStore((state) => state.edges);
   const setState = useStore((state) => state.setState);
   const resetState = useStore((state) => state.resetState);
-  const [firstVisit, disableFirstVisit] = useStore((state) => [
-    state.firstVisit,
-    state.disableFirstVisit,
-  ]);
+  const firstVisit = useStore((state) => state.firstVisit);
+  const disableFirstVisit = useCallback(() => {
+    setState({ firstVisit: false });
+  }, [setState]);
   const isLoading = useStore((state) => state.isLoading);
   const setIsLoading = useCallback(
     (value: boolean) => {
@@ -139,7 +139,10 @@ export default function Graph() {
     }
   }, [shouldFit, setShouldFit, flow]);
 
-  const nodeHasDimension = (el: model.Node) => el.width && el.height;
+  const nodeHasDimension = useCallback(
+    (el: model.Node) => el.width && el.height,
+    []
+  );
 
   // useEffect(() => {
   //   const domNode = document.querySelector(
@@ -156,31 +159,31 @@ export default function Graph() {
   // }, [isLoading]);
 
   useEffect(() => {
-    if (
-      shouldLayout &&
-      nodes.length &&
-      nodes.length > 0 &&
-      nodes.every(nodeHasDimension)
-    ) {
-      setIsLoading(true);
-      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
-        setState({ nodes: layoutedNodes });
-        // resetUndoRedo();
-        setShouldLayout(false);
-        setShouldFit(true);
-        setIsLoading(false);
-      });
+    if (shouldLayout && numberOfNodes > 0) {
+      const prevNodes = useStore.getState().nodes;
+
+      if (prevNodes.every(nodeHasDimension)) {
+        const prevEdges = useStore.getState().edges;
+
+        setIsLoading(true);
+        layout(prevNodes, prevEdges, layoutAlgorithm).then((layoutedNodes) => {
+          setState({ nodes: layoutedNodes });
+          // resetUndoRedo();
+          setShouldLayout(false);
+          setShouldFit(true);
+          setIsLoading(false);
+        });
+      }
     }
   }, [
     setShouldFit,
     shouldLayout,
     setIsLoading,
-    edges,
     setShouldLayout,
-    nodes,
-    resetUndoRedo,
     layoutAlgorithm,
     setState,
+    numberOfNodes,
+    nodeHasDimension,
   ]);
 
   // useEffect(() => {
@@ -224,8 +227,9 @@ export default function Graph() {
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      const source = nodes.find((node) => node.id === connection.source);
-      const target = nodes.find((node) => node.id === connection.target);
+      const prevNodes = useStore.getState().nodes;
+      const source = prevNodes.find((node) => node.id === connection.source);
+      const target = prevNodes.find((node) => node.id === connection.target);
 
       if (source && target && model.isAtom(source) && model.isAtom(target)) {
         const schemePos = {
@@ -251,7 +255,7 @@ export default function Graph() {
         }));
       }
     },
-    [nodes, setState]
+    [setState]
   );
 
   const onNodesDelete: OnNodesDelete = useCallback(
@@ -299,28 +303,31 @@ export default function Graph() {
     });
   };
 
-  const onSelectionChange: OnSelectionChangeFunc = (elems) =>
-    setState((state) => {
-      const partialSelection = {
-        nodes: elems.nodes.map((selectedNode) =>
-          state.nodes.findIndex((node) => node.id === selectedNode.id)
-        ),
-        edges: elems.edges.map((selectedEdge) =>
-          state.edges.findIndex((edge) => edge.id === selectedEdge.id)
-        ),
-      };
+  const onSelectionChange: OnSelectionChangeFunc = useCallback(
+    (elems) =>
+      setState((state) => {
+        const partialSelection = {
+          nodes: elems.nodes.map((selectedNode) =>
+            state.nodes.findIndex((node) => node.id === selectedNode.id)
+          ),
+          edges: elems.edges.map((selectedEdge) =>
+            state.edges.findIndex((edge) => edge.id === selectedEdge.id)
+          ),
+        };
 
-      const nodeTypes = elems.nodes.map(
-        (node) => node.type as "scheme" | "atom"
-      );
+        const nodeTypes = elems.nodes.map(
+          (node) => node.type as "scheme" | "atom"
+        );
 
-      return {
-        selection: {
-          ...partialSelection,
-          type: model.selectionType(partialSelection, nodeTypes),
-        },
-      };
-    });
+        return {
+          selection: {
+            ...partialSelection,
+            type: model.selectionType(partialSelection, nodeTypes),
+          },
+        };
+      }),
+    [setState]
+  );
 
   const onElementClick = useCallback(
     (event: React.MouseEvent, elem: model.Node | model.Edge) => {
