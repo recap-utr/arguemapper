@@ -8,14 +8,12 @@ import { dequal } from "dequal";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import { useViewport } from "react-flow-renderer";
-import { HighlightWithinTextarea } from "react-highlight-within-textarea";
+import {
+  HighlightWithinTextarea,
+  Selection as TextSelection,
+} from "react-highlight-within-textarea";
 import * as model from "../model";
 import useStore, { State } from "../store";
-
-interface TextSelection {
-  anchor: number;
-  focus: number;
-}
 
 interface Props {}
 
@@ -118,10 +116,9 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const setState = useStore((state) => state.setState);
   const { x, y } = useViewport();
 
-  const [userSelection, setUserSelection] = useState<TextSelection>({
-    anchor: 0,
-    focus: 0,
-  });
+  const [userSelection, setUserSelection] = useState<TextSelection>(
+    new TextSelection(0, 0)
+  );
 
   const [systemSelection, setSystemSelection] = useState<
     TextSelection | undefined
@@ -175,11 +172,12 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
 
   const onChange = useCallback(
     (value: string, selection?: TextSelection) => {
+      setSystemSelection(undefined);
+
       if (selection !== undefined && value === resource.text) {
         const start = Math.min(selection.anchor, selection.focus);
         const end = Math.max(selection.anchor, selection.focus);
-        setUserSelection({ anchor: start, focus: end });
-        setSystemSelection(undefined);
+        setUserSelection(new TextSelection(start, end));
       } else {
         setState(
           produce((draft: State) => {
