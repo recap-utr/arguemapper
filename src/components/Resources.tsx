@@ -114,6 +114,7 @@ interface ResourceProps {
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
   const setState = useStore((state) => state.setState);
+  const selection = useStore((state) => state.selection);
   const { x, y } = useViewport();
 
   const [userSelection, setUserSelection] = useState<TextSelection>(
@@ -126,6 +127,25 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
 
   const highlight = useCallback(
     (text: string, callback: (start: number, end: number) => void) => {
+      if (selection.type === "atom") {
+        const selectedAtom = useStore.getState().nodes[
+          selection.nodes[0]
+        ] as model.AtomNode;
+        const selectedReference = selectedAtom.data.reference;
+
+        if (
+          selectedReference !== undefined &&
+          selectedReference.offset !== undefined &&
+          selectedReference.text.length > 0
+        ) {
+          callback(
+            selectedReference.offset,
+            selectedReference.offset + selectedReference.text.length
+          );
+          return;
+        }
+      }
+
       const raw = Object.values(references)
         .filter((ref) => ref.resource === id)
         .map((ref) => {
@@ -167,7 +187,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         callback(start, end);
       });
     },
-    [id, references]
+    [id, references, selection]
   );
 
   const onChange = useCallback(
