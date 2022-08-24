@@ -159,21 +159,15 @@ export default function Graph() {
   // }, [isLoading]);
 
   useEffect(() => {
-    if (shouldLayout && numberOfNodes > 0) {
-      const prevNodes = useStore.getState().nodes;
-
-      if (prevNodes.every(nodeHasDimension)) {
-        const prevEdges = useStore.getState().edges;
-
-        setIsLoading(true);
-        layout(prevNodes, prevEdges, layoutAlgorithm).then((layoutedNodes) => {
-          setState({ nodes: layoutedNodes });
-          // resetUndoRedo();
-          setShouldLayout(false);
-          setShouldFit(true);
-          setIsLoading(false);
-        });
-      }
+    if (shouldLayout && nodes.length > 0 && nodes.every(nodeHasDimension)) {
+      setIsLoading(true);
+      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
+        setState({ nodes: layoutedNodes });
+        // resetUndoRedo();
+        setShouldLayout(false);
+        setShouldFit(true);
+        setIsLoading(false);
+      });
     }
   }, [
     setShouldFit,
@@ -182,7 +176,8 @@ export default function Graph() {
     setShouldLayout,
     layoutAlgorithm,
     setState,
-    numberOfNodes,
+    nodes,
+    edges,
     nodeHasDimension,
   ]);
 
@@ -227,19 +222,27 @@ export default function Graph() {
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      const prevNodes = useStore.getState().nodes;
-      const source = prevNodes.find((node) => node.id === connection.source);
-      const target = prevNodes.find((node) => node.id === connection.target);
+      setState(
+        produce((draft: State) => {
+          const source = draft.nodes.find(
+            (node) => node.id === connection.source
+          );
+          const target = draft.nodes.find(
+            (node) => node.id === connection.target
+          );
 
-      if (source && target && model.isAtom(source) && model.isAtom(target)) {
-        const schemePos = {
-          x: (source.position.x + target.position.x) / 2,
-          y: (source.position.y + target.position.y) / 2,
-        };
-        const scheme = model.initScheme({ position: schemePos });
+          if (
+            source &&
+            target &&
+            model.isAtom(source) &&
+            model.isAtom(target)
+          ) {
+            const schemePos = {
+              x: (source.position.x + target.position.x) / 2,
+              y: (source.position.y + target.position.y) / 2,
+            };
+            const scheme = model.initScheme({ position: schemePos });
 
-        setState(
-          produce((draft: State) => {
             draft.nodes.push(scheme);
             draft.edges.push(
               model.initEdge({ source: source.id, target: scheme.id })
@@ -247,13 +250,11 @@ export default function Graph() {
             draft.edges.push(
               model.initEdge({ source: scheme.id, target: target.id })
             );
-          })
-        );
-      } else {
-        setState((state) => ({
-          edges: addEdge(connection, state.edges),
-        }));
-      }
+          } else {
+            draft.edges = addEdge(connection, draft.edges);
+          }
+        })
+      );
     },
     [setState]
   );
