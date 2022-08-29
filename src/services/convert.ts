@@ -1,7 +1,7 @@
 import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { toJpeg, toPng } from "html-to-image";
-import { Options as ImgOptions } from "html-to-image/lib/options";
+import { Options as ImgOptions } from "html-to-image/lib/types";
 import { v1 as uuid } from "uuid";
 import * as model from "../model";
 import { toProtobuf as analystToProtobuf } from "../model/analyst";
@@ -80,7 +80,7 @@ export const downloadImage = async (format: ImgFormat) => {
       quality: 1.0,
       pixelRatio: 3,
       // https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
-      filter: (domNode) => {
+      filter: (domNode: HTMLElement) => {
         const classList = domNode.classList
           ? Array.from(domNode.classList)
           : [];
