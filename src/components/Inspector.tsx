@@ -1,8 +1,10 @@
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Button,
   IconButton,
+  Link,
   Stack,
   Toolbar,
   Tooltip,
@@ -75,6 +77,16 @@ const Inspector: React.FC<Props> = ({ close }) => {
             Delete selection
           </Button>
         )}
+        <Tooltip describeChild title="Open GitHub repository">
+          <IconButton
+            component={Link}
+            href="https://github.com/recap-utr/arguemapper"
+            target="_blank"
+            sx={{ ":hover": { backgroundColor: "transparent" } }}
+          >
+            <FontAwesomeIcon icon={faGithub} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </>
   );
