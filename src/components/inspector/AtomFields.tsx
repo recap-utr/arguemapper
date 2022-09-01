@@ -18,6 +18,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
     (state) => state.nodes[selectedIndex] as model.AtomNode,
     dequal
   );
+  const majorClaim = useStore((state) => state.graph.majorClaim);
 
   return (
     <>
@@ -64,12 +65,13 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         onClick={() => {
           setState(
             produce((draft: State) => {
-              draft.graph.majorClaim = element.id;
+              draft.graph.majorClaim =
+                majorClaim !== element.id ? element.id : undefined;
             })
           );
         }}
       >
-        Set as Major Claim
+        {majorClaim !== element.id ? "Set as Major Claim" : "Unset Major Claim"}
       </Button>
       {children}
     </>

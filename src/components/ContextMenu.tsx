@@ -58,6 +58,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   const { x, y } = useViewport();
   const setState = useStore((state) => state.setState);
   const clickedType = useMemo(() => model.elemType(click.target), [click]);
+  const majorClaim = useStore((state) => state.graph.majorClaim);
 
   const close = useCallback(() => {
     setClick(
@@ -102,13 +103,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
           const target = click.target as model.AtomNode;
           setState(
             produce((draft: State) => {
-              draft.graph.majorClaim = target.id;
+              draft.graph.majorClaim =
+                majorClaim !== target.id ? target.id : undefined;
             })
           );
         }}
         close={close}
         icon={faCommentDots}
-        text="Set as Major Claim"
+        text={
+          showFor("atom") && majorClaim !== (click.target as model.AtomNode).id
+            ? "Set as Major Claim"
+            : "Unset Major Claim"
+        }
       />
       <Item
         visible={showFor(["atom", "scheme", "edge"])}
