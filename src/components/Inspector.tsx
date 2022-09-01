@@ -77,6 +77,31 @@ const Inspector: React.FC<Props> = ({ close }) => {
             Delete selection
           </Button>
         )}
+        {/* <Button
+          variant="contained"
+          onClick={() => {
+            const transport = new GrpcWebFetchTransport({
+              baseUrl: "http://envoy:5000",
+            });
+            const client = new nlpClient.NlpServiceClient(transport);
+            const { response } = client.similarities({
+              config: {
+                language: "en",
+                spacyModel: "en_core_web_lg",
+                embeddingModels: [],
+                similarityMethod: nlp.SimilarityMethod.COSINE,
+              },
+              textTuples: [
+                { text1: "We are going to berlin", text2: "Eating is fun" },
+              ],
+            });
+            response.then((value) => {
+              console.log(value.similarities);
+            });
+          }}
+        >
+          gRPC
+        </Button> */}
         <Tooltip describeChild title="Open GitHub repository">
           <IconButton
             component={Link}
