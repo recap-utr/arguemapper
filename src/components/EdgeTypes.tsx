@@ -2,13 +2,20 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import { ComponentType, useMemo } from "react";
 import {
+  BezierEdge,
   EdgeProps,
   EdgeTypes as FlowEdgeTypes,
+  SimpleBezierEdge,
   SmoothStepEdge,
+  StepEdge,
+  StraightEdge,
 } from "reactflow";
+import * as model from "../model";
+import useStore from "../store";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;
+  const edgeStyle = useStore((state) => state.edgeStyle);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const strokeColor = useMemo(
@@ -20,14 +27,24 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
     [selected]
   );
   const size = isMobile ? 5 : 2.5;
+  const extendedProps: EdgeProps = {
+    ...props,
+    style: { stroke: strokeColor, strokeWidth: size },
+    markerEnd: `url(#${markerId})`,
+  };
 
-  return (
-    <SmoothStepEdge
-      {...props}
-      style={{ stroke: strokeColor, strokeWidth: size }}
-      markerEnd={`url(#${markerId})`}
-    />
-  );
+  switch (edgeStyle) {
+    case model.EdgeStyle.BEZIER:
+      return <BezierEdge {...extendedProps} />;
+    case model.EdgeStyle.SIMPLE_BEZIER:
+      return <SimpleBezierEdge {...extendedProps} />;
+    case model.EdgeStyle.SMOOTH_STEP:
+      return <SmoothStepEdge {...extendedProps} />;
+    case model.EdgeStyle.STEP:
+      return <StepEdge {...extendedProps} />;
+    case model.EdgeStyle.STRAIGHT:
+      return <StraightEdge {...extendedProps} />;
+  }
 };
 
 const EdgeTypes: FlowEdgeTypes = {

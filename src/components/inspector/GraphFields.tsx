@@ -59,6 +59,7 @@ export const GraphFields: React.FC<Props> = () => {
   const flow = useReactFlow();
 
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+  const edgeStyle = useStore((state) => state.edgeStyle);
   const prettifyJson = useStore((state) => state.prettifyJson);
 
   // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
@@ -343,6 +344,26 @@ export const GraphFields: React.FC<Props> = () => {
                     .map((alg) => (
                       <MenuItem key={alg} value={alg}>
                         {startCase(alg)}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel>Edge Type</InputLabel>
+                <Select
+                  value={edgeStyle}
+                  label="Edge Type"
+                  onChange={(event) => {
+                    setState({
+                      edgeStyle: event.target.value as model.EdgeStyle,
+                    });
+                  }}
+                >
+                  {Object.values(model.EdgeStyle)
+                    .sort((x1, x2) => x1.localeCompare(x2))
+                    .map((x) => (
+                      <MenuItem key={x} value={x}>
+                        {startCase(x)}
                       </MenuItem>
                     ))}
                 </Select>
