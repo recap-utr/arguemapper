@@ -8,7 +8,7 @@ import { SnackbarProvider } from "notistack";
 import React from "react";
 import CacheBuster from "react-cache-buster";
 import { createRoot } from "react-dom/client";
-import { ReactFlowProvider } from "react-flow-renderer";
+import { ReactFlowProvider } from "reactflow";
 import { version as npmVersion } from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";

@@ -16,6 +16,7 @@ import ReactFlow, {
   applyEdgeChanges,
   applyNodeChanges,
   OnConnect,
+  OnConnectEnd,
   OnConnectStart,
   OnEdgesChange,
   OnEdgesDelete,
@@ -24,7 +25,8 @@ import ReactFlow, {
   OnNodesDelete,
   OnSelectionChangeFunc,
   useReactFlow,
-} from "react-flow-renderer";
+} from "reactflow";
+import "reactflow/dist/style.css";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
@@ -57,7 +59,7 @@ export default function Graph() {
   const disableFirstVisit = useCallback(() => {
     setState({ firstVisit: false });
   }, [setState]);
-  const isLoading = useStore((state) => state.isLoading);
+  // const isLoading = useStore((state) => state.isLoading);
   const setIsLoading = useCallback(
     (value: boolean) => {
       setState({ isLoading: value });
@@ -74,7 +76,6 @@ export default function Graph() {
   const [shouldFit, setShouldFit] = useState(false);
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
-  // const [localNodes, setLocalNodes, onNodesChange] = useNodesState([...nodes]);
 
   // useHotkeys("shift+z", () => {
   //   if (typeof undo === "function") {
@@ -163,7 +164,6 @@ export default function Graph() {
       setIsLoading(true);
       layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
-        // resetUndoRedo();
         setShouldLayout(false);
         setShouldFit(true);
         setIsLoading(false);
@@ -180,30 +180,6 @@ export default function Graph() {
     edges,
     nodeHasDimension,
   ]);
-
-  // useEffect(() => {
-  //   setLocalNodes([...nodes]);
-  // }, [nodes, setLocalNodes]);
-
-  // const onNodeDragStop: NodeDragHandler = useCallback(
-  //   (event: React.MouseEvent, node: model.Node, nodes: model.Node[]) => {
-  //     setState(
-  //       { nodes: localNodes }
-  //       // produce((draft: State) => {
-  //       //   draft.nodes.forEach((stateNode) => {
-  //       //     const draggedNode = nodes.find((n) => n.id === stateNode.id);
-
-  //       //     if (draggedNode !== undefined) {
-  //       //       // Object.assign(stateNode, draggedNode);
-  //       //       stateNode.position = draggedNode.position;
-  //       //       stateNode.selected = draggedNode.selected;
-  //       //     }
-  //       //   });
-  //       // })
-  //     );
-  //   },
-  //   [setState, localNodes]
-  // );
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => {
@@ -353,7 +329,7 @@ export default function Graph() {
     [setState]
   );
 
-  const onClickConnectStop = useCallback(() => {
+  const onClickConnectEnd: OnConnectEnd = useCallback(() => {
     setState(
       produce((draft: State) => {
         draft.nodes
@@ -375,14 +351,13 @@ export default function Graph() {
       onNodeContextMenu={onContextMenu}
       onEdgeContextMenu={onContextMenu}
       onPaneContextMenu={onContextMenu}
-      // onNodeDragStop={onNodeDragStop}
       onNodeClick={onElementClick}
       onEdgeClick={onElementClick}
       onNodesDelete={onNodesDelete}
       onEdgesDelete={onEdgesDelete}
       onSelectionChange={onSelectionChange}
       onClickConnectStart={onClickConnectStart}
-      onClickConnectStop={onClickConnectStop}
+      onClickConnectEnd={onClickConnectEnd}
       selectNodesOnDrag={true}
       nodeTypes={NodeTypes}
       edgeTypes={EdgeTypes}

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import produce from "immer";
 import React from "react";
-import { useViewport } from "react-flow-renderer";
+import { useViewport } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 

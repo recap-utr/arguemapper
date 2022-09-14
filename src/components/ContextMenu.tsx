@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import produce from "immer";
 import React, { MouseEvent, useCallback, useMemo } from "react";
-import { useViewport } from "react-flow-renderer";
+import { useViewport } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 

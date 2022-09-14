@@ -1,7 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useLayoutEffect, useState } from "react";
-import { useStore as useFlowStore } from "react-flow-renderer";
+import { useStore as useFlowStore } from "reactflow";
 import Graph from "./components/Graph";
 import Header from "./components/Header";
 import Inspector from "./components/Inspector";

@@ -2,7 +2,7 @@ import { JsonObject } from "@protobuf-ts/runtime";
 import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
 import { Struct } from "arg-services/google/protobuf/struct_pb";
 import { startCase } from "lodash";
-import { Node as FlowNode, NodeProps, XYPosition } from "react-flow-renderer";
+import { Node as FlowNode, NodeProps, XYPosition } from "reactflow";
 import { v1 as uuid } from "uuid";
 import * as date from "../services/date";
 import * as aif from "./aif";

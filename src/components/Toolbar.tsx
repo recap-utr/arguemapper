@@ -10,7 +10,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import React, { useCallback } from "react";
-import { useReactFlow } from "react-flow-renderer";
+import { useReactFlow } from "reactflow";
 import useStore from "../store";
 
 interface ItemProps {

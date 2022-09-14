@@ -7,7 +7,7 @@ import {
   NodeProps,
   NodeTypes as FlowNodeTypes,
   Position,
-} from "react-flow-renderer";
+} from "reactflow";
 import * as model from "../model";
 import useStore from "../store";
 

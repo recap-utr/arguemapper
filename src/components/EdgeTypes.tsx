@@ -1,11 +1,7 @@
 import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import { ComponentType, useMemo } from "react";
-import {
-  BezierEdge,
-  EdgeProps,
-  EdgeTypes as FlowEdgeTypes,
-} from "react-flow-renderer";
+import { BezierEdge, EdgeProps, EdgeTypes as FlowEdgeTypes } from "reactflow";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;

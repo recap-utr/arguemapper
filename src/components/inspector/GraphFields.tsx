@@ -38,7 +38,7 @@ import produce from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useState } from "react";
-import { useReactFlow } from "react-flow-renderer";
+import { useReactFlow } from "reactflow";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
 import demoGraph from "../../services/demo";

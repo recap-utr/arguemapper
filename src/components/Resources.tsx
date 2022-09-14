@@ -7,11 +7,11 @@ import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import { dequal } from "dequal";
 import produce from "immer";
 import React, { useCallback, useMemo, useState } from "react";
-import { useViewport } from "react-flow-renderer";
 import {
   HighlightWithinTextarea,
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
+import { useViewport } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 
