@@ -108,6 +108,8 @@ const useStore = create<State>()(
           firstVisit: state.firstVisit,
           analyst: state.analyst,
           layoutAlgorithm: state.layoutAlgorithm,
+          prettifyJson: state.prettifyJson,
+          edgeStyle: state.edgeStyle,
           leftSidebarOpen: state.leftSidebarOpen,
           rightSidebarOpen: state.rightSidebarOpen,
           selectedResource: state.selectedResource,
