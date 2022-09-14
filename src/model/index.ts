@@ -12,6 +12,7 @@ import { isAtom, isScheme } from "./node";
 export { v1 as uuid } from "uuid";
 export { init as initAnalyst } from "./analyst";
 export type { Analyst } from "./analyst";
+export { EdgeStyle, LayoutAlgorithm } from "./config";
 export { init as initEdge } from "./edge";
 export type { Edge, EdgeData } from "./edge";
 export { init as initGraph } from "./graph";
@@ -151,18 +152,3 @@ export const selectionType = (
 
 export const initSelection = () =>
   ({ nodes: [], edges: [], type: "graph" } as Selection);
-
-export enum LayoutAlgorithm {
-  LAYERED = "layered",
-  TREE = "tree",
-  FORCE = "force",
-  RADIAL = "radial",
-}
-
-export enum EdgeStyle {
-  BEZIER = "bezier",
-  STRAIGHT = "straight",
-  STEP = "step",
-  SMOOTH_STEP = "smooth step",
-  SIMPLE_BEZIER = "simple bezier",
-}
