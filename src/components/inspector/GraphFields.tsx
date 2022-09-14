@@ -8,8 +8,11 @@ import {
   faFileCode,
   faFilePen,
   faGear,
+  faMinusCircle,
+  faPlusCircle,
   faTrash,
   faUpload,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -37,7 +40,7 @@ import {
 import produce from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../../model";
 import * as convert from "../../services/convert";
@@ -52,6 +55,7 @@ export interface Props extends React.PropsWithChildren {}
 
 export const GraphFields: React.FC<Props> = () => {
   const setState = useStore((state) => state.setState);
+  const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
   const resetState = useStore((state) => state.resetState);
 
@@ -62,7 +66,6 @@ export const GraphFields: React.FC<Props> = () => {
   const edgeStyle = useStore((state) => state.edgeStyle);
   const prettifyJson = useStore((state) => state.prettifyJson);
 
-  // const [analystDialogOpen, setAnalystDialogOpen] = useState(false);
   const [analystCallback, setAnalystCallback] = useState<
     (() => void) | undefined
   >(undefined);
@@ -114,10 +117,6 @@ export const GraphFields: React.FC<Props> = () => {
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
-
-  // const participantFields: {
-  //   [x in keyof cytoModel.participant.Participant]?: string;
-  // } = { name: "Name", email: "Email", username: "Username" };
 
   return (
     <>
@@ -233,74 +232,44 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
-        {/* <Accordion>
-            <AccordionSummary
-              expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
-            >
-              <Typography variant="h6">
-                <FontAwesomeIcon icon={faUpload} />
-                &nbsp;Participants
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Stack spacing={1}>
-                {Object.entries(graph.participants).map(([id, participant]) => (
-                  <Accordion key={id}>
-                    <AccordionSummary>
-                      <Typography variant="h6">{participant.name}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Stack spacing={1}>
-                        {Object.entries(participantFields).map(
-                          ([attr, label]) => (
-                            <TextField
-                              fullWidth
-                              key={attr}
-                              label={label}
-                              value={
-                                participant[attr as keyof model.Participant]
-                              }
-                              onChange={(event) => {}}
-                            />
-                          )
-                        )}
-                        <Button
-                          startIcon={<FontAwesomeIcon icon={faMinusCircle} />}
-                          color="error"
-                          variant="contained"
-                          onClick={() => {
-                            setState(
-                              produce((draft) => {
-                                delete draft.graph.participants[id];
-                              })
-                            );
-                          }}
-                        >
-                          Remove Participant
-                        </Button>
-                      </Stack>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-                <Button
-                  startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-                  variant="contained"
-                  onClick={() => {
-                    setState(
-                      produce((draft) => {
-                        draft.graph.participants[model.uuid()] =
-                          model.initParticipant({
-                            name: "Unknown",
-                          });
-                      })
-                    );
-                  }}
-                >
-                  Add Participant
-                </Button>
-              </Stack>
-            </AccordionDetails>
-          </Accordion> */}
+        <Accordion>
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faUsers} />
+              &nbsp;Participants
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              {Object.entries(participants).map(([id, participant]) => (
+                <Accordion key={id}>
+                  <AccordionSummary>
+                    <Typography variant="h6">{participant.name}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ParticipantModal id={id} participant={participant} />
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+              <Button
+                startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+                variant="contained"
+                onClick={() => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.graph.participants[model.uuid()] =
+                        model.initParticipant({
+                          name: "Unknown",
+                        });
+                    })
+                  );
+                }}
+              >
+                Add Participant
+              </Button>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
         <Accordion
           expanded={expanded === "configuration"}
           onChange={handleChange("configuration")}
@@ -477,6 +446,74 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
         <Button onClick={onConfirm}>Save and close</Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+interface ParticipantModalProps {
+  id: string;
+  participant: model.Participant;
+}
+
+const ParticipantModal: React.FC<ParticipantModalProps> = ({
+  id,
+  participant,
+}) => {
+  const setState = useStore((state) => state.setState);
+
+  return (
+    <Stack spacing={1}>
+      <TextField
+        fullWidth
+        label="Name"
+        value={participant.name}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.participants[id].name = event.target.value;
+            })
+          );
+        }}
+      />
+      <TextField
+        fullWidth
+        type="email"
+        label="Email"
+        value={participant.email}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.participants[id].email = event.target.value;
+            })
+          );
+        }}
+      />
+      <TextField
+        fullWidth
+        label="Username"
+        value={participant.username}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.participants[id].username = event.target.value;
+            })
+          );
+        }}
+      />
+      <Button
+        startIcon={<FontAwesomeIcon icon={faMinusCircle} />}
+        color="error"
+        variant="contained"
+        onClick={() => {
+          setState(
+            produce((draft: State) => {
+              delete draft.graph.participants[id];
+            })
+          );
+        }}
+      >
+        Remove Participant
+      </Button>
+    </Stack>
   );
 };
 
