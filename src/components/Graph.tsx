@@ -10,11 +10,12 @@ import {
 } from "@mui/material";
 import produce from "immer";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  ConnectionLineType,
   OnConnect,
   OnConnectEnd,
   OnConnectStart,
@@ -67,6 +68,7 @@ export default function Graph() {
     [setState]
   );
   const shouldLayout = useStore((state) => state.shouldLayout);
+  const edgeStyle = useStore((state) => state.edgeStyle);
   const setShouldLayout = useCallback(
     (value: boolean) => {
       setState({ shouldLayout: value });
@@ -339,6 +341,17 @@ export default function Graph() {
     );
   }, [setState]);
 
+  const connectionLineType: ConnectionLineType = useMemo(() => {
+    switch (edgeStyle) {
+      case model.EdgeStyle.BEZIER:
+        return ConnectionLineType.Bezier;
+      case model.EdgeStyle.STRAIGHT:
+        return ConnectionLineType.Straight;
+      case model.EdgeStyle.STEP:
+        return ConnectionLineType.SmoothStep;
+    }
+  }, [edgeStyle]);
+
   return (
     <ReactFlow
       id="react-flow"
@@ -365,6 +378,7 @@ export default function Graph() {
       maxZoom={3}
       elevateEdgesOnSelect={true}
       onlyRenderVisibleElements={onlyRenderVisibleElements}
+      connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
     >
       {false && <Loader />}
