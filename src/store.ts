@@ -46,7 +46,7 @@ const useStore = create<State>()(
           leftSidebarOpen: undefined,
           rightSidebarOpen: undefined,
           layoutAlgorithm: model.LayoutAlgorithm.TREE,
-          edgeStyle: model.EdgeStyle.SMOOTH_STEP,
+          edgeStyle: model.EdgeStyle.STEP,
           shouldLayout: false,
           isLoading: true,
           selection: model.initSelection(),

@@ -5,9 +5,7 @@ import {
   BezierEdge,
   EdgeProps,
   EdgeTypes as FlowEdgeTypes,
-  SimpleBezierEdge,
   SmoothStepEdge,
-  StepEdge,
   StraightEdge,
 } from "reactflow";
 import * as model from "../model";
@@ -36,12 +34,8 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   switch (edgeStyle) {
     case model.EdgeStyle.BEZIER:
       return <BezierEdge {...extendedProps} />;
-    case model.EdgeStyle.SIMPLE_BEZIER:
-      return <SimpleBezierEdge {...extendedProps} />;
-    case model.EdgeStyle.SMOOTH_STEP:
-      return <SmoothStepEdge {...extendedProps} />;
     case model.EdgeStyle.STEP:
-      return <StepEdge {...extendedProps} />;
+      return <SmoothStepEdge {...extendedProps} />;
     case model.EdgeStyle.STRAIGHT:
       return <StraightEdge {...extendedProps} />;
   }
