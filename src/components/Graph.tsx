@@ -186,7 +186,6 @@ export default function Graph() {
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => {
       setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
-      // setLocalNodes((prevNodes) => applyNodeChanges(changes, prevNodes));
     },
     [setState]
   );
@@ -261,11 +260,7 @@ export default function Graph() {
   const onInit: OnInit = useCallback(
     (instance) => {
       instance.fitView();
-
-      if (resetUndoRedo !== undefined) {
-        resetUndoRedo();
-      }
-
+      resetUndoRedo?.();
       setIsLoading(false);
     },
     [resetUndoRedo, setIsLoading]
