@@ -1,7 +1,11 @@
 import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import { ComponentType, useMemo } from "react";
-import { BezierEdge, EdgeProps, EdgeTypes as FlowEdgeTypes } from "reactflow";
+import {
+  EdgeProps,
+  EdgeTypes as FlowEdgeTypes,
+  SmoothStepEdge,
+} from "reactflow";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;
@@ -18,7 +22,7 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const size = isMobile ? 5 : 2.5;
 
   return (
-    <BezierEdge
+    <SmoothStepEdge
       {...props}
       style={{ stroke: strokeColor, strokeWidth: size }}
       markerEnd={`url(#${markerId})`}
