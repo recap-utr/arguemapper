@@ -417,10 +417,12 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
   const setState = useStore((state) => state.setState);
   const analyst = useStore((state) => state.analyst);
 
-  const callbackIsFunction = typeof callback === "function";
-  const onClose = () => disableCallback();
+  const callbackIsFunction = useMemo(
+    () => typeof callback === "function",
+    [callback]
+  );
   const onConfirm = () => {
-    if (callbackIsFunction) {
+    if (typeof callback === "function") {
       callback();
     }
     disableCallback();
@@ -431,7 +433,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
     : "Please enter your name and and email for storing together with the exported argument graph.";
 
   return (
-    <Dialog open={callbackIsFunction} onClose={onClose}>
+    <Dialog open={callbackIsFunction} onClose={disableCallback}>
       <DialogTitle>Analyst Information</DialogTitle>
       <DialogContent>
         <DialogContentText>{description}</DialogContentText>
