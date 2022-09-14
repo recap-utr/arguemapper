@@ -12,6 +12,7 @@ import { ReactFlowProvider } from "reactflow";
 import { version as npmVersion } from "../package.json";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
+import "./style.css";
 import theme from "./theme";
 
 const container = document.getElementById("root") as HTMLElement;
