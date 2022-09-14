@@ -1,4 +1,4 @@
-import Elk, { ElkNode, ElkPrimitiveEdge, LayoutOptions } from "elkjs";
+import Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
 import produce from "immer";
 import * as model from "../model";
 
@@ -50,11 +50,16 @@ const layout = async (
     height: node.height ?? DEFAULT_HEIGHT,
   }));
 
-  const elkEdges: ElkPrimitiveEdge[] = edges.map((edge) => ({
-    id: edge.id,
-    target: invertEdges ? edge.source : edge.target,
-    source: invertEdges ? edge.target : edge.source,
-  }));
+  const elkEdges: ElkExtendedEdge[] = edges.map((edge) => {
+    const target = invertEdges ? edge.source : edge.target;
+    const source = invertEdges ? edge.target : edge.source;
+
+    return {
+      id: edge.id,
+      targets: [target],
+      sources: [source],
+    };
+  });
 
   const elk = new Elk({ defaultLayoutOptions: layoutOptions[algorithm] });
   const elkGraph = await elk.layout({
