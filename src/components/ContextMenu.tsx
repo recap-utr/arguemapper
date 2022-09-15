@@ -165,10 +165,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
         callback={() => {
           const { x, y } = flow.project({
             x:
-              click.event?.clientX !== undefined
+              click.event !== undefined
                 ? click.event.clientX - (leftSidebarOpen ? 300 : 0)
                 : (window.innerWidth - reduceBy) / 2,
-            y: click.event?.clientY ?? window.innerHeight / 2,
+            y:
+              click.event !== undefined
+                ? click.event.clientY - 64
+                : window.innerHeight / 2,
           });
           const node = model.initAtom({ text: "", position: { x, y } });
           node.selected = true;
@@ -188,7 +191,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
         callback={() => {
           const { x, y } = flow.project({
             x: (window.innerWidth - reduceBy) / 2,
-            y: window.innerHeight / 2,
+            y: (window.innerHeight - 64) / 2,
           });
           const node = model.initScheme({ position: { x, y } });
           node.selected = true;
