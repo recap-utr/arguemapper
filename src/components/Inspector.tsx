@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback } from "react";
+import * as model from "../model";
 import useStore from "../store";
 import AtomFields from "./inspector/AtomFields";
 import GraphFields from "./inspector/GraphFields";
@@ -31,6 +32,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
       edges: state.edges.filter(
         (_edge, idx) => !state.selection.edges.includes(idx)
       ),
+      selection: model.initSelection(),
     }));
   }, [setState]);
 

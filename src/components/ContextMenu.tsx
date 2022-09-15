@@ -144,6 +144,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
                 draft.edges = draft.edges.filter(
                   (edge) => target.id !== edge.id
                 );
+                draft.selection = model.initSelection();
               })
             );
           } else {
@@ -152,6 +153,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
                 draft.nodes = draft.nodes.filter(
                   (node) => target.id !== node.id
                 );
+                draft.selection = model.initSelection();
               })
             );
           }
