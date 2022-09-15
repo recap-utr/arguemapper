@@ -243,7 +243,9 @@ export const GraphFields: React.FC<Props> = () => {
             <Stack spacing={1}>
               {Object.entries(participants).map(([id, participant]) => (
                 <Accordion key={id}>
-                  <AccordionSummary>
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon={faCaretDown} />}
+                  >
                     <Typography variant="h6">{participant.name}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
