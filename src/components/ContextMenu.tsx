@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import produce from "immer";
 import React, { MouseEvent, useCallback, useMemo } from "react";
-import { useViewport } from "reactflow";
+import { useReactFlow } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 
@@ -55,7 +55,21 @@ export interface ContextMenuProps {
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
-  const { x, y } = useViewport();
+  const flow = useReactFlow();
+  const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
+  const reduceBy = useStore((state) => {
+    let x = 0;
+
+    if (state.leftSidebarOpen) {
+      x = x + 300;
+    }
+
+    if (state.rightSidebarOpen) {
+      x = x + 300;
+    }
+
+    return x;
+  });
   const setState = useStore((state) => state.setState);
   const clickedType = useMemo(() => model.elemType(click.target), [click]);
   const majorClaim = useStore((state) => state.graph.majorClaim);
@@ -149,6 +163,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
       <Item
         visible={showFor("graph")}
         callback={() => {
+          const { x, y } = flow.project({
+            x:
+              click.event?.clientX !== undefined
+                ? click.event.clientX - (leftSidebarOpen ? 300 : 0)
+                : (window.innerWidth - reduceBy) / 2,
+            y: click.event?.clientY ?? window.innerHeight / 2,
+          });
           const node = model.initAtom({ text: "", position: { x, y } });
           node.selected = true;
 
@@ -165,6 +186,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
       <Item
         visible={showFor("graph")}
         callback={() => {
+          const { x, y } = flow.project({
+            x: (window.innerWidth - reduceBy) / 2,
+            y: window.innerHeight / 2,
+          });
           const node = model.initScheme({ position: { x, y } });
           node.selected = true;
 

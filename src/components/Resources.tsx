@@ -11,7 +11,7 @@ import {
   HighlightWithinTextarea,
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
-import { useViewport } from "reactflow";
+import { useReactFlow } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 
@@ -115,7 +115,20 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
   const setState = useStore((state) => state.setState);
   const selection = useStore((state) => state.selection);
-  const { x, y } = useViewport();
+  const flow = useReactFlow();
+  const reduceBy = useStore((state) => {
+    let x = 0;
+
+    if (state.leftSidebarOpen) {
+      x = x + 300;
+    }
+
+    if (state.rightSidebarOpen) {
+      x = x + 300;
+    }
+
+    return x;
+  });
 
   const [userSelection, setUserSelection] = useState<TextSelection>(
     new TextSelection(0, 0)
@@ -222,6 +235,10 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     );
     const offset = userSelection.anchor;
 
+    const { x, y } = flow.project({
+      x: (window.innerWidth - reduceBy) / 2,
+      y: window.innerHeight / 2,
+    });
     const node = model.initAtom({
       text,
       reference: model.initReference({ offset, text, resource: id }),
@@ -239,8 +256,8 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     userSelection.anchor,
     userSelection.focus,
     id,
-    x,
-    y,
+    flow,
+    reduceBy,
     setState,
   ]);
 

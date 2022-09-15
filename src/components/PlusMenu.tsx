@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import produce from "immer";
 import React from "react";
-import { useViewport } from "reactflow";
+import { useReactFlow } from "reactflow";
 import * as model from "../model";
 import useStore, { State } from "../store";
 
@@ -54,7 +54,20 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
   const close = () => {
     setPlusButton(null);
   };
-  const { x, y } = useViewport();
+  const flow = useReactFlow();
+  const reduceBy = useStore((state) => {
+    let x = 0;
+
+    if (state.leftSidebarOpen) {
+      x = x + 300;
+    }
+
+    if (state.rightSidebarOpen) {
+      x = x + 300;
+    }
+
+    return x;
+  });
 
   return (
     <>
@@ -89,6 +102,10 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
       >
         <Item
           callback={() => {
+            const { x, y } = flow.project({
+              x: (window.innerWidth - reduceBy) / 2,
+              y: window.innerHeight / 2,
+            });
             const node = model.initAtom({ text: "", position: { x, y } });
             node.selected = true;
 
@@ -104,6 +121,10 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
         />
         <Item
           callback={() => {
+            const { x, y } = flow.project({
+              x: (window.innerWidth - reduceBy) / 2,
+              y: window.innerHeight / 2,
+            });
             const node = model.initScheme({ position: { x, y } });
             node.selected = true;
 
