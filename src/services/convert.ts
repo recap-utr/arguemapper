@@ -78,7 +78,7 @@ export const downloadImage = async (format: ImgFormat) => {
       backgroundColor: "white",
       cacheBust: true,
       quality: 1.0,
-      pixelRatio: 3,
+      pixelRatio: useStore.getState().imageScale,
       // https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
       filter: (domNode: HTMLElement) => {
         const classList = domNode.classList

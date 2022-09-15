@@ -65,6 +65,7 @@ export const GraphFields: React.FC<Props> = () => {
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
   const edgeStyle = useStore((state) => state.edgeStyle);
   const prettifyJson = useStore((state) => state.prettifyJson);
+  const imageScale = useStore((state) => state.imageScale);
 
   const [analystCallback, setAnalystCallback] = useState<
     (() => void) | undefined
@@ -339,6 +340,16 @@ export const GraphFields: React.FC<Props> = () => {
                     ))}
                 </Select>
               </FormControl>
+              <TextField
+                fullWidth
+                type="number"
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                label="Image Scaling Factor"
+                value={imageScale}
+                onChange={(event) => {
+                  setState({ imageScale: parseInt(event.target.value) });
+                }}
+              />
               <FormControlLabel
                 control={
                   <Switch

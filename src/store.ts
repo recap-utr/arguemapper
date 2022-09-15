@@ -29,6 +29,7 @@ export interface State extends UndoState {
   undoable: () => boolean;
   redoable: () => boolean;
   prettifyJson: boolean;
+  imageScale: number;
   selectedResource: string;
 }
 
@@ -71,6 +72,7 @@ const useStore = create<State>()(
           undoable: () => (get().getState?.().prevStates.length ?? 0) > 0,
           redoable: () => (get().getState?.().futureStates.length ?? 0) > 0,
           prettifyJson: true,
+          imageScale: 3,
           selectedResource: "1",
         }),
         {
@@ -109,6 +111,7 @@ const useStore = create<State>()(
           analyst: state.analyst,
           layoutAlgorithm: state.layoutAlgorithm,
           prettifyJson: state.prettifyJson,
+          imageScale: state.imageScale,
           edgeStyle: state.edgeStyle,
           leftSidebarOpen: state.leftSidebarOpen,
           rightSidebarOpen: state.rightSidebarOpen,
