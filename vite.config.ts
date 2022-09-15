@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), eslint()],
   build: {
     target: "es2020",
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 5000,
   },
   optimizeDeps: {
     esbuildOptions: {
