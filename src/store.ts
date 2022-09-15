@@ -74,7 +74,7 @@ const useStore = create<State>()(
           selectedResource: "1",
         }),
         {
-          include: ["nodes", "edges", "graph", "selectedResource"],
+          include: ["nodes", "edges", "graph", "selectedResource", "selection"],
           coolOffDurationMs: 200,
           historyDepthLimit: 100,
         }
