@@ -133,15 +133,21 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         ] as model.AtomNode;
         const selectedReference = selectedAtom.data.reference;
 
-        if (
-          selectedReference !== undefined &&
-          selectedReference.offset !== undefined &&
-          selectedReference.text.length > 0
-        ) {
-          callback(
-            selectedReference.offset,
-            selectedReference.offset + selectedReference.text.length
-          );
+        if (selectedReference !== undefined) {
+          const start = selectedReference.offset;
+          const end =
+            start !== undefined
+              ? start + selectedReference.text.length
+              : undefined;
+
+          if (
+            start !== undefined &&
+            end !== undefined &&
+            text.substring(start, end) === selectedReference.text
+          ) {
+            callback(start, end);
+          }
+
           return;
         }
       }
@@ -208,14 +214,6 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     },
     [id, resource.text, setState]
   );
-
-  // const onBlur = useCallback(() => {
-  //   setState(
-  //     produce((draft) => {
-  //       draft.graph.resources[id] = resource;
-  //     })
-  //   );
-  // }, [setState, id, resource]);
 
   const addAtom = useCallback(() => {
     const text = resource.text.substring(
