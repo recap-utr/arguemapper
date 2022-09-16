@@ -55,19 +55,7 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
     setPlusButton(null);
   };
   const flow = useReactFlow();
-  const reduceBy = useStore((state) => {
-    let x = 0;
-
-    if (state.leftSidebarOpen) {
-      x = x + 300;
-    }
-
-    if (state.rightSidebarOpen) {
-      x = x + 300;
-    }
-
-    return x;
-  });
+  const canvasCenter = useStore((state) => state.canvasCenter);
 
   return (
     <>
@@ -102,10 +90,7 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
       >
         <Item
           callback={() => {
-            const { x, y } = flow.project({
-              x: (window.innerWidth - reduceBy) / 2,
-              y: window.innerHeight / 2,
-            });
+            const { x, y } = flow.project(canvasCenter());
             const node = model.initAtom({ text: "", position: { x, y } });
             node.selected = true;
 
@@ -121,10 +106,7 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
         />
         <Item
           callback={() => {
-            const { x, y } = flow.project({
-              x: (window.innerWidth - reduceBy) / 2,
-              y: window.innerHeight / 2,
-            });
+            const { x, y } = flow.project(canvasCenter());
             const node = model.initScheme({ position: { x, y } });
             node.selected = true;
 

@@ -22,8 +22,8 @@ export interface State extends UndoState {
   edgeStyle: model.EdgeStyle;
   shouldLayout: boolean;
   isLoading: boolean;
-  leftSidebarOpen: boolean | undefined;
-  rightSidebarOpen: boolean | undefined;
+  leftSidebarOpen: boolean;
+  rightSidebarOpen: boolean;
   selection: model.Selection;
   resetUndoRedo: () => void;
   undoable: () => boolean;
@@ -31,6 +31,9 @@ export interface State extends UndoState {
   prettifyJson: boolean;
   imageScale: number;
   selectedResource: string;
+  canvasCenter: () => { x: number; y: number };
+  sidebarWidth: number;
+  headerHeight: number;
 }
 
 const useStore = create<State>()(
@@ -44,8 +47,8 @@ const useStore = create<State>()(
           graph: model.initGraph({}),
           analyst: model.initAnalyst({}),
           firstVisit: true,
-          leftSidebarOpen: undefined,
-          rightSidebarOpen: undefined,
+          leftSidebarOpen: true,
+          rightSidebarOpen: true,
           layoutAlgorithm: model.LayoutAlgorithm.TREE,
           edgeStyle: model.EdgeStyle.STEP,
           shouldLayout: false,
@@ -74,6 +77,24 @@ const useStore = create<State>()(
           prettifyJson: true,
           imageScale: 3,
           selectedResource: "1",
+          canvasCenter: () => {
+            let reduceWidth = 0;
+
+            if (get().leftSidebarOpen) {
+              reduceWidth += get().sidebarWidth;
+            }
+
+            if (get().rightSidebarOpen) {
+              reduceWidth += get().sidebarWidth;
+            }
+
+            return {
+              x: (window.innerWidth - reduceWidth) / 2,
+              y: (window.innerHeight - get().headerHeight) / 2,
+            };
+          },
+          sidebarWidth: 300,
+          headerHeight: 64,
         }),
         {
           include: ["nodes", "edges", "graph", "selectedResource", "selection"],

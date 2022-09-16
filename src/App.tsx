@@ -1,6 +1,6 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useStore as useFlowStore } from "reactflow";
 import Graph from "./components/Graph";
 import Header from "./components/Header";
@@ -8,8 +8,6 @@ import Inspector from "./components/Inspector";
 import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
 import useStore from "./store";
-
-const drawerWidth = 300;
 
 function useWindowSize() {
   const [size, setSize] = useState([0, 0]);
@@ -28,16 +26,16 @@ function useWindowSize() {
 
 export default function App() {
   const setState = useStore((state) => state.setState);
+  const sidebarWidth = useStore((state) => state.sidebarWidth);
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
-  const initialSidebarOpen = isMobile ? false : true;
   const [, windowHeight] = useWindowSize();
 
-  const _leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
-  const _rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
-  const leftSidebarOpen =
-    _leftSidebarOpen === undefined ? initialSidebarOpen : _leftSidebarOpen;
-  const rightSidebarOpen =
-    _rightSidebarOpen === undefined ? initialSidebarOpen : _rightSidebarOpen;
+  const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
+  const rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
+
+  useEffect(() => {
+    setState({ leftSidebarOpen: !isMobile, rightSidebarOpen: !isMobile });
+  }, [setState, isMobile]);
 
   const setLeftSidebarOpen = (value: boolean) => {
     setState({ leftSidebarOpen: value });
@@ -55,7 +53,7 @@ export default function App() {
     <Stack direction="row" sx={{ height: windowHeight }}>
       <Sidebar
         side="left"
-        drawerWidth={drawerWidth}
+        drawerWidth={sidebarWidth}
         isMobile={isMobile}
         isOpen={leftSidebarOpen!}
         setIsOpen={setLeftSidebarOpen}
@@ -76,7 +74,7 @@ export default function App() {
       </Stack>
       <Sidebar
         side="right"
-        drawerWidth={drawerWidth}
+        drawerWidth={sidebarWidth}
         isMobile={isMobile}
         isOpen={rightSidebarOpen!}
         setIsOpen={setRightSidebarOpen}

@@ -8,6 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import useStore from "../store";
 
 export default function Header({
   toggleLeft,
@@ -16,8 +17,10 @@ export default function Header({
   toggleLeft: () => void;
   toggleRight: () => void;
 }) {
+  const height = useStore((state) => state.headerHeight);
+
   return (
-    <AppBar sx={{ position: "sticky" }}>
+    <AppBar sx={{ position: "sticky", height: height }}>
       <Toolbar>
         <Stack
           direction="row"

@@ -56,20 +56,10 @@ export interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
   const flow = useReactFlow();
+  const canvasCenter = useStore((state) => state.canvasCenter);
   const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
-  const reduceBy = useStore((state) => {
-    let x = 0;
-
-    if (state.leftSidebarOpen) {
-      x = x + 300;
-    }
-
-    if (state.rightSidebarOpen) {
-      x = x + 300;
-    }
-
-    return x;
-  });
+  const headerHeight = useStore((state) => state.headerHeight);
+  const sidebarWidth = useStore((state) => state.sidebarWidth);
   const setState = useStore((state) => state.setState);
   const clickedType = useMemo(() => model.elemType(click.target), [click]);
   const majorClaim = useStore((state) => state.graph.majorClaim);
@@ -165,16 +155,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
       <Item
         visible={showFor("graph")}
         callback={() => {
-          const { x, y } = flow.project({
-            x:
-              click.event !== undefined
-                ? click.event.clientX - (leftSidebarOpen ? 300 : 0)
-                : (window.innerWidth - reduceBy) / 2,
-            y:
-              click.event !== undefined
-                ? click.event.clientY - 64
-                : window.innerHeight / 2,
-          });
+          const { x, y } = flow.project(
+            click.event !== undefined
+              ? {
+                  x: click.event.clientX - (leftSidebarOpen ? sidebarWidth : 0),
+                  y: click.event.clientY - headerHeight,
+                }
+              : canvasCenter()
+          );
           const node = model.initAtom({ text: "", position: { x, y } });
           node.selected = true;
 
@@ -191,10 +179,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
       <Item
         visible={showFor("graph")}
         callback={() => {
-          const { x, y } = flow.project({
-            x: (window.innerWidth - reduceBy) / 2,
-            y: (window.innerHeight - 64) / 2,
-          });
+          const { x, y } = flow.project(canvasCenter());
           const node = model.initScheme({ position: { x, y } });
           node.selected = true;
 
