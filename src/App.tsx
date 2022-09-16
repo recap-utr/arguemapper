@@ -1,6 +1,6 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect } from "react";
 import { useStore as useFlowStore } from "reactflow";
 import Graph from "./components/Graph";
 import Header from "./components/Header";
@@ -9,26 +9,12 @@ import Resources from "./components/Resources";
 import Sidebar from "./components/Sidebar";
 import useStore from "./store";
 
-function useWindowSize() {
-  const [size, setSize] = useState([0, 0]);
-  useLayoutEffect(() => {
-    function updateSize() {
-      setSize([window.innerWidth, window.innerHeight]);
-    }
-    window.addEventListener("resize", updateSize);
-    updateSize();
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
-  return size;
-}
-
 // https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
 
 export default function App() {
   const setState = useStore((state) => state.setState);
   const sidebarWidth = useStore((state) => state.sidebarWidth);
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
-  const [, windowHeight] = useWindowSize();
 
   const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
   const rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
@@ -50,7 +36,7 @@ export default function App() {
   );
 
   return (
-    <Stack direction="row" sx={{ height: windowHeight }}>
+    <Stack direction="row" sx={{ height: "100vh" }}>
       <Sidebar
         side="left"
         drawerWidth={sidebarWidth}
