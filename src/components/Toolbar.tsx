@@ -9,9 +9,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useReactFlow } from "reactflow";
-import useStore from "../store";
+import useStore, { useTemporalStore } from "../store";
 
 interface ItemProps {
   disabled?: boolean;
@@ -35,12 +35,9 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 export interface ToolbarProps {}
 
 const Toolbar: React.FC<ToolbarProps> = () => {
-  const [undo, redo, undoable, redoable] = useStore((state) => [
-    state.undo,
-    state.redo,
-    state.undoable,
-    state.redoable,
-  ]);
+  const { undo, redo, futureStates, pastStates } = useTemporalStore();
+  const undoable = useMemo(() => pastStates.length > 0, [pastStates]);
+  const redoable = useMemo(() => futureStates.length > 0, [futureStates]);
   const setState = useStore((state) => state.setState);
   const setShouldLayout = useCallback(
     (value: boolean) => {
@@ -70,13 +67,13 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         />
         <Item
           text="Undo last action"
-          disabled={!undoable()}
+          disabled={!undoable}
           callback={undo}
           icon={faUndo}
         />
         <Item
           text="Redo last action"
-          disabled={!redoable()}
+          disabled={!redoable}
           callback={redo}
           icon={faRedo}
         />

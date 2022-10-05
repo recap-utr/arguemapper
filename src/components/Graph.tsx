@@ -31,7 +31,7 @@ import "reactflow/dist/style.css";
 import * as model from "../model";
 import generateDemo from "../services/demo";
 import layout from "../services/layout";
-import useStore, { State } from "../store";
+import useStore, { State, useTemporalStore } from "../store";
 import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
 import EdgeTypes from "./EdgeTypes";
 import { Marker, MarkerDefinition } from "./Marker";
@@ -46,11 +46,7 @@ export default function Graph() {
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const [resetUndoRedo] = useStore((state) => [
-    // state.undo,
-    // state.redo,
-    state.resetUndoRedo,
-  ]);
+  const { clear: resetUndoRedo } = useTemporalStore();
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);

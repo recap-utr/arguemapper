@@ -38,8 +38,8 @@
     "typescript": "^4.9.4",
     "use-immer": "^0.8.1",
     "uuid": "^9.0.0",
-    "zundo": "^1.6.0",
-    "zustand": "~4.0.0"
+    "zundo": "^2.0.0-beta.8",
+    "zustand": "^4.1.5"
   },
   "scripts": {
     "start": "vite --open",
