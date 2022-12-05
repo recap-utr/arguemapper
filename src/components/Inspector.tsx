@@ -14,6 +14,7 @@ import React, { useCallback } from "react";
 import * as model from "../model";
 import useStore from "../store";
 import AtomFields from "./inspector/AtomFields";
+import EdgeFields from "./inspector/EdgeFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
 
@@ -58,6 +59,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
       <Stack spacing={3} padding={3}>
         {selectionType === "atom" && <AtomFields />}
         {selectionType === "scheme" && <SchemeFields />}
+        {selectionType === "edge" && <EdgeFields />}
         {selectionType === "graph" && <GraphFields />}
         {selectionType === "multiple" && (
           <>

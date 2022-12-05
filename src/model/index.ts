@@ -17,6 +17,8 @@ export { init as initEdge } from "./edge";
 export type { Edge, EdgeData } from "./edge";
 export { init as initGraph } from "./graph";
 export type { Graph } from "./graph";
+export { init as initMetadata } from "./metadata";
+export type { Metadata } from "./metadata";
 export {
   initAtom,
   initScheme,

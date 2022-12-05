@@ -1,4 +1,10 @@
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import { dequal } from "dequal";
 import produce from "immer";
 import { startCase } from "lodash";
@@ -88,6 +94,21 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
           </Select>
         </FormControl>
       )}
+      <TextField
+        fullWidth
+        multiline
+        minRows={1}
+        label="Notes"
+        value={element.data.userdata.notes ?? ""}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              const node = draft.nodes[selectedIndex];
+              node.data.userdata.notes = event.target.value;
+            })
+          );
+        }}
+      />
     </>
   );
 };

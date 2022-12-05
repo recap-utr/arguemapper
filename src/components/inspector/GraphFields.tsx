@@ -57,6 +57,7 @@ export const GraphFields: React.FC<Props> = () => {
   const setState = useStore((state) => state.setState);
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
+  const notes = useStore((state) => state.graph.userdata.notes);
   const resetState = useStore((state) => state.resetState);
 
   const confirm = useConfirm();
@@ -382,6 +383,20 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
+        <TextField
+          fullWidth
+          multiline
+          minRows={1}
+          label="Notes"
+          value={notes ?? ""}
+          onChange={(event) => {
+            setState(
+              produce((draft: State) => {
+                draft.graph.userdata.notes = event.target.value;
+              })
+            );
+          }}
+        />
       </div>
     </>
   );

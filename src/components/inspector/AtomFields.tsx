@@ -73,6 +73,21 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
       >
         {majorClaim !== element.id ? "Set as Major Claim" : "Unset Major Claim"}
       </Button>
+      <TextField
+        fullWidth
+        multiline
+        minRows={1}
+        label="Notes"
+        value={element.data.userdata.notes ?? ""}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              const node = draft.nodes[selectedIndex];
+              node.data.userdata.notes = event.target.value;
+            })
+          );
+        }}
+      />
       {children}
     </>
   );
