@@ -39,7 +39,7 @@
     "use-immer": "^0.8.1",
     "uuid": "^9.0.0",
     "zundo": "^1.6.0",
-    "zustand": "~4.0.0"
+    "zustand": "~4.1.0"
   },
   "scripts": {
     "start": "vite --open",
