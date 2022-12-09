@@ -70,7 +70,7 @@
     "@vitejs/plugin-react": "^2.2.0",
     "eslint": "^8.29.0",
     "eslint-config-react-app": "^7.0.1",
-    "vite": "^3.2.5",
+    "vite": "^4.0.0",
     "vite-plugin-eslint": "^1.8.1",
     "web-worker": "^1.2.0"
   }
