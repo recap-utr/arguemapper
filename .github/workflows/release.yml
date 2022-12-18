@@ -15,6 +15,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
+      success: ${{ steps.semanticrelease.outputs.success }}
       version: ${{ steps.semanticrelease.outputs.version }}
     steps:
       - uses: actions/checkout@v3
