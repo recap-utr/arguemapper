@@ -48,8 +48,8 @@ jobs:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}},value=v${{ needs.release.outputs.version }}
-            type=semver,pattern={{major}},value=v${{ needs.release.outputs.version }}
             type=semver,pattern={{major}}.{{minor}},value=v${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}},value=v${{ needs.release.outputs.version }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
