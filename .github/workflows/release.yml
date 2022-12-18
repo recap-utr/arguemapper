@@ -18,7 +18,7 @@ jobs:
       version: ${{ steps.semanticrelease.outputs.version }}
     steps:
       - uses: actions/checkout@v3
-      - uses: cihelper/action-stemanticrelease-npm@v1
+      - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
   docker:
     runs-on: ubuntu-latest
