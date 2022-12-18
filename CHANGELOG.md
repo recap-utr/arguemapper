@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.9](https://github.com/recap-utr/arguemapper/compare/v1.1.8...v1.1.9) (2022-12-18)
+
+
+### Bug Fixes
+
+* bump version ([dc6575d](https://github.com/recap-utr/arguemapper/commit/dc6575d707eaa3f51b8b593b37a1b6742eff4ee6))
+
 ## [1.1.8](https://github.com/recap-utr/arguemapper/compare/v1.1.7...v1.1.8) (2022-12-18)
 
 
