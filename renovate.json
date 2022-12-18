@@ -1,4 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>cihelper/preset-renovate"]
+  "extends": ["github>cihelper/renovate-preset"]
 }
