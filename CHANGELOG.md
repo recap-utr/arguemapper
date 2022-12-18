@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.7](https://github.com/recap-utr/arguemapper/compare/v1.1.6...v1.1.7) (2022-12-18)
+
+
+### Bug Fixes
+
+* correct docker release condition ([29d1cbb](https://github.com/recap-utr/arguemapper/commit/29d1cbb404c824b659637682cee6face5110935d))
+
 ## [1.1.6](https://github.com/recap-utr/arguemapper/compare/v1.1.5...v1.1.6) (2022-12-18)
 
 
