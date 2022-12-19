@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.10](https://github.com/recap-utr/arguemapper/compare/v1.1.9...v1.1.10) (2022-12-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency arg-services to v1 ([#14](https://github.com/recap-utr/arguemapper/issues/14)) ([5815244](https://github.com/recap-utr/arguemapper/commit/5815244726c6358dbdb7c65a6edbfa8308fb0f7e))
+
 ## [1.1.9](https://github.com/recap-utr/arguemapper/compare/v1.1.8...v1.1.9) (2022-12-18)
 
 
