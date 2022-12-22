@@ -15,6 +15,6 @@ jobs:
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
       - if: ${{ steps.semanticrelease.outputs.released == 'true' }}
-        uses: cihelper/action-docker@v1
+        uses: cihelper/action-docker-publish@v1
         with:
           version: ${{ format('v{0}', steps.semanticrelease.outputs.version) }}
