@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback } from "react";
+import { version as npmVersion } from "../../package.json";
 import * as model from "../model";
 import useStore from "../store";
 import AtomFields from "./inspector/AtomFields";
@@ -106,16 +107,21 @@ const Inspector: React.FC<Props> = ({ close }) => {
         >
           gRPC
         </Button> */}
-        <Tooltip describeChild title="Open GitHub repository">
-          <IconButton
-            component={Link}
-            href="https://github.com/recap-utr/arguemapper"
-            target="_blank"
-            sx={{ ":hover": { backgroundColor: "transparent" } }}
-          >
-            <FontAwesomeIcon icon={faGithub} />
-          </IconButton>
-        </Tooltip>
+        <Stack direction="column">
+          <Tooltip describeChild title="Open GitHub repository">
+            <IconButton
+              component={Link}
+              href="https://github.com/recap-utr/arguemapper"
+              target="_blank"
+              sx={{ ":hover": { backgroundColor: "transparent" } }}
+            >
+              <FontAwesomeIcon icon={faGithub} />
+            </IconButton>
+          </Tooltip>
+          <Typography color="GrayText" align="center">
+            v{npmVersion}
+          </Typography>
+        </Stack>
       </Stack>
     </>
   );
