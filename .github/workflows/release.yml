@@ -7,53 +7,16 @@ on:
     branches:
       - main
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      released: ${{ steps.semanticrelease.outputs.released }}
-      version: ${{ steps.semanticrelease.outputs.version }}
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
-  docker:
-    runs-on: ubuntu-latest
-    needs: release
-    if: ${{ needs.release.outputs.released == 'true' }}
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
+      - if: ${{ steps.semanticrelease.outputs.released == 'true' }}
+        uses: cihelper/action-docker@v1
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}},value=v${{ needs.release.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.release.outputs.version }}
-            type=semver,pattern={{major}},value=v${{ needs.release.outputs.version }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          version: ${{ format('v{0}', steps.semanticrelease.outputs.version) }}
