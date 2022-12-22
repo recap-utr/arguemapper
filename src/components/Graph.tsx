@@ -240,8 +240,15 @@ export default function Graph() {
     (deletedNodes) => {
       const deletedNodeIds = deletedNodes.map((node) => node.id);
       setState((state) => ({
-        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
         selection: model.initSelection(),
+        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+        // one could also use getConnectedEdges from reactflow:
+        // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
+        edges: state.edges.filter(
+          (edge) =>
+            !deletedNodeIds.includes(edge.source) &&
+            !deletedNodeIds.includes(edge.target)
+        ),
       }));
     },
     [setState]
