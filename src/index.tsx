@@ -10,10 +10,10 @@ import CacheBuster from "react-cache-buster";
 import { createRoot } from "react-dom/client";
 import { ReactFlowProvider } from "reactflow";
 import { version as npmVersion } from "../package.json";
-import App from "./App";
-import ErrorBoundary from "./components/ErrorBoundary";
+import App from "./App.js";
+import ErrorBoundary from "./components/ErrorBoundary.js";
 import "./style.css";
-import theme from "./theme";
+import theme from "./theme.js";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);

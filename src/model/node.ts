@@ -1,13 +1,12 @@
-import { JsonObject } from "@protobuf-ts/runtime";
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "arg-services/google/protobuf/struct_pb";
+import { JsonObject, Struct } from "@bufbuild/protobuf";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
 import { startCase } from "lodash";
 import { Node as FlowNode, NodeProps, XYPosition } from "reactflow";
 import { v1 as uuid } from "uuid";
-import * as date from "../services/date";
-import * as aif from "./aif";
-import * as meta from "./metadata";
-import * as ref from "./reference";
+import * as date from "../services/date.js";
+import * as aif from "./aif.js";
+import * as meta from "./metadata.js";
+import * as ref from "./reference.js";
 
 const NO_SCHEME_LABEL = "Unknown Inference";
 

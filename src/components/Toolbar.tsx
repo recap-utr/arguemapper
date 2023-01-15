@@ -9,9 +9,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
-import useStore, { useTemporalStore } from "../store";
+import { setState, useStore } from "../store.js";
 
 interface ItemProps {
   disabled?: boolean;
@@ -34,17 +34,13 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 
 export interface ToolbarProps {}
 
-const Toolbar: React.FC<ToolbarProps> = () => {
-  const { undo, redo, futureStates, pastStates } = useTemporalStore();
-  const undoable = useMemo(() => pastStates.length > 0, [pastStates]);
-  const redoable = useMemo(() => futureStates.length > 0, [futureStates]);
-  const setState = useStore((state) => state.setState);
-  const setShouldLayout = useCallback(
-    (value: boolean) => {
-      setState({ shouldLayout: value });
-    },
-    [setState]
-  );
+export const Toolbar: React.FC<ToolbarProps> = () => {
+  const { undo, redo, futureStates, pastStates } = useStore.temporal.getState();
+  const undoable = pastStates.length > 0;
+  const redoable = futureStates.length > 0;
+  const setShouldLayout = useCallback((value: boolean) => {
+    setState({ shouldLayout: value });
+  }, []);
   const flow = useReactFlow();
 
   const onLayout = useCallback(() => {
@@ -68,18 +64,23 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         <Item
           text="Undo last action"
           disabled={!undoable}
-          callback={undo}
+          callback={() => {
+            console.log(JSON.parse(JSON.stringify(pastStates)));
+            undo();
+          }}
           icon={faUndo}
         />
         <Item
           text="Redo last action"
           disabled={!redoable}
-          callback={redo}
+          callback={() => {
+            console.log(JSON.parse(JSON.stringify(futureStates)));
+            redo();
+          }}
           icon={faRedo}
         />
         <Item
           text="Zoom in"
-          // disabled={zoom === cy?.maxZoom()}
           callback={() => {
             flow.zoomIn();
           }}
@@ -87,7 +88,6 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         />
         <Item
           text="Zoom in"
-          // disabled={zoom === cy?.minZoom()}
           callback={() => {
             flow.zoomOut();
           }}
@@ -95,7 +95,6 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         />
         <Item
           text="Fit graph in view"
-          // disabled={zoom === cy?.minZoom()}
           callback={() => {
             flow.fitView();
           }}

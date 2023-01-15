@@ -6,11 +6,11 @@ import {
   TextField,
 } from "@mui/material";
 import { dequal } from "dequal";
-import produce from "immer";
+import { produce } from "immer";
 import { startCase } from "lodash";
 import React from "react";
-import * as model from "../../model";
-import useStore, { State } from "../../store";
+import * as model from "../../model/index.js";
+import { setState, State, useStore } from "../../store.js";
 
 const NULL_VALUE = "###NULL###";
 
@@ -19,7 +19,6 @@ export interface Props extends React.PropsWithChildren {
 }
 
 const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const setState = useStore((state) => state.setState);
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.SchemeNode,

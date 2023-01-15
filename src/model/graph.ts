@@ -1,13 +1,12 @@
-import { JsonObject } from "@protobuf-ts/runtime";
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "arg-services/google/protobuf/struct_pb";
-import argServices from "arg-services/package.json";
-import * as analyst from "./analyst";
-import { Edge } from "./edge";
-import * as meta from "./metadata";
-import { Node } from "./node";
-import * as participant from "./participant";
-import * as resource from "./resource";
+import { JsonObject, Struct } from "@bufbuild/protobuf";
+import { version as argServicesVersion } from "arg-services";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
+import * as analyst from "./analyst.js";
+import { Edge } from "./edge.js";
+import * as meta from "./metadata.js";
+import { Node } from "./node.js";
+import * as participant from "./participant.js";
+import * as resource from "./resource.js";
 
 export interface Graph {
   resources: { [x: string]: resource.Resource };
@@ -48,7 +47,7 @@ export function init({
     participants: participants ?? {},
     analysts: analysts ?? {},
     majorClaim: majorClaim,
-    libraryVersion: argServices.version,
+    libraryVersion: argServicesVersion,
     schemaVersion: 1,
   };
 }
@@ -56,7 +55,7 @@ export function init({
 export function toProtobuf(
   obj: Graph
 ): Omit<arguebuf.Graph, "nodes" | "edges"> {
-  return arguebuf.Graph.create({
+  return new arguebuf.Graph({
     resources: Object.fromEntries(
       Object.entries(obj.resources).map(([k, v]) => [k, resource.toProtobuf(v)])
     ),
@@ -100,6 +99,6 @@ export function fromProtobuf(
     libraryVersion: obj.libraryVersion,
     schemaVersion: obj.schemaVersion,
     metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-    userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
+    userdata: obj.userdata ? (obj.userdata.toJson() as JsonObject) : {},
   };
 }

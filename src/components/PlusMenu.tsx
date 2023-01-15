@@ -10,11 +10,11 @@ import {
   MenuItem,
   useTheme,
 } from "@mui/material";
-import produce from "immer";
+import { produce } from "immer";
 import React from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../model";
-import useStore, { State } from "../store";
+import * as model from "../model/index.js";
+import { canvasCenter, setState, State } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -44,8 +44,10 @@ export interface PlusMenuProps {
   setPlusButton: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
-  const setState = useStore((state) => state.setState);
+export const PlusMenu: React.FC<PlusMenuProps> = ({
+  plusButton,
+  setPlusButton,
+}) => {
   const theme = useTheme();
   const isOpen = Boolean(plusButton);
   const open = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -55,7 +57,6 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
     setPlusButton(null);
   };
   const flow = useReactFlow();
-  const canvasCenter = useStore((state) => state.canvasCenter);
 
   return (
     <>
@@ -124,5 +125,3 @@ const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton }) => {
     </>
   );
 };
-
-export default PlusMenu;

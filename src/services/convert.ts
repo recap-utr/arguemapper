@@ -1,14 +1,14 @@
-import { JsonObject } from "@protobuf-ts/runtime";
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import { JsonObject } from "@bufbuild/protobuf";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
 import { toJpeg, toPng } from "html-to-image";
-import { Options as ImgOptions } from "html-to-image/lib/types";
+import { Options as ImgOptions } from "html-to-image/lib/types.js";
 import { v1 as uuid } from "uuid";
-import * as model from "../model";
-import { toProtobuf as analystToProtobuf } from "../model/analyst";
-import useStore from "../store";
-import * as date from "./date";
+import { toProtobuf as analystToProtobuf } from "../model/analyst.js";
+import * as model from "../model/index.js";
+import { useStore } from "../store.js";
+import * as date from "./date.js";
 
-export { fromAif, fromProtobuf, toAif } from "../model";
+export { fromAif, fromProtobuf, toAif } from "../model/index.js";
 
 export function importGraph(obj: any): model.Wrapper {
   if ("locutions" in obj) {
@@ -19,7 +19,7 @@ export function importGraph(obj: any): model.Wrapper {
 }
 
 export function proto2json(graph: arguebuf.Graph): JsonObject {
-  return arguebuf.Graph.toJson(graph) as JsonObject;
+  return graph.toJson() as JsonObject;
 }
 
 export function json2proto(graph: JsonObject): arguebuf.Graph {

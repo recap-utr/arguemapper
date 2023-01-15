@@ -1,24 +1,24 @@
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import * as aif from "./aif";
-import type { Edge } from "./edge";
-import * as edge from "./edge";
-import type { Graph } from "./graph";
-import * as graph from "./graph";
-import { init as initGraph } from "./graph";
-import type { AtomNode, Node, SchemeNode } from "./node";
-import * as node from "./node";
-import { isAtom, isScheme } from "./node";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
+import * as aif from "./aif.js";
+import type { Edge } from "./edge.js";
+import * as edge from "./edge.js";
+import type { Graph } from "./graph.js";
+import * as graph from "./graph.js";
+import { init as initGraph } from "./graph.js";
+import type { AtomNode, Node, SchemeNode } from "./node.js";
+import * as node from "./node.js";
+import { isAtom, isScheme } from "./node.js";
 
 export { v1 as uuid } from "uuid";
-export { init as initAnalyst } from "./analyst";
-export type { Analyst } from "./analyst";
-export { EdgeStyle, LayoutAlgorithm } from "./config";
-export { init as initEdge } from "./edge";
-export type { Edge, EdgeData } from "./edge";
-export { init as initGraph } from "./graph";
-export type { Graph } from "./graph";
-export { init as initMetadata } from "./metadata";
-export type { Metadata } from "./metadata";
+export { init as initAnalyst } from "./analyst.js";
+export type { Analyst } from "./analyst.js";
+export { EdgeStyle, LayoutAlgorithm } from "./config.js";
+export { init as initEdge } from "./edge.js";
+export type { Edge, EdgeData } from "./edge.js";
+export { init as initGraph } from "./graph.js";
+export type { Graph } from "./graph.js";
+export { init as initMetadata } from "./metadata.js";
+export type { Metadata } from "./metadata.js";
 export {
   initAtom,
   initScheme,
@@ -27,7 +27,7 @@ export {
   label as nodeLabel,
   schemeMap,
   SchemeType,
-} from "./node";
+} from "./node.js";
 export type {
   AtomData,
   AtomNode,
@@ -37,13 +37,13 @@ export type {
   SchemeData,
   SchemeNode,
   SchemeValue,
-} from "./node";
-export { init as initParticipant } from "./participant";
-export type { Participant } from "./participant";
-export { init as initReference } from "./reference";
-export type { Reference } from "./reference";
-export { init as initResource } from "./resource";
-export type { Resource } from "./resource";
+} from "./node.js";
+export { init as initParticipant } from "./participant.js";
+export type { Participant } from "./participant.js";
+export { init as initReference } from "./reference.js";
+export type { Reference } from "./reference.js";
+export { init as initResource } from "./resource.js";
+export type { Resource } from "./resource.js";
 export { node, edge, graph };
 
 export type OptionalElement = Element | undefined;
@@ -100,7 +100,7 @@ export function fromAif(obj: aif.Graph): Wrapper {
 }
 
 export function toProtobuf(obj: Wrapper): arguebuf.Graph {
-  return arguebuf.Graph.create({
+  return new arguebuf.Graph({
     ...graph.toProtobuf(obj.graph),
     nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
     edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),

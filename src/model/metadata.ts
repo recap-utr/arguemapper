@@ -1,5 +1,5 @@
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import * as date from "../services/date";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
+import * as date from "../services/date.js";
 
 export interface Metadata {
   created: string;

@@ -1,4 +1,4 @@
-import { Timestamp } from "arg-services/google/protobuf/timestamp_pb";
+import { Timestamp } from "@bufbuild/protobuf";
 import * as dateHelper from "date-fns";
 
 export function now(): string {
@@ -19,7 +19,7 @@ export function format(dateJSON: string, format: string): string {
 
 export function fromProtobuf(timestamp: Timestamp | undefined): string {
   if (timestamp) {
-    return Timestamp.toDate(timestamp).toJSON();
+    return timestamp.toJsonString();
   }
 
   return now();

@@ -1,7 +1,6 @@
-import { JsonObject } from "@protobuf-ts/runtime";
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "arg-services/google/protobuf/struct_pb";
-import * as meta from "./metadata";
+import { JsonObject, Struct } from "@bufbuild/protobuf";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
+import * as meta from "./metadata.js";
 
 export interface Participant {
   name?: string;

@@ -37,15 +37,15 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import produce from "immer";
+import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../../model";
-import * as convert from "../../services/convert";
-import demoGraph from "../../services/demo";
-import useStore, { State } from "../../store";
+import * as model from "../../model/index.js";
+import * as convert from "../../services/convert.js";
+import { generateDemo } from "../../services/demo.js";
+import { resetState, setState, State, useStore } from "../../store.js";
 
 const Input = styled("input")({
   display: "none",
@@ -54,11 +54,9 @@ const Input = styled("input")({
 export interface Props extends React.PropsWithChildren {}
 
 export const GraphFields: React.FC<Props> = () => {
-  const setState = useStore((state) => state.setState);
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
   const notes = useStore((state) => state.graph.userdata.notes);
-  const resetState = useStore((state) => state.resetState);
 
   const confirm = useConfirm();
   const flow = useReactFlow();
@@ -100,7 +98,7 @@ export const GraphFields: React.FC<Props> = () => {
         reader.readAsText(event.target.files[0]);
       }
     },
-    [resetState]
+    []
   );
 
   const verifyAnalyst = useCallback(
@@ -169,7 +167,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFilePen} />}
                 variant="contained"
                 onClick={() => {
-                  resetState(demoGraph());
+                  resetState(generateDemo());
                 }}
               >
                 Load Demo
@@ -411,7 +409,6 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
   callback,
   disableCallback,
 }) => {
-  const setState = useStore((state) => state.setState);
   const analyst = useStore((state) => state.analyst);
 
   const callbackIsFunction = useMemo(
@@ -486,8 +483,6 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
   id,
   participant,
 }) => {
-  const setState = useStore((state) => state.setState);
-
   return (
     <Stack spacing={1}>
       <TextField

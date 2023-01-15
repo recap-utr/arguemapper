@@ -1,6 +1,8 @@
-import Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
-import produce from "immer";
-import * as model from "../model";
+import _Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
+import { produce } from "immer";
+import * as model from "../model/index.js";
+
+const Elk = _Elk as unknown as typeof _Elk.default;
 
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 50;
@@ -33,7 +35,7 @@ const layoutOptions: { [key in model.LayoutAlgorithm]: LayoutOptions } = {
 };
 
 // https://github.com/wbkd/react-flow/issues/5#issuecomment-1026515350
-const layout = async (
+export const layout = async (
   nodes: Array<model.Node>,
   edges: Array<model.Edge>,
   algorithm: model.LayoutAlgorithm
@@ -87,5 +89,3 @@ const layout = async (
     })
   );
 };
-
-export default layout;

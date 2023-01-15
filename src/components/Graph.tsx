@@ -8,10 +8,10 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
-import produce from "immer";
+import { produce } from "immer";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import ReactFlow, {
+import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
@@ -25,19 +25,20 @@ import ReactFlow, {
   OnNodesChange,
   OnNodesDelete,
   OnSelectionChangeFunc,
+  ReactFlow,
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import * as model from "../model";
-import generateDemo from "../services/demo";
-import layout from "../services/layout";
-import useStore, { State, useTemporalStore } from "../store";
-import ContextMenu, { Click as ContextMenuClick } from "./ContextMenu";
-import EdgeTypes from "./EdgeTypes";
-import { Marker, MarkerDefinition } from "./Marker";
-import NodeTypes from "./NodeTypes";
-import PlusMenu from "./PlusMenu";
-import Toolbar from "./Toolbar";
+import * as model from "../model/index.js";
+import { generateDemo } from "../services/demo.js";
+import { layout } from "../services/layout.js";
+import { resetState, setState, State, useStore } from "../store.js";
+import { Click as ContextMenuClick, ContextMenu } from "./ContextMenu.js";
+import { EdgeTypes } from "./EdgeTypes.js";
+import { Marker, MarkerDefinition } from "./Marker.js";
+import { NodeTypes } from "./NodeTypes.js";
+import { PlusMenu } from "./PlusMenu.js";
+import { Toolbar } from "./Toolbar.js";
 
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
@@ -46,31 +47,23 @@ export default function Graph() {
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const { clear: resetUndoRedo } = useTemporalStore();
+  const { resume: resumeTemporal } = useStore.temporal.getState();
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
-  const setState = useStore((state) => state.setState);
-  const resetState = useStore((state) => state.resetState);
   const firstVisit = useStore((state) => state.firstVisit);
   const disableFirstVisit = useCallback(() => {
     setState({ firstVisit: false });
-  }, [setState]);
+  }, []);
   // const isLoading = useStore((state) => state.isLoading);
-  const setIsLoading = useCallback(
-    (value: boolean) => {
-      setState({ isLoading: value });
-    },
-    [setState]
-  );
+  const setIsLoading = useCallback((value: boolean) => {
+    setState({ isLoading: value });
+  }, []);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const edgeStyle = useStore((state) => state.edgeStyle);
-  const setShouldLayout = useCallback(
-    (value: boolean) => {
-      setState({ shouldLayout: value });
-    },
-    [setState]
-  );
+  const setShouldLayout = useCallback((value: boolean) => {
+    setState({ shouldLayout: value });
+  }, []);
   const [shouldFit, setShouldFit] = useState(false);
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
@@ -122,14 +115,7 @@ export default function Graph() {
         }
       );
     }
-  }, [
-    resetState,
-    closeSnackbar,
-    enqueueSnackbar,
-    firstVisit,
-    disableFirstVisit,
-    flow,
-  ]);
+  }, [closeSnackbar, enqueueSnackbar, firstVisit, disableFirstVisit, flow]);
 
   useEffect(() => {
     if (shouldFit) {
@@ -173,93 +159,72 @@ export default function Graph() {
     setIsLoading,
     setShouldLayout,
     layoutAlgorithm,
-    setState,
     nodes,
     edges,
     nodeHasDimension,
   ]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => {
-      setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
-    },
-    [setState]
-  );
+  const onNodesChange: OnNodesChange = useCallback((changes) => {
+    setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+  }, []);
 
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
-    },
-    [setState]
-  );
+  const onEdgesChange: OnEdgesChange = useCallback((changes) => {
+    setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
+  }, []);
 
-  const onConnect: OnConnect = useCallback(
-    (connection) => {
-      setState(
-        produce((draft: State) => {
-          const source = draft.nodes.find(
-            (node) => node.id === connection.source
+  const onConnect: OnConnect = useCallback((connection) => {
+    setState(
+      produce((draft: State) => {
+        const source = draft.nodes.find(
+          (node) => node.id === connection.source
+        );
+        const target = draft.nodes.find(
+          (node) => node.id === connection.target
+        );
+
+        if (source && target && model.isAtom(source) && model.isAtom(target)) {
+          const schemePos = {
+            x: (source.position.x + target.position.x) / 2,
+            y: (source.position.y + target.position.y) / 2,
+          };
+          const scheme = model.initScheme({ position: schemePos });
+
+          draft.nodes.push(scheme);
+          draft.edges.push(
+            model.initEdge({ source: source.id, target: scheme.id })
           );
-          const target = draft.nodes.find(
-            (node) => node.id === connection.target
+          draft.edges.push(
+            model.initEdge({ source: scheme.id, target: target.id })
           );
+        } else {
+          draft.edges = addEdge(connection, draft.edges);
+        }
+      })
+    );
+  }, []);
 
-          if (
-            source &&
-            target &&
-            model.isAtom(source) &&
-            model.isAtom(target)
-          ) {
-            const schemePos = {
-              x: (source.position.x + target.position.x) / 2,
-              y: (source.position.y + target.position.y) / 2,
-            };
-            const scheme = model.initScheme({ position: schemePos });
-
-            draft.nodes.push(scheme);
-            draft.edges.push(
-              model.initEdge({ source: source.id, target: scheme.id })
-            );
-            draft.edges.push(
-              model.initEdge({ source: scheme.id, target: target.id })
-            );
-          } else {
-            draft.edges = addEdge(connection, draft.edges);
-          }
-        })
-      );
-    },
-    [setState]
-  );
-
-  const onNodesDelete: OnNodesDelete = useCallback(
-    (deletedNodes) => {
-      const deletedNodeIds = deletedNodes.map((node) => node.id);
-      setState((state) => ({
-        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
-        selection: model.initSelection(),
-      }));
-    },
-    [setState]
-  );
-  const onEdgesDelete: OnEdgesDelete = useCallback(
-    (deletedEdges) => {
-      const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
-      setState((state) => ({
-        edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
-        selection: model.initSelection(),
-      }));
-    },
-    [setState]
-  );
+  const onNodesDelete: OnNodesDelete = useCallback((deletedNodes) => {
+    const deletedNodeIds = deletedNodes.map((node) => node.id);
+    setState((state) => ({
+      nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+      selection: model.initSelection(),
+    }));
+  }, []);
+  const onEdgesDelete: OnEdgesDelete = useCallback((deletedEdges) => {
+    const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
+    setState((state) => ({
+      edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
+      selection: model.initSelection(),
+    }));
+  }, []);
 
   const onInit: OnInit = useCallback(
     (instance) => {
       instance.fitView();
-      resetUndoRedo?.();
       setIsLoading(false);
+      resumeTemporal();
     },
-    [resetUndoRedo, setIsLoading]
+    [resumeTemporal, setIsLoading]
   );
 
   const onContextMenu = (
@@ -296,31 +261,28 @@ export default function Graph() {
           },
         };
       }),
-    [setState]
+    []
   );
 
   const onElementClick = useCallback(
     (event: React.MouseEvent, elem: model.Node | model.Edge) => {
       setState({ rightSidebarOpen: true });
     },
-    [setState]
+    []
   );
 
-  const onClickConnectStart: OnConnectStart = useCallback(
-    (event, params) => {
-      const { nodeId } = params;
-      setState(
-        produce((draft: State) => {
-          const node = draft.nodes.find((node) => node.id === nodeId);
+  const onClickConnectStart: OnConnectStart = useCallback((event, params) => {
+    const { nodeId } = params;
+    setState(
+      produce((draft: State) => {
+        const node = draft.nodes.find((node) => node.id === nodeId);
 
-          if (node !== undefined) {
-            node.data.clickConnect = true;
-          }
-        })
-      );
-    },
-    [setState]
-  );
+        if (node !== undefined) {
+          node.data.clickConnect = true;
+        }
+      })
+    );
+  }, []);
 
   const onClickConnectEnd: OnConnectEnd = useCallback(() => {
     setState(
@@ -330,7 +292,7 @@ export default function Graph() {
           .map((node) => (node.data.clickConnect = undefined));
       })
     );
-  }, [setState]);
+  }, []);
 
   const connectionLineType: ConnectionLineType = useMemo(() => {
     switch (edgeStyle) {

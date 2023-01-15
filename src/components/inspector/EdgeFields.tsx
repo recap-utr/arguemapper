@@ -1,16 +1,15 @@
 import { TextField } from "@mui/material";
 import { dequal } from "dequal";
-import produce from "immer";
+import { produce } from "immer";
 import React from "react";
-import * as model from "../../model";
-import useStore, { State } from "../../store";
+import * as model from "../../model/index.js";
+import { setState, State, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
 }
 
 export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const setState = useStore((state) => state.setState);
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
   const element = useStore(
     (state) => state.edges[selectedIndex] as model.Edge,

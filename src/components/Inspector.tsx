@@ -11,19 +11,19 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback } from "react";
-import * as model from "../model";
-import useStore from "../store";
-import AtomFields from "./inspector/AtomFields";
-import EdgeFields from "./inspector/EdgeFields";
-import GraphFields from "./inspector/GraphFields";
-import SchemeFields from "./inspector/SchemeFields";
+import { version as npmVersion } from "../../package.json";
+import * as model from "../model/index.js";
+import { setState, useStore } from "../store.js";
+import AtomFields from "./inspector/AtomFields.js";
+import EdgeFields from "./inspector/EdgeFields.js";
+import GraphFields from "./inspector/GraphFields.js";
+import SchemeFields from "./inspector/SchemeFields.js";
 
 interface Props {
   close: () => void;
 }
 
 const Inspector: React.FC<Props> = ({ close }) => {
-  const setState = useStore((state) => state.setState);
   const selectionType = useStore((state) => state.selection.type);
   const onDelete = useCallback(() => {
     setState((state) => ({
@@ -35,7 +35,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
       ),
       selection: model.initSelection(),
     }));
-  }, [setState]);
+  }, []);
 
   return (
     <>
@@ -106,16 +106,21 @@ const Inspector: React.FC<Props> = ({ close }) => {
         >
           gRPC
         </Button> */}
-        <Tooltip describeChild title="Open GitHub repository">
-          <IconButton
-            component={Link}
-            href="https://github.com/recap-utr/arguemapper"
-            target="_blank"
-            sx={{ ":hover": { backgroundColor: "transparent" } }}
-          >
-            <FontAwesomeIcon icon={faGithub} />
-          </IconButton>
-        </Tooltip>
+        <Stack direction="column">
+          <Tooltip describeChild title="Open GitHub repository">
+            <IconButton
+              component={Link}
+              href="https://github.com/recap-utr/arguemapper"
+              target="_blank"
+              sx={{ ":hover": { backgroundColor: "transparent" } }}
+            >
+              <FontAwesomeIcon icon={faGithub} />
+            </IconButton>
+          </Tooltip>
+          <Typography color="GrayText" align="center">
+            v{npmVersion}
+          </Typography>
+        </Stack>
       </Stack>
     </>
   );

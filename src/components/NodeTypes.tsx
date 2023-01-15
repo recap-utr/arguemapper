@@ -8,8 +8,8 @@ import {
   NodeTypes as FlowNodeTypes,
   Position,
 } from "reactflow";
-import * as model from "../model";
-import useStore from "../store";
+import * as model from "../model/index.js";
+import { useStore } from "../store.js";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
@@ -120,9 +120,7 @@ const SchemeComponent: ComponentType<NodeProps<model.SchemeData>> = (node) => {
   );
 };
 
-const NodeTypes: FlowNodeTypes = {
+export const NodeTypes: FlowNodeTypes = {
   atom: AtomComponent,
   scheme: SchemeComponent,
 };
-
-export default NodeTypes;

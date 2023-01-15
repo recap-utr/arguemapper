@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import useStore from "../store";
+import { useStore } from "../store.js";
 
 export default function Header({
   toggleLeft,

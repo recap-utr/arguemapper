@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { ErrorInfo } from "react";
-import * as convert from "../services/convert";
+import * as convert from "../services/convert.js";
 
 interface Props extends React.PropsWithChildren {}
 interface State {

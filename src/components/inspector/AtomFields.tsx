@@ -2,17 +2,16 @@ import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, TextField } from "@mui/material";
 import { dequal } from "dequal";
-import produce from "immer";
+import { produce } from "immer";
 import React from "react";
-import * as model from "../../model";
-import useStore, { State } from "../../store";
+import * as model from "../../model/index.js";
+import { setState, State, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
 }
 
 export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
-  const setState = useStore((state) => state.setState);
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.AtomNode,

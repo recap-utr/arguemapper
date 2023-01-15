@@ -2,17 +2,16 @@ import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
 import { useStore as useFlowStore } from "reactflow";
-import Graph from "./components/Graph";
-import Header from "./components/Header";
-import Inspector from "./components/Inspector";
-import Resources from "./components/Resources";
-import Sidebar from "./components/Sidebar";
-import useStore from "./store";
+import Graph from "./components/Graph.js";
+import Header from "./components/Header.js";
+import Inspector from "./components/Inspector.js";
+import Resources from "./components/Resources.js";
+import Sidebar from "./components/Sidebar.js";
+import { setState, useStore } from "./store.js";
 
 // https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
 
 export default function App() {
-  const setState = useStore((state) => state.setState);
   const sidebarWidth = useStore((state) => state.sidebarWidth);
   const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
 
@@ -21,7 +20,7 @@ export default function App() {
 
   useEffect(() => {
     setState({ leftSidebarOpen: !isMobile, rightSidebarOpen: !isMobile });
-  }, [setState, isMobile]);
+  }, [isMobile]);
 
   const setLeftSidebarOpen = (value: boolean) => {
     setState({ leftSidebarOpen: value });

@@ -1,7 +1,7 @@
 import { v1 as uuid } from "uuid";
-import * as model from "../model";
+import * as model from "../model/index.js";
 
-function demoGraph(): model.Wrapper {
+export function generateDemo(): model.Wrapper {
   const resourceId = uuid();
   const resources = {
     [resourceId]: model.initResource({
@@ -82,4 +82,3 @@ function demoGraph(): model.Wrapper {
   });
 }
 
-export default demoGraph;

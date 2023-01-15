@@ -1,4 +1,4 @@
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
 
 export interface Reference {
   resource?: string;

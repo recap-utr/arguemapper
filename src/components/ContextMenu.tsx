@@ -6,11 +6,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
-import produce from "immer";
+import { produce } from "immer";
 import React, { MouseEvent, useCallback, useMemo } from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../model";
-import useStore, { State } from "../store";
+import * as model from "../model/index.js";
+import { canvasCenter, setState, State, useStore } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -54,13 +54,14 @@ export interface ContextMenuProps {
   setClick: React.Dispatch<React.SetStateAction<Click>>;
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
+export const ContextMenu: React.FC<ContextMenuProps> = ({
+  click,
+  setClick,
+}) => {
   const flow = useReactFlow();
-  const canvasCenter = useStore((state) => state.canvasCenter);
   const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
   const headerHeight = useStore((state) => state.headerHeight);
   const sidebarWidth = useStore((state) => state.sidebarWidth);
-  const setState = useStore((state) => state.setState);
   const clickedType = useMemo(() => model.elemType(click.target), [click]);
   const majorClaim = useStore((state) => state.graph.majorClaim);
 

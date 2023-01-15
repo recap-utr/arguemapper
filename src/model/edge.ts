@@ -1,10 +1,9 @@
-import { JsonObject } from "@protobuf-ts/runtime";
-import * as arguebuf from "arg-services/arg_services/graph/v1/graph_pb";
-import { Struct } from "arg-services/google/protobuf/struct_pb";
+import { JsonObject, Struct } from "@bufbuild/protobuf";
+import * as arguebuf from "arg-services/graph/v1/graph_pb";
 import { Edge as FlowEdge } from "reactflow";
 import { v1 as uuid } from "uuid";
-import * as aif from "./aif";
-import * as meta from "./metadata";
+import * as aif from "./aif.js";
+import * as meta from "./metadata.js";
 
 export type Edge = FlowEdge<EdgeData>;
 
@@ -34,12 +33,12 @@ export function init({ id, source, target, metadata, userdata }: Props): Edge {
 }
 
 export function toProtobuf(edge: Edge): arguebuf.Edge {
-  return {
+  return new arguebuf.Edge({
     source: edge.source,
     target: edge.target,
     metadata: meta.toProtobuf(edge.data?.metadata ?? meta.init({})),
     userdata: Struct.fromJson(edge.data?.userdata ?? {}),
-  };
+  });
 }
 
 export function toAif(edge: Edge): aif.Edge {
@@ -70,7 +69,7 @@ export function fromProtobuf(id: string, obj: arguebuf.Edge): Edge {
     target: obj.target,
     data: {
       metadata: obj.metadata ? meta.fromProtobuf(obj.metadata) : meta.init({}),
-      userdata: obj.userdata ? (Struct.toJson(obj.userdata) as JsonObject) : {},
+      userdata: obj.userdata ? (obj.userdata.toJson() as JsonObject) : {},
     },
   };
 }

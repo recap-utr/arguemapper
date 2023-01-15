@@ -5,20 +5,19 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import { dequal } from "dequal";
-import produce from "immer";
+import { produce } from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   HighlightWithinTextarea,
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
 import { useReactFlow } from "reactflow";
-import * as model from "../model";
-import useStore, { State } from "../store";
+import * as model from "../model/index.js";
+import { canvasCenter, setState, State, useStore } from "../store.js";
 
 interface Props {}
 
 const Resources: React.FC<Props> = () => {
-  const setState = useStore((state) => state.setState);
   const references = useStore(
     (state) =>
       Object.fromEntries(
@@ -36,12 +35,9 @@ const Resources: React.FC<Props> = () => {
     dequal
   );
   const activeTab = useStore((state) => state.selectedResource);
-  const setActiveTab = useCallback(
-    (value: string) => {
-      setState({ selectedResource: value });
-    },
-    [setState]
-  );
+  const setActiveTab = useCallback((value: string) => {
+    setState({ selectedResource: value });
+  }, []);
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
@@ -56,7 +52,7 @@ const Resources: React.FC<Props> = () => {
         draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
       })
     );
-  }, [setState]);
+  }, []);
 
   const lastResourceIndex = useMemo(
     () => (resourceIds.length + 1).toString(),
@@ -113,9 +109,7 @@ interface ResourceProps {
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
-  const setState = useStore((state) => state.setState);
   const selection = useStore((state) => state.selection);
-  const canvasCenter = useStore((state) => state.canvasCenter);
   const flow = useReactFlow();
 
   const [userSelection, setUserSelection] = useState<TextSelection>(
@@ -213,7 +207,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         );
       }
     },
-    [id, resource.text, setState]
+    [id, resource.text]
   );
 
   const addAtom = useCallback(() => {
@@ -236,15 +230,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         draft.nodes.push(node);
       })
     );
-  }, [
-    resource.text,
-    userSelection.anchor,
-    userSelection.focus,
-    id,
-    flow,
-    canvasCenter,
-    setState,
-  ]);
+  }, [resource.text, userSelection.anchor, userSelection.focus, id, flow]);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -252,7 +238,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         delete draft.graph.resources[id];
       })
     );
-  }, [id, setState]);
+  }, [id]);
 
   return (
     <Stack spacing={2}>
