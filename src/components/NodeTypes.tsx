@@ -1,5 +1,6 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
+import { capitalize } from "lodash";
 import React, { ComponentType, useMemo } from "react";
 import {
   Handle,
@@ -101,7 +102,7 @@ const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
 const SchemeComponent: ComponentType<NodeProps<model.SchemeNodeData>> = (
   node
 ) => {
-  const body = <div>{node.data.label()}</div>;
+  const body = <div>{capitalize(node.data.label())}</div>;
 
   const bg = useMemo(() => {
     if (node.data.scheme.case === "support") {
