@@ -77,13 +77,15 @@ const storage: PersistStorage<PersistState> = {
     const { version, state } = JSON.parse(
       serializedState
     ) as StorageValue<SerializedState>;
-    const wrapper = convert.importGraph(state.graph);
+    const { nodes, edges, graph } = convert.importGraph(state.graph);
 
     return {
-      version: version,
+      version,
       state: {
         ...state,
-        ...wrapper,
+        nodes,
+        edges,
+        graph,
       },
     };
   },
@@ -94,6 +96,10 @@ const storage: PersistStorage<PersistState> = {
       { nodes, edges, graph },
       "arguebuf"
     );
+    delete (state as any).graph;
+    delete (state as any).nodes;
+    delete (state as any).edges;
+
     const serializedState: StorageValue<SerializedState> = {
       version,
       state: { ...state, graph: serializedGraph },

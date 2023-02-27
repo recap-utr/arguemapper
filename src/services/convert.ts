@@ -4,28 +4,26 @@ import { Options as ImgOptions } from "html-to-image/lib/types.js";
 import * as model from "../model/index.js";
 import { useStore } from "../store.js";
 
-export function importGraph(obj: any): model.Wrapper {
+export function importGraph(obj: { [key: string]: any }): model.Wrapper {
   return model.fromArguebuf(arguebuf.load.json(obj));
 }
 export function exportGraph(
   obj: model.Wrapper,
   format: "aif" | "arguebuf"
-): any {
-  const g = arguebuf.dump.json(model.toArguebuf(obj), format);
+): { [key: string]: any } {
+  const graph = model.toArguebuf(obj);
+  const currentAnalyst = useStore.getState().analyst;
 
-  // const currentAnalyst = useStore.getState().analyst;
+  if (
+    format === "arguebuf" &&
+    !Object.values(graph.analysts).some(
+      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+    )
+  ) {
+    graph.analysts[arguebuf.uuid()] = currentAnalyst;
+  }
 
-  // if (
-  //   format === "arguebuf" &&
-  //   !Object.values(g.analysts).some(
-  //     (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
-  //   )
-  // ) {
-  //   // TODO: Parse analyst properly
-  //   // proto.analysts[uuid()] = currentAnalyst;
-  // }
-
-  return g;
+  return arguebuf.dump.json(graph, format);
 }
 
 export function generateFilename() {
