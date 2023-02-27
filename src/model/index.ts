@@ -1,53 +1,17 @@
-import * as arguebuf from "arg-services/graph/v1/graph_pb";
-import * as aif from "./aif.js";
-import type { Edge } from "./edge.js";
-import * as edge from "./edge.js";
-import type { Graph } from "./graph.js";
-import * as graph from "./graph.js";
-import { init as initGraph } from "./graph.js";
-import type { AtomNode, Node, SchemeNode } from "./node.js";
-import * as node from "./node.js";
-import { isAtom, isScheme } from "./node.js";
+import * as arguebuf from "arguebuf";
+import { Edge as FlowEdge, Node as FlowNode, XYPosition } from "reactflow";
 
-export { v1 as uuid } from "uuid";
-export { init as initAnalyst } from "./analyst.js";
-export type { Analyst } from "./analyst.js";
-export { EdgeStyle, LayoutAlgorithm } from "./config.js";
-export { init as initEdge } from "./edge.js";
-export type { Edge, EdgeData } from "./edge.js";
-export { init as initGraph } from "./graph.js";
-export type { Graph } from "./graph.js";
-export { init as initMetadata } from "./metadata.js";
-export type { Metadata } from "./metadata.js";
-export {
-  initAtom,
-  initScheme,
-  isAtom,
-  isScheme,
-  label as nodeLabel,
-  schemeMap,
-  SchemeType,
-} from "./node.js";
-export type {
-  AtomData,
-  AtomNode,
-  Node,
-  NodeData,
-  Scheme,
-  SchemeData,
-  SchemeNode,
-  SchemeValue,
-} from "./node.js";
-export { init as initParticipant } from "./participant.js";
-export type { Participant } from "./participant.js";
-export { init as initReference } from "./reference.js";
-export type { Reference } from "./reference.js";
-export { init as initResource } from "./resource.js";
-export type { Resource } from "./resource.js";
-export { node, edge, graph };
+export type Edge = FlowEdge<Omit<arguebuf.Edge, "source" | "target">>;
+export type NodeData = arguebuf.Node;
+export type AtomNodeData = arguebuf.AtomNode;
+export type SchemeNodeData = arguebuf.SchemeNode;
+export type Node = FlowNode<NodeData>;
+export type AtomNode = FlowNode<AtomNodeData>;
+export type SchemeNode = FlowNode<SchemeNodeData>;
+export type Graph = Omit<arguebuf.Graph, "nodes" | "edges">;
 
+export type Element = Node | Edge;
 export type OptionalElement = Element | undefined;
-export type Element = AtomNode | SchemeNode | Edge;
 export type Elements = Array<Element> | OptionalElement;
 export type ElementType = "atom" | "scheme" | "edge" | "graph";
 
@@ -71,47 +35,43 @@ export function initWrapper({
   return {
     nodes: nodes ?? [],
     edges: edges ?? [],
-    graph: graph ?? initGraph({}),
+    graph: graph ?? new arguebuf.Graph(),
   };
 }
 
-export function toAif(obj: Wrapper): aif.Graph {
+function edgeToArguebuf(obj: Edge): arguebuf.Edge {
+  const edge = obj.data as arguebuf.Edge;
+  edge.source = obj.source;
+  edge.target = obj.target;
+
+  return edge;
+}
+
+export function toArguebuf(obj: Wrapper): arguebuf.Graph {
+  const nodes = Object.fromEntries(obj.nodes.map((n) => [n.id, n.data]));
+  const edges = Object.fromEntries(
+    obj.edges.map((e) => [e.id, edgeToArguebuf(e)])
+  );
+  const graph = obj.graph as arguebuf.Graph;
+  graph.copy({ nodes, edges });
+
+  return graph;
+}
+
+export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
   return {
-    nodes: obj.nodes.map((n) => node.toAif(n)),
-    edges: obj.edges.map((e) => edge.toAif(e)),
-    locutions: [],
-  };
-}
-
-export function fromAif(obj: aif.Graph): Wrapper {
-  const nodes = obj.nodes
-    .map((n) => node.fromAif(n))
-    .filter((n): n is Node => !!n);
-  const nodeIds = new Set(nodes.map((node) => node.id));
-
-  const edges = obj.edges
-    .filter((e) => nodeIds.has(e.fromID) && nodeIds.has(e.toID))
-    .map((e) => edge.fromAif(e));
-
-  return initWrapper({
-    nodes,
-    edges,
-  });
-}
-
-export function toProtobuf(obj: Wrapper): arguebuf.Graph {
-  return new arguebuf.Graph({
-    ...graph.toProtobuf(obj.graph),
-    nodes: Object.fromEntries(obj.nodes.map((n) => [n.id, node.toProtobuf(n)])),
-    edges: Object.fromEntries(obj.edges.map((e) => [e.id, edge.toProtobuf(e)])),
-  });
-}
-
-export function fromProtobuf(obj: arguebuf.Graph): Wrapper {
-  return {
-    nodes: Object.entries(obj.nodes).map(([id, n]) => node.fromProtobuf(id, n)),
-    edges: Object.entries(obj.edges).map(([id, e]) => edge.fromProtobuf(id, e)),
-    graph: graph.fromProtobuf(obj),
+    nodes: Object.entries(obj.nodes).map(([id, node]) => ({
+      id,
+      data: node,
+      position: { x: 0, y: 0 },
+    })),
+    edges: Object.entries(obj.edges).map(([id, edge]) => ({
+      id,
+      data: edge,
+      source: edge.source,
+      target: edge.target,
+    })),
+    graph: obj,
   };
 }
 
@@ -120,14 +80,23 @@ export const elemType = (elem?: OptionalElement): ElementType => {
     return "graph";
   } else if ("source" in elem && "target" in elem) {
     return "edge";
-  } else if (isAtom(elem)) {
-    return "atom";
-  } else if (isScheme(elem)) {
-    return "scheme";
   }
 
-  return "graph";
+  return elem.data.type;
 };
+
+export enum LayoutAlgorithm {
+  LAYERED = "layered",
+  TREE = "tree",
+  FORCE = "force",
+  RADIAL = "radial",
+}
+
+export enum EdgeStyle {
+  BEZIER = "bezier",
+  STRAIGHT = "straight",
+  STEP = "step",
+}
 
 export interface Selection {
   nodes: Array<number>;
@@ -154,3 +123,57 @@ export const selectionType = (
 
 export const initSelection = () =>
   ({ nodes: [], edges: [], type: "graph" } as Selection);
+
+export interface InitNodeProps<T> {
+  id?: string;
+  data: Omit<T, "id">;
+  position?: XYPosition;
+}
+
+export interface InitEdgeProps {
+  id?: string;
+  data: Omit<arguebuf.EdgeConstructor, "id" | "source" | "target">;
+  source: string;
+  target: string;
+}
+
+export function initAtom({
+  id,
+  position,
+  data,
+}: InitNodeProps<arguebuf.AtomNodeConstructor>): AtomNode {
+  const parsedId = id ?? arguebuf.uuid();
+
+  return {
+    id: parsedId,
+    type: "atom",
+    data: new arguebuf.AtomNode({ ...data, id: parsedId }),
+    position: position ?? { x: 0, y: 0 },
+  };
+}
+
+export function initScheme({
+  id,
+  position,
+  data,
+}: InitNodeProps<arguebuf.SchemeNodeConstructor>): SchemeNode {
+  const parsedId = id ?? arguebuf.uuid();
+
+  return {
+    id: parsedId,
+    type: "scheme",
+    data: new arguebuf.SchemeNode({ ...data, id: parsedId }),
+    position: position ?? { x: 0, y: 0 },
+  };
+}
+
+export function initEdge({ id, data, source, target }: InitEdgeProps): Edge {
+  const parsedId = id ?? arguebuf.uuid();
+
+  return {
+    id: parsedId,
+    source,
+    target,
+    data: new arguebuf.Edge({ ...data, id: parsedId, source, target }),
+  };
+}

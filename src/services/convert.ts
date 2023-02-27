@@ -1,49 +1,35 @@
-import { JsonObject } from "@bufbuild/protobuf";
-import * as arguebuf from "arg-services/graph/v1/graph_pb";
+import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/types.js";
-import { v1 as uuid } from "uuid";
-import { toProtobuf as analystToProtobuf } from "../model/analyst.js";
 import * as model from "../model/index.js";
 import { useStore } from "../store.js";
-import * as date from "./date.js";
-
-export { fromAif, fromProtobuf, toAif } from "../model/index.js";
 
 export function importGraph(obj: any): model.Wrapper {
-  if ("locutions" in obj) {
-    return model.fromAif(obj);
-  } else {
-    return model.fromProtobuf(json2proto(obj));
-  }
+  return model.fromArguebuf(arguebuf.load.json(obj));
 }
+export function exportGraph(
+  obj: model.Wrapper,
+  format: "aif" | "arguebuf"
+): any {
+  const g = arguebuf.dump.json(model.toArguebuf(obj), format);
 
-export function proto2json(graph: arguebuf.Graph): JsonObject {
-  return graph.toJson() as JsonObject;
-}
+  // const currentAnalyst = useStore.getState().analyst;
 
-export function json2proto(graph: JsonObject): arguebuf.Graph {
-  return arguebuf.Graph.fromJson(graph);
-}
+  // if (
+  //   format === "arguebuf" &&
+  //   !Object.values(g.analysts).some(
+  //     (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+  //   )
+  // ) {
+  //   // TODO: Parse analyst properly
+  //   // proto.analysts[uuid()] = currentAnalyst;
+  // }
 
-export function toProtobuf(obj: model.Wrapper): arguebuf.Graph {
-  const proto = model.toProtobuf(obj);
-
-  const currentAnalyst = analystToProtobuf(useStore.getState().analyst);
-
-  if (
-    !Object.values(proto.analysts).some(
-      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
-    )
-  ) {
-    proto.analysts[uuid()] = currentAnalyst;
-  }
-
-  return proto;
+  return g;
 }
 
 export function generateFilename() {
-  return date.format(date.now(), "yyyy-MM-dd-HH-mm-ss");
+  return arguebuf.date.format(arguebuf.date.now(), "yyyy-MM-dd-HH-mm-ss");
 }
 
 // https://stackoverflow.com/a/55613750/7626878

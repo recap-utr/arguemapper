@@ -1,53 +1,114 @@
-import { produce } from "immer";
+import * as arguebuf from "arguebuf";
 import { throttle } from "lodash";
 import type { ZundoOptions } from "zundo";
 import { temporal } from "zundo";
-import { create } from "zustand";
-import type { PersistOptions } from "zustand/middleware";
-import { persist } from "zustand/middleware";
+import { create, useStore as wrapStore } from "zustand";
+import {
+  persist,
+  PersistOptions,
+  PersistStorage,
+  StorageValue,
+} from "zustand/middleware";
 import * as model from "./model/index.js";
+import * as convert from "./services/convert.js";
 
 export interface State {
-  nodes: Array<model.Node>;
+  analyst: arguebuf.AnalystInterface;
   edges: Array<model.Edge>;
-  graph: model.Graph;
-  analyst: model.Analyst;
-  firstVisit: boolean;
-  layoutAlgorithm: model.LayoutAlgorithm;
   edgeStyle: model.EdgeStyle;
-  shouldLayout: boolean;
-  isLoading: boolean;
-  leftSidebarOpen: boolean;
-  rightSidebarOpen: boolean;
-  selection: model.Selection;
-  prettifyJson: boolean;
-  imageScale: number;
-  selectedResource: string;
-  sidebarWidth: number;
+  firstVisit: boolean;
+  graph: model.Graph;
   headerHeight: number;
+  imageScale: number;
+  isLoading: boolean;
+  layoutAlgorithm: model.LayoutAlgorithm;
+  leftSidebarOpen: boolean;
+  nodes: Array<model.Node>;
+  prettifyJson: boolean;
+  rightSidebarOpen: boolean;
+  selectedResource: string;
+  selection: model.Selection;
+  shouldLayout: boolean;
+  sidebarWidth: number;
 }
 
-const persistOptions: PersistOptions<State, Partial<State>> = {
+type ZundoState = Pick<
+  State,
+  "edges" | "graph" | "nodes" | "selectedResource" | "selection"
+>;
+
+interface SerializedState {
+  analyst: arguebuf.AnalystInterface;
+  edgeStyle: model.EdgeStyle;
+  firstVisit: boolean;
+  graph: { [key: string]: any };
+  imageScale: number;
+  layoutAlgorithm: model.LayoutAlgorithm;
+  leftSidebarOpen: boolean;
+  prettifyJson: boolean;
+  rightSidebarOpen: boolean;
+  selectedResource: string;
+}
+
+type PersistState = Pick<
+  State,
+  | "analyst"
+  | "edges"
+  | "edgeStyle"
+  | "firstVisit"
+  | "graph"
+  | "imageScale"
+  | "layoutAlgorithm"
+  | "leftSidebarOpen"
+  | "nodes"
+  | "prettifyJson"
+  | "rightSidebarOpen"
+  | "selectedResource"
+>;
+
+const storage: PersistStorage<PersistState> = {
+  getItem: (name) => {
+    const serializedState = localStorage.getItem(name);
+
+    if (serializedState === null) {
+      return null;
+    }
+
+    const { version, state } = JSON.parse(
+      serializedState
+    ) as StorageValue<SerializedState>;
+    const wrapper = convert.importGraph(state.graph);
+
+    return {
+      version: version,
+      state: {
+        ...state,
+        ...wrapper,
+      },
+    };
+  },
+  setItem: (name, value) => {
+    const { version, state } = value;
+    const { nodes, edges, graph } = state;
+    const serializedGraph = convert.exportGraph(
+      { nodes, edges, graph },
+      "arguebuf"
+    );
+    const serializedState: StorageValue<SerializedState> = {
+      version,
+      state: { ...state, graph: serializedGraph },
+    };
+    localStorage.setItem(name, JSON.stringify(serializedState));
+  },
+  removeItem: (name) => {
+    localStorage.removeItem(name);
+  },
+};
+
+const persistOptions: PersistOptions<State, PersistState> = {
   name: "state",
   version: 1,
-  serialize: (state) => {
-    const modified = produce(state, (draft) => {
-      draft.state.nodes = draft.state.nodes.map((node) => ({
-        id: node.id,
-        data: node.data,
-        type: node.type,
-        position: node.position,
-      }));
-      draft.state.edges = draft.state.edges.map((edge) => ({
-        id: edge.id,
-        data: edge.data,
-        source: edge.source,
-        target: edge.target,
-      }));
-    });
-
-    return JSON.stringify(modified);
-  },
+  storage,
   partialize: (state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -64,7 +125,7 @@ const persistOptions: PersistOptions<State, Partial<State>> = {
   }),
 };
 
-const temporalOptions: ZundoOptions<State, Partial<State>> = {
+const temporalOptions: ZundoOptions<State, ZundoState> = {
   partialize: (state) => {
     const { nodes, edges, graph, selectedResource, selection } = state;
     return { nodes, edges, graph, selectedResource, selection };
@@ -76,30 +137,29 @@ const temporalOptions: ZundoOptions<State, Partial<State>> = {
     }, 1000),
 };
 
+const initialState: State = {
+  nodes: [],
+  edges: [],
+  graph: new arguebuf.Graph({}),
+  analyst: new arguebuf.Analyst({}),
+  firstVisit: true,
+  leftSidebarOpen: true,
+  rightSidebarOpen: true,
+  layoutAlgorithm: model.LayoutAlgorithm.TREE,
+  edgeStyle: model.EdgeStyle.STEP,
+  shouldLayout: false,
+  isLoading: true,
+  selection: model.initSelection(),
+  prettifyJson: true,
+  imageScale: 3,
+  selectedResource: "1",
+  sidebarWidth: 300,
+  headerHeight: 64,
+};
+
 export const useStore = create<State>()(
-  temporal<State>(
-    persist(
-      () => ({
-        nodes: [],
-        edges: [],
-        graph: model.initGraph({}),
-        analyst: model.initAnalyst({}),
-        firstVisit: true,
-        leftSidebarOpen: true,
-        rightSidebarOpen: true,
-        layoutAlgorithm: model.LayoutAlgorithm.TREE,
-        edgeStyle: model.EdgeStyle.STEP,
-        shouldLayout: false,
-        isLoading: true,
-        selection: model.initSelection(),
-        prettifyJson: true,
-        imageScale: 3,
-        selectedResource: "1",
-        sidebarWidth: 300,
-        headerHeight: 64,
-      }),
-      persistOptions
-    ),
+  temporal(
+    persist(() => initialState, persistOptions),
     temporalOptions
   )
 );
@@ -136,3 +196,7 @@ export const canvasCenter = () => {
     y: (window.innerHeight - getState().headerHeight) / 2,
   };
 };
+
+// export const useTemporalStore = wrapStore(useStore.temporal);
+export const useTemporalStore = (selector: any) =>
+  wrapStore(useStore.temporal, selector);

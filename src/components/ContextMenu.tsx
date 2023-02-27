@@ -45,7 +45,7 @@ const Item: React.FC<ItemProps> = ({
 
 export interface Click {
   event?: MouseEvent;
-  target?: model.AtomNode | model.SchemeNode | model.Edge;
+  target?: model.Element;
   open: boolean;
 }
 
@@ -164,7 +164,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 }
               : canvasCenter()
           );
-          const node = model.initAtom({ text: "", position: { x, y } });
+          const node = model.initAtom({
+            data: { text: "" },
+            position: { x, y },
+          });
           node.selected = true;
 
           setState(
@@ -181,7 +184,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         visible={showFor("graph")}
         callback={() => {
           const { x, y } = flow.project(canvasCenter());
-          const node = model.initScheme({ position: { x, y } });
+          const node = model.initScheme({ data: {}, position: { x, y } });
           node.selected = true;
 
           setState(

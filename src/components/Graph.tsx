@@ -182,19 +182,24 @@ export default function Graph() {
           (node) => node.id === connection.target
         );
 
-        if (source && target && model.isAtom(source) && model.isAtom(target)) {
+        if (
+          source &&
+          target &&
+          source.data.type === "atom" &&
+          target.data.type === "atom"
+        ) {
           const schemePos = {
             x: (source.position.x + target.position.x) / 2,
             y: (source.position.y + target.position.y) / 2,
           };
-          const scheme = model.initScheme({ position: schemePos });
+          const scheme = model.initScheme({ data: {}, position: schemePos });
 
           draft.nodes.push(scheme);
           draft.edges.push(
-            model.initEdge({ source: source.id, target: scheme.id })
+            model.initEdge({ data: {}, source: source.id, target: scheme.id })
           );
           draft.edges.push(
-            model.initEdge({ source: scheme.id, target: target.id })
+            model.initEdge({ data: {}, source: scheme.id, target: target.id })
           );
         } else {
           draft.edges = addEdge(connection, draft.edges);
@@ -278,7 +283,7 @@ export default function Graph() {
         const node = draft.nodes.find((node) => node.id === nodeId);
 
         if (node !== undefined) {
-          node.data.clickConnect = true;
+          node.data.userdata.clickConnect = true;
         }
       })
     );
@@ -288,8 +293,8 @@ export default function Graph() {
     setState(
       produce((draft: State) => {
         draft.nodes
-          .filter((node) => node.data.clickConnect)
-          .map((node) => (node.data.clickConnect = undefined));
+          .filter((node) => node.data.userdata.clickConnect)
+          .map((node) => (node.data.userdata.clickConnect = undefined));
       })
     );
   }, []);

@@ -46,8 +46,8 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 }) => {
   const theme = useTheme();
   const background = useMemo(
-    () => (node.data.clickConnect ? color.orange[500] : bg),
-    [node.data.clickConnect, bg]
+    () => (node.data.userdata.clickConnect ? color.orange[500] : bg),
+    [node.data.userdata.clickConnect, bg]
   );
   const borderColor = useMemo(
     () => (node.selected ? theme.palette.text.primary : background),
@@ -79,8 +79,8 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   );
 };
 
-const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
-  const body = <div>{model.nodeLabel(node)}</div>;
+const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
+  const body = <div>{node.data.label()}</div>;
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
   const bg = useMemo(() => {
@@ -98,16 +98,16 @@ const AtomComponent: ComponentType<NodeProps<model.AtomData>> = (node) => {
   );
 };
 
-const SchemeComponent: ComponentType<NodeProps<model.SchemeData>> = (node) => {
-  const body = <div>{model.nodeLabel(node)}</div>;
+const SchemeComponent: ComponentType<NodeProps<model.SchemeNodeData>> = (
+  node
+) => {
+  const body = <div>{node.data.label()}</div>;
 
   const bg = useMemo(() => {
-    if (node.data.scheme !== undefined) {
-      if (node.data.scheme.type === model.SchemeType.SUPPORT) {
-        return color.green[500];
-      } else if (node.data.scheme.type === model.SchemeType.ATTACK) {
-        return color.red[500];
-      }
+    if (node.data.scheme.case === "support") {
+      return color.green[500];
+    } else if (node.data.scheme.case === "attack") {
+      return color.red[500];
     }
 
     return color.teal[500];

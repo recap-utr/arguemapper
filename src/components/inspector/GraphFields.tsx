@@ -37,6 +37,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
@@ -73,7 +74,7 @@ export const GraphFields: React.FC<Props> = () => {
     setAnalystCallback(undefined);
   };
 
-  const getState = useCallback(() => {
+  const getWrapper: () => model.Wrapper = useCallback(() => {
     const state = useStore.getState();
 
     return {
@@ -193,7 +194,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.proto2json(convert.toProtobuf(getState()))
+                      convert.exportGraph(getWrapper(), "arguebuf")
                     );
                   });
                 }}
@@ -204,7 +205,7 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
-                  convert.downloadJson(convert.toAif(getState()));
+                  convert.exportGraph(getWrapper(), "aif");
                 }}
               >
                 AIF
@@ -259,8 +260,8 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   setState(
                     produce((draft: State) => {
-                      draft.graph.participants[model.uuid()] =
-                        model.initParticipant({
+                      draft.graph.participants[arguebuf.uuid()] =
+                        new arguebuf.Participant({
                           name: "Unknown",
                         });
                     })
@@ -463,7 +464,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
         <Button
           color="error"
           onClick={() => {
-            setState({ analyst: model.initAnalyst({}) });
+            setState({ analyst: new arguebuf.Analyst({}) });
           }}
         >
           Clear
@@ -476,7 +477,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
 
 interface ParticipantModalProps {
   id: string;
-  participant: model.Participant;
+  participant: arguebuf.Participant;
 }
 
 const ParticipantModal: React.FC<ParticipantModalProps> = ({

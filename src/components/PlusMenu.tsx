@@ -92,7 +92,10 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             const { x, y } = flow.project(canvasCenter());
-            const node = model.initAtom({ text: "", position: { x, y } });
+            const node = model.initAtom({
+              data: { text: "" },
+              position: { x, y },
+            });
             node.selected = true;
 
             setState(
@@ -108,7 +111,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             const { x, y } = flow.project(canvasCenter());
-            const node = model.initScheme({ position: { x, y } });
+            const node = model.initScheme({ data: {}, position: { x, y } });
             node.selected = true;
 
             setState(

@@ -44,13 +44,11 @@ class ErrorBoundary extends React.Component<Props, State> {
       };
 
       try {
-        aif = JSON.stringify(convert.toAif(wrapper));
+        aif = JSON.stringify(convert.exportGraph(wrapper, "aif"));
       } catch {}
 
       try {
-        arguebuf = JSON.stringify(
-          convert.proto2json(convert.toProtobuf(wrapper))
-        );
+        arguebuf = JSON.stringify(convert.exportGraph(wrapper, "arguebuf"));
       } catch {}
     }
 

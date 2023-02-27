@@ -1,9 +1,8 @@
 import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import TabContext from "@mui/lab/TabContext";
-import TabList from "@mui/lab/TabList";
-import TabPanel from "@mui/lab/TabPanel";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
+import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import React, { useCallback, useMemo, useState } from "react";
@@ -22,10 +21,13 @@ const Resources: React.FC<Props> = () => {
     (state) =>
       Object.fromEntries(
         state.nodes
-          .filter((node) => model.isAtom(node) && node.data.reference)
+          .filter(
+            (node) =>
+              node.data.type === "atom" && node.data.reference !== undefined
+          )
           .map((node) => [
             node.id,
-            (node.data as model.AtomData).reference as model.Reference,
+            (node as model.AtomNode).data.reference as arguebuf.Reference,
           ])
       ),
     dequal
@@ -49,7 +51,9 @@ const Resources: React.FC<Props> = () => {
   const addResource = useCallback(() => {
     setState(
       produce((draft: State) => {
-        draft.graph.resources[model.uuid()] = model.initResource({ text: "" });
+        draft.graph.resources[arguebuf.uuid()] = new arguebuf.Resource({
+          text: "",
+        });
       })
     );
   }, []);
@@ -104,7 +108,7 @@ const Resources: React.FC<Props> = () => {
 interface ResourceProps {
   id: string;
   index: number;
-  references: { [k: string]: model.Reference };
+  references: { [k: string]: arguebuf.Reference };
 }
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
@@ -219,8 +223,10 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
 
     const { x, y } = flow.project(canvasCenter());
     const node = model.initAtom({
-      text,
-      reference: model.initReference({ offset, text, resource: id }),
+      data: {
+        text,
+        reference: new arguebuf.Reference({ offset, text, resource: id }),
+      },
       position: { x, y },
     });
     node.selected = true;
