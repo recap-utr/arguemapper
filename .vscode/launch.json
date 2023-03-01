@@ -7,8 +7,8 @@
     {
       "name": "Launch Chrome",
       "request": "launch",
-      "type": "pwa-chrome",
-      "url": "http://localhost:3000",
+      "type": "chrome",
+      "url": "http://localhost:5173",
       "webRoot": "${workspaceFolder}"
     }
   ]
