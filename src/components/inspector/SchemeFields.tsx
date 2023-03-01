@@ -5,6 +5,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import { startCase } from "lodash";
@@ -12,11 +13,29 @@ import React from "react";
 import * as model from "../../model.js";
 import { setState, State, useStore } from "../../store.js";
 
+enum SchemeType {
+  SUPPORT = "support",
+  ATTACK = "attack",
+  REPHRASE = "rephrase",
+  PREFERENCE = "preference",
+}
+
+const schemeMap: {
+  [key in SchemeType]: arguebuf.Scheme;
+} = {
+  support: { case: "support", value: arguebuf.Support.DEFAULT },
+  attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
+  rephrase: { case: "rephrase", value: arguebuf.Rephrase.DEFAULT },
+  preference: { case: "preference", value: arguebuf.Preference.DEFAULT },
+};
+
 const NULL_VALUE = "###NULL###";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
 }
+
+type OptionalSchemeType = SchemeType | typeof NULL_VALUE;
 
 const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
@@ -24,7 +43,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
     (state) => state.nodes[selectedIndex] as model.SchemeNode,
     dequal
   );
-  const schemeType = element.data.scheme?.type ?? NULL_VALUE;
+  const schemeType = element.data.scheme?.case ?? NULL_VALUE;
 
   return (
     <>
@@ -34,41 +53,36 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
           value={schemeType}
           label="Scheme Type"
           onChange={(event) => {
-            const newSchemeType = event.target.value as
-              | model.SchemeType
-              | typeof NULL_VALUE;
+            const newSchemeType = event.target.value as OptionalSchemeType;
 
             setState(
               produce((draft: State) => {
                 const idx = draft.nodes.findIndex(
                   (node) => node.id === element.id
                 );
-                if (newSchemeType === NULL_VALUE) {
-                  (draft.nodes[idx] as model.SchemeNode).data.scheme =
-                    undefined;
-                } else {
-                  (draft.nodes[idx] as model.SchemeNode).data.scheme = {
-                    type: newSchemeType,
-                    value: model.schemeMap[newSchemeType].DEFAULT,
-                  } as model.Scheme;
-                }
+                (draft.nodes[idx] as model.SchemeNode).data.scheme =
+                  newSchemeType === NULL_VALUE
+                    ? { case: undefined }
+                    : ((draft.nodes[idx] as model.SchemeNode).data.scheme =
+                        schemeMap[newSchemeType]);
               })
             );
           }}
         >
           <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
-          {Object.entries(model.SchemeType).map(([key, value]) => (
+          {Object.entries(SchemeType).map(([key, value]) => (
             <MenuItem key={key} value={value}>
               {startCase(value)}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      {element.data.scheme !== undefined && schemeType !== NULL_VALUE && (
+      {/* TODO: Argumentation scheme not selectable at the moment */}
+      {/* {element.data.scheme !== undefined && schemeType !== NULL_VALUE && (
         <FormControl fullWidth>
           <InputLabel>Argumentation Scheme</InputLabel>
           <Select
-            value={element.data.scheme.value}
+            value={arguebuf.scheme2string(element.data.scheme)}
             label="Argumentation Scheme"
             onChange={(event) => {
               setState(
@@ -92,7 +106,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
             })}
           </Select>
         </FormControl>
-      )}
+      )} */}
       <TextField
         fullWidth
         multiline

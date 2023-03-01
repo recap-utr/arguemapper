@@ -30,7 +30,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
               const edge = draft.edges[selectedIndex];
 
               if (edge.data === undefined) {
-                edge.data = { metadata: model.initMetadata({}), userdata: {} };
+                throw new Error("Edge data is undefined");
               }
 
               edge.data.userdata.notes = event.target.value;

@@ -1,6 +1,7 @@
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, TextField } from "@mui/material";
+import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import React from "react";
@@ -48,7 +49,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
               const node = draft.nodes[selectedIndex] as model.AtomNode;
 
               if (node.data.reference === undefined) {
-                node.data.reference = model.initReference({
+                node.data.reference = new arguebuf.Reference({
                   text: event.target.value,
                 });
               } else {
