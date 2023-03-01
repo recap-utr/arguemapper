@@ -29,7 +29,7 @@ import {
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
 import { resetState, setState, State, useStore } from "../store.js";

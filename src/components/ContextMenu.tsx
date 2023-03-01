@@ -9,7 +9,7 @@ import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { produce } from "immer";
 import React, { MouseEvent, useCallback, useMemo } from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { canvasCenter, setState, State, useStore } from "../store.js";
 
 interface ItemProps {

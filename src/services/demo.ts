@@ -1,6 +1,6 @@
 import * as arguebuf from "arguebuf";
 import { uuid } from "arguebuf";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 
 export function generateDemo(): model.Wrapper {
   const resourceId = uuid();

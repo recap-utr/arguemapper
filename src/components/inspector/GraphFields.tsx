@@ -43,7 +43,7 @@ import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../../model/index.js";
+import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
 import { resetState, setState, State, useStore } from "../../store.js";

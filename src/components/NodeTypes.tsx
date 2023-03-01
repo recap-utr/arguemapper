@@ -9,7 +9,7 @@ import {
   NodeTypes as FlowNodeTypes,
   Position,
 } from "reactflow";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { useStore } from "../store.js";
 
 const MAX_WIDTH = 300;

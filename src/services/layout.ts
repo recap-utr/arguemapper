@@ -1,6 +1,6 @@
 import _Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
 import { produce } from "immer";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 
 const Elk = _Elk as unknown as typeof _Elk.default;
 

@@ -9,7 +9,7 @@ import { dequal } from "dequal";
 import { produce } from "immer";
 import { startCase } from "lodash";
 import React from "react";
-import * as model from "../../model/index.js";
+import * as model from "../../model.js";
 import { setState, State, useStore } from "../../store.js";
 
 const NULL_VALUE = "###NULL###";

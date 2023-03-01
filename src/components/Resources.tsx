@@ -11,7 +11,7 @@ import {
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
 import { useReactFlow } from "reactflow";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { canvasCenter, setState, State, useStore } from "../store.js";
 
 interface Props {}

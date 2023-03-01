@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import React, { useCallback } from "react";
 import { version as npmVersion } from "../../package.json";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { setState, useStore } from "../store.js";
 import AtomFields from "./inspector/AtomFields.js";
 import EdgeFields from "./inspector/EdgeFields.js";

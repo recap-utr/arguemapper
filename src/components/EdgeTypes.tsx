@@ -8,7 +8,7 @@ import {
   SmoothStepEdge,
   StraightEdge,
 } from "reactflow";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { useStore } from "../store.js";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {

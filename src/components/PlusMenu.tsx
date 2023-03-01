@@ -13,7 +13,7 @@ import {
 import { produce } from "immer";
 import React from "react";
 import { useReactFlow } from "reactflow";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { canvasCenter, setState, State } from "../store.js";
 
 interface ItemProps {

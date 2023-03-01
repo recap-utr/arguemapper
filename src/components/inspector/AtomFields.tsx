@@ -4,7 +4,7 @@ import { Button, TextField } from "@mui/material";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import React from "react";
-import * as model from "../../model/index.js";
+import * as model from "../../model.js";
 import { setState, State, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {

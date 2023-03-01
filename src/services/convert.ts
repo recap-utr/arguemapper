@@ -1,7 +1,7 @@
 import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/types.js";
-import * as model from "../model/index.js";
+import * as model from "../model.js";
 import { useStore } from "../store.js";
 
 export function importGraph(obj: { [key: string]: any }): model.Wrapper {

@@ -39,6 +39,15 @@ export function initWrapper({
   };
 }
 
+function nodeToArguebuf(obj: Node): arguebuf.Node {
+  const node = obj.data as arguebuf.Node;
+  node.userdata.arguemapper = {
+    position: obj.position,
+  };
+
+  return node;
+}
+
 function edgeToArguebuf(obj: Edge): arguebuf.Edge {
   const edge = obj.data as arguebuf.Edge;
   edge.source = obj.source;
@@ -48,27 +57,33 @@ function edgeToArguebuf(obj: Edge): arguebuf.Edge {
 }
 
 export function toArguebuf(obj: Wrapper): arguebuf.Graph {
-  const nodes = Object.fromEntries(obj.nodes.map((n) => [n.id, n.data]));
-  const edges = Object.fromEntries(
-    obj.edges.map((e) => [e.id, edgeToArguebuf(e)])
-  );
+  const nodes = obj.nodes.map((n) => nodeToArguebuf(n));
+  const edges = obj.edges.map((e) => edgeToArguebuf(e));
   const graph = obj.graph as arguebuf.Graph;
+
   return graph.copy({ nodes, edges });
 }
 
 export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
   return {
-    nodes: Object.entries(obj.nodes).map(([id, node]) => ({
-      id,
-      data: node,
-      position: { x: 0, y: 0 },
-    })),
-    edges: Object.entries(obj.edges).map(([id, edge]) => ({
-      id,
-      data: edge,
-      source: edge.source,
-      target: edge.target,
-    })),
+    nodes: Object.entries(obj.nodes).map(
+      ([id, node]) =>
+        ({
+          id,
+          data: node,
+          type: node.type,
+          position: node.userdata.arguemapper?.position ?? { x: 0, y: 0 },
+        } as Node)
+    ),
+    edges: Object.entries(obj.edges).map(
+      ([id, edge]) =>
+        ({
+          id,
+          data: edge,
+          source: edge.source,
+          target: edge.target,
+        } as Edge)
+    ),
     graph: obj.copy({ nodes: [], edges: [] }),
   };
 }

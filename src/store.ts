@@ -9,7 +9,7 @@ import {
   PersistStorage,
   StorageValue,
 } from "zustand/middleware";
-import * as model from "./model/index.js";
+import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
 export interface State {
