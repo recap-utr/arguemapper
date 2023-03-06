@@ -14,7 +14,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/lab": "^5.0.0-alpha.121",
     "@mui/material": "^5.11.11",
-    "arg-services": "^2.3.0",
+    "arg-services": "^2.3.1",
     "arguebuf": "^1.7.2",
     "dequal": "^2.0.3",
     "draft-js": "^0.11.7",
@@ -33,7 +33,7 @@
     "use-immer": "^0.8.1",
     "uuid": "^9.0.0",
     "zundo": "^2.0.0-beta.11",
-    "zustand": "^4.3.5"
+    "zustand": "^4.3.6"
   },
   "scripts": {
     "start": "vite --open",
@@ -59,7 +59,7 @@
     "node-sass": "^8.0.0",
     "@types/jest": "^29.4.0",
     "@types/lodash": "^4.14.191",
-    "@types/node": "^18.14.2",
+    "@types/node": "^18.14.6",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/uuid": "^9.0.1",
