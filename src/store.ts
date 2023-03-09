@@ -1,4 +1,5 @@
 import * as arguebuf from "arguebuf";
+import { dequal } from "dequal";
 import { throttle } from "lodash";
 import type { ZundoOptions } from "zundo";
 import { temporal } from "zundo";
@@ -134,7 +135,18 @@ const persistOptions: PersistOptions<State, PersistState> = {
 const temporalOptions: ZundoOptions<State, ZundoState> = {
   partialize: (state) => {
     const { nodes, edges, graph, selectedResource, selection } = state;
-    return { nodes, edges, graph, selectedResource, selection };
+    const partialNodes = nodes.map((node) => {
+      // State should not update if dragged, width, etc. are changed
+      const { data, id, position, selected, type } = node;
+      return { data, id, position, selected, type };
+    });
+    return { nodes: partialNodes, edges, graph, selectedResource, selection };
+  },
+  equality: (a, b) => {
+    const debouncedFunc = throttle((a: State, b: State) => dequal(a, b), 500);
+    const debouncedResult = debouncedFunc(a, b);
+
+    return debouncedResult ?? true;
   },
   limit: 100,
   handleSet: (callback) =>
