@@ -204,5 +204,11 @@ export const canvasCenter = () => {
 };
 
 // export const useTemporalStore = wrapStore(useStore.temporal);
-export const useTemporalStore = (selector: any) =>
-  wrapStore(useStore.temporal, selector);
+// export const useTemporalStore = (
+//   selector?: (state: any) => any,
+//   equalityFn?: (a: any, b: any) => boolean
+// ) =>
+//   selector === undefined
+//     ? wrapStore(useStore.temporal)
+//     : wrapStore(useStore.temporal, selector, equalityFn);
+export const useTemporalStore = () => wrapStore(useStore.temporal);

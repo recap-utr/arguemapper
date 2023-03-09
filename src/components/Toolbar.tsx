@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
-import { setState, useStore } from "../store.js";
+import { setState, useTemporalStore } from "../store.js";
 
 interface ItemProps {
   disabled?: boolean;
@@ -35,7 +35,7 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 export interface ToolbarProps {}
 
 export const Toolbar: React.FC<ToolbarProps> = () => {
-  const { undo, redo, futureStates, pastStates } = useStore.temporal.getState();
+  const { undo, redo, futureStates, pastStates } = useTemporalStore();
   const undoable = pastStates.length > 0;
   const redoable = futureStates.length > 0;
   const setShouldLayout = useCallback((value: boolean) => {

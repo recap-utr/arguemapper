@@ -32,7 +32,13 @@ import "reactflow/dist/style.css";
 import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
-import { resetState, setState, State, useStore } from "../store.js";
+import {
+  resetState,
+  setState,
+  State,
+  useStore,
+  useTemporalStore,
+} from "../store.js";
 import { Click as ContextMenuClick, ContextMenu } from "./ContextMenu.js";
 import { EdgeTypes } from "./EdgeTypes.js";
 import { Marker, MarkerDefinition } from "./Marker.js";
@@ -47,7 +53,7 @@ export default function Graph() {
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const { resume: resumeTemporal } = useStore.temporal.getState();
+  const { resume: resumeTemporal } = useTemporalStore();
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
