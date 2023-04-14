@@ -1,5 +1,8 @@
 # Basic example: https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/envoy.yaml
 # Multiple endpoints: https://github.com/envoyproxy/envoy/issues/12074#issuecomment-1147376959
+# There are two timeouts set to 20s, this can be changed as needed -> line 31 and 33
+# The adress of the mining service is at 0.0.0.0 and port 50100, if the port of the server changes or its no longer in the same network as the envoy/arguemapper container
+# this adressing has to be changed accordingly. It may cause issues if they run in different networks though
 
 admin:
   access_log_path: /tmp/admin_access.log
@@ -27,9 +30,9 @@ static_resources:
                         - match: { prefix: "/" }
                           route:
                             cluster: mining_service
-                            timeout: 0s
+                            timeout: 20s
                             max_stream_duration:
-                              grpc_timeout_header_max: 0s
+                              grpc_timeout_header_max: 20s
                       cors:
                         allow_origin_string_match:
                           - prefix: "*"
@@ -60,5 +63,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: mining
-                      port_value: 5000
+                      address: 0.0.0.0
+                      port_value: 50100

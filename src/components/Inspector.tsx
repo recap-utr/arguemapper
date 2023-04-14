@@ -18,6 +18,9 @@ import AtomFields from "./inspector/AtomFields";
 import EdgeFields from "./inspector/EdgeFields";
 import GraphFields from "./inspector/GraphFields";
 import SchemeFields from "./inspector/SchemeFields";
+import {GrpcWebFetchTransport} from "@protobuf-ts/grpcweb-transport";
+import * as nlpClient from "arg-services/arg_services/nlp/v1/nlp_pb.client"
+import * as nlp from "arg-services/arg_services/nlp/v1/nlp_pb"
 
 interface Props {
   close: () => void;
@@ -82,11 +85,12 @@ const Inspector: React.FC<Props> = ({ close }) => {
             Delete selection
           </Button>
         )}
-        {/* <Button
+        { <Button
           variant="contained"
           onClick={() => {
             const transport = new GrpcWebFetchTransport({
-              baseUrl: "http://envoy:5000",
+              baseUrl: "http://127.0.0.1:5000",
+              mode: "no-cors" //unclear if necessary
             });
             const client = new nlpClient.NlpServiceClient(transport);
             const { response } = client.similarities({
@@ -98,7 +102,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
               },
               textTuples: [
                 { text1: "We are going to berlin", text2: "Eating is fun" },
-              ],
+              ]
             });
             response.then((value) => {
               console.log(value.similarities);
@@ -106,7 +110,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
           }}
         >
           gRPC
-        </Button> */}
+        </Button> }
         <Stack direction="column">
           <Tooltip describeChild title="Open GitHub repository">
             <IconButton

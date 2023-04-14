@@ -6,7 +6,13 @@ services:
     restart: unless-stopped
     ports:
       - '80:8080'
-  # envoy:
-  #   image: envoyproxy/envoy:1.23-latest
-  #   volumes:
-  #     - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - '5000:5000'
+      - '50100:50100'
+      - '9999:9999'
+      - '9901:9901'
+
+
+#NOTE: Start up via docker-compose up -build, this will create the arguemapper app
+#      Start the envoy proxy via docker run --network container:<arguemapper container name> -d -v <path to yaml>/envoy.yaml envoyproxy/envoy:v1.25-latest envoy -c /etc/envoy/envoy.yaml
+#      Start the server in docker via docker run as well, network has to be set to the arguemapper container as well
+#      Starting envoy in this compose file didnt work since it couldn't find the yaml file, this may be fixable
