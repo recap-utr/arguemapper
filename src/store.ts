@@ -5,10 +5,10 @@ import type { ZundoOptions } from "zundo";
 import { temporal } from "zundo";
 import { create, useStore as wrapStore } from "zustand";
 import {
-  persist,
   PersistOptions,
   PersistStorage,
   StorageValue,
+  persist,
 } from "zustand/middleware";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
@@ -43,6 +43,8 @@ interface SerializedState {
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
   graph: { [key: string]: any };
+  nodes: undefined;
+  edges: undefined;
   imageScale: number;
   layoutAlgorithm: model.LayoutAlgorithm;
   leftSidebarOpen: boolean;
@@ -97,13 +99,15 @@ const storage: PersistStorage<PersistState> = {
       { nodes, edges, graph },
       "arguebuf"
     );
-    delete (state as any).graph;
-    delete (state as any).nodes;
-    delete (state as any).edges;
 
     const serializedState: StorageValue<SerializedState> = {
       version,
-      state: { ...state, graph: serializedGraph },
+      state: {
+        ...state,
+        graph: serializedGraph,
+        nodes: undefined,
+        edges: undefined,
+      },
     };
     localStorage.setItem(name, JSON.stringify(serializedState));
   },

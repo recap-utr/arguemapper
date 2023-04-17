@@ -65,7 +65,6 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
           text="Undo last action"
           disabled={!undoable}
           callback={() => {
-            console.log(JSON.parse(JSON.stringify(pastStates)));
             undo();
           }}
           icon={faUndo}
@@ -74,7 +73,6 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
           text="Redo last action"
           disabled={!redoable}
           callback={() => {
-            console.log(JSON.parse(JSON.stringify(futureStates)));
             redo();
           }}
           icon={faRedo}

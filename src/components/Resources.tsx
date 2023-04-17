@@ -6,8 +6,7 @@ import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  HighlightWithinTextarea,
+import HighlightWithinTextarea, {
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
 import { useReactFlow } from "reactflow";
@@ -112,7 +111,7 @@ interface ResourceProps {
 }
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
-  const resource = useStore((state) => state.graph.resources[id]);
+  const resourceText = useStore((state) => state.graph.resources[id].text);
   const selection = useStore((state) => state.selection);
   const flow = useReactFlow();
 
@@ -199,7 +198,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     (value: string, selection?: TextSelection) => {
       setSystemSelection(undefined);
 
-      if (selection !== undefined && value === resource.text) {
+      if (selection !== undefined && value === resourceText) {
         const start = Math.min(selection.anchor, selection.focus);
         const end = Math.max(selection.anchor, selection.focus);
         setUserSelection(new TextSelection(start, end));
@@ -211,11 +210,11 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         );
       }
     },
-    [id, resource.text]
+    [id, resourceText]
   );
 
   const addAtom = useCallback(() => {
-    const text = resource.text.substring(
+    const text = resourceText.substring(
       userSelection.anchor,
       userSelection.focus
     );
@@ -236,7 +235,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         draft.nodes.push(node);
       })
     );
-  }, [resource.text, userSelection.anchor, userSelection.focus, id, flow]);
+  }, [resourceText, userSelection, id, flow]);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -254,7 +253,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         fullWidth
         multiline
         minRows={5}
-        value={resource.text}
+        value={resourceText}
         onChange={onChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,

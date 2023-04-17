@@ -31,11 +31,11 @@ import {
   MenuItem,
   Select,
   Stack,
-  styled,
   Switch,
   TextField,
   Tooltip,
   Typography,
+  styled,
 } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
@@ -46,7 +46,7 @@ import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
-import { resetState, setState, State, useStore } from "../../store.js";
+import { State, resetState, setState, useStore } from "../../store.js";
 
 const Input = styled("input")({
   display: "none",
@@ -57,7 +57,7 @@ export interface Props extends React.PropsWithChildren {}
 export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
-  const notes = useStore((state) => state.graph.userdata.notes);
+  const notes: string = useStore((state) => state.graph.userdata.notes);
 
   const confirm = useConfirm();
   const flow = useReactFlow();
