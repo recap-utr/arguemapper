@@ -218,3 +218,5 @@ sketch
 
 /public/meta.json
 .idea/
+.devenv/
+.direnv/
