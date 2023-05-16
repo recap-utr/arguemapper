@@ -19,7 +19,6 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
     dequal
   );
   const majorClaim = useStore((state) => state.graph.majorClaim);
-
   return (
     <>
       <TextField
@@ -27,7 +26,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={3}
         label="Text"
-        value={element.data.text ?? ""}
+        defaultValue={element.data.text ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
@@ -42,7 +41,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={3}
         label="Original Text"
-        value={element.data.reference?.text ?? ""}
+        defaultValue={element.data.reference?.text ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
@@ -78,7 +77,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data.userdata.notes ?? ""}
+        defaultValue={element.data.userdata.notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {

@@ -50,7 +50,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
       <FormControl fullWidth>
         <InputLabel>Scheme Type</InputLabel>
         <Select
-          value={schemeType}
+          defaultValue={schemeType}
           label="Scheme Type"
           onChange={(event) => {
             const newSchemeType = event.target.value as OptionalSchemeType;
@@ -112,7 +112,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data.userdata.notes ?? ""}
+        defaultValue={element.data.userdata.notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {

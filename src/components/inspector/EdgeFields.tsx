@@ -23,7 +23,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data?.userdata?.notes ?? ""}
+        defaultValue={element.data?.userdata?.notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {

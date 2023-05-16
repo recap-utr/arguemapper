@@ -387,7 +387,7 @@ export const GraphFields: React.FC<Props> = () => {
           multiline
           minRows={1}
           label="Notes"
-          value={notes ?? ""}
+          defaultValue={notes ?? ""}
           onChange={(event) => {
             setState(
               produce((draft: State) => {
