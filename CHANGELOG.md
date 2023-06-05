@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.2.0](https://github.com/recap-utr/arguemapper/compare/v1.1.12...v1.2.0) (2022-12-22)
+
+
+### Features
+
+* show correct version in inspector ([9a03279](https://github.com/recap-utr/arguemapper/commit/9a032792d08981be89d1169f13ee069a9dc441a4))
+
+## [1.1.12](https://github.com/recap-utr/arguemapper/compare/v1.1.11...v1.1.12) (2022-12-22)
+
+
+### Bug Fixes
+
+* show version in inspector ([4a93933](https://github.com/recap-utr/arguemapper/commit/4a939330619199c8e0109b4e5f6c39d3dbeb89ab))
+
+## [1.1.11](https://github.com/recap-utr/arguemapper/compare/v1.1.10...v1.1.11) (2022-12-22)
+
+
+### Bug Fixes
+
+* delete connected edges when deleting nodes ([f5fe3cb](https://github.com/recap-utr/arguemapper/commit/f5fe3cb46827dbbfd6ee02098522cf930df9736e))
+* update deps ([4eed2ab](https://github.com/recap-utr/arguemapper/commit/4eed2ab541f2ad51412cb2c50b8b3b64d8052750))
+
 ## [1.1.10](https://github.com/recap-utr/arguemapper/compare/v1.1.9...v1.1.10) (2022-12-19)
 
 
