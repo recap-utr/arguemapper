@@ -23,7 +23,6 @@ import {
   OnNodesDelete,
   OnSelectionChangeFunc,
   ReactFlow,
-  addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   useReactFlow,
@@ -207,8 +206,14 @@ export default function Graph() {
           draft.edges.push(
             model.initEdge({ data: {}, source: scheme.id, target: target.id })
           );
-        } else {
-          draft.edges = addEdge(connection, draft.edges);
+        } else if (connection.source !== null && connection.target !== null) {
+          draft.edges.push(
+            model.initEdge({
+              data: {},
+              source: connection.source,
+              target: connection.target,
+            })
+          );
         }
       })
     );
@@ -307,7 +312,7 @@ export default function Graph() {
       produce((draft: State) => {
         draft.nodes
           .filter((node) => node.data.userdata.clickConnect)
-          .map((node) => (node.data.userdata.clickConnect = undefined));
+          .map((node) => delete node.data.userdata.clickConnect);
       })
     );
   }, []);
