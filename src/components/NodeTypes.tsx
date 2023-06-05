@@ -1,12 +1,12 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
-import { capitalize } from "lodash";
+import { startCase } from "lodash";
 import React, { ComponentType, useMemo } from "react";
 import {
+  NodeTypes as FlowNodeTypes,
   Handle,
   HandleProps,
   NodeProps,
-  NodeTypes as FlowNodeTypes,
   Position,
 } from "reactflow";
 import * as model from "../model.js";
@@ -102,7 +102,7 @@ const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
 const SchemeComponent: ComponentType<NodeProps<model.SchemeNodeData>> = (
   node
 ) => {
-  const body = <div>{capitalize(node.data.label())}</div>;
+  const body = <div>{startCase(node.data.label())}</div>;
 
   const bg = useMemo(() => {
     if (node.data.scheme.case === "support") {
