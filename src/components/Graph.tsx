@@ -12,9 +12,6 @@ import { produce } from "immer";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
   ConnectionLineType,
   OnConnect,
   OnConnectEnd,
@@ -26,6 +23,9 @@ import {
   OnNodesDelete,
   OnSelectionChangeFunc,
   ReactFlow,
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -33,13 +33,13 @@ import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
 import {
+  State,
   resetState,
   setState,
-  State,
   useStore,
   useTemporalStore,
 } from "../store.js";
-import { Click as ContextMenuClick, ContextMenu } from "./ContextMenu.js";
+import { ContextMenu, Click as ContextMenuClick } from "./ContextMenu.js";
 import { EdgeTypes } from "./EdgeTypes.js";
 import { Marker, MarkerDefinition } from "./Marker.js";
 import { NodeTypes } from "./NodeTypes.js";
@@ -218,6 +218,13 @@ export default function Graph() {
     const deletedNodeIds = deletedNodes.map((node) => node.id);
     setState((state) => ({
       nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+      // one could also use getConnectedEdges from reactflow:
+      // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
+      edges: state.edges.filter(
+        (edge) =>
+          !deletedNodeIds.includes(edge.source) &&
+          !deletedNodeIds.includes(edge.target)
+      ),
       selection: model.initSelection(),
     }));
   }, []);
