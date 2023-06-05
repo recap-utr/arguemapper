@@ -40,7 +40,8 @@ export function initWrapper({
 }
 
 function nodeToArguebuf(obj: Node): arguebuf.Node {
-  const node = obj.data as arguebuf.Node;
+  // immer freezes the object, so we need to clone it
+  const node = structuredClone(obj.data) as arguebuf.Node;
   node.userdata.arguemapper = {
     position: obj.position,
   };
@@ -49,7 +50,8 @@ function nodeToArguebuf(obj: Node): arguebuf.Node {
 }
 
 function edgeToArguebuf(obj: Edge): arguebuf.Edge {
-  const edge = obj.data as arguebuf.Edge;
+  // immer freezes the object, so we need to clone it
+  const edge = structuredClone(obj.data) as arguebuf.Edge;
   edge.source = obj.source;
   edge.target = obj.target;
 
@@ -187,6 +189,6 @@ export function initEdge({ id, data, source, target }: InitEdgeProps): Edge {
     id: parsedId,
     source,
     target,
-    data: new arguebuf.Edge({ ...data, id: parsedId, source, target }),
+    data: new arguebuf.Edge({ ...data, id: parsedId, source: "", target: "" }),
   };
 }
