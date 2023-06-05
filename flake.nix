@@ -39,7 +39,10 @@
           app = pkgs.npmlock2nix.v2.build {
             src = ./.;
             installPhase = "cp -r dist $out";
-            buildCommands = ["npm run build"];
+            buildCommands = [
+              "export HOME=$out"
+              "npm run build"
+            ];
             node_modules_attrs = {
               nodejs = pkgs.nodejs-18_x;
             };
