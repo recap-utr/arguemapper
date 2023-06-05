@@ -14,7 +14,7 @@ import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
 export interface State {
-  analyst: arguebuf.AnalystInterface;
+  analyst: arguebuf.Analyst;
   edges: Array<model.Edge>;
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
@@ -81,6 +81,7 @@ const storage: PersistStorage<PersistState> = {
       serializedState
     ) as StorageValue<SerializedState>;
     const { nodes, edges, graph } = convert.importGraph(state.graph);
+    const analyst = new arguebuf.Analyst(state.analyst);
 
     return {
       version,
@@ -89,6 +90,7 @@ const storage: PersistStorage<PersistState> = {
         nodes,
         edges,
         graph,
+        analyst,
       },
     };
   },
