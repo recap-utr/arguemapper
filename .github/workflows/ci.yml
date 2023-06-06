@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'recap-utr' && github.event_name == 'push' }}
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v21
+      - uses: cihelper/action-semanticrelease-npm@v1
+        id: semanticrelease
+      - uses: cihelper/action-docker-publish@v1
+        if: ${{ steps.semanticrelease.outputs.released == 'true' }}
+        with:
+          version: ${{ steps.semanticrelease.outputs.version }}
+          build-image: false
+      - run: nix run .#copyDockerImage
+        if: ${{ steps.semanticrelease.outputs.released == 'true' }}
