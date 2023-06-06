@@ -27,7 +27,12 @@ export function exportGraph(
 }
 
 export function generateFilename() {
-  return arguebuf.date.format(arguebuf.date.now(), "yyyy-MM-dd-HH-mm-ss");
+  const timestamp = arguebuf.date.format(
+    arguebuf.date.now(),
+    "YYYY-MM-DD[T]HH-mm-ss"
+  );
+
+  return `arguemapper-${timestamp}`;
 }
 
 // https://stackoverflow.com/a/55613750/7626878
