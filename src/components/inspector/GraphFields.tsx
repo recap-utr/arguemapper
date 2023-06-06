@@ -205,7 +205,11 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileCode} />}
                 variant="contained"
                 onClick={() => {
-                  convert.exportGraph(getWrapper(), "aif");
+                  verifyAnalyst(() => {
+                    convert.downloadJson(
+                      convert.exportGraph(getWrapper(), "aif")
+                    );
+                  });
                 }}
               >
                 AIF
