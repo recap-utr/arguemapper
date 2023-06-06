@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 
+// https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
