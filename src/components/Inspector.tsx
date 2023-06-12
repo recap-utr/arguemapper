@@ -1,3 +1,5 @@
+// import { createPromiseClient } from "@bufbuild/connect";
+// import { createConnectTransport } from "@bufbuild/connect-web";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,6 +12,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+// import { NlpService } from "arg-services/nlp/v1/nlp_connect";
+// import * as nlp_pb from "arg-services/nlp/v1/nlp_pb";
 import React, { useCallback } from "react";
 import { version as npmVersion } from "../../package.json";
 import * as model from "../model.js";
@@ -83,25 +87,23 @@ const Inspector: React.FC<Props> = ({ close }) => {
         )}
         {/* <Button
           variant="contained"
-          onClick={() => {
-            const transport = new GrpcWebFetchTransport({
-              baseUrl: "http://envoy:5000",
+          onClick={async () => {
+            const transport = createConnectTransport({
+              baseUrl: "http://localhost:50110",
+              useBinaryFormat: true,
             });
-            const client = new nlpClient.NlpServiceClient(transport);
-            const { response } = client.similarities({
+            const client = createPromiseClient(NlpService, transport);
+            const response = await client.similarities({
               config: {
                 language: "en",
                 spacyModel: "en_core_web_lg",
-                embeddingModels: [],
-                similarityMethod: nlp.SimilarityMethod.COSINE,
+                similarityMethod: nlp_pb.SimilarityMethod.COSINE,
               },
               textTuples: [
                 { text1: "We are going to berlin", text2: "Eating is fun" },
               ],
             });
-            response.then((value) => {
-              console.log(value.similarities);
-            });
+            console.log(response.similarities);
           }}
         >
           gRPC
