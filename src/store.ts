@@ -120,7 +120,7 @@ const storage: PersistStorage<PersistState> = {
 
 const persistOptions: PersistOptions<State, PersistState> = {
   name: "state",
-  version: 1,
+  version: 2,
   storage,
   partialize: (state) => ({
     nodes: state.nodes,
