@@ -10,9 +10,14 @@ jobs:
       contents: write
       packages: write
     steps:
-      # TODO: qemu
       - uses: actions/checkout@v3
+      # - uses: docker/setup-qemu-action@v2
+      #   with:
+      #     platforms: arm64
       - uses: cachix/install-nix-action@v22
+        # with:
+        #   extra_nix_config: |
+        #     extra-platforms = aarch64-linux
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
       - uses: docker/login-action@v2

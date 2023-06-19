@@ -56,7 +56,7 @@
             branch = builtins.getEnv "GITHUB_REF_NAME";
             name = "ghcr.io/" + builtins.getEnv "GITHUB_REPOSITORY";
             version = builtins.getEnv "VERSION";
-            images = with self.packages; [x86_64-linux.docker aarch64-linux.docker];
+            images = with self.packages; [x86_64-linux.docker];
           });
         };
         packages = {
