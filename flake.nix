@@ -7,11 +7,17 @@
       url = "github:nix-community/npmlock2nix";
       flake = false;
     };
+    flocken = {
+      url = "github:mirkolenz/flocken/v1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = inputs @ {
     nixpkgs,
     flake-parts,
     systems,
+    flocken,
+    self,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -55,15 +61,14 @@
           shellHook = "npm install";
           packages = with pkgs; [nodejs-18_x];
         };
-        apps.copyDockerImage = {
+        apps.dockerManifest = {
           type = "app";
-          program = builtins.toString (pkgs.writeShellScript "copyDockerImage" ''
-            IFS=$'\n' # iterate over newlines
-            set -x # echo on
-            for DOCKER_TAG in $DOCKER_METADATA_OUTPUT_TAGS; do
-              ${lib.getExe pkgs.skopeo} --insecure-policy copy "docker-archive:${self'.packages.dockerImage}" "docker://$DOCKER_TAG"
-            done
-          '');
+          program = lib.getExe (flocken.legacyPackages.${system}.mkDockerManifest {
+            branch = builtins.getEnv "GITHUB_REF_NAME";
+            name = "ghcr.io/" + builtins.getEnv "GITHUB_REPOSITORY";
+            version = builtins.getEnv "VERSION";
+            images = with self.packages; [x86_64-linux.docker aarch64-linux.docker];
+          });
         };
         packages = {
           default = npmlock2nix.v2.build {
@@ -79,7 +84,7 @@
             };
           };
           arguemapper = self'.packages.default;
-          dockerImage = pkgs.dockerTools.buildLayeredImage {
+          docker = pkgs.dockerTools.buildLayeredImage {
             # https://github.com/nlewo/nix2container/blob/master/examples/nginx.nix
             # https://github.com/NixOS/nixpkgs/blob/07745bbbaf0e24f640be6494bc6ed114c50df05f/pkgs/build-support/docker/examples.nix#L63
             name = "arguemapper";
