@@ -56,6 +56,7 @@
             }
           }
         '';
+        nginxFolders = ["tmp" "var/log/nginx" "var/cache/nginx"];
       in {
         devShells.default = pkgs.mkShell {
           shellHook = "npm install";
@@ -94,21 +95,14 @@
               pkgs.dockerTools.fakeNss
             ];
             extraCommands = ''
-              mkdir -p tmp
-              mkdir -p var/log/nginx
-              mkdir -p var/cache/nginx
+              ${pkgs.coreutils}/bin/mkdir -p -m 777 ${builtins.toString nginxFolders}
             '';
-            # fakeRootCommands = ''
-            #   chown nobody:nobody tmp
-            #   chown nobody:nobody var/log/nginx
-            #   chown nobody:nobody var/cache/nginx
-            # '';
             config = {
               cmd = [(lib.getExe pkgs.nginx) "-c" nginxConf];
               exposedPorts = {
                 "${dockerPort}/tcp" = {};
               };
-              # user = "nobody:nobody";
+              user = "nobody:nobody";
             };
           };
         };
