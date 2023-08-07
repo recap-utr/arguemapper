@@ -8,7 +8,7 @@
     "@bufbuild/connect-web": "^0.12.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@fontsource/roboto": "^5.0.6",
+    "@fontsource/roboto": "^5.0.8",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
@@ -35,7 +35,7 @@
     "use-immer": "^0.9.0",
     "uuid": "^9.0.0",
     "zundo": "^2.0.0-beta.24",
-    "zustand": "^4.4.0"
+    "zustand": "^4.4.1"
   },
   "scripts": {
     "start": "vite --open",
@@ -59,7 +59,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.3",
     "@types/lodash": "^4.14.196",
-    "@types/node": "^20.4.6",
+    "@types/node": "^20.4.8",
     "@types/react": "^18.2.18",
     "@types/react-dom": "^18.2.7",
     "@types/uuid": "^9.0.2",
@@ -68,7 +68,7 @@
     "eslint-config-react-app": "^7.0.1",
     "node-sass": "^9.0.0",
     "typescript": "^5.1.6",
-    "vite": "^4.4.8",
+    "vite": "^4.4.9",
     "vite-plugin-checker": "^0.6.1",
     "web-worker": "^1.2.0"
   }
