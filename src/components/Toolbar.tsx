@@ -35,7 +35,10 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
 export interface ToolbarProps {}
 
 export const Toolbar: React.FC<ToolbarProps> = () => {
-  const { undo, redo, futureStates, pastStates } = useTemporalStore();
+  const undo = useTemporalStore((state) => state.undo);
+  const redo = useTemporalStore((state) => state.redo);
+  const futureStates = useTemporalStore((state) => state.futureStates);
+  const pastStates = useTemporalStore((state) => state.pastStates);
   const undoable = pastStates.length > 0;
   const redoable = futureStates.length > 0;
   const setShouldLayout = useCallback((value: boolean) => {

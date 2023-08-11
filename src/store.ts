@@ -1,7 +1,7 @@
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { throttle } from "lodash";
-import type { ZundoOptions } from "zundo";
+import type { TemporalState, ZundoOptions } from "zundo";
 import { temporal } from "zundo";
 import { create, useStore as wrapStore } from "zustand";
 import {
@@ -221,12 +221,6 @@ export const canvasCenter = () => {
   };
 };
 
-// export const useTemporalStore = wrapStore(useStore.temporal);
-// export const useTemporalStore = (
-//   selector?: (state: any) => any,
-//   equalityFn?: (a: any, b: any) => boolean
-// ) =>
-//   selector === undefined
-//     ? wrapStore(useStore.temporal)
-//     : wrapStore(useStore.temporal, selector, equalityFn);
-export const useTemporalStore = () => wrapStore(useStore.temporal);
+export const useTemporalStore = <T>(
+  selector: (state: TemporalState<ZundoState>) => T
+) => wrapStore(useStore.temporal, selector);

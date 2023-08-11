@@ -52,7 +52,7 @@ export default function Graph() {
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const { resume: resumeTemporal } = useTemporalStore();
+  const resumeTemporal = useTemporalStore((state) => state.resume);
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
