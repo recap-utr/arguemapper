@@ -14,8 +14,8 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/lab": "^5.0.0-alpha.144",
-    "@mui/material": "^5.14.9",
+    "@mui/lab": "^5.0.0-alpha.145",
+    "@mui/material": "^5.14.10",
     "arg-services": "^2.5.0",
     "arguebuf": "^1.8.7",
     "dequal": "^2.0.3",
@@ -34,7 +34,7 @@
     "reactflow": "^11.8.3",
     "use-immer": "^0.9.0",
     "uuid": "^9.0.1",
-    "zundo": "^2.0.0-beta.25",
+    "zundo": "^2.0.0",
     "zustand": "^4.4.1"
   },
   "scripts": {
@@ -57,12 +57,12 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^29.5.4",
+    "@types/jest": "^29.5.5",
     "@types/lodash": "^4.14.198",
-    "@types/node": "^20.6.0",
+    "@types/node": "^20.6.2",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
-    "@types/uuid": "^9.0.3",
+    "@types/uuid": "^9.0.4",
     "@vitejs/plugin-react": "^4.0.4",
     "eslint": "^8.49.0",
     "eslint-config-react-app": "^7.0.1",
