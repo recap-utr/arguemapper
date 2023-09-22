@@ -3,13 +3,14 @@ import { dequal } from "dequal";
 import { throttle } from "lodash";
 import type { TemporalState, ZundoOptions } from "zundo";
 import { temporal } from "zundo";
-import { create, useStore as wrapStore } from "zustand";
+import { useStore as wrapStore } from "zustand";
 import {
   PersistOptions,
   PersistStorage,
   StorageValue,
   persist,
 } from "zustand/middleware";
+import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
@@ -181,11 +182,12 @@ const initialState: State = {
   headerHeight: 64,
 };
 
-export const useStore = create<State>()(
+export const useStore = createWithEqualityFn<State>()(
   temporal(
     persist(() => initialState, persistOptions),
     temporalOptions
-  )
+  ),
+  Object.is
 );
 
 useStore.temporal.getState().pause();

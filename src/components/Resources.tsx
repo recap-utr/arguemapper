@@ -11,7 +11,7 @@ import HighlightWithinTextarea, {
 } from "react-highlight-within-textarea";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
-import { canvasCenter, setState, State, useStore } from "../store.js";
+import { State, canvasCenter, setState, useStore } from "../store.js";
 
 interface Props {}
 
