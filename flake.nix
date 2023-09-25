@@ -48,7 +48,7 @@
       in {
         devShells.default = pkgs.mkShell {
           shellHook = "npm install";
-          packages = with pkgs; [nodejs-18_x];
+          packages = with pkgs; [nodejs-20_x];
         };
         apps.dockerManifest = {
           type = "app";
@@ -56,7 +56,7 @@
             branch = builtins.getEnv "GITHUB_REF_NAME";
             name = "ghcr.io/" + builtins.getEnv "GITHUB_REPOSITORY";
             version = builtins.getEnv "VERSION";
-            images = with self.packages; [x86_64-linux.docker];
+            images = with self.packages; [x86_64-linux.docker aarch64-linux.docker];
           });
         };
         packages = {
@@ -64,10 +64,11 @@
             src = ./.;
             installPhase = "cp -r dist/. $out";
             buildCommands = [
+              "HOME=$TMPDIR"
               "npm run build"
             ];
             node_modules_attrs = {
-              nodejs = pkgs.nodejs-18_x;
+              nodejs = pkgs.nodejs_20;
               # Python is needed for node-gyp/libsass
               buildInputs = with pkgs; [python3];
             };
