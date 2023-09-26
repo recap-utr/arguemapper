@@ -61,17 +61,17 @@ const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
           label="Scheme Type"
           onChange={(event) => {
             const newSchemeType = event.target.value as OptionalSchemeType;
+            const newScheme =
+              newSchemeType === NULL_VALUE
+                ? { case: undefined }
+                : defaultSchemes[newSchemeType];
 
             setState(
               produce((draft: State) => {
                 const idx = draft.nodes.findIndex(
                   (node) => node.id === element.id
                 );
-                (draft.nodes[idx] as model.SchemeNode).data.scheme =
-                  newSchemeType === NULL_VALUE
-                    ? { case: undefined }
-                    : ((draft.nodes[idx] as model.SchemeNode).data.scheme =
-                        defaultSchemes[newSchemeType]);
+                (draft.nodes[idx] as model.SchemeNode).data.scheme = newScheme;
               })
             );
           }}

@@ -88,7 +88,7 @@ export const GraphFields: React.FC<Props> = () => {
     (event) => {
       if (event.target.files && event.target.files.length > 0) {
         // https://stackoverflow.com/a/30992506
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target && typeof e.target.result === "string") {
             const parsedGraph = JSON.parse(e.target.result);

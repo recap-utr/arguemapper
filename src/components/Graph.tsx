@@ -312,7 +312,7 @@ export default function Graph() {
       produce((draft: State) => {
         draft.nodes
           .filter((node) => node.data.userdata.clickConnect)
-          .map((node) => delete node.data.userdata.clickConnect);
+          .forEach((node) => delete node.data.userdata.clickConnect);
       })
     );
   }, []);
@@ -357,7 +357,7 @@ export default function Graph() {
       connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
     >
-      {false && <Loader />}
+      {/* <Loader /> */}
       {/* <MiniMap
         // style={}
         nodeStrokeColor=""
