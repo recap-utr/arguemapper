@@ -72,13 +72,7 @@ export const layout = async (
     produce(node, (draft) => {
       const elkNode = elkGraph?.children?.find((n) => n.id === node.id);
 
-      if (
-        elkNode &&
-        elkNode.x &&
-        elkNode.y &&
-        elkNode.width &&
-        elkNode.height
-      ) {
+      if (elkNode?.x && elkNode?.y && elkNode?.width && elkNode?.height) {
         draft.position = {
           x: elkNode.x + Math.random() / 1000,
           y: elkNode.y,
