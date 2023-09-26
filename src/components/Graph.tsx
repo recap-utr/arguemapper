@@ -9,7 +9,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { produce } from "immer";
-import { useSnackbar } from "notistack";
+import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ConnectionLineType,
@@ -73,6 +73,34 @@ export default function Graph() {
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
 
+  const snackbarAction: SnackbarAction = useCallback(
+    (key: SnackbarKey) => (
+      <Stack direction="row" spacing={1}>
+        <Button
+          size="small"
+          disableElevation
+          variant="contained"
+          onClick={() => {
+            resetState(generateDemo());
+            closeSnackbar(key);
+            disableFirstVisit();
+          }}
+        >
+          Load Demo
+        </Button>
+        <IconButton
+          onClick={() => {
+            closeSnackbar(key);
+            disableFirstVisit();
+          }}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </IconButton>
+      </Stack>
+    ),
+    [closeSnackbar, disableFirstVisit]
+  );
+
   // useHotkeys("shift+z", () => {
   //   if (typeof undo === "function") {
   //     undo();
@@ -93,34 +121,11 @@ export default function Graph() {
           key: "welcome",
           persist: true,
           variant: "info",
-          action: (key) => (
-            <Stack direction="row" spacing={1}>
-              <Button
-                size="small"
-                disableElevation
-                variant="contained"
-                onClick={() => {
-                  resetState(generateDemo());
-                  closeSnackbar(key);
-                  disableFirstVisit();
-                }}
-              >
-                Load Demo
-              </Button>
-              <IconButton
-                onClick={() => {
-                  closeSnackbar(key);
-                  disableFirstVisit();
-                }}
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </IconButton>
-            </Stack>
-          ),
+          action: snackbarAction,
         }
       );
     }
-  }, [closeSnackbar, enqueueSnackbar, firstVisit, disableFirstVisit, flow]);
+  }, [enqueueSnackbar, firstVisit, flow, snackbarAction]);
 
   useEffect(() => {
     if (shouldFit) {
