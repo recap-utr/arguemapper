@@ -29,6 +29,7 @@
         self',
         ...
       }: let
+        nodejs = pkgs.nodejs_20;
         npmlock2nix = import inputs.npmlock2nix {inherit pkgs;};
         caddyport = "8080";
         caddyfile = pkgs.writeText "caddyfile" ''
@@ -48,7 +49,7 @@
       in {
         devShells.default = pkgs.mkShell {
           shellHook = "npm install";
-          packages = with pkgs; [nodejs-20_x];
+          packages = [nodejs];
         };
         apps.dockerManifest = {
           type = "app";
@@ -68,7 +69,7 @@
               "npm run build"
             ];
             node_modules_attrs = {
-              nodejs = pkgs.nodejs_20;
+              inherit nodejs;
               # Python is needed for node-gyp/libsass
               buildInputs = with pkgs; [python3];
             };
