@@ -1,13 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  Box,
-  Button,
-  IconButton,
-  LinearProgress,
-  Stack,
-  useTheme,
-} from "@mui/material";
+import { Button, IconButton, Stack, useTheme } from "@mui/material";
 import { produce } from "immer";
 import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -386,11 +379,3 @@ export default function Graph() {
     </ReactFlow>
   );
 }
-
-const Loader: React.FC = () => (
-  <Box position="absolute" zIndex={10} top={0} bottom={0} right={10} left={10}>
-    <Box position="relative" top="50%" sx={{ transform: "translateY(-50%)" }}>
-      <LinearProgress />
-    </Box>
-  </Box>
-);
