@@ -6,6 +6,13 @@ ArgueMapper is the first of its kind to be optimized for mobile devices and prov
 You can try it out immediately by visiting our [hosted version](https://arguemapper.uni-trier.de).
 There are no server-side components in this app, so your data never leaves your device.
 
-If you still do not trust our server, you are free to use our provided docker configuration.
-Just pull this repository and run `docker-compose up` and the app will be available at `127.0.0.1:80`.
-If you do not want to build the image yourself (a number of dependencies need to be downloaded for that), you can also pull and run our [custom image](https://ghcr.io/recap-utr/arguemapper) built with GitHub actions.
+## Docker Image
+
+```shell
+# Building
+nix build .#docker -o arguemapper.tar.gz --system x86_64-linux
+# Loading
+docker load -i arguemapper.tar.gz
+# Running
+docker run -p 8080:8080 arguemapper
+```
