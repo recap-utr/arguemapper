@@ -105,7 +105,8 @@ export const GraphFields: React.FC<Props> = () => {
   const verifyAnalyst = useCallback(
     (callback: () => void) => {
       if (!(analyst.name && analyst.email)) {
-        setAnalystCallback(() => callback);
+        // setAnalystCallback(() => callback);
+        callback();
       } else {
         callback();
       }

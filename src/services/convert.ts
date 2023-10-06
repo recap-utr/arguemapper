@@ -13,16 +13,16 @@ export function exportGraph(
   format: "aif" | "arguebuf"
 ): JsonObject {
   const graph = model.toArguebuf(obj);
-  const currentAnalyst = useStore.getState().analyst;
+  // const currentAnalyst = useStore.getState().analyst;
 
-  if (
-    format === "arguebuf" &&
-    !Object.values(graph.analysts).some(
-      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
-    )
-  ) {
-    graph.addAnalyst(currentAnalyst);
-  }
+  // if (
+  //   format === "arguebuf" &&
+  //   !Object.values(graph.analysts).some(
+  //     (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+  //   )
+  // ) {
+  //   graph.addAnalyst(currentAnalyst);
+  // }
 
   return arguebuf.dump.json(graph, format);
 }
