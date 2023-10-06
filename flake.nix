@@ -48,7 +48,10 @@
         '';
       in {
         devShells.default = pkgs.mkShell {
-          shellHook = "npm install";
+          shellHook = ''
+            ${lib.getExe' nodejs "npm"} install
+            ${lib.getExe nodejs} --version > .node-version
+          '';
           packages = [nodejs];
         };
         apps.dockerManifest = {
