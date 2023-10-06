@@ -63,7 +63,7 @@ export function toArguebuf(obj: Wrapper): arguebuf.Graph {
   const edges = obj.edges.map((e) => edgeToArguebuf(e));
   const graph = obj.graph as arguebuf.Graph;
 
-  return graph.copy({ nodes, edges });
+  return arguebuf.copy(graph, { nodes, edges });
 }
 
 export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
@@ -86,7 +86,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
           target: edge.target,
         } as Edge)
     ),
-    graph: obj.copy({ nodes: [], edges: [] }),
+    graph: arguebuf.copy(obj, { nodes: [], edges: [] }),
   };
 }
 
