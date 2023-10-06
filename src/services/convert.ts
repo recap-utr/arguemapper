@@ -21,7 +21,7 @@ export function exportGraph(
       (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
     )
   ) {
-    graph.analysts[arguebuf.uuid()] = currentAnalyst;
+    graph.addAnalyst(currentAnalyst);
   }
 
   return arguebuf.dump.json(graph, format);

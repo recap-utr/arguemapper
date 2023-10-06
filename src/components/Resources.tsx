@@ -50,9 +50,11 @@ const Resources: React.FC<Props> = () => {
   const addResource = useCallback(() => {
     setState(
       produce((draft: State) => {
-        draft.graph.resources[arguebuf.uuid()] = new arguebuf.Resource({
-          text: "",
-        });
+        draft.graph.addResource(
+          new arguebuf.Resource({
+            text: "",
+          })
+        );
       })
     );
   }, []);

@@ -264,10 +264,11 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   setState(
                     produce((draft: State) => {
-                      draft.graph.participants[arguebuf.uuid()] =
+                      draft.graph.addParticipant(
                         new arguebuf.Participant({
                           name: "Unknown",
-                        });
+                        })
+                      );
                     })
                   );
                 }}
