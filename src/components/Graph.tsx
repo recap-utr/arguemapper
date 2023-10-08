@@ -94,18 +94,6 @@ export default function Graph() {
     [closeSnackbar, disableFirstVisit]
   );
 
-  // useHotkeys("shift+z", () => {
-  //   if (typeof undo === "function") {
-  //     undo();
-  //   }
-  // });
-
-  // useHotkeys("shift+y", () => {
-  //   if (typeof redo === "function") {
-  //     redo();
-  //   }
-  // });
-
   useEffect(() => {
     if (firstVisit) {
       enqueueSnackbar(

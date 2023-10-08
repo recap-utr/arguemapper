@@ -10,6 +10,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import React, { useCallback } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useReactFlow } from "reactflow";
 import { setState, useTemporalStore } from "../store.js";
 
@@ -49,6 +50,22 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
   const onLayout = useCallback(() => {
     setShouldLayout(true);
   }, [setShouldLayout]);
+
+  useHotkeys(
+    "mod+z",
+    () => {
+      undoable && undo();
+    },
+    { preventDefault: true }
+  );
+
+  useHotkeys(
+    "mod+y, mod+shift+z",
+    () => {
+      redoable && redo();
+    },
+    { preventDefault: true }
+  );
 
   return (
     <Box

@@ -42,6 +42,7 @@ import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
@@ -118,6 +119,16 @@ export const GraphFields: React.FC<Props> = () => {
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
+
+  useHotkeys(
+    "mod+s",
+    () => {
+      verifyAnalyst(() => {
+        convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
+      });
+    },
+    { preventDefault: true }
+  );
 
   return (
     <>
