@@ -21,6 +21,10 @@ export function exportGraph(
       (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
     )
   ) {
+    if (Object.keys(graph.analysts).includes(currentAnalyst.id)) {
+      graph.removeAnalyst(currentAnalyst.id);
+    }
+
     graph.addAnalyst(currentAnalyst);
   }
 
