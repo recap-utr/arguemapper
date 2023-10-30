@@ -6,6 +6,8 @@ ArgueMapper is the first of its kind to be optimized for mobile devices and prov
 You can try it out immediately by visiting our [hosted version](https://arguemapper.uni-trier.de).
 There are no server-side components in this app, so your data never leaves your device.
 
+![user interface](./assets/user-interface.png)
+
 ## Docker Image
 
 ```shell
@@ -16,8 +18,6 @@ docker load -i arguemapper.tar.gz
 # Running
 docker run -p 8080:8080 arguemapper
 ```
-
-![user interface](./assets/user-interface.png)
 
 ## Tutorial
 
