@@ -14,8 +14,8 @@
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@mui/lab": "^5.0.0-alpha.150",
-    "@mui/material": "^5.14.15",
+    "@mui/lab": "^5.0.0-alpha.152",
+    "@mui/material": "^5.14.17",
     "arg-services": "^2.5.3",
     "arguebuf": "^1.8.9",
     "dequal": "^2.0.3",
@@ -35,7 +35,7 @@
     "use-immer": "^0.9.0",
     "uuid": "^9.0.1",
     "zundo": "^2.0.0",
-    "zustand": "^4.4.4"
+    "zustand": "^4.4.6"
   },
   "scripts": {
     "start": "vite --open",
@@ -57,14 +57,14 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^29.5.6",
-    "@types/lodash": "^4.14.200",
-    "@types/node": "^20.8.9",
-    "@types/react": "^18.2.33",
-    "@types/react-dom": "^18.2.14",
-    "@types/uuid": "^9.0.6",
-    "@vitejs/plugin-react": "^4.1.0",
-    "eslint": "^8.52.0",
+    "@types/jest": "^29.5.8",
+    "@types/lodash": "^4.14.201",
+    "@types/node": "^20.9.0",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@types/uuid": "^9.0.7",
+    "@vitejs/plugin-react": "^4.1.1",
+    "eslint": "^8.53.0",
     "eslint-config-react-app": "^7.0.1",
     "node-sass": "^9.0.0",
     "typescript": "^5.2.2",
