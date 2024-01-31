@@ -48,11 +48,19 @@ You shall only EXTRACT the ADUs from the text.
 
   const functionArgs = JSON.parse(res.arguments);
   const atomTexts: Array<string> = functionArgs.atoms;
+  const resourceTextLower = resourceText.toLowerCase();
 
-  return atomTexts.map((text) => ({
-    text,
-    reference: new arguebuf.Reference({ text, resource: resourceId }), // TODO: Add offset
-  }));
+  return atomTexts.map((generatedText) => {
+    const text = generatedText.trim().replace(/[.,]$/, "");
+    return {
+      text,
+      reference: new arguebuf.Reference({
+        text,
+        resource: resourceId,
+        offset: resourceTextLower.indexOf(text.toLowerCase()),
+      }),
+    };
+  });
 }
 
 async function fetchOpenAI(
