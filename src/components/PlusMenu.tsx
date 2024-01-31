@@ -1,8 +1,9 @@
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faComments, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
+  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -14,7 +15,8 @@ import { produce } from "immer";
 import React from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
-import { canvasCenter, setState, State } from "../store.js";
+import { generateAtomNodes } from "../services/openai.js";
+import { State, canvasCenter, getState, setState } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -72,7 +74,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           sx={{ backgroundColor: theme.palette.primary.dark }}
           onClick={open}
         >
-          <FontAwesomeIcon icon={faPlus} />
+          <FontAwesomeIcon icon={faBolt} />
         </IconButton>
       </Box>
       <Menu
@@ -123,6 +125,26 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           close={close}
           icon={faPlus}
           text="Add Scheme"
+        />
+        <Divider />
+        <Item
+          callback={() => {
+            const state = getState();
+            generateAtomNodes(state.graph.resources).then((atomNodesData) => {
+              const atomNodes = atomNodesData.map((data) =>
+                model.initAtom({ data })
+              );
+              setState(
+                produce((draft: State) => {
+                  draft.nodes.push(...atomNodes);
+                  draft.shouldLayout = true;
+                })
+              );
+            });
+          }}
+          close={close}
+          icon={faComments}
+          text="Generate Atoms"
         />
       </Menu>
     </>

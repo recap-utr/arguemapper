@@ -10,6 +10,7 @@ import {
   faGear,
   faMinusCircle,
   faPlusCircle,
+  faRobot,
   faTrash,
   faUpload,
   faUsers,
@@ -41,7 +42,7 @@ import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
@@ -58,7 +59,11 @@ export interface Props extends React.PropsWithChildren {}
 export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
+  const openaiConfig = useStore((state) => state.openaiConfig);
   const notes: string = useStore((state) => state.graph.userdata.notes);
+  const [openaiApiKey, setOpenaiKey] = useState<string>(
+    sessionStorage.getItem("openaiApiKey") ?? ""
+  );
 
   const confirm = useConfirm();
   const flow = useReactFlow();
@@ -74,6 +79,10 @@ export const GraphFields: React.FC<Props> = () => {
   const disableAnalystCallback = () => {
     setAnalystCallback(undefined);
   };
+
+  useEffect(() => {
+    sessionStorage.setItem("openaiApiKey", openaiApiKey);
+  }, [openaiApiKey]);
 
   const getWrapper: () => model.Wrapper = useCallback(() => {
     const state = useStore.getState();
@@ -398,7 +407,69 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
+        <Accordion
+          expanded={expanded === "openaiConfig"}
+          onChange={handleChange("openaiConfig")}
+        >
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faRobot} />
+              &nbsp;OpenAI Config
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <FormControl fullWidth>
+                <InputLabel>Model</InputLabel>
+                <Select
+                  value={openaiConfig.model}
+                  label="Layout"
+                  onChange={(event) => {
+                    setState(
+                      produce((draft: State) => {
+                        draft.openaiConfig.model = event.target.value;
+                      })
+                    );
+                  }}
+                >
+                  <MenuItem key="gpt-3.5-turbo" value="gpt-3.5-turbo">
+                    GPT-3.5 Turbo
+                  </MenuItem>
+                  <MenuItem
+                    key="gpt-4-turbo-preview"
+                    value="gpt-4-turbo-preview"
+                  >
+                    GPT-4 Turbo
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                type="text"
+                label="API Key"
+                value={openaiApiKey}
+                onChange={(event) => {
+                  setOpenaiKey(event.target.value);
+                }}
+              />
+              <TextField
+                fullWidth
+                type="text"
+                label="Base URL"
+                value={openaiConfig.baseURL}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.openaiConfig.baseURL = event.target.value;
+                    })
+                  );
+                }}
+              />
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
         <TextField
+          sx={{ marginTop: 2 }}
           fullWidth
           multiline
           minRows={1}

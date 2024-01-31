@@ -14,6 +14,10 @@ import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
+export interface OpenAIConfig {
+  model: string;
+  baseURL: string;
+}
 export interface State {
   analyst: arguebuf.Analyst;
   edges: Array<model.Edge>;
@@ -32,6 +36,7 @@ export interface State {
   selection: model.Selection;
   shouldLayout: boolean;
   sidebarWidth: number;
+  openaiConfig: OpenAIConfig;
 }
 
 type ZundoState = Pick<
@@ -52,6 +57,7 @@ interface SerializedState {
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
   selectedResource: string;
+  openaiConfig: OpenAIConfig;
 }
 
 type PersistState = Pick<
@@ -68,6 +74,7 @@ type PersistState = Pick<
   | "prettifyJson"
   | "rightSidebarOpen"
   | "selectedResource"
+  | "openaiConfig"
 >;
 
 const storage: PersistStorage<PersistState> = {
@@ -136,6 +143,7 @@ const persistOptions: PersistOptions<State, PersistState> = {
     leftSidebarOpen: state.leftSidebarOpen,
     rightSidebarOpen: state.rightSidebarOpen,
     selectedResource: state.selectedResource,
+    openaiConfig: state.openaiConfig,
   }),
 };
 
@@ -183,6 +191,10 @@ const initialState: State = {
   selectedResource: "1",
   sidebarWidth: 300,
   headerHeight: 64,
+  openaiConfig: {
+    model: "gpt-4-turbo-preview",
+    baseURL: "https://api.openai.com/v1",
+  },
 };
 
 export const useStore = createWithEqualityFn<State>()(
