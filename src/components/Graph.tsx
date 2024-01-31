@@ -1,6 +1,13 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Stack, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Stack,
+  useTheme,
+} from "@mui/material";
 import { produce } from "immer";
 import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -53,10 +60,7 @@ export default function Graph() {
   const disableFirstVisit = useCallback(() => {
     setState({ firstVisit: false });
   }, []);
-  // const isLoading = useStore((state) => state.isLoading);
-  const setIsLoading = useCallback((value: boolean) => {
-    setState({ isLoading: value });
-  }, []);
+  const isLoading = useStore((state) => state.isLoading);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const edgeStyle = useStore((state) => state.edgeStyle);
   const setShouldLayout = useCallback((value: boolean) => {
@@ -120,34 +124,31 @@ export default function Graph() {
     []
   );
 
-  // useEffect(() => {
-  //   const domNode = document.querySelector(
-  //     "#react-flow .react-flow__renderer"
-  //   ) as HTMLElement | null;
+  useEffect(() => {
+    const domNode = document.querySelector(
+      "#react-flow .react-flow__renderer"
+    ) as HTMLElement | null;
 
-  //   if (domNode) {
-  //     if (isLoading) {
-  //       domNode.style.opacity = "0";
-  //     } else {
-  //       domNode.style.opacity = "1";
-  //     }
-  //   }
-  // }, [isLoading]);
+    if (domNode) {
+      if (isLoading) {
+        domNode.style.opacity = "0";
+      } else {
+        domNode.style.opacity = "1";
+      }
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every(nodeHasDimension)) {
-      setIsLoading(true);
       layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
         setState({ nodes: layoutedNodes });
         setShouldLayout(false);
         setShouldFit(true);
-        setIsLoading(false);
       });
     }
   }, [
     setShouldFit,
     shouldLayout,
-    setIsLoading,
     setShouldLayout,
     layoutAlgorithm,
     nodes,
@@ -230,10 +231,9 @@ export default function Graph() {
   const onInit: OnInit = useCallback(
     (instance) => {
       instance.fitView();
-      setIsLoading(false);
       resumeTemporal();
     },
-    [resumeTemporal, setIsLoading]
+    [resumeTemporal]
   );
 
   const onContextMenu = (
@@ -343,7 +343,7 @@ export default function Graph() {
       connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
     >
-      {/* <Loader /> */}
+      {isLoading && <Loader />}
       {/* <MiniMap
         // style={}
         nodeStrokeColor=""
@@ -367,3 +367,14 @@ export default function Graph() {
     </ReactFlow>
   );
 }
+
+const Loader: React.FC = () => (
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    minHeight="100vh"
+  >
+    <CircularProgress size="25%" />
+  </Box>
+);

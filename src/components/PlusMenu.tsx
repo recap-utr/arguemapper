@@ -12,7 +12,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { produce } from "immer";
-import React from "react";
+import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import { generateAtomNodes } from "../services/openai.js";
@@ -59,6 +59,9 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
     setPlusButton(null);
   };
   const flow = useReactFlow();
+  const setIsLoading = useCallback((value: boolean) => {
+    setState({ isLoading: value });
+  }, []);
 
   return (
     <>
@@ -129,6 +132,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Divider />
         <Item
           callback={() => {
+            setIsLoading(true);
             const state = getState();
             generateAtomNodes(state.graph.resources).then((atomNodesData) => {
               const atomNodes = atomNodesData.map((data) =>
@@ -138,6 +142,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
                 produce((draft: State) => {
                   draft.nodes.push(...atomNodes);
                   draft.shouldLayout = true;
+                  draft.isLoading = false;
                 })
               );
             });

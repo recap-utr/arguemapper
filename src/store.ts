@@ -184,7 +184,7 @@ const initialState: State = {
   layoutAlgorithm: model.LayoutAlgorithm.TREE,
   edgeStyle: model.EdgeStyle.STEP,
   shouldLayout: false,
-  isLoading: true,
+  isLoading: false,
   selection: model.initSelection(),
   prettifyJson: true,
   imageScale: 3,
