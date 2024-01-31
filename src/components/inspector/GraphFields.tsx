@@ -42,12 +42,13 @@ import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
+import useSessionStorage from "../../storage.js";
 import { State, resetState, setState, useStore } from "../../store.js";
 
 const Input = styled("input")({
@@ -61,8 +62,9 @@ export const GraphFields: React.FC<Props> = () => {
   const analyst = useStore((state) => state.analyst);
   const openaiConfig = useStore((state) => state.openaiConfig);
   const notes: string = useStore((state) => state.graph.userdata.notes);
-  const [openaiApiKey, setOpenaiKey] = useState<string>(
-    sessionStorage.getItem("openaiApiKey") ?? ""
+  const [openaiApiKey, setOpenaiKey] = useSessionStorage<string>(
+    "openaiApiKey",
+    ""
   );
 
   const confirm = useConfirm();
@@ -79,10 +81,6 @@ export const GraphFields: React.FC<Props> = () => {
   const disableAnalystCallback = () => {
     setAnalystCallback(undefined);
   };
-
-  useEffect(() => {
-    sessionStorage.setItem("openaiApiKey", openaiApiKey);
-  }, [openaiApiKey]);
 
   const getWrapper: () => model.Wrapper = useCallback(() => {
     const state = useStore.getState();
