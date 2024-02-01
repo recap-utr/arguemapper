@@ -11,7 +11,9 @@ export async function generateAtomNodes(
   resources: Mapping<arguebuf.Resource>
 ): Promise<Array<arguebuf.AtomNodeConstructor>> {
   if (Object.keys(resources).length !== 1) {
-    throw new Error("Only one resource is supported");
+    throw new Error(
+      "You added multiple resources to the graph. Currently, only one resource is supported for AI generations."
+    );
   }
 
   const resourceId = Object.keys(resources)[0];
@@ -73,7 +75,9 @@ async function fetchOpenAI(
   const apiKey = getSessionStorage<string>("openaiApiKey", "");
 
   if (apiKey === "") {
-    throw new Error("OpenAI API key not found");
+    throw new Error(
+      "Cannot perform OpenAI request because an API Key is missing. Please open the inspector and set it in the field 'OpenAI Config'."
+    );
   }
 
   const client = new OpenAI({ baseURL, apiKey });
@@ -103,7 +107,9 @@ async function fetchOpenAI(
     res.choices[0].message.tool_calls === undefined ||
     res.choices[0].message.tool_calls.length !== 1
   ) {
-    throw new Error("Unexpected response from OpenAI");
+    throw new Error(
+      "Got an unexpected response from OpenAI. This may happen sometimes, so please try again."
+    );
   }
 
   return res.choices[0].message.tool_calls[0].function;

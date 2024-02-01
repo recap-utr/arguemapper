@@ -1,5 +1,10 @@
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faBolt, faComments, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBolt,
+  faComments,
+  faPlus,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
@@ -12,6 +17,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { produce } from "immer";
+import { useSnackbar } from "notistack";
 import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
@@ -62,6 +68,35 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
   const setIsLoading = useCallback((value: boolean) => {
     setState({ isLoading: value });
   }, []);
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const handleError = useCallback(
+    (e: unknown) => {
+      let errorMsg = "Unknown error";
+      if (typeof e === "string") {
+        errorMsg = e.toUpperCase();
+      } else if (e instanceof Error) {
+        errorMsg = e.message;
+      }
+      console.log(errorMsg);
+
+      enqueueSnackbar(errorMsg, {
+        variant: "error",
+        autoHideDuration: 5000,
+        action: (key) => (
+          <IconButton
+            onClick={() => {
+              closeSnackbar(key);
+            }}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </IconButton>
+        ),
+      });
+    },
+    [closeSnackbar, enqueueSnackbar]
+  );
 
   return (
     <>
@@ -134,18 +169,22 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           callback={() => {
             setIsLoading(true);
             const state = getState();
-            generateAtomNodes(state.graph.resources).then((atomNodesData) => {
-              const atomNodes = atomNodesData.map((data) =>
-                model.initAtom({ data })
-              );
-              setState(
-                produce((draft: State) => {
-                  draft.nodes.push(...atomNodes);
-                  draft.shouldLayout = true;
-                  draft.isLoading = false;
-                })
-              );
-            });
+            generateAtomNodes(state.graph.resources)
+              .then((atomNodesData) => {
+                const atomNodes = atomNodesData.map((data) =>
+                  model.initAtom({ data })
+                );
+                setState(
+                  produce((draft: State) => {
+                    draft.nodes.push(...atomNodes);
+                    draft.shouldLayout = true;
+                  })
+                );
+              })
+              .catch(handleError)
+              .finally(() => {
+                setIsLoading(false);
+              });
           }}
           close={close}
           icon={faComments}
