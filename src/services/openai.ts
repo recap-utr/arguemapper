@@ -76,7 +76,7 @@ async function fetchOpenAI(
     throw new Error("OpenAI API key not found");
   }
 
-  const client = new OpenAI({ baseURL, apiKey, dangerouslyAllowBrowser: true });
+  const client = new OpenAI({ baseURL, apiKey });
 
   const res = await client.chat.completions.create({
     model,
