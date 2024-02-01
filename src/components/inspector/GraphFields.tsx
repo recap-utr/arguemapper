@@ -48,7 +48,7 @@ import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
-import useSessionStorage from "../../storage.js";
+import { useSessionStorage } from "../../storage.js";
 import { State, resetState, setState, useStore } from "../../store.js";
 
 const Input = styled("input")({

@@ -1,5 +1,6 @@
 import * as arguebuf from "arguebuf";
 import OpenAI from "openai";
+import { getSessionStorage } from "../storage";
 import { getState } from "../store";
 
 export type Mapping<U> = {
@@ -69,7 +70,7 @@ async function fetchOpenAI(
   function_definition: OpenAI.FunctionDefinition
 ): Promise<OpenAI.ChatCompletionMessageToolCall.Function> {
   const { model, baseURL } = getState().openaiConfig;
-  const apiKey = sessionStorage.getItem("openaiApiKey") ?? "";
+  const apiKey = getSessionStorage<string>("openaiApiKey", "");
 
   if (apiKey === "") {
     throw new Error("OpenAI API key not found");
