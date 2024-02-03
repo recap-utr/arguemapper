@@ -150,7 +150,10 @@ const temporalOptions: ZundoOptions<State, ZundoState> = {
     return { nodes: partialNodes, edges, graph, selectedResource, selection };
   },
   equality: (a, b) => {
-    const debouncedFunc = throttle((a: State, b: State) => dequal(a, b), 500);
+    const debouncedFunc = throttle(
+      (a: ZundoState, b: ZundoState) => dequal(a, b),
+      500
+    );
     const debouncedResult = debouncedFunc(a, b);
 
     return debouncedResult ?? true;
