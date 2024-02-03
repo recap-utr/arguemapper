@@ -8,98 +8,102 @@
       flake = false;
     };
     flocken = {
-      url = "github:mirkolenz/flocken/v1";
+      url = "github:mirkolenz/flocken/v2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = inputs @ {
-    nixpkgs,
-    flake-parts,
-    systems,
-    flocken,
-    self,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    inputs@{
+      nixpkgs,
+      flake-parts,
+      systems,
+      flocken,
+      self,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import systems;
-      perSystem = {
-        pkgs,
-        system,
-        lib,
-        self',
-        ...
-      }: let
-        nodejs = pkgs.nodejs_20;
-        npmlock2nix = import inputs.npmlock2nix {inherit pkgs;};
-        caddyport = "8080";
-        caddyfile = pkgs.writeText "caddyfile" ''
-          {
-            admin off
-            auto_https off
-            persist_config off
-          }
-          :${caddyport} {
-            root * ${self'.packages.default}
-            encode gzip
-            file_server {
-              index index.html
+      perSystem =
+        {
+          pkgs,
+          system,
+          lib,
+          self',
+          ...
+        }:
+        let
+          nodejs = pkgs.nodejs_20;
+          npmlock2nix = import inputs.npmlock2nix { inherit pkgs; };
+          caddyport = "8080";
+          caddyfile = pkgs.writeText "caddyfile" ''
+            {
+              admin off
+              auto_https off
+              persist_config off
             }
-          }
-        '';
-      in {
-        devShells.default = pkgs.mkShell {
-          shellHook = ''
-            ${lib.getExe' nodejs "npm"} install
-            ${lib.getExe nodejs} --version > .node-version
+            :${caddyport} {
+              root * ${self'.packages.default}
+              encode gzip
+              file_server {
+                index index.html
+              }
+            }
           '';
-          packages = [nodejs];
-        };
-        apps.dockerManifest = {
-          type = "app";
-          program = lib.getExe (flocken.legacyPackages.${system}.mkDockerManifest {
-            branch = builtins.getEnv "GITHUB_REF_NAME";
-            name = "ghcr.io/" + builtins.getEnv "GITHUB_REPOSITORY";
-            version = builtins.getEnv "VERSION";
-            images = with self.packages; [x86_64-linux.docker aarch64-linux.docker];
-          });
-        };
-        packages = {
-          default = npmlock2nix.v2.build {
-            src = ./.;
-            installPhase = "cp -r dist/. $out";
-            buildCommands = [
-              "HOME=$TMPDIR"
-              "npm run build"
-            ];
-            node_modules_attrs = {
-              inherit nodejs;
-              # Python is needed for node-gyp/libsass
-              buildInputs = with pkgs; [python3];
-            };
-          };
-          arguemapper = self'.packages.default;
-          server = pkgs.writeShellApplication {
-            name = "server";
-            text = ''
-              ${lib.getExe pkgs.caddy} run --config ${caddyfile} --adapter caddyfile
+        in
+        {
+          devShells.default = pkgs.mkShell {
+            shellHook = ''
+              ${lib.getExe' nodejs "npm"} install
+              ${lib.getExe nodejs} --version > .node-version
             '';
+            packages = [ nodejs ];
           };
-          docker = pkgs.dockerTools.buildLayeredImage {
-            name = "arguemapper";
-            tag = "latest";
-            created = "now";
-            contents = [
-              pkgs.dockerTools.fakeNss
-            ];
-            config = {
-              entrypoint = [(lib.getExe self'.packages.server)];
-              exposedPorts = {
-                "${caddyport}/tcp" = {};
+          packages = {
+            default = npmlock2nix.v2.build {
+              src = ./.;
+              installPhase = "cp -r dist/. $out";
+              buildCommands = [
+                "HOME=$TMPDIR"
+                "npm run build"
+              ];
+              node_modules_attrs = {
+                inherit nodejs;
+                # Python is needed for node-gyp/libsass
+                buildInputs = with pkgs; [ python3 ];
               };
-              user = "nobody:nobody";
+            };
+            arguemapper = self'.packages.default;
+            server = pkgs.writeShellApplication {
+              name = "server";
+              text = ''
+                ${lib.getExe pkgs.caddy} run --config ${caddyfile} --adapter caddyfile
+              '';
+            };
+            docker = pkgs.dockerTools.buildLayeredImage {
+              name = "arguemapper";
+              tag = "latest";
+              created = "now";
+              contents = [ pkgs.dockerTools.fakeNss ];
+              config = {
+                entrypoint = [ (lib.getExe self'.packages.server) ];
+                exposedPorts = {
+                  "${caddyport}/tcp" = { };
+                };
+                user = "nobody:nobody";
+              };
             };
           };
+          legacyPackages.dockerManifest = flocken.legacyPackages.${system}.mkDockerManifest {
+            github = {
+              enable = true;
+              token = builtins.getEnv "GH_TOKEN";
+            };
+            version = builtins.getEnv "VERSION";
+            images = with self.packages; [
+              x86_64-linux.docker
+              aarch64-linux.docker
+            ];
+          };
         };
-      };
     };
 }
