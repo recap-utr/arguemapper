@@ -417,6 +417,15 @@ export const GraphFields: React.FC<Props> = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Stack spacing={2}>
+              <TextField
+                fullWidth
+                type="password"
+                label="API Key"
+                value={openaiApiKey}
+                onChange={(event) => {
+                  setOpenaiKey(event.target.value);
+                }}
+              />
               <FormControl fullWidth>
                 <InputLabel>Model</InputLabel>
                 <Select
@@ -441,15 +450,6 @@ export const GraphFields: React.FC<Props> = () => {
                   </MenuItem>
                 </Select>
               </FormControl>
-              <TextField
-                fullWidth
-                type="text"
-                label="API Key"
-                value={openaiApiKey}
-                onChange={(event) => {
-                  setOpenaiKey(event.target.value);
-                }}
-              />
               <TextField
                 fullWidth
                 type="text"
