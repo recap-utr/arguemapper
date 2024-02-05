@@ -439,15 +439,8 @@ export const GraphFields: React.FC<Props> = () => {
                     );
                   }}
                 >
-                  <MenuItem key="gpt-3.5-turbo" value="gpt-3.5-turbo">
-                    GPT-3.5 Turbo
-                  </MenuItem>
-                  <MenuItem
-                    key="gpt-4-turbo-preview"
-                    value="gpt-4-turbo-preview"
-                  >
-                    GPT-4 Turbo
-                  </MenuItem>
+                  <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
+                  <MenuItem value="gpt-4-turbo-preview">GPT-4 Turbo</MenuItem>
                 </Select>
               </FormControl>
               <TextField
