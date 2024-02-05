@@ -113,7 +113,7 @@ interface ResourceProps {
 }
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
-  const resourceText = useStore((state) => state.graph.resources[id].text);
+  const resource = useStore((state) => state.graph.resources[id]);
   const selection = useStore((state) => state.selection);
   const flow = useReactFlow();
 
@@ -200,7 +200,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     (value: string, selection?: TextSelection) => {
       setSystemSelection(undefined);
 
-      if (selection !== undefined && value === resourceText) {
+      if (selection !== undefined && value === resource.text) {
         const start = Math.min(selection.anchor, selection.focus);
         const end = Math.max(selection.anchor, selection.focus);
         setUserSelection(new TextSelection(start, end));
@@ -212,11 +212,11 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         );
       }
     },
-    [id, resourceText]
+    [id, resource.text]
   );
 
   const addAtom = useCallback(() => {
-    const text = resourceText.substring(
+    const text = resource.text.substring(
       userSelection.anchor,
       userSelection.focus
     );
@@ -237,7 +237,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         draft.nodes.push(node);
       })
     );
-  }, [resourceText, userSelection, id, flow]);
+  }, [resource.text, userSelection, id, flow]);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -251,11 +251,23 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     <Stack spacing={2}>
       <Typography variant="h5">Resource {index}</Typography>
       <TextField
-        hiddenLabel
+        fullWidth
+        label="Title"
+        value={resource.title}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.resources[id].title = event.target.value;
+            })
+          );
+        }}
+      />
+      <TextField
+        label="Text"
         fullWidth
         multiline
         minRows={5}
-        value={resourceText}
+        value={resource.text}
         onChange={onChange as any}
         InputProps={{
           inputComponent: HighlightWithinTextarea as any,
@@ -263,6 +275,18 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
             selection: systemSelection,
             highlight,
           },
+        }}
+      />
+      <TextField
+        fullWidth
+        label="Source"
+        value={resource.source}
+        onChange={(event) => {
+          setState(
+            produce((draft: State) => {
+              draft.graph.resources[id].source = event.target.value;
+            })
+          );
         }}
       />
       <Button
