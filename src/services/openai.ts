@@ -103,6 +103,67 @@ You shall only EXTRACT the ADUs from the text.
   );
 }
 
+export async function generateMajorClaim() {
+  const atomNodes = getState()
+    .nodes.map((node) => node.data)
+    .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
+
+  const userMessage = JSON.stringify(
+    atomNodes.map((node) => ({ text: node.text, id: node.id }))
+  );
+
+  const systemMessage = `
+The user will provide a list of argumentative discourse units (ADUs).
+Your task is to identify the major claim / conclusion of the argument.
+This node will subsequently be used as the root node of an argument graph.
+Please provide the ID of the ADU that you consider to be the major claim.
+`;
+
+  const openaiConfig = getState().openaiConfig;
+
+  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
+    name: "identify_major_claim",
+    description: "Identify the major claim / conclusion of an argument",
+    parameters: {
+      title: "Major Claim Identification",
+      description: "Identify the major claim / conclusion of an argument",
+      type: "object",
+      required: ["id", "explanation"],
+      properties: {
+        id: {
+          type: "string",
+          description:
+            "The ID of the ADU that you consider to be the major claim",
+        },
+        explanation: {
+          type: "string",
+          description: "A reason why this ADU was chosen as the major claim",
+        },
+      },
+    },
+  });
+
+  const functionArgs = JSON.parse(res.arguments);
+  const mcId = functionArgs.id;
+
+  if (atomNodes.find((node) => node.id === mcId) === undefined) {
+    throw new Error(
+      "The model identified an invalid major claim id. Please try again or set one manually."
+    );
+  }
+
+  setState(
+    produce((draft: State) => {
+      draft.graph.majorClaim = mcId;
+      const mcUserdata = draft.nodes.find((node) => node.data.id === mcId)!.data
+        .userdata;
+      mcUserdata.assistant = mcUserdata.assistant || {};
+      mcUserdata.assistant.config = openaiConfig;
+      mcUserdata.assistant.mcExplanation = functionArgs.explanation;
+    })
+  );
+}
+
 async function fetchOpenAI(
   config: OpenAIConfig,
   system_message: string,

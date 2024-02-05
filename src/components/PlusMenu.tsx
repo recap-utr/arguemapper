@@ -3,6 +3,7 @@ import {
   faBolt,
   faComments,
   faPlus,
+  faStar,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,7 +22,7 @@ import { useSnackbar } from "notistack";
 import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
-import { generateAtomNodes } from "../services/openai.js";
+import { generateAtomNodes, generateMajorClaim } from "../services/openai.js";
 import { State, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {
@@ -174,6 +175,16 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           close={close}
           icon={faComments}
           text="Generate Atoms"
+        />
+        <Item
+          callback={() => {
+            setIsLoading(true);
+            generateMajorClaim().catch(handleError);
+            setIsLoading(false);
+          }}
+          close={close}
+          icon={faStar}
+          text="Identify Major Claim"
         />
       </Menu>
     </>
