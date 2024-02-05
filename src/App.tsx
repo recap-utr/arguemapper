@@ -13,7 +13,7 @@ import { setState, useStore } from "./store.js";
 
 export default function App() {
   const sidebarWidth = useStore((state) => state.sidebarWidth);
-  const isMobile = useMediaQuery(useTheme().breakpoints.down("md"));
+  const isMobile = useMediaQuery(useTheme().breakpoints.down("lg"));
 
   const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
   const rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
