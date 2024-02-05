@@ -181,7 +181,7 @@ const initialState: State = {
   prettifyJson: true,
   imageScale: 3,
   selectedResource: "1",
-  sidebarWidth: 300,
+  sidebarWidth: 400,
   headerHeight: 64,
 };
 
