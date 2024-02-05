@@ -1,11 +1,16 @@
 import * as arguebuf from "arguebuf";
 import OpenAI from "openai";
 import { getSessionStorage } from "../storage";
-import { getState } from "../store";
+import { OpenAIConfig, getState } from "../store";
 
 export type Mapping<U> = {
   [key in string]: U;
 };
+
+interface GeneratedAtom {
+  text: string;
+  explanation: string;
+}
 
 export async function generateAtomNodes(
   resources: Mapping<arguebuf.Resource>
@@ -28,7 +33,9 @@ The user will have the chance to correct the graph, so DO NOT change any text du
 You shall only EXTRACT the ADUs from the text.
 `;
 
-  const res = await fetchOpenAI(systemMessage, resourceText, {
+  const openaiConfig = getState().openaiConfig;
+
+  const res = await fetchOpenAI(openaiConfig, systemMessage, resourceText, {
     name: "generate_atom_nodes",
     description:
       "Generate a set of atom nodes (argumentative discourse units) from a resource",
@@ -40,9 +47,21 @@ You shall only EXTRACT the ADUs from the text.
       properties: {
         atoms: {
           type: "array",
+          required: true,
           items: {
-            type: "string",
-            description: "The text of the atom node (ADU)",
+            type: "object",
+            properties: {
+              text: {
+                type: "string",
+                required: true,
+                description: "The text of the atom node (ADU)",
+              },
+              explanation: {
+                type: "string",
+                required: true,
+                description: "A reason why this text was chosen as an ADU",
+              },
+            },
           },
         },
       },
@@ -50,11 +69,11 @@ You shall only EXTRACT the ADUs from the text.
   });
 
   const functionArgs = JSON.parse(res.arguments);
-  const atomTexts: Array<string> = functionArgs.atoms;
+  const generatedAtoms: Array<GeneratedAtom> = functionArgs.atoms;
   const resourceTextLower = resourceText.toLowerCase();
 
-  return atomTexts.map((generatedText) => {
-    const text = generatedText.trim().replace(/[.,]$/, "");
+  return generatedAtoms.map((generatedAtom) => {
+    const text = generatedAtom.text.trim().replace(/[.,]$/, "");
     return {
       text,
       reference: new arguebuf.Reference({
@@ -62,16 +81,23 @@ You shall only EXTRACT the ADUs from the text.
         resource: resourceId,
         offset: resourceTextLower.indexOf(text.toLowerCase()),
       }),
+      userdata: {
+        assistant: {
+          config: openaiConfig,
+          explanation: generatedAtom.explanation,
+        },
+      },
     };
   });
 }
 
 async function fetchOpenAI(
+  config: OpenAIConfig,
   system_message: string,
   user_message: string,
   function_definition: OpenAI.FunctionDefinition
 ): Promise<OpenAI.ChatCompletionMessageToolCall.Function> {
-  const { model, baseURL } = getState().openaiConfig;
+  const { model, baseURL } = config;
   const apiKey = getSessionStorage<string>("openaiApiKey", "");
 
   if (apiKey === "") {

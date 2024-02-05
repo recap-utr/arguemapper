@@ -6,7 +6,7 @@ import { dequal } from "dequal";
 import { produce } from "immer";
 import React from "react";
 import * as model from "../../model.js";
-import { setState, State, useStore } from "../../store.js";
+import { State, setState, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
@@ -59,6 +59,17 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
           );
         }}
       />
+      {element.data.userdata.assistant && (
+        <TextField
+          fullWidth
+          multiline
+          label="Assistant Explanation"
+          InputProps={{
+            readOnly: true,
+          }}
+          value={element.data.userdata.assistant.explanation ?? ""}
+        />
+      )}
       <Button
         startIcon={<FontAwesomeIcon icon={faCommentDots} />}
         variant="contained"
