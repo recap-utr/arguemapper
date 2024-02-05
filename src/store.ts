@@ -32,7 +32,7 @@ export interface State {
   nodes: Array<model.Node>;
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
-  selectedResource: string;
+  selectedResourceTab: number;
   selection: model.Selection;
   shouldLayout: boolean;
   sidebarWidth: number;
@@ -41,7 +41,7 @@ export interface State {
 
 type ZundoState = Pick<
   State,
-  "edges" | "graph" | "nodes" | "selectedResource" | "selection"
+  "edges" | "graph" | "nodes" | "selectedResourceTab" | "selection"
 >;
 
 interface SerializedState {
@@ -56,7 +56,7 @@ interface SerializedState {
   leftSidebarOpen: boolean;
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
-  selectedResource: string;
+  selectedResourceTab: number;
   openaiConfig: OpenAIConfig;
 }
 
@@ -73,7 +73,7 @@ type PersistState = Pick<
   | "nodes"
   | "prettifyJson"
   | "rightSidebarOpen"
-  | "selectedResource"
+  | "selectedResourceTab"
   | "openaiConfig"
 >;
 
@@ -142,20 +142,26 @@ const persistOptions: PersistOptions<State, PersistState> = {
     edgeStyle: state.edgeStyle,
     leftSidebarOpen: state.leftSidebarOpen,
     rightSidebarOpen: state.rightSidebarOpen,
-    selectedResource: state.selectedResource,
+    selectedResourceTab: state.selectedResourceTab,
     openaiConfig: state.openaiConfig,
   }),
 };
 
 const temporalOptions: ZundoOptions<State, ZundoState> = {
   partialize: (state) => {
-    const { nodes, edges, graph, selectedResource, selection } = state;
+    const { nodes, edges, graph, selectedResourceTab, selection } = state;
     const partialNodes = nodes.map((node) => {
       // State should not update if dragged, width, etc. are changed
       const { data, id, position, selected, type } = node;
       return { data, id, position, selected, type };
     });
-    return { nodes: partialNodes, edges, graph, selectedResource, selection };
+    return {
+      nodes: partialNodes,
+      edges,
+      graph,
+      selectedResourceTab,
+      selection,
+    };
   },
   equality: (a, b) => {
     const debouncedFunc = throttle(
@@ -188,7 +194,7 @@ const initialState: State = {
   selection: model.initSelection(),
   prettifyJson: true,
   imageScale: 3,
-  selectedResource: "1",
+  selectedResourceTab: 0,
   sidebarWidth: 400,
   headerHeight: 64,
   openaiConfig: {
