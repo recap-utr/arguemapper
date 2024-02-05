@@ -106,7 +106,7 @@ async function fetchOpenAI(
     );
   }
 
-  const client = new OpenAI({ baseURL, apiKey });
+  const client = new OpenAI({ baseURL, apiKey, dangerouslyAllowBrowser: true });
 
   const res = await client.chat.completions.create({
     model,
