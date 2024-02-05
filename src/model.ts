@@ -42,9 +42,8 @@ export function initWrapper({
 function nodeToArguebuf(obj: Node): arguebuf.Node {
   // immer freezes the object, so we need to clone it
   const node = structuredClone(obj.data) as arguebuf.Node;
-  node.userdata.arguemapper = {
-    position: obj.position,
-  };
+  node.userdata.arguemapper = node.userdata.arguemapper || {};
+  node.userdata.arguemapper.position = obj.position;
 
   return node;
 }
