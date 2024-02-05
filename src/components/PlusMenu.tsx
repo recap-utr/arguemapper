@@ -22,7 +22,7 @@ import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import { generateAtomNodes } from "../services/openai.js";
-import { State, canvasCenter, getState, setState } from "../store.js";
+import { State, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -168,8 +168,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             setIsLoading(true);
-            const state = getState();
-            generateAtomNodes(state.graph.resources)
+            generateAtomNodes()
               .then((atomNodesData) => {
                 const atomNodes = atomNodesData.map((data) =>
                   model.initAtom({ data })

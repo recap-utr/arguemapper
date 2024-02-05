@@ -12,18 +12,21 @@ interface GeneratedAtom {
   explanation: string;
 }
 
-export async function generateAtomNodes(
-  resources: Mapping<arguebuf.Resource>
-): Promise<Array<arguebuf.AtomNodeConstructor>> {
-  if (Object.keys(resources).length !== 1) {
-    throw new Error(
-      "You added multiple resources to the graph. Currently, only one resource is supported for AI generations."
-    );
+function getResource(): arguebuf.Resource {
+  const selectedResourceTab = getState().selectedResourceTab;
+  const resources = getState().graph.resources;
+
+  if (selectedResourceTab > Object.keys(resources).length) {
+    throw new Error("Please create a resource first.");
   }
 
-  const resourceId = Object.keys(resources)[0];
-  const resourceText = resources[resourceId].text;
-  // const text = Object.values(resources).map((resource) => resource.text).join("\n");
+  return Object.values(resources)[selectedResourceTab];
+}
+
+export async function generateAtomNodes(): Promise<
+  Array<arguebuf.AtomNodeConstructor>
+> {
+  const resource = getResource();
 
   const systemMessage = `
 The user will provide a long text that contains a set of arguments.
@@ -35,7 +38,7 @@ You shall only EXTRACT the ADUs from the text.
 
   const openaiConfig = getState().openaiConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, resourceText, {
+  const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
     name: "generate_atom_nodes",
     description:
       "Generate a set of atom nodes (argumentative discourse units) from a resource",
@@ -69,7 +72,6 @@ You shall only EXTRACT the ADUs from the text.
 
   const functionArgs = JSON.parse(res.arguments);
   const generatedAtoms: Array<GeneratedAtom> = functionArgs.atoms;
-  const resourceTextLower = resourceText.toLowerCase();
 
   return generatedAtoms.map((generatedAtom) => {
     const text = generatedAtom.text.trim().replace(/[.,]$/, "");
@@ -77,8 +79,8 @@ You shall only EXTRACT the ADUs from the text.
       text,
       reference: new arguebuf.Reference({
         text,
-        resource: resourceId,
-        offset: resourceTextLower.indexOf(text.toLowerCase()),
+        resource: resource.id,
+        offset: resource.text.toLowerCase().indexOf(text.toLowerCase()),
       }),
       userdata: {
         assistant: {
