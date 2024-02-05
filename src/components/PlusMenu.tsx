@@ -168,22 +168,8 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             setIsLoading(true);
-            generateAtomNodes()
-              .then((atomNodesData) => {
-                const atomNodes = atomNodesData.map((data) =>
-                  model.initAtom({ data })
-                );
-                setState(
-                  produce((draft: State) => {
-                    draft.nodes.push(...atomNodes);
-                    draft.shouldLayout = true;
-                  })
-                );
-              })
-              .catch(handleError)
-              .finally(() => {
-                setIsLoading(false);
-              });
+            generateAtomNodes().catch(handleError);
+            setIsLoading(false);
           }}
           close={close}
           icon={faComments}

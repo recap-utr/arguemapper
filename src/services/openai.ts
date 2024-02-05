@@ -1,7 +1,9 @@
 import * as arguebuf from "arguebuf";
+import { produce } from "immer";
 import OpenAI from "openai";
+import * as model from "../model";
 import { getSessionStorage } from "../storage";
-import { OpenAIConfig, getState } from "../store";
+import { OpenAIConfig, State, getState, setState } from "../store";
 
 export type Mapping<U> = {
   [key in string]: U;
@@ -39,13 +41,13 @@ You shall only EXTRACT the ADUs from the text.
   const openaiConfig = getState().openaiConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
-    name: "generate_atom_nodes",
+    name: "extract_atom_nodes",
     description:
-      "Generate a set of atom nodes (argumentative discourse units) from a resource",
+      "Extract a set of atom nodes (argumentative discourse units) from a resource",
     parameters: {
-      title: "Generate atom nodes",
+      title: "Atom node extraction",
       description:
-        "Generate a set of atom nodes (argumentative discourse units) from a resource",
+        "Extract a set of atom nodes (argumentative discourse units) from a resource",
       type: "object",
       required: ["atoms"],
       properties: {
@@ -73,23 +75,32 @@ You shall only EXTRACT the ADUs from the text.
   const functionArgs = JSON.parse(res.arguments);
   const generatedAtoms: Array<GeneratedAtom> = functionArgs.atoms;
 
-  return generatedAtoms.map((generatedAtom) => {
+  const parsedAtomNodes = generatedAtoms.map((generatedAtom) => {
     const text = generatedAtom.text.trim().replace(/[.,]$/, "");
-    return {
-      text,
-      reference: new arguebuf.Reference({
+    return model.initAtom({
+      data: {
         text,
-        resource: resource.id,
-        offset: resource.text.toLowerCase().indexOf(text.toLowerCase()),
-      }),
-      userdata: {
-        assistant: {
-          config: openaiConfig,
-          explanation: generatedAtom.explanation,
+        reference: new arguebuf.Reference({
+          text,
+          resource: resource.id,
+          offset: resource.text.toLowerCase().indexOf(text.toLowerCase()),
+        }),
+        userdata: {
+          assistant: {
+            config: openaiConfig,
+            explanation: generatedAtom.explanation,
+          },
         },
       },
-    };
+    });
   });
+
+  setState(
+    produce((draft: State) => {
+      draft.nodes.push(...parsedAtomNodes);
+      draft.shouldLayout = true;
+    })
+  );
 }
 
 async function fetchOpenAI(
