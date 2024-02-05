@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/recap-utr/arguemapper/compare/v2.0.0...v2.1.0) (2024-02-05)
+
+
+### Features
+
+* show additional resource fields ([918e7cd](https://github.com/recap-utr/arguemapper/commit/918e7cd33052728c6be7d131507dff7f9dadfa24))
+
+
+### Bug Fixes
+
+* make sidebars bigger, adjust mobile breakpoint ([ff90097](https://github.com/recap-utr/arguemapper/commit/ff900970a872c096db03494be155fdc1552b58d7))
+
 ## [2.0.0](https://github.com/recap-utr/arguemapper/compare/v1.2.0...v2.0.0) (2024-02-03)
 
 
