@@ -44,21 +44,20 @@ You shall only EXTRACT the ADUs from the text.
       description:
         "Generate a set of atom nodes (argumentative discourse units) from a resource",
       type: "object",
+      required: ["atoms"],
       properties: {
         atoms: {
           type: "array",
-          required: true,
           items: {
             type: "object",
+            required: ["text", "explanation"],
             properties: {
               text: {
                 type: "string",
-                required: true,
                 description: "The text of the atom node (ADU)",
               },
               explanation: {
                 type: "string",
-                required: true,
                 description: "A reason why this text was chosen as an ADU",
               },
             },
