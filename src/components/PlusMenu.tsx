@@ -5,6 +5,7 @@ import {
   faDiagramProject,
   faPlus,
   faStar,
+  faTimeline,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -169,6 +170,16 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           close={close}
           icon={faPlus}
           text="Add Scheme"
+        />
+        <Divider />
+        <Item
+          callback={() => {
+            setIsLoading(true);
+            // generateGraph().catch(handleError).finally(() => setIsLoading(false));
+          }}
+          close={close}
+          icon={faTimeline}
+          text="Generate Complete Graph"
         />
         <Divider />
         <Item
