@@ -23,6 +23,29 @@ interface IdentifyMajorClaimArgs {
   explanation?: string;
 }
 
+interface PredictedRelation {
+  source?: string;
+  target?: string;
+  type?: "support" | "attack";
+  explanation?: string;
+}
+
+interface PredictRelationsArgs {
+  relations: Array<PredictedRelation>;
+}
+
+enum SchemeType {
+  SUPPORT = "support",
+  ATTACK = "attack",
+}
+
+const schemeLookup: {
+  [key in SchemeType]: arguebuf.Scheme;
+} = {
+  support: { case: "support", value: arguebuf.Support.DEFAULT },
+  attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
+};
+
 function getResource(): arguebuf.Resource {
   const selectedResourceTab = getState().selectedResourceTab;
   const resources = getState().graph.resources;
@@ -168,6 +191,113 @@ Please provide the ID of the ADU that you consider to be the major claim.
       mcUserdata.assistant = mcUserdata.assistant || {};
       mcUserdata.assistant.config = openaiConfig;
       mcUserdata.assistant.mcExplanation = mc.explanation;
+    })
+  );
+}
+
+export async function predictRelations() {
+  const atomNodes = getState()
+    .nodes.map((node) => node.data)
+    .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
+
+  const userMessage = JSON.stringify({
+    atomNodes: atomNodes.map((node) => ({ text: node.text, id: node.id })),
+    majorClaimId: getState().graph.majorClaim,
+  });
+
+  const systemMessage = `
+The user will provide a list of argumentative discourse units (ADUs) and the ID of the major claim.
+Your task is to predict sensible relations in the form of support/attack between them.
+You shall produce a valid argument graph with the major claim being the root node.
+`;
+
+  const openaiConfig = getState().openaiConfig;
+
+  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
+    name: "predict_relations",
+    description: "Predict relations between argumentative discourse units",
+    parameters: {
+      title: "Relation Generation",
+      description: "Predict relations between argumentative discourse units",
+      type: "object",
+      required: ["relations"],
+      properties: {
+        relations: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["source", "target", "type", "explanation"],
+            properties: {
+              source: {
+                type: "string",
+                description: "The ID of the source ADU",
+              },
+              target: {
+                type: "string",
+                description: "The ID of the target ADU",
+              },
+              type: {
+                type: "string",
+                description: "The type of the relation",
+                enum: ["support", "attack"],
+              },
+              explanation: {
+                type: "string",
+                description: "A reason why this relation was chosen",
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const functionArgs: PredictRelationsArgs = JSON.parse(res.arguments);
+  const predictedRelations = functionArgs.relations;
+
+  setState(
+    produce((draft: State) => {
+      draft.shouldLayout = true;
+
+      predictedRelations.forEach((relation) => {
+        const source = draft.nodes.find(
+          (node) => node.data.id === relation.source
+        );
+        const target = draft.nodes.find(
+          (node) => node.data.id === relation.target
+        );
+
+        if (
+          source !== undefined &&
+          target !== undefined &&
+          relation.type !== undefined
+        ) {
+          const schemeNode = model.initScheme({
+            data: {
+              scheme: schemeLookup[relation.type],
+              userdata: {
+                assistant: {
+                  config: openaiConfig,
+                  explanation: relation.explanation,
+                },
+              },
+            },
+          });
+          draft.nodes.push(schemeNode);
+
+          const edge1 = model.initEdge({
+            source: source.id,
+            target: schemeNode.id,
+            data: {},
+          });
+          const edge2 = model.initEdge({
+            source: schemeNode.id,
+            target: target.id,
+            data: {},
+          });
+          draft.edges.push(edge1, edge2);
+        }
+      });
     })
   );
 }

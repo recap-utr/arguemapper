@@ -2,6 +2,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faBolt,
   faComments,
+  faDiagramProject,
   faPlus,
   faStar,
   faXmark,
@@ -25,6 +26,7 @@ import * as model from "../model.js";
 import {
   extractAdus,
   identifyMajorClaim,
+  predictRelations,
 } from "../services/openai.js";
 import { State, canvasCenter, setState } from "../store.js";
 
@@ -190,6 +192,17 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           close={close}
           icon={faStar}
           text="Identify Major Claim"
+        />
+        <Item
+          callback={() => {
+            setIsLoading(true);
+            predictRelations()
+              .catch(handleError)
+              .finally(() => setIsLoading(false));
+          }}
+          close={close}
+          icon={faDiagramProject}
+          text="Predict Relations"
         />
       </Menu>
     </>
