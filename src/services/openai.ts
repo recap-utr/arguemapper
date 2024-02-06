@@ -9,9 +9,18 @@ export type Mapping<U> = {
   [key in string]: U;
 };
 
-interface GeneratedAtom {
-  text: string;
-  explanation: string;
+interface ExtractedAdu {
+  text?: string;
+  explanation?: string;
+}
+
+interface ExtractAdusArgs {
+  adus: Array<ExtractedAdu>;
+}
+
+interface IdentifyMajorClaimArgs {
+  id?: string;
+  explanation?: string;
 }
 
 function getResource(): arguebuf.Resource {
@@ -25,9 +34,7 @@ function getResource(): arguebuf.Resource {
   return Object.values(resources)[selectedResourceTab];
 }
 
-export async function generateAtomNodes(): Promise<
-  Array<arguebuf.AtomNodeConstructor>
-> {
+export async function extractAdus() {
   const resource = getResource();
 
   const systemMessage = `
@@ -41,17 +48,17 @@ You shall only EXTRACT the ADUs from the text.
   const openaiConfig = getState().openaiConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
-    name: "extract_atom_nodes",
+    name: "extract_adus",
     description:
-      "Extract a set of atom nodes (argumentative discourse units) from a resource",
+      "Extract a set of argumentative discourse units (ADUs) from a resource",
     parameters: {
-      title: "Atom node extraction",
+      title: "ADU extraction",
       description:
-        "Extract a set of atom nodes (argumentative discourse units) from a resource",
+        "Extract a set of argumentative discourse units (ADUs) from a resource",
       type: "object",
-      required: ["atoms"],
+      required: ["adus"],
       properties: {
-        atoms: {
+        adus: {
           type: "array",
           items: {
             type: "object",
@@ -59,7 +66,7 @@ You shall only EXTRACT the ADUs from the text.
             properties: {
               text: {
                 type: "string",
-                description: "The text of the atom node (ADU)",
+                description: "The text of the ADU",
               },
               explanation: {
                 type: "string",
@@ -72,23 +79,25 @@ You shall only EXTRACT the ADUs from the text.
     },
   });
 
-  const functionArgs = JSON.parse(res.arguments);
-  const generatedAtoms: Array<GeneratedAtom> = functionArgs.atoms;
+  const functionArgs: ExtractAdusArgs = JSON.parse(res.arguments);
+  const extractedAdus = functionArgs.adus;
 
-  const parsedAtomNodes = generatedAtoms.map((generatedAtom) => {
-    const text = generatedAtom.text.trim().replace(/[.,]$/, "");
+  const extractedAtomNodes = extractedAdus.map((adu) => {
+    const text = adu.text?.trim().replace(/[.,]$/, "") ?? "";
+    const offset = resource.text.toLowerCase().indexOf(text.toLowerCase());
+
     return model.initAtom({
       data: {
         text,
         reference: new arguebuf.Reference({
           text,
           resource: resource.id,
-          offset: resource.text.toLowerCase().indexOf(text.toLowerCase()),
+          offset: offset === -1 ? undefined : offset,
         }),
         userdata: {
           assistant: {
             config: openaiConfig,
-            explanation: generatedAtom.explanation,
+            explanation: adu.explanation,
           },
         },
       },
@@ -97,13 +106,13 @@ You shall only EXTRACT the ADUs from the text.
 
   setState(
     produce((draft: State) => {
-      draft.nodes.push(...parsedAtomNodes);
+      draft.nodes.push(...extractedAtomNodes);
       draft.shouldLayout = true;
     })
   );
 }
 
-export async function generateMajorClaim() {
+export async function identifyMajorClaim() {
   const atomNodes = getState()
     .nodes.map((node) => node.data)
     .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
@@ -143,10 +152,9 @@ Please provide the ID of the ADU that you consider to be the major claim.
     },
   });
 
-  const functionArgs = JSON.parse(res.arguments);
-  const mcId = functionArgs.id;
+  const mc: IdentifyMajorClaimArgs = JSON.parse(res.arguments);
 
-  if (atomNodes.find((node) => node.id === mcId) === undefined) {
+  if (atomNodes.find((node) => node.id === mc.id) === undefined) {
     throw new Error(
       "The model identified an invalid major claim id. Please try again or set one manually."
     );
@@ -154,12 +162,12 @@ Please provide the ID of the ADU that you consider to be the major claim.
 
   setState(
     produce((draft: State) => {
-      draft.graph.majorClaim = mcId;
-      const mcUserdata = draft.nodes.find((node) => node.data.id === mcId)!.data
-        .userdata;
+      draft.graph.majorClaim = mc.id;
+      const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)!
+        .data.userdata;
       mcUserdata.assistant = mcUserdata.assistant || {};
       mcUserdata.assistant.config = openaiConfig;
-      mcUserdata.assistant.mcExplanation = functionArgs.explanation;
+      mcUserdata.assistant.mcExplanation = mc.explanation;
     })
   );
 }

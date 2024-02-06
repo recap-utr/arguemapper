@@ -22,7 +22,10 @@ import { useSnackbar } from "notistack";
 import React, { useCallback } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
-import { generateAtomNodes, generateMajorClaim } from "../services/openai.js";
+import {
+  extractAdus,
+  identifyMajorClaim,
+} from "../services/openai.js";
 import { State, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {
@@ -169,18 +172,20 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             setIsLoading(true);
-            generateAtomNodes().catch(handleError);
-            setIsLoading(false);
+            extractAdus()
+              .catch(handleError)
+              .finally(() => setIsLoading(false));
           }}
           close={close}
           icon={faComments}
-          text="Generate Atoms"
+          text="Extract ADUs"
         />
         <Item
           callback={() => {
             setIsLoading(true);
-            generateMajorClaim().catch(handleError);
-            setIsLoading(false);
+            identifyMajorClaim()
+              .catch(handleError)
+              .finally(() => setIsLoading(false));
           }}
           close={close}
           icon={faStar}
