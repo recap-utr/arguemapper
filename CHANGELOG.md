@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/recap-utr/arguemapper/compare/v2.1.0...v2.1.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* use layered layout by default ([c626862](https://github.com/recap-utr/arguemapper/commit/c6268629f1f3c67104f2ed8e6a4b9581ceef9017))
+
 ## [2.1.0](https://github.com/recap-utr/arguemapper/compare/v2.0.0...v2.1.0) (2024-02-05)
 
 
