@@ -181,6 +181,7 @@ You shall only EXTRACT the ADUs from the text.
   setState(
     produce((draft: State) => {
       draft.nodes = extractedAtomNodes;
+      draft.edges = [];
       draft.shouldLayout = true;
     })
   );
