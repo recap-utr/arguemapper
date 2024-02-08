@@ -180,7 +180,7 @@ You shall only EXTRACT the ADUs from the text.
 
   setState(
     produce((draft: State) => {
-      draft.nodes.push(...extractedAtomNodes);
+      draft.nodes = extractedAtomNodes;
       draft.shouldLayout = true;
     })
   );
@@ -275,6 +275,8 @@ You shall produce a valid argument graph with the major claim being the root nod
   setState(
     produce((draft: State) => {
       draft.shouldLayout = true;
+      draft.edges = [];
+      draft.nodes = draft.nodes.filter((node) => node.data.type === "atom");
 
       predictedRelations.forEach((relation) => {
         const source = draft.nodes.find(
