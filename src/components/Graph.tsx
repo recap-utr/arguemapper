@@ -50,19 +50,10 @@ export default function Graph() {
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const firstVisit = useStore((state) => state.firstVisit);
-  const disableFirstVisit = useCallback(() => {
-    setState({ firstVisit: false });
-  }, []);
   // const isLoading = useStore((state) => state.isLoading);
-  const setIsLoading = useCallback((value: boolean) => {
-    setState({ isLoading: value });
-  }, []);
-  const shouldLayout = useStore((state) => state.shouldLayout);
   const edgeStyle = useStore((state) => state.edgeStyle);
-  const setShouldLayout = useCallback((value: boolean) => {
-    setState({ shouldLayout: value });
-  }, []);
-  const [shouldFit, setShouldFit] = useState(false);
+  const shouldLayout = useStore((state) => state.shouldLayout);
+  const shouldFitView = useStore((state) => state.shouldFitView);
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
 
@@ -76,7 +67,7 @@ export default function Graph() {
           onClick={() => {
             resetState(generateDemo());
             closeSnackbar(key);
-            disableFirstVisit();
+            setState({ firstVisit: false });
           }}
         >
           Load Demo
@@ -84,14 +75,14 @@ export default function Graph() {
         <IconButton
           onClick={() => {
             closeSnackbar(key);
-            disableFirstVisit();
+            setState({ firstVisit: false });
           }}
         >
           <FontAwesomeIcon icon={faXmark} />
         </IconButton>
       </Stack>
     ),
-    [closeSnackbar, disableFirstVisit]
+    [closeSnackbar]
   );
 
   useEffect(() => {
@@ -109,11 +100,11 @@ export default function Graph() {
   }, [enqueueSnackbar, firstVisit, flow, snackbarAction]);
 
   useEffect(() => {
-    if (shouldFit) {
+    if (!shouldLayout && shouldFitView) {
       flow.fitView();
-      setShouldFit(false);
+      setState({ shouldFitView: false });
     }
-  }, [shouldFit, setShouldFit, flow]);
+  }, [shouldFitView, shouldLayout, flow]);
 
   const nodeHasDimension = useCallback(
     (el: model.Node) => el.width && el.height,
@@ -136,24 +127,15 @@ export default function Graph() {
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every(nodeHasDimension)) {
-      setIsLoading(true);
-      layout(nodes, edges, layoutAlgorithm).then((layoutedNodes) => {
-        setState({ nodes: layoutedNodes });
-        setShouldLayout(false);
-        setShouldFit(true);
-        setIsLoading(false);
-      });
+      layout(nodes, edges, layoutAlgorithm)
+        .then((layoutedNodes) => {
+          setState({ nodes: layoutedNodes });
+        })
+        .finally(() => {
+          setState({ shouldLayout: false });
+        });
     }
-  }, [
-    setShouldFit,
-    shouldLayout,
-    setIsLoading,
-    setShouldLayout,
-    layoutAlgorithm,
-    nodes,
-    edges,
-    nodeHasDimension,
-  ]);
+  }, [shouldLayout, layoutAlgorithm, nodes, edges, nodeHasDimension]);
 
   const onNodesChange: OnNodesChange = useCallback((changes) => {
     setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
@@ -230,10 +212,9 @@ export default function Graph() {
   const onInit: OnInit = useCallback(
     (instance) => {
       instance.fitView();
-      setIsLoading(false);
       resumeTemporal();
     },
-    [resumeTemporal, setIsLoading]
+    [resumeTemporal]
   );
 
   const onContextMenu = (

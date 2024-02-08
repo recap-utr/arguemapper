@@ -31,6 +31,7 @@ export interface State {
   selectedResource: string;
   selection: model.Selection;
   shouldLayout: boolean;
+  shouldFitView: boolean;
   sidebarWidth: number;
 }
 
@@ -176,6 +177,7 @@ const initialState: State = {
   layoutAlgorithm: model.LayoutAlgorithm.LAYERED,
   edgeStyle: model.EdgeStyle.STEP,
   shouldLayout: false,
+  shouldFitView: false,
   isLoading: true,
   selection: model.initSelection(),
   prettifyJson: true,
@@ -199,6 +201,7 @@ export const { getState, setState, subscribe } = useStore;
 
 export const resetState = (preset?: model.Wrapper) => {
   const s = preset ?? model.initWrapper({});
+
   setState({
     nodes: s.nodes,
     edges: s.edges,
@@ -206,6 +209,7 @@ export const resetState = (preset?: model.Wrapper) => {
     shouldLayout: s.nodes.every(
       (node) => node.position.x === 0 && node.position.y === 0
     ),
+    shouldFitView: true,
   });
 };
 
