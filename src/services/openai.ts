@@ -248,6 +248,8 @@ export async function predictRelations() {
 The user will provide a list of argumentative discourse units (ADUs) and the ID of the major claim.
 Your task is to predict sensible relations in the form of support/attack between them.
 You shall produce a valid argument graph with the major claim being the root node.
+You shall not connect all ADUs to the major claim, but only those that are directly related to it.
+The other ADUs should be connected to each other in a hierarchical manner.
 `;
 
   const openaiConfig = getState().openaiConfig;
@@ -330,6 +332,8 @@ Your task is to generate a complete argument graph containing all ADUs, the majo
 ADUs shall only be EXTRACTED from the text, not changed.
 The major claim will be the root node of the graph.
 Relations can either be of type support or attack.
+You shall not connect all ADUs to the major claim, but only those that are directly related to it.
+The other ADUs should be connected to each other in a hierarchical manner.
 `;
 
   const openaiConfig = getState().openaiConfig;
