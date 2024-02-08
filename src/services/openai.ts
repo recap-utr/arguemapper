@@ -132,9 +132,15 @@ The user will have the chance to correct the graph, so DO NOT change any text du
 You shall only EXTRACT the ADUs from the text.
 `;
 
+  const userMessage = JSON.stringify({
+    text: resource.text,
+    title: resource.title,
+    source: resource.source,
+  });
+
   const openaiConfig = getState().openaiConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
+  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "extract_adus",
     description:
       "Extract a set of argumentative discourse units (ADUs) from a resource",
@@ -337,9 +343,15 @@ You shall not connect all ADUs to the major claim, but only those that are direc
 The other ADUs should be connected to each other in a hierarchical manner.
 `;
 
+  const userMessage = JSON.stringify({
+    text: resource.text,
+    title: resource.title,
+    source: resource.source,
+  });
+
   const openaiConfig = getState().openaiConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
+  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "generate_argument_graph",
     description: "Generate a complete argument graph from a plain text",
     parameters: {
