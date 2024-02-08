@@ -9,6 +9,21 @@ export type Mapping<U> = {
   [key in string]: U;
 };
 
+const extractedAduSchema = {
+  type: "object",
+  required: ["text", "explanation"],
+  properties: {
+    text: {
+      type: "string",
+      description: "The text of the ADU",
+    },
+    explanation: {
+      type: "string",
+      description: "A reason why this text was chosen as an ADU",
+    },
+  },
+};
+
 interface ExtractedAdu {
   text?: string;
   explanation?: string;
@@ -18,10 +33,49 @@ interface ExtractAdusArgs {
   adus: Array<ExtractedAdu>;
 }
 
+const identifiedMajorClaimSchema = {
+  type: "object",
+  required: ["id", "explanation"],
+  properties: {
+    id: {
+      type: "string",
+      description: "The ID of the ADU that you consider to be the major claim",
+    },
+    explanation: {
+      type: "string",
+      description: "A reason why this ADU was chosen as the major claim",
+    },
+  },
+};
+
 interface IdentifyMajorClaimArgs {
   id?: string;
   explanation?: string;
 }
+
+const predictedRelationSchema = {
+  type: "object",
+  required: ["source", "target", "type", "explanation"],
+  properties: {
+    source: {
+      type: "string",
+      description: "The ID of the source ADU",
+    },
+    target: {
+      type: "string",
+      description: "The ID of the target ADU",
+    },
+    type: {
+      type: "string",
+      description: "The type of the relation",
+      enum: ["support", "attack"],
+    },
+    explanation: {
+      type: "string",
+      description: "A reason why this relation was chosen",
+    },
+  },
+};
 
 interface PredictedRelation {
   source?: string;
@@ -31,6 +85,16 @@ interface PredictedRelation {
 }
 
 interface PredictRelationsArgs {
+  relations: Array<PredictedRelation>;
+}
+
+interface ExtractedAduWithId extends ExtractedAdu {
+  id: string;
+}
+
+interface GenerateGraphArgs {
+  adus: Array<ExtractedAduWithId>;
+  majorClaim: IdentifyMajorClaimArgs;
   relations: Array<PredictedRelation>;
 }
 
@@ -83,20 +147,7 @@ You shall only EXTRACT the ADUs from the text.
       properties: {
         adus: {
           type: "array",
-          items: {
-            type: "object",
-            required: ["text", "explanation"],
-            properties: {
-              text: {
-                type: "string",
-                description: "The text of the ADU",
-              },
-              explanation: {
-                type: "string",
-                description: "A reason why this text was chosen as an ADU",
-              },
-            },
-          },
+          items: extractedAduSchema,
         },
       },
     },
@@ -157,21 +208,9 @@ Please provide the ID of the ADU that you consider to be the major claim.
     name: "identify_major_claim",
     description: "Identify the major claim / conclusion of an argument",
     parameters: {
+      ...identifiedMajorClaimSchema,
       title: "Major Claim Identification",
       description: "Identify the major claim / conclusion of an argument",
-      type: "object",
-      required: ["id", "explanation"],
-      properties: {
-        id: {
-          type: "string",
-          description:
-            "The ID of the ADU that you consider to be the major claim",
-        },
-        explanation: {
-          type: "string",
-          description: "A reason why this ADU was chosen as the major claim",
-        },
-      },
     },
   });
 
@@ -189,7 +228,7 @@ Please provide the ID of the ADU that you consider to be the major claim.
       const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)!
         .data.userdata;
       mcUserdata.assistant = mcUserdata.assistant || {};
-      mcUserdata.assistant.config = openaiConfig;
+      mcUserdata.assistant.mcConfig = openaiConfig;
       mcUserdata.assistant.mcExplanation = mc.explanation;
     })
   );
@@ -224,29 +263,7 @@ You shall produce a valid argument graph with the major claim being the root nod
       properties: {
         relations: {
           type: "array",
-          items: {
-            type: "object",
-            required: ["source", "target", "type", "explanation"],
-            properties: {
-              source: {
-                type: "string",
-                description: "The ID of the source ADU",
-              },
-              target: {
-                type: "string",
-                description: "The ID of the target ADU",
-              },
-              type: {
-                type: "string",
-                description: "The type of the relation",
-                enum: ["support", "attack"],
-              },
-              explanation: {
-                type: "string",
-                description: "A reason why this relation was chosen",
-              },
-            },
-          },
+          items: predictedRelationSchema,
         },
       },
     },
@@ -298,6 +315,155 @@ You shall produce a valid argument graph with the major claim being the root nod
           draft.edges.push(edge1, edge2);
         }
       });
+    })
+  );
+}
+
+export async function generateGraph() {
+  const resource = getResource();
+
+  const systemMessage = `
+The user will provide a long text that contains a set of arguments.
+Your task is to generate a complete argument graph containing all ADUs, the major claim, and the relations between the ADUs.
+ADUs shall only be EXTRACTED from the text, not changed.
+The major claim will be the root node of the graph.
+Relations can either be of type support or attack.
+`;
+
+  const openaiConfig = getState().openaiConfig;
+
+  const res = await fetchOpenAI(openaiConfig, systemMessage, resource.text, {
+    name: "generate_argument_graph",
+    description: "Generate a complete argument graph from a plain text",
+    parameters: {
+      title: "Argument Graph Generation",
+      description: "Generate a complete argument graph from a plain text",
+      type: "object",
+      required: ["adus", "majorClaim", "relations"],
+      properties: {
+        adus: {
+          type: "array",
+          items: {
+            type: "object",
+            required: [...extractedAduSchema.required, "id"],
+            properties: {
+              ...extractedAduSchema.properties,
+              id: {
+                type: "string",
+                description:
+                  "An arbitrary ID for the ADU to be used as source/target in relations",
+              },
+            },
+          },
+        },
+        majorClaim: identifiedMajorClaimSchema,
+        relations: {
+          type: "array",
+          items: predictedRelationSchema,
+        },
+      },
+    },
+  });
+
+  const generatedGraph: GenerateGraphArgs = JSON.parse(res.arguments);
+
+  setState(
+    produce((draft: State) => {
+      draft.shouldLayout = true;
+      draft.nodes = [];
+      draft.edges = [];
+
+      const generatedAtomNodes = Object.fromEntries(
+        generatedGraph.adus.map((adu) => {
+          const text = adu.text?.trim().replace(/[.,]$/, "") ?? "";
+          const offset = resource.text
+            .toLowerCase()
+            .indexOf(text.toLowerCase());
+
+          const atomNode = model.initAtom({
+            data: {
+              text,
+              reference: new arguebuf.Reference({
+                text,
+                resource: resource.id,
+                offset: offset === -1 ? undefined : offset,
+              }),
+              userdata: {
+                assistant: {
+                  config: openaiConfig,
+                  explanation: adu.explanation,
+                },
+              },
+            },
+          });
+
+          return [adu.id, atomNode];
+        })
+      );
+
+      generatedGraph.relations.forEach((relation) => {
+        if (
+          relation.source !== undefined &&
+          relation.source in generatedAtomNodes &&
+          relation.target !== undefined &&
+          relation.target in generatedAtomNodes &&
+          relation.type !== undefined
+        ) {
+          const sourceNode = generatedAtomNodes[relation.source];
+          const targetNode = generatedAtomNodes[relation.target];
+
+          if (
+            draft.nodes.find((node) => node.data.id === sourceNode.data.id) ===
+            undefined
+          ) {
+            draft.nodes.push(sourceNode);
+          }
+          if (
+            draft.nodes.find((node) => node.data.id === targetNode.data.id) ===
+            undefined
+          ) {
+            draft.nodes.push(targetNode);
+          }
+
+          const schemeNode = model.initScheme({
+            data: {
+              scheme: schemeLookup[relation.type],
+              userdata: {
+                assistant: {
+                  config: openaiConfig,
+                  explanation: relation.explanation,
+                },
+              },
+            },
+          });
+          draft.nodes.push(schemeNode);
+
+          const edge1 = model.initEdge({
+            source: sourceNode.id,
+            target: schemeNode.id,
+            data: {},
+          });
+          const edge2 = model.initEdge({
+            source: schemeNode.id,
+            target: targetNode.id,
+            data: {},
+          });
+          draft.edges.push(edge1, edge2);
+        }
+      });
+
+      const mc = generatedGraph.majorClaim;
+      if (
+        Object.values(generatedAtomNodes).find((node) => node.id === mc.id) !==
+        undefined
+      ) {
+        draft.graph.majorClaim = mc.id;
+        const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)!
+          .data.userdata;
+        mcUserdata.assistant = mcUserdata.assistant || {};
+        mcUserdata.assistant.mcConfig = openaiConfig;
+        mcUserdata.assistant.mcExplanation = mc.explanation;
+      }
     })
   );
 }

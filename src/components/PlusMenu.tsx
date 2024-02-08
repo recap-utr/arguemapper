@@ -26,6 +26,7 @@ import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import {
   extractAdus,
+  generateGraph,
   identifyMajorClaim,
   predictRelations,
 } from "../services/openai.js";
@@ -175,7 +176,9 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Item
           callback={() => {
             setIsLoading(true);
-            // generateGraph().catch(handleError).finally(() => setIsLoading(false));
+            generateGraph()
+              .catch(handleError)
+              .finally(() => setIsLoading(false));
           }}
           close={close}
           icon={faTimeline}
