@@ -187,7 +187,7 @@ const initialState: State = {
   firstVisit: true,
   leftSidebarOpen: true,
   rightSidebarOpen: true,
-  layoutAlgorithm: model.LayoutAlgorithm.TREE,
+  layoutAlgorithm: model.LayoutAlgorithm.LAYERED,
   edgeStyle: model.EdgeStyle.STEP,
   shouldLayout: false,
   isLoading: false,
