@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/recap-utr/arguemapper/compare/v2.1.1...v2.1.2) (2024-02-08)
+
+
+### Bug Fixes
+
+* improve layout and fitView ([33933fd](https://github.com/recap-utr/arguemapper/commit/33933fde8a126f4c408a63c6951f99f7efef2304))
+
 ## [2.1.1](https://github.com/recap-utr/arguemapper/compare/v2.1.0...v2.1.1) (2024-02-08)
 
 
