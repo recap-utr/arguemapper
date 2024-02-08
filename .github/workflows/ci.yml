@@ -11,13 +11,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
       - uses: DeterminateSystems/nix-installer-action@v9
-        with:
-          extra-conf: |
-            extra-platforms = aarch64-linux
       - uses: DeterminateSystems/magic-nix-cache-action@v3
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
