@@ -42,14 +42,15 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
   const pastStates = useTemporalStore((state) => state.pastStates);
   const undoable = pastStates.length > 0;
   const redoable = futureStates.length > 0;
-  const setShouldLayout = useCallback((value: boolean) => {
-    setState({ shouldLayout: value });
-  }, []);
   const flow = useReactFlow();
 
-  const onLayout = useCallback(() => {
-    setShouldLayout(true);
-  }, [setShouldLayout]);
+  const layoutCallback = useCallback(() => {
+    setState({ shouldLayout: true });
+  }, []);
+
+  const fitViewCallback = useCallback(() => {
+    setState({ shouldFitView: true });
+  }, []);
 
   useHotkeys(
     "mod+z",
@@ -78,7 +79,7 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
       <Stack direction="column">
         <Item
           text="Automatically layout graph elements"
-          callback={onLayout}
+          callback={layoutCallback}
           icon={faSitemap}
         />
         <Item
@@ -113,9 +114,7 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
         />
         <Item
           text="Fit graph in view"
-          callback={() => {
-            flow.fitView();
-          }}
+          callback={fitViewCallback}
           icon={faCompress}
         />
       </Stack>
