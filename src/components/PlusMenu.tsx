@@ -265,6 +265,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
               label="Custom instructions (optional)"
               autoFocus
               fullWidth
+              multiline
               margin="dense"
               value={customPrompt}
               onChange={(event) => {
