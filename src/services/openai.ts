@@ -261,6 +261,7 @@ Your task is to predict sensible relations in the form of support/attack between
 You shall produce a valid argument graph with the major claim being the root node.
 You shall create a hierarchical graph with the major claim being the root node (i.e., it should have no outgoing relations, only incoming ones).
 Flat graphs (i.e., all ADUs directly connected to the major claim directly) are discouraged.
+There should be no cycles in the graph and no orphaned ADUs.
 
 ${customPrompt}
 `.trim();
@@ -346,6 +347,7 @@ ADUs shall only be EXTRACTED from the text, not changed.
 Relations can either be of type support or attack.
 You shall create a hierarchical graph with the major claim being the root node (i.e., it should have no outgoing relations, only incoming ones).
 Flat graphs (i.e., all ADUs directly connected to the major claim directly) are discouraged.
+There should be no cycles in the graph and no orphaned ADUs.
 
 ${customPrompt}
 `.trim();
