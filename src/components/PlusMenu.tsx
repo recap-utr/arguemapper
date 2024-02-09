@@ -257,9 +257,8 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           <DialogTitle>Prompt Customization</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              To customize the generations provided by the assistant. If a value
-              is given, it will be added to the prompt provided to the language
-              model.
+              Adding custom instructions allows you to guide the assistant to
+              generate the content you need.
             </DialogContentText>
             <TextField
               label="Custom instructions (optional)"
