@@ -121,7 +121,7 @@ function getResource(): arguebuf.Resource {
   return Object.values(resources)[selectedResourceTab];
 }
 
-export async function extractAdus() {
+export async function extractAdus(customPrompt: string) {
   const resource = getResource();
 
   const systemMessage = `
@@ -130,7 +130,9 @@ Your task is to identify all argumentative discourse units (ADUs) in the text.
 They will subsequently be used to construct a graph.
 The user will have the chance to correct the graph, so DO NOT change any text during this step.
 You shall only EXTRACT the ADUs from the text.
-`;
+
+${customPrompt}
+`.trim();
 
   const userMessage = JSON.stringify({
     text: resource.text,
@@ -193,7 +195,7 @@ You shall only EXTRACT the ADUs from the text.
   );
 }
 
-export async function identifyMajorClaim() {
+export async function identifyMajorClaim(customPrompt: string) {
   const atomNodes = getState()
     .nodes.map((node) => node.data)
     .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
@@ -207,7 +209,9 @@ The user will provide a list of argumentative discourse units (ADUs).
 Your task is to identify the major claim / conclusion of the argument.
 This node will subsequently be used as the root node of an argument graph.
 Please provide the ID of the ADU that you consider to be the major claim.
-`;
+
+${customPrompt}
+`.trim();
 
   const openaiConfig = getState().openaiConfig;
 
@@ -241,7 +245,7 @@ Please provide the ID of the ADU that you consider to be the major claim.
   );
 }
 
-export async function predictRelations() {
+export async function predictRelations(customPrompt: string) {
   const atomNodes = getState()
     .nodes.map((node) => node.data)
     .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
@@ -257,7 +261,9 @@ Your task is to predict sensible relations in the form of support/attack between
 You shall produce a valid argument graph with the major claim being the root node.
 You shall create a hierarchical graph with the major claim being the root node (i.e., it should have no outgoing relations, only incoming ones).
 Flat graphs (i.e., all ADUs directly connected to the major claim directly) are discouraged.
-`;
+
+${customPrompt}
+`.trim();
 
   const openaiConfig = getState().openaiConfig;
 
@@ -330,7 +336,7 @@ Flat graphs (i.e., all ADUs directly connected to the major claim directly) are 
   );
 }
 
-export async function generateGraph() {
+export async function generateGraph(customPrompt: string) {
   const resource = getResource();
 
   const systemMessage = `
@@ -340,7 +346,9 @@ ADUs shall only be EXTRACTED from the text, not changed.
 Relations can either be of type support or attack.
 You shall create a hierarchical graph with the major claim being the root node (i.e., it should have no outgoing relations, only incoming ones).
 Flat graphs (i.e., all ADUs directly connected to the major claim directly) are discouraged.
-`;
+
+${customPrompt}
+`.trim();
 
   const userMessage = JSON.stringify({
     text: resource.text,

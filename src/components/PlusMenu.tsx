@@ -11,17 +11,24 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
+  TextField,
   useTheme,
 } from "@mui/material";
 import { produce } from "immer";
 import { useSnackbar } from "notistack";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import {
@@ -78,6 +85,11 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
   }, []);
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const [assistantCallback, setAssistantCallback] = useState<
+    undefined | ((customPrompt: string) => void)
+  >(undefined);
+  const [customPrompt, setCustomPrompt] = useState("");
 
   const handleError = useCallback(
     (e: unknown) => {
@@ -175,10 +187,12 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Divider />
         <Item
           callback={() => {
-            setIsLoading(true);
-            generateGraph()
-              .catch(handleError)
-              .finally(() => setIsLoading(false));
+            setAssistantCallback(() => (customPrompt: string) => {
+              setIsLoading(true);
+              generateGraph(customPrompt)
+                .catch(handleError)
+                .finally(() => setIsLoading(false));
+            });
           }}
           close={close}
           icon={faTimeline}
@@ -187,10 +201,12 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <Divider />
         <Item
           callback={() => {
-            setIsLoading(true);
-            extractAdus()
-              .catch(handleError)
-              .finally(() => setIsLoading(false));
+            setAssistantCallback(() => (customPrompt: string) => {
+              setIsLoading(true);
+              extractAdus(customPrompt)
+                .catch(handleError)
+                .finally(() => setIsLoading(false));
+            });
           }}
           close={close}
           icon={faComments}
@@ -198,10 +214,12 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         />
         <Item
           callback={() => {
-            setIsLoading(true);
-            identifyMajorClaim()
-              .catch(handleError)
-              .finally(() => setIsLoading(false));
+            setAssistantCallback(() => (customPrompt: string) => {
+              setIsLoading(true);
+              identifyMajorClaim(customPrompt)
+                .catch(handleError)
+                .finally(() => setIsLoading(false));
+            });
           }}
           close={close}
           icon={faStar}
@@ -209,16 +227,63 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         />
         <Item
           callback={() => {
-            setIsLoading(true);
-            predictRelations()
-              .catch(handleError)
-              .finally(() => setIsLoading(false));
+            setAssistantCallback(() => (customPrompt: string) => {
+              setIsLoading(true);
+              predictRelations(customPrompt)
+                .catch(handleError)
+                .finally(() => setIsLoading(false));
+            });
           }}
           close={close}
           icon={faDiagramProject}
           text="Predict Relations"
         />
       </Menu>
+      <Dialog
+        open={assistantCallback !== undefined}
+        onClose={() => {
+          setAssistantCallback(undefined);
+          setCustomPrompt("");
+        }}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            assistantCallback!(customPrompt);
+            setAssistantCallback(undefined);
+            setCustomPrompt("");
+          }}
+        >
+          <DialogTitle>Prompt Customization</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              To customize the generations provided by the assistant. If a value
+              is given, it will be added to the prompt provided to the language
+              model.
+            </DialogContentText>
+            <TextField
+              label="Custom instructions (optional)"
+              autoFocus
+              fullWidth
+              margin="dense"
+              value={customPrompt}
+              onChange={(event) => {
+                setCustomPrompt(event.target.value);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setCustomPrompt("");
+              }}
+            >
+              Clear
+            </Button>
+            <Button type="submit">Start generation</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </>
   );
 };
