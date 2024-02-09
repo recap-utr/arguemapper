@@ -472,16 +472,22 @@ The other ADUs should be connected to each other in a hierarchical manner.
       });
 
       const mc = generatedGraph.majorClaim;
-      if (
-        Object.values(generatedAtomNodes).find((node) => node.id === mc.id) !==
-        undefined
-      ) {
-        draft.graph.majorClaim = mc.id;
-        const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)!
-          .data.userdata;
-        mcUserdata.assistant = mcUserdata.assistant || {};
-        mcUserdata.assistant.mcConfig = openaiConfig;
-        mcUserdata.assistant.mcExplanation = mc.explanation;
+
+      // first check if the major claim ID is in the generated ADUs
+      if (mc.id !== undefined && mc.id in generatedAtomNodes) {
+        const generatedMcNode = generatedAtomNodes[mc.id];
+        const mcNode = draft.nodes.find(
+          (node) => node.data.id === generatedMcNode.data.id
+        );
+
+        // now check if the major claim is part of the graph
+        if (mcNode !== undefined) {
+          draft.graph.majorClaim = mcNode.data.id;
+          const mcUserdata = mcNode.data.userdata;
+          mcUserdata.assistant = mcUserdata.assistant || {};
+          mcUserdata.assistant.mcConfig = openaiConfig;
+          mcUserdata.assistant.mcExplanation = mc.explanation;
+        }
       }
     })
   );
