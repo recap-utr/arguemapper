@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/recap-utr/arguemapper/compare/v2.1.2...v2.1.3) (2024-02-19)
+
+
+### Bug Fixes
+
+* filter elements before applying auto-layout ([bb525ce](https://github.com/recap-utr/arguemapper/commit/bb525ceb60b896856f30db0d4fb9d5dc7a3bc30f))
+
 ## [2.1.2](https://github.com/recap-utr/arguemapper/compare/v2.1.1...v2.1.2) (2024-02-08)
 
 
