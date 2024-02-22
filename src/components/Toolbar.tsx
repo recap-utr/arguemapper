@@ -106,7 +106,7 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
           icon={faMagnifyingGlassPlus}
         />
         <Item
-          text="Zoom in"
+          text="Zoom out"
           callback={() => {
             flow.zoomOut();
           }}
