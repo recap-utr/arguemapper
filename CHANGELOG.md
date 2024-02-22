@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.4](https://github.com/recap-utr/arguemapper/compare/v2.1.3...v2.1.4) (2024-02-22)
+
+
+### Bug Fixes
+
+* **toolbar:** typo in zoom button ([#59](https://github.com/recap-utr/arguemapper/issues/59)) ([9acc419](https://github.com/recap-utr/arguemapper/commit/9acc4197e56d2f4a4cc01a163dbef4679fea6faa))
+
 ## [2.1.3](https://github.com/recap-utr/arguemapper/compare/v2.1.2...v2.1.3) (2024-02-19)
 
 
