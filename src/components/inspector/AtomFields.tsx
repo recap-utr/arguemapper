@@ -6,7 +6,7 @@ import { dequal } from "dequal";
 import { produce } from "immer";
 import React from "react";
 import * as model from "../../model.js";
-import { setState, State, useStore } from "../../store.js";
+import { State, setState, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
@@ -22,6 +22,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
 
   return (
     <>
+      <TextField fullWidth label="ID" value={element.id} disabled />
       <TextField
         fullWidth
         multiline
