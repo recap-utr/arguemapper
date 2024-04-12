@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.5](https://github.com/recap-utr/arguemapper/compare/v2.1.4...v2.1.5) (2024-04-12)
+
+
+### Bug Fixes
+
+* add node/edge id to inspector ([a1dbd85](https://github.com/recap-utr/arguemapper/commit/a1dbd85a3a044a4bd75b2a6b8d4bd307ce79fdc9))
+
 ## [2.1.4](https://github.com/recap-utr/arguemapper/compare/v2.1.3...v2.1.4) (2024-02-22)
 
 
