@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.1.5](https://github.com/recap-utr/arguemapper/compare/v2.1.4...v2.1.5) (2024-04-12)
+
+
+### Bug Fixes
+
+* add node/edge id to inspector ([a1dbd85](https://github.com/recap-utr/arguemapper/commit/a1dbd85a3a044a4bd75b2a6b8d4bd307ce79fdc9))
+
+## [2.1.4](https://github.com/recap-utr/arguemapper/compare/v2.1.3...v2.1.4) (2024-02-22)
+
+
+### Bug Fixes
+
+* **toolbar:** typo in zoom button ([#59](https://github.com/recap-utr/arguemapper/issues/59)) ([9acc419](https://github.com/recap-utr/arguemapper/commit/9acc4197e56d2f4a4cc01a163dbef4679fea6faa))
+
+## [2.1.3](https://github.com/recap-utr/arguemapper/compare/v2.1.2...v2.1.3) (2024-02-19)
+
+
+### Bug Fixes
+
+* filter elements before applying auto-layout ([bb525ce](https://github.com/recap-utr/arguemapper/commit/bb525ceb60b896856f30db0d4fb9d5dc7a3bc30f))
+
 ## [2.1.2](https://github.com/recap-utr/arguemapper/compare/v2.1.1...v2.1.2) (2024-02-08)
 
 

@@ -42,24 +42,27 @@ export const layout = async (
     return [];
   }
 
-  const invertEdges = algorithm === model.LayoutAlgorithm.TREE;
+  const nodeIds = nodes
+    .filter((node) => node.type === "atom" || node.type === "scheme")
+    .map((node) => node.data.id);
 
-  const elkNodes: ElkNode[] = nodes.map((node) => ({
-    id: node.id,
-    width: node.width ?? DEFAULT_WIDTH,
-    height: node.height ?? DEFAULT_HEIGHT,
-  }));
+  const elkNodes: ElkNode[] = nodes
+    .filter((node) => nodeIds.includes(node.id))
+    .map((node) => ({
+      id: node.id,
+      width: node.width ?? DEFAULT_WIDTH,
+      height: node.height ?? DEFAULT_HEIGHT,
+    }));
 
-  const elkEdges: ElkExtendedEdge[] = edges.map((edge) => {
-    const target = invertEdges ? edge.source : edge.target;
-    const source = invertEdges ? edge.target : edge.source;
-
-    return {
+  const elkEdges: ElkExtendedEdge[] = edges
+    .filter(
+      (edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target)
+    )
+    .map((edge) => ({
       id: edge.id,
-      targets: [target],
-      sources: [source],
-    };
-  });
+      targets: [edge.target],
+      sources: [edge.source],
+    }));
 
   const elk = new Elk({ defaultLayoutOptions: layoutOptions[algorithm] });
   const elkGraph = await elk.layout({

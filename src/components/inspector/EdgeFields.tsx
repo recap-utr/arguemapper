@@ -18,6 +18,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
 
   return (
     <>
+      <TextField fullWidth label="ID" value={element.id} disabled />
       <TextField
         fullWidth
         multiline
