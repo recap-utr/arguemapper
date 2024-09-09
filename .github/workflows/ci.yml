@@ -11,8 +11,8 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v10
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - uses: DeterminateSystems/nix-installer-action@v13
+      - uses: DeterminateSystems/magic-nix-cache-action@v7
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
       - run: nix run .#dockerManifest --impure
