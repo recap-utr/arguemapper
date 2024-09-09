@@ -3,7 +3,7 @@ import { produce } from "immer";
 import OpenAI from "openai";
 import * as model from "../model";
 import { getSessionStorage } from "../storage";
-import { OpenAIConfig, State, getState, setState } from "../store";
+import { AssistantConfig, State, getState, setState } from "../store";
 
 export type Mapping<U> = {
   [key in string]: U;
@@ -140,7 +140,7 @@ ${customPrompt}
     source: resource.source,
   });
 
-  const openaiConfig = getState().openaiConfig;
+  const openaiConfig = getState().assistantConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "extract_adus",
@@ -213,7 +213,7 @@ Please provide the ID of the ADU that you consider to be the major claim.
 ${customPrompt}
 `.trim();
 
-  const openaiConfig = getState().openaiConfig;
+  const openaiConfig = getState().assistantConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "identify_major_claim",
@@ -266,7 +266,7 @@ There should be no cycles in the graph and no orphaned ADUs.
 ${customPrompt}
 `.trim();
 
-  const openaiConfig = getState().openaiConfig;
+  const openaiConfig = getState().assistantConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "predict_relations",
@@ -358,7 +358,7 @@ ${customPrompt}
     source: resource.source,
   });
 
-  const openaiConfig = getState().openaiConfig;
+  const openaiConfig = getState().assistantConfig;
 
   const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
     name: "generate_argument_graph",
@@ -503,7 +503,7 @@ ${customPrompt}
 }
 
 async function fetchOpenAI(
-  config: OpenAIConfig,
+  config: AssistantConfig,
   system_message: string,
   user_message: string,
   function_definition: OpenAI.FunctionDefinition

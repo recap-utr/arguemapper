@@ -36,7 +36,7 @@ import {
   generateGraph,
   identifyMajorClaim,
   predictRelations,
-} from "../services/openai.js";
+} from "../services/assistant.js";
 import { State, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {

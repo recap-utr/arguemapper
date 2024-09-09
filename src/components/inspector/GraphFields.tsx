@@ -60,10 +60,10 @@ export interface Props extends React.PropsWithChildren {}
 export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
-  const openaiConfig = useStore((state) => state.openaiConfig);
+  const assistantConfig = useStore((state) => state.assistantConfig);
   const notes: string = useStore((state) => state.graph.userdata.notes);
-  const [openaiApiKey, setOpenaiKey] = useSessionStorage<string>(
-    "openaiApiKey",
+  const [assistantKey, setAssistantKey] = useSessionStorage<string>(
+    "assistantKey",
     ""
   );
 
@@ -406,13 +406,13 @@ export const GraphFields: React.FC<Props> = () => {
           </AccordionDetails>
         </Accordion>
         <Accordion
-          expanded={expanded === "openaiConfig"}
-          onChange={handleChange("openaiConfig")}
+          expanded={expanded === "assistantConfig"}
+          onChange={handleChange("assistantConfig")}
         >
           <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
             <Typography variant="h6">
               <FontAwesomeIcon icon={faRobot} />
-              &nbsp;OpenAI Config
+              &nbsp;Assistant
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -421,37 +421,43 @@ export const GraphFields: React.FC<Props> = () => {
                 fullWidth
                 type="password"
                 label="API Key"
-                value={openaiApiKey}
+                value={assistantKey}
                 onChange={(event) => {
-                  setOpenaiKey(event.target.value);
+                  setAssistantKey(event.target.value);
                 }}
               />
               <FormControl fullWidth>
                 <InputLabel>Model</InputLabel>
                 <Select
-                  value={openaiConfig.model}
+                  value={assistantConfig.model}
                   label="Layout"
                   onChange={(event) => {
                     setState(
                       produce((draft: State) => {
-                        draft.openaiConfig.model = event.target.value;
+                        draft.assistantConfig.model = event.target.value;
                       })
                     );
                   }}
                 >
+                  <MenuItem value="gpt-4o">GPT-4o</MenuItem>
+                  <MenuItem value="gpt-4o-mini">GPT-4o mini</MenuItem>
+                  <MenuItem value="gpt-4-turbo">GPT-4 Turbo</MenuItem>
+                  <MenuItem value="gpt-4">GPT-4</MenuItem>
                   <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
-                  <MenuItem value="gpt-4-turbo-preview">GPT-4 Turbo</MenuItem>
+                  <MenuItem value="chatgpt-4o-latest">
+                    ChatGPT-4o (latest)
+                  </MenuItem>
                 </Select>
               </FormControl>
               <TextField
                 fullWidth
                 type="text"
                 label="Base URL"
-                value={openaiConfig.baseURL}
+                value={assistantConfig.baseURL}
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.openaiConfig.baseURL = event.target.value;
+                      draft.assistantConfig.baseURL = event.target.value;
                     })
                   );
                 }}
