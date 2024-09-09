@@ -5,7 +5,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@bufbuild/protobuf": "^1",
     "@connectrpc/connect-web": "^1",
+    "@connectrpc/connect": "^1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fontsource/roboto": "^5",
