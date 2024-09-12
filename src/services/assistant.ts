@@ -1,6 +1,8 @@
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import OpenAI from "openai";
+import { zodResponseFormat } from "openai/helpers/zod";
+import { z } from "zod";
 import * as model from "../model";
 import { getSessionStorage } from "../storage";
 import { AssistantConfig, State, getState, setState } from "../store";
@@ -9,94 +11,62 @@ export type Mapping<U> = {
   [key in string]: U;
 };
 
-const extractedAduSchema = {
-  type: "object",
-  required: ["text", "explanation"],
-  properties: {
-    text: {
-      type: "string",
-      description: "The text of the ADU",
-    },
-    explanation: {
-      type: "string",
-      description: "A reason why this text was chosen as an ADU",
-    },
-  },
-};
+const ExtractedAdu = z.object({
+  text: z.string().describe("The text of the ADU"),
+  explanation: z
+    .string()
+    .describe("A reason why this text was chosen as an ADU"),
+});
 
-interface ExtractedAdu {
-  text?: string;
-  explanation?: string;
-}
+const ExtractedAdus = z.object({
+  adus: z
+    .array(ExtractedAdu)
+    .describe(
+      "An array of extracted argumentative discourse units from a resource"
+    ),
+});
 
-interface ExtractAdusArgs {
-  adus: Array<ExtractedAdu>;
-}
+const IdentifiedMajorClaim = z.object({
+  id: z
+    .string()
+    .describe(
+      "The ID of the argumentative discourse unit (ADU) that you consider to be the major claim / conclusion of the argument"
+    ),
+  explanation: z
+    .string()
+    .describe("A reason why this ADU was chosen as the major claim"),
+});
 
-const identifiedMajorClaimSchema = {
-  type: "object",
-  required: ["id", "explanation"],
-  properties: {
-    id: {
-      type: "string",
-      description: "The ID of the ADU that you consider to be the major claim",
-    },
-    explanation: {
-      type: "string",
-      description: "A reason why this ADU was chosen as the major claim",
-    },
-  },
-};
+const PredictedRelation = z.object({
+  source: z.string().describe("The ID of the source ADU"),
+  target: z.string().describe("The ID of the target ADU"),
+  type: z.enum(["support", "attack"]).describe("The type of the relation"),
+  explanation: z.string().describe("A reason why this relation was chosen"),
+});
 
-interface IdentifyMajorClaimArgs {
-  id?: string;
-  explanation?: string;
-}
+const PredictedRelations = z.object({
+  relations: z
+    .array(PredictedRelation)
+    .describe(
+      "An array of predicted relations between argumentative discourse units (ADUs)"
+    ),
+});
 
-const predictedRelationSchema = {
-  type: "object",
-  required: ["source", "target", "type", "explanation"],
-  properties: {
-    source: {
-      type: "string",
-      description: "The ID of the source ADU",
-    },
-    target: {
-      type: "string",
-      description: "The ID of the target ADU",
-    },
-    type: {
-      type: "string",
-      description: "The type of the relation",
-      enum: ["support", "attack"],
-    },
-    explanation: {
-      type: "string",
-      description: "A reason why this relation was chosen",
-    },
-  },
-};
+const ExtractedAduWithId = ExtractedAdu.extend({
+  id: z
+    .string()
+    .describe(
+      "An arbitrary ID for the ADU to be used as source/target in relations"
+    ),
+});
 
-interface PredictedRelation {
-  source?: string;
-  target?: string;
-  type?: "support" | "attack";
-  explanation?: string;
-}
-
-interface PredictRelationsArgs {
-  relations: Array<PredictedRelation>;
-}
-
-interface ExtractedAduWithId extends ExtractedAdu {
-  id: string;
-}
-
-interface GenerateGraphArgs {
-  adus: Array<ExtractedAduWithId>;
-  majorClaim: IdentifyMajorClaimArgs;
-  relations: Array<PredictedRelation>;
-}
+const GeneratedGraph = z.object({
+  adus: z.array(ExtractedAduWithId).describe("An array of extracted ADUs"),
+  majorClaim: IdentifiedMajorClaim.describe("The identified major claim"),
+  relations: z
+    .array(PredictedRelation)
+    .describe("An array of predicted relations"),
+});
 
 enum SchemeType {
   SUPPORT = "support",
@@ -142,27 +112,14 @@ ${customPrompt}
 
   const openaiConfig = getState().assistantConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
-    name: "extract_adus",
-    description:
-      "Extract a set of argumentative discourse units (ADUs) from a resource",
-    parameters: {
-      title: "ADU extraction",
-      description:
-        "Extract a set of argumentative discourse units (ADUs) from a resource",
-      type: "object",
-      required: ["adus"],
-      properties: {
-        adus: {
-          type: "array",
-          items: extractedAduSchema,
-        },
-      },
-    },
-  });
-
-  const functionArgs: ExtractAdusArgs = JSON.parse(res.arguments);
-  const extractedAdus = functionArgs.adus;
+  const res = await fetchOpenAI(
+    openaiConfig,
+    systemMessage,
+    userMessage,
+    ExtractedAdus,
+    "extracted_adus"
+  );
+  const extractedAdus = res.adus;
 
   const extractedAtomNodes = extractedAdus.map((adu) => {
     const text = adu.text?.trim().replace(/[.,]$/, "") ?? "";
@@ -215,17 +172,13 @@ ${customPrompt}
 
   const openaiConfig = getState().assistantConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
-    name: "identify_major_claim",
-    description: "Identify the major claim / conclusion of an argument",
-    parameters: {
-      ...identifiedMajorClaimSchema,
-      title: "Major Claim Identification",
-      description: "Identify the major claim / conclusion of an argument",
-    },
-  });
-
-  const mc: IdentifyMajorClaimArgs = JSON.parse(res.arguments);
+  const mc = await fetchOpenAI(
+    openaiConfig,
+    systemMessage,
+    userMessage,
+    IdentifiedMajorClaim,
+    "identified_major_claim"
+  );
 
   if (atomNodes.find((node) => node.id === mc.id) === undefined) {
     throw new Error(
@@ -268,25 +221,14 @@ ${customPrompt}
 
   const openaiConfig = getState().assistantConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
-    name: "predict_relations",
-    description: "Predict relations between argumentative discourse units",
-    parameters: {
-      title: "Relation Generation",
-      description: "Predict relations between argumentative discourse units",
-      type: "object",
-      required: ["relations"],
-      properties: {
-        relations: {
-          type: "array",
-          items: predictedRelationSchema,
-        },
-      },
-    },
-  });
-
-  const functionArgs: PredictRelationsArgs = JSON.parse(res.arguments);
-  const predictedRelations = functionArgs.relations;
+  const res = await fetchOpenAI(
+    openaiConfig,
+    systemMessage,
+    userMessage,
+    PredictedRelations,
+    "predicted_relations"
+  );
+  const predictedRelations = res.relations;
 
   setState(
     produce((draft: State) => {
@@ -360,40 +302,13 @@ ${customPrompt}
 
   const openaiConfig = getState().assistantConfig;
 
-  const res = await fetchOpenAI(openaiConfig, systemMessage, userMessage, {
-    name: "generate_argument_graph",
-    description: "Generate a complete argument graph from a plain text",
-    parameters: {
-      title: "Argument Graph Generation",
-      description: "Generate a complete argument graph from a plain text",
-      type: "object",
-      required: ["adus", "majorClaim", "relations"],
-      properties: {
-        adus: {
-          type: "array",
-          items: {
-            type: "object",
-            required: [...extractedAduSchema.required, "id"],
-            properties: {
-              ...extractedAduSchema.properties,
-              id: {
-                type: "string",
-                description:
-                  "An arbitrary ID for the ADU to be used as source/target in relations",
-              },
-            },
-          },
-        },
-        majorClaim: identifiedMajorClaimSchema,
-        relations: {
-          type: "array",
-          items: predictedRelationSchema,
-        },
-      },
-    },
-  });
-
-  const generatedGraph: GenerateGraphArgs = JSON.parse(res.arguments);
+  const generatedGraph = await fetchOpenAI(
+    openaiConfig,
+    systemMessage,
+    userMessage,
+    GeneratedGraph,
+    "generated_graph"
+  );
 
   setState(
     produce((draft: State) => {
@@ -502,12 +417,13 @@ ${customPrompt}
   );
 }
 
-async function fetchOpenAI(
+async function fetchOpenAI<T extends z.ZodTypeAny>(
   config: AssistantConfig,
   systemMessage: string,
   userMessage: string,
-  functionDefinition: OpenAI.FunctionDefinition
-): Promise<OpenAI.ChatCompletionMessageToolCall.Function> {
+  schema: T,
+  schema_name: string
+): Promise<z.infer<T>> {
   const {
     model,
     baseURL,
@@ -516,49 +432,47 @@ async function fetchOpenAI(
     frequencyPenalty,
     presencePenalty,
   } = config;
-  const apiKey = getSessionStorage<string>("openaiApiKey", "");
+  const apiKey = getSessionStorage<string>("assistantKey", "");
 
   if (apiKey === "") {
     throw new Error(
-      "Cannot perform OpenAI request because an API Key is missing. Please open the inspector and set it in the field 'OpenAI Config'."
+      "Cannot perform LLM request because an API Key is missing. Please open the inspector and set it in the field 'Assistant Config'."
     );
   }
 
   const client = new OpenAI({ baseURL, apiKey, dangerouslyAllowBrowser: true });
 
-  const res = await client.chat.completions.create({
-    model,
-    messages: [
-      { role: "system", content: systemMessage },
-      { role: "user", content: userMessage },
-    ],
-    tool_choice: {
-      type: "function",
-      function: {
-        name: functionDefinition.name,
-      },
-    },
-    tools: [
-      {
-        type: "function",
-        function: functionDefinition,
-      },
-    ],
-    temperature,
-    top_p: topP,
-    frequency_penalty: frequencyPenalty,
-    presence_penalty: presencePenalty,
-  });
+  try {
+    const completion = await client.beta.chat.completions.parse({
+      model,
+      messages: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: userMessage },
+      ],
+      response_format: zodResponseFormat(schema, schema_name),
+      temperature,
+      top_p: topP,
+      frequency_penalty: frequencyPenalty,
+      presence_penalty: presencePenalty,
+    });
 
-  if (
-    res.choices.length !== 1 ||
-    res.choices[0].message.tool_calls === undefined ||
-    res.choices[0].message.tool_calls.length !== 1
-  ) {
+    const res = completion.choices[0].message;
+
+    if (res.parsed) {
+      return res.parsed;
+    } else if (res.refusal) {
+      throw new Error(
+        `Got an unexpected response from the LLM, please try again: ${res.refusal}`
+      );
+    }
     throw new Error(
-      "Got an unexpected response from OpenAI. This may happen sometimes, so please try again."
+      `Got an unexpected response from the LLM, please try again.`
+    );
+  } catch (e: unknown) {
+    throw new Error(
+      `Got an unexpected response from the LLM, please try again: ${
+        (e as Error).message
+      }`
     );
   }
-
-  return res.choices[0].message.tool_calls[0].function;
 }
