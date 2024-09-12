@@ -10,6 +10,7 @@ import {
   faGear,
   faMinusCircle,
   faPlusCircle,
+  faRobot,
   faTrash,
   faUpload,
   faUsers,
@@ -19,6 +20,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -47,6 +49,7 @@ import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
+import { useSessionStorage } from "../../storage.js";
 import { State, resetState, setState, useStore } from "../../store.js";
 
 const Input = styled("input")({
@@ -58,7 +61,12 @@ export interface Props extends React.PropsWithChildren {}
 export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
+  const assistantConfig = useStore((state) => state.assistantConfig);
   const notes: string = useStore((state) => state.graph.userdata.notes);
+  const [assistantKey, setAssistantKey] = useSessionStorage<string>(
+    "assistantKey",
+    ""
+  );
 
   const confirm = useConfirm();
   const flow = useReactFlow();
@@ -398,7 +406,128 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
+        <Accordion
+          expanded={expanded === "assistantConfig"}
+          onChange={handleChange("assistantConfig")}
+        >
+          <AccordionSummary expandIcon={<FontAwesomeIcon icon={faCaretDown} />}>
+            <Typography variant="h6">
+              <FontAwesomeIcon icon={faRobot} />
+              &nbsp;Assistant
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                type="password"
+                label="API Key"
+                value={assistantKey}
+                onChange={(event) => {
+                  setAssistantKey(event.target.value);
+                }}
+              />
+              <Autocomplete
+                freeSolo
+                options={[
+                  "gpt-4o-2024-08-06",
+                  "gpt-4o-mini-2024-07-18",
+                  "chatgpt-4o-latest",
+                ]}
+                renderInput={(params) => (
+                  <TextField {...params} label="Model" />
+                )}
+                inputValue={assistantConfig.model}
+                onInputChange={(_event, value) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.model = value;
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="text"
+                label="Base URL"
+                value={assistantConfig.baseURL}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.baseURL = event.target.value;
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Temperature"
+                value={assistantConfig.temperature}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.temperature = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 1, step: 0.1 } }}
+                label="Top P"
+                value={assistantConfig.topP}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.topP = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Frequency Penalty"
+                value={assistantConfig.frequencyPenalty}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.frequencyPenalty = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Presence Penalty"
+                value={assistantConfig.presencePenalty}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.presencePenalty = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
         <TextField
+          sx={{ marginTop: 2 }}
           fullWidth
           multiline
           minRows={1}

@@ -1,6 +1,13 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Stack, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Stack,
+  useTheme,
+} from "@mui/material";
 import { produce } from "immer";
 import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -50,7 +57,7 @@ export default function Graph() {
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const firstVisit = useStore((state) => state.firstVisit);
-  // const isLoading = useStore((state) => state.isLoading);
+  const isLoading = useStore((state) => state.isLoading);
   const edgeStyle = useStore((state) => state.edgeStyle);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const shouldFitView = useStore((state) => state.shouldFitView);
@@ -111,19 +118,19 @@ export default function Graph() {
     []
   );
 
-  // useEffect(() => {
-  //   const domNode = document.querySelector(
-  //     "#react-flow .react-flow__renderer"
-  //   ) as HTMLElement | null;
+  useEffect(() => {
+    const domNode = document.querySelector(
+      "#react-flow .react-flow__renderer"
+    ) as HTMLElement | null;
 
-  //   if (domNode) {
-  //     if (isLoading) {
-  //       domNode.style.opacity = "0";
-  //     } else {
-  //       domNode.style.opacity = "1";
-  //     }
-  //   }
-  // }, [isLoading]);
+    if (domNode) {
+      if (isLoading) {
+        domNode.style.opacity = "0";
+      } else {
+        domNode.style.opacity = "1";
+      }
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every(nodeHasDimension)) {
@@ -324,7 +331,7 @@ export default function Graph() {
       connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
     >
-      {/* <Loader /> */}
+      {isLoading && <Loader />}
       {/* <MiniMap
         // style={}
         nodeStrokeColor=""
@@ -348,3 +355,14 @@ export default function Graph() {
     </ReactFlow>
   );
 }
+
+const Loader: React.FC = () => (
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    minHeight="100vh"
+  >
+    <CircularProgress size="25%" />
+  </Box>
+);

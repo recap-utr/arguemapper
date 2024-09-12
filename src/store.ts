@@ -14,6 +14,14 @@ import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
+export interface AssistantConfig {
+  model: string;
+  baseURL: string;
+  temperature: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+}
 export interface State {
   analyst: arguebuf.Analyst;
   edges: Array<model.Edge>;
@@ -28,16 +36,17 @@ export interface State {
   nodes: Array<model.Node>;
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
-  selectedResource: string;
+  selectedResourceTab: number;
   selection: model.Selection;
   shouldLayout: boolean;
   shouldFitView: boolean;
   sidebarWidth: number;
+  assistantConfig: AssistantConfig;
 }
 
 type ZundoState = Pick<
   State,
-  "edges" | "graph" | "nodes" | "selectedResource" | "selection"
+  "edges" | "graph" | "nodes" | "selectedResourceTab" | "selection"
 >;
 
 interface SerializedState {
@@ -52,7 +61,8 @@ interface SerializedState {
   leftSidebarOpen: boolean;
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
-  selectedResource: string;
+  selectedResourceTab: number;
+  assistantConfig: AssistantConfig;
 }
 
 type PersistState = Pick<
@@ -68,7 +78,8 @@ type PersistState = Pick<
   | "nodes"
   | "prettifyJson"
   | "rightSidebarOpen"
-  | "selectedResource"
+  | "selectedResourceTab"
+  | "assistantConfig"
 >;
 
 const storage: PersistStorage<PersistState> = {
@@ -136,19 +147,26 @@ const persistOptions: PersistOptions<State, PersistState> = {
     edgeStyle: state.edgeStyle,
     leftSidebarOpen: state.leftSidebarOpen,
     rightSidebarOpen: state.rightSidebarOpen,
-    selectedResource: state.selectedResource,
+    selectedResourceTab: state.selectedResourceTab,
+    assistantConfig: state.assistantConfig,
   }),
 };
 
 const temporalOptions: ZundoOptions<State, ZundoState> = {
   partialize: (state) => {
-    const { nodes, edges, graph, selectedResource, selection } = state;
+    const { nodes, edges, graph, selectedResourceTab, selection } = state;
     const partialNodes = nodes.map((node) => {
       // State should not update if dragged, width, etc. are changed
       const { data, id, position, selected, type } = node;
       return { data, id, position, selected, type };
     });
-    return { nodes: partialNodes, edges, graph, selectedResource, selection };
+    return {
+      nodes: partialNodes,
+      edges,
+      graph,
+      selectedResourceTab,
+      selection,
+    };
   },
   equality: (a, b) => {
     const debouncedFunc = throttle(
@@ -178,13 +196,21 @@ const initialState: State = {
   edgeStyle: model.EdgeStyle.STEP,
   shouldLayout: false,
   shouldFitView: false,
-  isLoading: true,
+  isLoading: false,
   selection: model.initSelection(),
   prettifyJson: true,
   imageScale: 3,
-  selectedResource: "1",
+  selectedResourceTab: 0,
   sidebarWidth: 400,
   headerHeight: 64,
+  assistantConfig: {
+    model: "gpt-4o",
+    baseURL: "https://api.openai.com/v1",
+    temperature: 1.0,
+    topP: 1.0,
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
+  },
 };
 
 export const useStore = createWithEqualityFn<State>()(

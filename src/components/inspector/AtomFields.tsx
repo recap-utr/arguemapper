@@ -60,6 +60,28 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
           );
         }}
       />
+      {element.data.userdata.assistant && (
+        <TextField
+          fullWidth
+          multiline
+          label="Assistant Explanation"
+          InputProps={{
+            readOnly: true,
+          }}
+          value={element.data.userdata.assistant.explanation ?? ""}
+        />
+      )}
+      {element.data.userdata.assistant?.mcExplanation && (
+        <TextField
+          fullWidth
+          multiline
+          label="Assistant Major Claim Explanation"
+          InputProps={{
+            readOnly: true,
+          }}
+          value={element.data.userdata.assistant.mcExplanation}
+        />
+      )}
       <Button
         startIcon={<FontAwesomeIcon icon={faCommentDots} />}
         variant="contained"
