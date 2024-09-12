@@ -14,7 +14,6 @@
   };
   outputs =
     inputs@{
-      nixpkgs,
       flake-parts,
       systems,
       flocken,
@@ -33,6 +32,7 @@
         }:
         let
           nodejs = pkgs.nodejs_20;
+          python = pkgs.python3.withPackages (p: with p; [ setuptools ]);
           npmlock2nix = import inputs.npmlock2nix { inherit pkgs; };
           caddyport = "8080";
           caddyfile = pkgs.writeText "caddyfile" ''
@@ -72,7 +72,7 @@
               node_modules_attrs = {
                 inherit nodejs;
                 # Python is needed for node-gyp/libsass
-                buildInputs = with pkgs; [ python3 ];
+                buildInputs = [ python ];
               };
             };
             arguemapper = self'.packages.default;
