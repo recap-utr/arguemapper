@@ -59,7 +59,7 @@
             packages = [ nodejs ];
           };
           checks = {
-            inherit (self'.packages) default;
+            inherit (self'.packages) arguemapper server;
           };
           packages = {
             default = npmlock2nix.v2.build {
