@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.2.0](https://github.com/recap-utr/arguemapper/compare/v2.1.5...v2.2.0) (2024-09-12)
+
+
+### Features
+
+* add ability to generate atoms using openai ([682c4b4](https://github.com/recap-utr/arguemapper/commit/682c4b4d1d89f03cb24f31a77670baf81315d508))
+* add ai function to identify the major claim ([692a677](https://github.com/recap-utr/arguemapper/commit/692a67784468c0243a1fe1a44e29418c3447bda9))
+* add error handling to openai ([3977201](https://github.com/recap-utr/arguemapper/commit/397720165293085b23a24fbd8daafc3b3188fbe4))
+* add explanations & metadata to openai nodes ([a867a0c](https://github.com/recap-utr/arguemapper/commit/a867a0ce5c250863b9c4f11fe37eae29e5f2372d))
+* add loading component for ai generations ([ababd47](https://github.com/recap-utr/arguemapper/commit/ababd47c6bef94019d47119a980553b3ed66e2f0))
+* improve assistant configuration ([cf3e0b4](https://github.com/recap-utr/arguemapper/commit/cf3e0b4d302a7845cfe51f9ba6e2d54c3e3bca00))
+* **openai:** add button to generate complete graph ([729a473](https://github.com/recap-utr/arguemapper/commit/729a473bdc52bd6b9fce118e6f54aad41dcbffb2))
+* **openai:** add relation prediction ([b83e0b5](https://github.com/recap-utr/arguemapper/commit/b83e0b550360e2a65b2e4fcc2b04f1e2232ebf57))
+* **openai:** allow generation of complete graphs ([572616c](https://github.com/recap-utr/arguemapper/commit/572616cb8eddb9018cea8f41715bc6a324672bf8))
+* **openai:** allow prompt customization ([88ffe58](https://github.com/recap-utr/arguemapper/commit/88ffe58a036f517db5fe9c2d05a1c223072f2e82))
+* use structured outputs instead of function calling ([df38b21](https://github.com/recap-utr/arguemapper/commit/df38b211f6f096380a1bf175e03fbb192bedcfa5))
+
+
+### Bug Fixes
+
+* add correct references to generated atoms ([f7f82b1](https://github.com/recap-utr/arguemapper/commit/f7f82b1fea733cde1410010ba39b3aeb12948581))
+* clean up graph when applying predictions ([189703e](https://github.com/recap-utr/arguemapper/commit/189703e704dd510c7a66f58b11349f4c143daa3c))
+* disallow openai logs in browsers ([d3c9895](https://github.com/recap-utr/arguemapper/commit/d3c989580e3ae2aefd39b17f086a98e94bf9aac5))
+* improve session storage usage ([e3e8d58](https://github.com/recap-utr/arguemapper/commit/e3e8d58fe3ac5a995cd8af07819bd04ab6d83a7f))
+* **openai:** correctly specify required fields ([6ff2e26](https://github.com/recap-utr/arguemapper/commit/6ff2e264614a9cd09e0f1f108fb70fa4ed883665))
+* **openai:** improve adu, mc steps ([9b6283c](https://github.com/recap-utr/arguemapper/commit/9b6283c1a13c5ece74ca9658f163c18dc2f2cef8))
+* **openai:** major claim of complete graphs ([e7787e4](https://github.com/recap-utr/arguemapper/commit/e7787e4847cc12a5a0785ad4cbae196f9f68527c))
+* **openai:** make prompt field multiline ([fc747a1](https://github.com/recap-utr/arguemapper/commit/fc747a18d3ebd15d61eca6d2967a7e2a0c1a63a5))
+* **openai:** pass additional resource information to model ([21a92f8](https://github.com/recap-utr/arguemapper/commit/21a92f870bf5d4842da653a89b8d1b3af45e7826))
+* **openai:** remove edges when generating nodes ([4c16839](https://github.com/recap-utr/arguemapper/commit/4c16839de3e0b23702752c7031c617ec52a7ddf3))
+* **openai:** update custom prompt description ([b93fe2f](https://github.com/recap-utr/arguemapper/commit/b93fe2f271a69784d763ba8fb9b2263d3e8ffb75))
+* **openai:** update prompts ([45df3ea](https://github.com/recap-utr/arguemapper/commit/45df3eacdc671dbe0e26f7fcbe901bf00ebb874e))
+* **openai:** update relation prompts ([1a617b1](https://github.com/recap-utr/arguemapper/commit/1a617b1362a1363e8766b6a6f83225e3a045a202))
+* **openai:** update relation prompts ([381479a](https://github.com/recap-utr/arguemapper/commit/381479acfa99903b2ce9e16721364f15012bacc8))
+* optimize openai model selection ([02a2589](https://github.com/recap-utr/arguemapper/commit/02a2589a897c1230ca85f245cecb4ec238fb779b))
+* properly export userdata for nodes ([19fa6a4](https://github.com/recap-utr/arguemapper/commit/19fa6a4eb5e5640228def05057c378c4fa4129db))
+* properly use autocomplete values ([06136fc](https://github.com/recap-utr/arguemapper/commit/06136fcfaaa107eb16dde77c42fd0b4538a89dc6))
+* re-add `dangerouslyAllowBrowser` to openai ([9efac6e](https://github.com/recap-utr/arguemapper/commit/9efac6eee86d88049d655cf91a4c5633f87d703f))
+* rename openai to assistant, update models ([32a1143](https://github.com/recap-utr/arguemapper/commit/32a11433b95c5f20c9906cc4525abdb1e799888f))
+* use password field for openai api key ([ff71e92](https://github.com/recap-utr/arguemapper/commit/ff71e927f5b68160c20c828b3cad76aaea0cea39))
+
 ## [2.1.5](https://github.com/recap-utr/arguemapper/compare/v2.1.4...v2.1.5) (2024-04-12)
 
 
