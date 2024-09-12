@@ -58,6 +58,9 @@
             '';
             packages = [ nodejs ];
           };
+          checks = {
+            inherit (self'.packages) default;
+          };
           packages = {
             default = npmlock2nix.v2.build {
               src = ./.;
