@@ -440,11 +440,11 @@ export const GraphFields: React.FC<Props> = () => {
                 renderInput={(params) => (
                   <TextField {...params} label="Model" />
                 )}
-                value={assistantConfig.model}
-                onChange={(_event, value) => {
+                inputValue={assistantConfig.model}
+                onInputChange={(_event, value) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.model = value ?? "gpt-4o";
+                      draft.assistantConfig.model = value;
                     })
                   );
                 }}
