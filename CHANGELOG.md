@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/recap-utr/arguemapper/compare/v2.2.0...v2.2.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* update python input ([fd2796f](https://github.com/recap-utr/arguemapper/commit/fd2796fb69e3ed29cd027a776aae2660eec3810b))
+
 ## [2.2.0](https://github.com/recap-utr/arguemapper/compare/v2.1.5...v2.2.0) (2024-09-12)
 
 
