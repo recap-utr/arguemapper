@@ -17,6 +17,10 @@ import * as convert from "./services/convert.js";
 export interface AssistantConfig {
   model: string;
   baseURL: string;
+  temperature: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
 }
 export interface State {
   analyst: arguebuf.Analyst;
@@ -202,6 +206,10 @@ const initialState: State = {
   assistantConfig: {
     model: "gpt-4o",
     baseURL: "https://api.openai.com/v1",
+    temperature: 1.0,
+    topP: 1.0,
+    frequencyPenalty: 0.0,
+    presencePenalty: 0.0,
   },
 };
 

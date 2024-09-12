@@ -20,6 +20,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -426,29 +427,28 @@ export const GraphFields: React.FC<Props> = () => {
                   setAssistantKey(event.target.value);
                 }}
               />
-              <FormControl fullWidth>
-                <InputLabel>Model</InputLabel>
-                <Select
-                  value={assistantConfig.model}
-                  label="Layout"
-                  onChange={(event) => {
-                    setState(
-                      produce((draft: State) => {
-                        draft.assistantConfig.model = event.target.value;
-                      })
-                    );
-                  }}
-                >
-                  <MenuItem value="gpt-4o">GPT-4o</MenuItem>
-                  <MenuItem value="gpt-4o-mini">GPT-4o mini</MenuItem>
-                  <MenuItem value="gpt-4-turbo">GPT-4 Turbo</MenuItem>
-                  <MenuItem value="gpt-4">GPT-4</MenuItem>
-                  <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
-                  <MenuItem value="chatgpt-4o-latest">
-                    ChatGPT-4o (latest)
-                  </MenuItem>
-                </Select>
-              </FormControl>
+              <Autocomplete
+                freeSolo
+                options={[
+                  "gpt-4o",
+                  "gpt-4o-mini",
+                  "gpt-4-turbo",
+                  "gpt-4",
+                  "gpt-3.5-turbo",
+                  "chatgpt-4o-latest",
+                ]}
+                renderInput={(params) => (
+                  <TextField {...params} label="Model" />
+                )}
+                value={assistantConfig.model}
+                onChange={(_event, value) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.model = value ?? "gpt-4o";
+                    })
+                  );
+                }}
+              />
               <TextField
                 fullWidth
                 type="text"
@@ -458,6 +458,70 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.baseURL = event.target.value;
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Temperature"
+                value={assistantConfig.temperature}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.temperature = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 1, step: 0.1 } }}
+                label="Top P"
+                value={assistantConfig.topP}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.topP = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Frequency Penalty"
+                value={assistantConfig.frequencyPenalty}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.frequencyPenalty = parseFloat(
+                        event.target.value
+                      );
+                    })
+                  );
+                }}
+              />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
+                label="Presence Penalty"
+                value={assistantConfig.presencePenalty}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.presencePenalty = parseFloat(
+                        event.target.value
+                      );
                     })
                   );
                 }}

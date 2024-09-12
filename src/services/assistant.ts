@@ -504,11 +504,18 @@ ${customPrompt}
 
 async function fetchOpenAI(
   config: AssistantConfig,
-  system_message: string,
-  user_message: string,
-  function_definition: OpenAI.FunctionDefinition
+  systemMessage: string,
+  userMessage: string,
+  functionDefinition: OpenAI.FunctionDefinition
 ): Promise<OpenAI.ChatCompletionMessageToolCall.Function> {
-  const { model, baseURL } = config;
+  const {
+    model,
+    baseURL,
+    temperature,
+    topP,
+    frequencyPenalty,
+    presencePenalty,
+  } = config;
   const apiKey = getSessionStorage<string>("openaiApiKey", "");
 
   if (apiKey === "") {
@@ -522,21 +529,25 @@ async function fetchOpenAI(
   const res = await client.chat.completions.create({
     model,
     messages: [
-      { role: "system", content: system_message },
-      { role: "user", content: user_message },
+      { role: "system", content: systemMessage },
+      { role: "user", content: userMessage },
     ],
     tool_choice: {
       type: "function",
       function: {
-        name: function_definition.name,
+        name: functionDefinition.name,
       },
     },
     tools: [
       {
         type: "function",
-        function: function_definition,
+        function: functionDefinition,
       },
     ],
+    temperature,
+    top_p: topP,
+    frequency_penalty: frequencyPenalty,
+    presence_penalty: presencePenalty,
   });
 
   if (
