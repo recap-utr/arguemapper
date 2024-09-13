@@ -50,7 +50,13 @@ import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
 import { useSessionStorage } from "../../storage.js";
-import { State, resetState, setState, useStore } from "../../store.js";
+import {
+  State,
+  assistantModels,
+  resetState,
+  setState,
+  useStore,
+} from "../../store.js";
 
 const Input = styled("input")({
   display: "none",
@@ -429,11 +435,7 @@ export const GraphFields: React.FC<Props> = () => {
               />
               <Autocomplete
                 freeSolo
-                options={[
-                  "gpt-4o-2024-08-06",
-                  "gpt-4o-mini-2024-07-18",
-                  "chatgpt-4o-latest",
-                ]}
+                options={assistantModels}
                 renderInput={(params) => (
                   <TextField {...params} label="Model" />
                 )}

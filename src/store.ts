@@ -14,6 +14,12 @@ import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
+export const assistantModels = [
+  "gpt-4o-2024-08-06",
+  "gpt-4o-mini-2024-07-18",
+  "chatgpt-4o-latest",
+];
+
 export interface AssistantConfig {
   model: string;
   baseURL: string;
@@ -204,7 +210,7 @@ const initialState: State = {
   sidebarWidth: 400,
   headerHeight: 64,
   assistantConfig: {
-    model: "gpt-4o",
+    model: assistantModels[0],
     baseURL: "https://api.openai.com/v1",
     temperature: 1.0,
     topP: 1.0,
