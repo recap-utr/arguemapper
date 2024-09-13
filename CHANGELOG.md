@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.2](https://github.com/recap-utr/arguemapper/compare/v2.2.1...v2.2.2) (2024-09-13)
+
+
+### Bug Fixes
+
+* **assistant:** make model selection consistent ([7d2a508](https://github.com/recap-utr/arguemapper/commit/7d2a508cf1676efc6ab2cbde17ec7786fa8dbd27))
+
 ## [2.2.1](https://github.com/recap-utr/arguemapper/compare/v2.2.0...v2.2.1) (2024-09-12)
 
 
