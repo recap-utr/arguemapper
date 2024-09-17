@@ -525,6 +525,23 @@ export const GraphFields: React.FC<Props> = () => {
                   );
                 }}
               />
+              <TextField
+                fullWidth
+                type="number"
+                slotProps={{ htmlInput: { min: 0 } }}
+                label="Seed (optional)"
+                value={assistantConfig.seed ?? ""}
+                onChange={(event) => {
+                  setState(
+                    produce((draft: State) => {
+                      draft.assistantConfig.seed =
+                        event.target.value === ""
+                          ? null
+                          : Math.abs(parseInt(event.target.value));
+                    })
+                  );
+                }}
+              />
             </Stack>
           </AccordionDetails>
         </Accordion>

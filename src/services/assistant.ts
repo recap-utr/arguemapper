@@ -431,6 +431,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
     topP,
     frequencyPenalty,
     presencePenalty,
+    seed,
   } = config;
   const apiKey = getSessionStorage<string>("assistantKey", "");
 
@@ -454,6 +455,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
       top_p: topP,
       frequency_penalty: frequencyPenalty,
       presence_penalty: presencePenalty,
+      seed,
     });
 
     const res = completion.choices[0].message;

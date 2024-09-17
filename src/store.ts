@@ -27,6 +27,7 @@ export interface AssistantConfig {
   topP: number;
   frequencyPenalty: number;
   presencePenalty: number;
+  seed: null | number;
 }
 export interface State {
   analyst: arguebuf.Analyst;
@@ -216,6 +217,7 @@ const initialState: State = {
     topP: 1.0,
     frequencyPenalty: 0.0,
     presencePenalty: 0.0,
+    seed: null,
   },
 };
 
