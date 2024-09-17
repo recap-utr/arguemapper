@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.3](https://github.com/recap-utr/arguemapper/compare/v2.2.2...v2.2.3) (2024-09-17)
+
+
+### Bug Fixes
+
+* **assistant:** add seed parameter ([3847bfc](https://github.com/recap-utr/arguemapper/commit/3847bfc7c2ee4e0c1ffbb8e478b987439f368c33))
+
 ## [2.2.2](https://github.com/recap-utr/arguemapper/compare/v2.2.1...v2.2.2) (2024-09-13)
 
 
