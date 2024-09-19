@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.4](https://github.com/recap-utr/arguemapper/compare/v2.2.3...v2.2.4) (2024-09-19)
+
+
+### Bug Fixes
+
+* add initial version of arguemapper logo ([4c12ce7](https://github.com/recap-utr/arguemapper/commit/4c12ce7c400f34c17599812bff7b5845f02d2569))
+
 ## [2.2.3](https://github.com/recap-utr/arguemapper/compare/v2.2.2...v2.2.3) (2024-09-17)
 
 
