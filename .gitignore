@@ -222,3 +222,4 @@ sketch
 .direnv/
 /result
 .scannerwork/
+/public/*.ai
