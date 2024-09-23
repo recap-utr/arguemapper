@@ -1,6 +1,6 @@
-## Guidelines for Using the AI Assistant in Arguemapper
+# Guidelines for Using the AI Assistant in Arguemapper
 
-### How to Access
+## How to Access
 
 In the Inspector on the right, there is a tab labeled "Assistant" that can be opened by clicking.
 
@@ -18,7 +18,7 @@ This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 - **Base URL:**
   - The Base URL of the AI model provider. By default, it points to OpenAI's services.
 
-### Usage
+## Usage
 
 You can click the Blue Action Button in the main UI, where you would also add new Scheme and Argument Nodes. Several options are available: **Generate Complete Graph**, **Extract ADUs**, **Identify Major Claim**, and **Predict Relations**.
 
@@ -43,13 +43,12 @@ You can click the Blue Action Button in the main UI, where you would also add ne
 
 When selecting one of these options, a dialog will open, allowing you to include a **Custom Instruction Prompt**. The model will follow this instruction, significantly impacting the results.
 
-### Example Workflows
+## Example Workflows
 
 1. First, load or paste a Text Resource, identify the Major Claim and Arguments, and then predict their relations to save time connecting them manually. Afterward, review the relations for accuracy.
-   
 2. Load/paste a Text Resource, generate the complete graph, and then check for errors.
 
-### Disclaimer and Tips
+## Disclaimer and Tips
 
 The AI models available can significantly speed up the creation of Argument Graphs but are prone to errors and are not deterministic. The same input and Custom Instruction Prompt will almost never yield identical results. If something goes wrong, try multiple attempts—at least twice. The results however are probabilistic, a well-crafted Custom Instruction that has previously worked well will generally continue to yield better results, even if it occasionally fails.
 
@@ -59,7 +58,7 @@ Prompt engineering has a significant impact on the final results, but it is not 
 
 Model performance varies widely. For example, GPT-3.5-Turbo often performs significantly worse than GPT-4, but can still be useful in some scenarios. Always consider the trade-off between cost and performance. For instance, generating a Complete Graph with GPT-4 costs roughly $0.015 - $0.03 (as of September 2024).
 
-### Custom Instruction Prompt Engineering Tips
+## Custom Instruction Prompt Engineering Tips
 
 While the software works well without Custom Instructions, creating specific instructions can sometimes be beneficial. This is especially true when dealing with a dataset containing similarly structured texts. You can use a Prompt to guide the model around the general structure of the text, improving performance significantly. Providing solved examples can also be helpful, so the model doesn’t have to solve the problem from scratch (zero-shot). It may take a few trials to find which prompt works best, as even slight changes to the Prompt can lead to dramatically different outcomes. For instance, even missing or different punctuation can have a significant impact.
 
@@ -69,16 +68,17 @@ Since LLMs (like GPT-4o) behave unpredictably compared to typical software, it�
 
 Prompts can also introduce errors. Sometimes the model does not follow the structure given in a prompt, especially when told to adhere to a specific format in its responses.
 
-### Example Custom Instruction Prompts:
+## Example Custom Instruction Prompts
+
 ```txt
 Firstly look for the correct major claim, this can be usually found at the end of the given essay, eg "in conclusion i think xyz is good" then the major claim would be "xyz is good" and the arguments are there to exacerbate this.
 Rather retrive less arguments than too many, i can still add any missing one manually afterwards. Think step by step.
 ```
+
 This prompt was used for a dataset where the major claim of the argument is very often found at the same position in the text and in a fairly similar style, if the position varies over multiple texts it is useful to change the prompt accordingly (eg found at the start instead of found at the end).
 
 As explained earlier, at times it’s useful to give out an example of a piece of data and it's solved Graph. Since visual inputs are not possible as of now, you need to encode the solution into text. You could for example mark Argument Nodes with a # in front, and explain their relations between each other in ( ), as long as a human could read and understand the encoding you’ve chosen the models likely will too.
 The following example combines this approach with the previous example (since it is an original data piece it contains spelling errors):
-
 
 ```txt
 Firstly look for the correct major claim, this can be usually found at the end of the given essay, eg "in conclusion i think xyz is good" then the major claim would be "xyz is good" and the arguments are there to exacerbate this.
@@ -111,4 +111,5 @@ arguments:
 
 Note that the shown approaches are not proven to be optimal, but resulted in often successful annotations nevertheless when generating a complete graph.
 Also note that with specifically fine-tuned models prompts and results will vary massively, the same will likely be true for upcoming reasoning models like OpenAIs o1 series, prompt behaviour and model performance also changes unpredictably within the same model if said model gets updated by their Owners, therefore you need to specify when a prompt worked exactly, to have a fallback strategy in case of an update.
+
 If you have trouble coming up with a prompt, the models themselves, wherever they are accessible, can also help you craft some as a starting point.
