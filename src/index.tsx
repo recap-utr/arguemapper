@@ -20,7 +20,7 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Layout />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 function Layout() {

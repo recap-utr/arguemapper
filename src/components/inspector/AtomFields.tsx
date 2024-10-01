@@ -16,7 +16,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.AtomNode,
-    dequal
+    dequal,
   );
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
@@ -34,7 +34,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
             produce((draft: State) => {
               const node = draft.nodes[selectedIndex] as model.AtomNode;
               node.data.text = event.target.value;
-            })
+            }),
           );
         }}
       />
@@ -56,7 +56,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
               } else {
                 node.data.reference.text = event.target.value;
               }
-            })
+            }),
           );
         }}
       />
@@ -90,7 +90,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
             produce((draft: State) => {
               draft.graph.majorClaim =
                 majorClaim !== element.id ? element.id : undefined;
-            })
+            }),
           );
         }}
       >
@@ -107,7 +107,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
             produce((draft: State) => {
               const node = draft.nodes[selectedIndex];
               node.data.userdata.notes = event.target.value;
-            })
+            }),
           );
         }}
       />

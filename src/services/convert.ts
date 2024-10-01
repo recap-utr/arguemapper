@@ -10,7 +10,7 @@ export function importGraph(obj: JsonObject): model.Wrapper {
 }
 export function exportGraph(
   obj: model.Wrapper,
-  format: "aif" | "arguebuf"
+  format: "aif" | "arguebuf",
 ): JsonObject {
   const graph = model.toArguebuf(obj);
   const currentAnalyst = useStore.getState().analyst;
@@ -18,7 +18,7 @@ export function exportGraph(
   if (
     format === "arguebuf" &&
     !Object.values(graph.analysts).some(
-      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
+      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email,
     )
   ) {
     if (Object.keys(graph.analysts).includes(currentAnalyst.id)) {
@@ -34,7 +34,7 @@ export function exportGraph(
 export function generateFilename() {
   const timestamp = arguebuf.date.format(
     arguebuf.date.now(),
-    "YYYY-MM-DD[T]HH-mm-ss"
+    "YYYY-MM-DD[T]HH-mm-ss",
   );
 
   return `arguemapper-${timestamp}`;
@@ -63,7 +63,7 @@ export const downloadImage = async (format: ImgFormat) => {
   ];
 
   const elem = document.querySelector(
-    selectors.join(" ")
+    selectors.join(" "),
   ) as HTMLElement | null;
   const func = imgFormatMap[format];
 
@@ -79,7 +79,7 @@ export const downloadImage = async (format: ImgFormat) => {
           ? Array.from(domNode.classList)
           : [];
         return !excludedClasses.some((className) =>
-          classList.includes(className)
+          classList.includes(className),
         );
       },
     });
@@ -96,7 +96,7 @@ export enum ImgFormat {
 const imgFormatMap: {
   [key in ImgFormat]: (
     elem: HTMLElement,
-    options?: ImgOptions
+    options?: ImgOptions,
   ) => Promise<string>;
 } = {
   png: toPng,

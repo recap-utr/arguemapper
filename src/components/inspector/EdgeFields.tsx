@@ -13,7 +13,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
   const element = useStore(
     (state) => state.edges[selectedIndex] as model.Edge,
-    dequal
+    dequal,
   );
 
   return (
@@ -35,7 +35,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
               }
 
               edge.data.userdata.notes = event.target.value;
-            })
+            }),
           );
         }}
       />

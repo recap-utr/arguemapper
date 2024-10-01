@@ -48,11 +48,11 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   const theme = useTheme();
   const background = useMemo(
     () => (node.data.userdata.clickConnect ? color.orange[500] : bg),
-    [node.data.userdata.clickConnect, bg]
+    [node.data.userdata.clickConnect, bg],
   );
   const borderColor = useMemo(
     () => (node.selected ? theme.palette.text.primary : background),
-    [background, node.selected, theme.palette.text.primary]
+    [background, node.selected, theme.palette.text.primary],
   );
 
   return (
@@ -100,7 +100,7 @@ const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
 };
 
 const SchemeComponent: ComponentType<NodeProps<model.SchemeNodeData>> = (
-  node
+  node,
 ) => {
   const body = <div>{startCase(node.data.label())}</div>;
 
