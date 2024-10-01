@@ -47,6 +47,19 @@ When selecting one of these options, a dialog will open, allowing you to include
 
 1. First, load or paste a Text Resource, identify the Major Claim and Arguments, and then predict their relations to save time connecting them manually. Afterward, review the relations for accuracy.
 2. Load/paste a Text Resource, generate the complete graph, and then check for errors.
+3. Load/paste a Text Resource, identify the Major Claim, predict the arguments with the Major Claim in the Custom Instruction Prompt, relations can be added either manually or with another model run here.
+
+What workflow works best depends somewhat on the structure of your data. If the structure of any individual piece of data, eg an argumentative text from the dataset, is well structured a model should be able to also generate the entire graph on it's own, especially if given certain hints of the structure in the Custom Instruction Prompt. If a full graph generation is completely off at times, a retry can often help.
+
+Generally the most useful workflow we found thus far, excluding more complex prompt engineering, is too extract the Arguments by hand as in 1), as well as the Main Claim, and then follow up to let the Model predict the relations between them. This saves a lot of time in connecting the Nodes manually and is usually met with only low error rates.
+Generating the full graph has the highest error rate, since the model needs to do anything in this scenario, so if it missteps once, significant parts of the graph can be wrong as a result.
+
+Surprisingly, the models also sometimes struggle to find the best Major Claim, so 3) can be a useful workflow here. It also appears that knowing the Major Claim from a Custom Instruction Prompt helps a model to find the Arguments. This can be done simply by adding "The Major Claim is: <claim>" into the Custom Instruction Dialog.
+
+Finally, if a text you're trying to use the model for is fairly convoluted and even difficult for a human to process correctly, or if it's fairly vague, it is very likely that the models will also struggle more, leading to a higher error rate. This is however not predictable, rarely the models also try to hallucinate some text or add something to an extracted Argument, so you might need to watch out for that, especially with weaker models (eg GPT3.5, or similar ones)
+
+Another workflow (that goes around the general usage of the Assistant however) is to use currently unavailable models as helpers (eg o1-preview by OpenAI), you could for example take a text resource you have and ask it to filter out the Arguments (or even the entire Graph Structure), and even to write a Custom Instruction Prompt for you, that you can then paste into the Assistants Dialog to generate the Graph. Since this needs some extra steps, and especially because of the slower inference time of eg the o1 series, this might not speed up the process.
+It can be useful to try to solve some pieces of the dataset by hand and look how long it took for you, with this you can compare different approaches, on how much they speed up the graph creation in your specific use case.
 
 ## Disclaimer and Tips
 
@@ -57,6 +70,8 @@ If you are using or experimenting with a Custom Intruction it is helpful to edit
 Prompt engineering has a significant impact on the final results, but it is not necessary for getting acceptable outcomes. The default settings are usually sufficient. More information and examples on Prompts will follow later in this documentation.
 
 Model performance varies widely. For example, GPT-3.5-Turbo often performs significantly worse than GPT-4, but can still be useful in some scenarios. Always consider the trade-off between cost and performance. For instance, generating a Complete Graph with GPT-4 costs roughly $0.015 - $0.03 (as of September 2024).
+
+The new reasoning models by OpenAI, currently not available in the Assistant (as of September 2024), o1-preview and o1-mini seem to be very capbable of extracting even entire graphs, especially o1-preview, with o1-mini struggling with a decent graph structure.
 
 ## Custom Instruction Prompt Engineering Tips
 
