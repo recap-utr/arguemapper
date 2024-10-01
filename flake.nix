@@ -11,8 +11,8 @@
       url = "github:mirkolenz/flocken/v2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    git-hooks = {
-      url = "github:cachix/git-hooks.nix";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -27,7 +27,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import systems;
       imports = [
-        inputs.git-hooks.flakeModule
+        inputs.treefmt-nix.flakeModule
       ];
       perSystem =
         {
@@ -60,24 +60,28 @@
         {
           devShells.default = pkgs.mkShell {
             shellHook = ''
-              ${config.pre-commit.installationScript}
               ${lib.getExe' nodejs "npm"} install
               ${lib.getExe nodejs} --version > .node-version
             '';
-            packages = [ nodejs ];
+            packages = [
+              nodejs
+              config.treefmt.build.wrapper
+            ];
           };
           checks = {
             inherit (config.packages) arguemapper server;
           };
-          pre-commit.settings.hooks = {
-            prettier = {
-              enable = true;
-              excludes = [
-                "flake.lock"
-                "CHANGELOG.md"
-              ];
+          treefmt = {
+            projectRootFile = "flake.nix";
+            programs = {
+              prettier = {
+                enable = true;
+                excludes = [
+                  "CHANGELOG.md"
+                ];
+              };
+              nixfmt.enable = true;
             };
-            nixfmt-rfc-style.enable = true;
           };
           packages = {
             default = npmlock2nix.v2.build {
