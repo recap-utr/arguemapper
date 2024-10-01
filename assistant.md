@@ -7,10 +7,12 @@ In the Inspector on the right, there is a tab labeled "Assistant" that can be op
 This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 
 - **API Key:**
+
   - Paste a key (if necessary) into this field, e.g., your OpenAI API Key.
   - Billing (if necessary) will be tied to this key.
 
 - **Model:**
+
   - Choose a model that will perform the actions.
   - Currently available by default: OpenAI models such as GPT(4o, 4o-mini, 4-Turbo, 4, 3.5-Turbo, 4o(latest)).
   - More models will become available over time, including the option to connect to privately hosted models (e.g., LLama by Meta).
@@ -23,17 +25,20 @@ This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 You can click the Blue Action Button in the main UI, where you would also add new Scheme and Argument Nodes. Several options are available: **Generate Complete Graph**, **Extract ADUs**, **Identify Major Claim**, and **Predict Relations**.
 
 - **Generate Complete Graph:**
+
   - Extracts the Major Claim, Arguments, and predicts their relations directly.
   - The AI uses the Text Resource on the left; if it is empty, no extraction will occur.
   - It only uses the currently visible text resource and ignores any others if multiple exist.
   - Errors are more likely in this option compared to others, as the AI takes over the entire process.
 
 - **Extract ADUs:**
+
   - Only extracts the Argument Nodes.
   - Existing Nodes in the UI will be deleted during this process.
   - Custom Instructions that request the model to keep certain nodes (e.g., a Major Claim) may result in errors.
 
 - **Identify Major Claim:**
+
   - Identifies the Major Claim.
   - Searches only within existing Argument Nodes. If no nodes exist, an error will result.
 
@@ -129,56 +134,67 @@ Also note that with specifically fine-tuned models prompts and results will vary
 
 If you have trouble coming up with a prompt, the models themselves, wherever they are accessible, can also help you craft some as a starting point.
 
-
 ## Additional Parameters
-Notes: 
+
+Notes:
+
 - The effects of these on generation quality are yet to be explored or need to be explored by the user depending on their use case.
-- LLM (or similar AI models) are not outputting words, but instead something called tokens one after another. The models have a large set of tokens (which can be anything from numbers to letters, or parts of words, ...) for which they will calculate the odds of being the next one. For example: This sentence is already put out "This tree is gr...", now the model estimates what comes next with what chance, "een" will get a much higher liklihood than "ey", since "This tree is green" is a much more likely solution than "This tree is grey". The odds of any new token is based on all the tokens that came beforehand however(*), so for example if the full text in this example is: "Everything is grey. The sky is grey. The ground is grey. The tree is gr..." then "ey" will be more likely than "een" as the next token.
-- (*) within the context window of the model, there is a limited number tokens the model can use as input and anything before these will be ignored, the exact number depends on the model, but is generally greater than 32000 Tokens, with some models able to use millions.
+- LLM (or similar AI models) are not outputting words, but instead something called tokens one after another. The models have a large set of tokens (which can be anything from numbers to letters, or parts of words, ...) for which they will calculate the odds of being the next one. For example: This sentence is already put out "This tree is gr...", now the model estimates what comes next with what chance, "een" will get a much higher liklihood than "ey", since "This tree is green" is a much more likely solution than "This tree is grey". The odds of any new token is based on all the tokens that came beforehand however(\*), so for example if the full text in this example is: "Everything is grey. The sky is grey. The ground is grey. The tree is gr..." then "ey" will be more likely than "een" as the next token.
+- (\*) within the context window of the model, there is a limited number tokens the model can use as input and anything before these will be ignored, the exact number depends on the model, but is generally greater than 32000 Tokens, with some models able to use millions.
 
 ### Frequency Penalty
+
 This parameter can be set between -2.0 and 2.0, per default it is 0.
 This parameter penalizes reoccurence of already generated output, for example if a text contains a certain word already it gets penalized if it uses it too often afterward, therefore reducing the likelihood that it comes up again. This parameter uses the existing frequency in the output, so eg if it generates a line, the higher this value is set the lower the chance for it to occur again will be.
 
 ### logit bias
+
 This parameter can be set between -100 and 100, default is 0.
 This parameter is a map, eg: "word1": 100, "word2": -1, ...
 The given number either increases or decreases the likelihood that this word will be generated in the output, for example "word2" being mapped to -1 means that this word (or rather token) has a slightly lower chance to be generated, while "word1" mapped to 100 means that this word should be used exclusively (analog a -100 means its banned from generation).
 
 ### logprobs
+
 This parameter can be set either True or False, default is False.
 If set True the output by the model will not only contain the usual information, but also the logarithmic likelihood of any single token in the output.
 This will (very likely) not effect the generation in a usable way, but might be interesting for analyzing models "reasoning" in the background.
 
 ### top_logprobs
+
 This parameter can be set between 0 and 20, default is 0. Note that logprobs needs to be set to True for this to work.
 At any token in the output it will output a list of 0-20 tokens ordered by their logarithmic likelihood, it will also output this value for any of the 0-20 ones. The displayed tokens are the 0-20 ones with the highest chance of being the next one.
 This will (very likely), just as the previous parameter, not be useful for generating graphs, but rather for deeper analysis of the outputs.
 
 ### max_completion_tokens
+
 This parameter is a natural number, it will be between 0 and the maximum number of output tokens of the given model. The absolute maximum depends on the model, its version and more, so you need to look this up for your chosen model. An example value is chatGPT4o (as of July 2024) with a maximum number of 4096 output (or completion) tokens. The model can not put out more than this and therefore if the text you want to create a graph for is extremely long it might not be able to put out all the arguments or cause an error. With this you can limit the model though in it's output to eg save costs, but beware that the model will not know where it's limit is (unless you explain this in the custom instruction prompt, which it may not follow accurately!) and it's output will just end once this limit is reached, which might cause errors.
 But note that the model doesn't always use the full amount of allowed tokens, so even if you set this limit to eg 3000, it might just output 300 if that's all it needs for it's generation.
 
 ### n
+
 This parameter is a natural number. Per default it is set to 1.
 This will cause the model to create n different generations, it will likely not be useful for creating a graph, but potentially for analysis in the background.
 
 ### presence penalty
+
 Comparable to Frequency penalty, but counts for presences of individual tokens, instead of frequency.
 The higher the value (also -2.0 to 2.0) the higher the chance the model will go towards a different topic.
 
 ### seed
+
 Note: This parameter is in Beta for OpenAI models.
 This parameter can be set between 0 and a multi-digit number, per default it's random.
 This parameter increases the chances drastically that the output becomes more deterministic. This can be especially useful to test custom instruction prompts, similar seeds usually lead to a similar result, but this is not guaranteed!
 
 ### temperature
+
 This parameter can be set between 0.0 and 2.0. Default is 1.0.
 This parameter increases the "randomness" of the model the higher it is, generally a value above 0.8 means the models behaviour is quite random, while a value below 0.2 is more deterministic.
 This is likely useful for testing custom instruction prompts. Some outside research suggests that certain values reduce the "intelligence" of the model, a value of 0.0 for example will very often lead to a similar output, but if it's a wrong one, then it will always be wrong even in following generations. On the other hand, low values also reduce hallucinations where the model makes things up. It is advised to test this for your usecase.
 Note: You should not change this and top_p at the same time.
 
 ### top_p
+
 This parameter can be set between 0.0 and 1.0. Default is 1.0.
 This parameter forces the model to only consider those tokens that are within a given percentile of all the possible next tokens based on their likelihood.
 For example a value of 0.1 will mean that only the Top 10% most likely next tokens will be considered for the next token. Assume for example this list of possible next tokens "grey":10% chance,"red": 25% chance..., "two":95% chance, "three": 99% chance, then eg "grey" and "red" would not be used by the model for the next token, no matter what.
