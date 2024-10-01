@@ -89,7 +89,7 @@ export default function Graph() {
         </IconButton>
       </Stack>
     ),
-    [closeSnackbar]
+    [closeSnackbar],
   );
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function Graph() {
           persist: true,
           variant: "info",
           action: snackbarAction,
-        }
+        },
       );
     }
   }, [enqueueSnackbar, firstVisit, flow, snackbarAction]);
@@ -115,12 +115,12 @@ export default function Graph() {
 
   const nodeHasDimension = useCallback(
     (el: model.Node) => el.width && el.height,
-    []
+    [],
   );
 
   useEffect(() => {
     const domNode = document.querySelector(
-      "#react-flow .react-flow__renderer"
+      "#react-flow .react-flow__renderer",
     ) as HTMLElement | null;
 
     if (domNode) {
@@ -156,10 +156,10 @@ export default function Graph() {
     setState(
       produce((draft: State) => {
         const source = draft.nodes.find(
-          (node) => node.id === connection.source
+          (node) => node.id === connection.source,
         );
         const target = draft.nodes.find(
-          (node) => node.id === connection.target
+          (node) => node.id === connection.target,
         );
 
         if (
@@ -176,10 +176,10 @@ export default function Graph() {
 
           draft.nodes.push(scheme);
           draft.edges.push(
-            model.initEdge({ data: {}, source: source.id, target: scheme.id })
+            model.initEdge({ data: {}, source: source.id, target: scheme.id }),
           );
           draft.edges.push(
-            model.initEdge({ data: {}, source: scheme.id, target: target.id })
+            model.initEdge({ data: {}, source: scheme.id, target: target.id }),
           );
         } else if (connection.source !== null && connection.target !== null) {
           draft.edges.push(
@@ -187,10 +187,10 @@ export default function Graph() {
               data: {},
               source: connection.source,
               target: connection.target,
-            })
+            }),
           );
         }
-      })
+      }),
     );
   }, []);
 
@@ -203,7 +203,7 @@ export default function Graph() {
       edges: state.edges.filter(
         (edge) =>
           !deletedNodeIds.includes(edge.source) &&
-          !deletedNodeIds.includes(edge.target)
+          !deletedNodeIds.includes(edge.target),
       ),
       selection: model.initSelection(),
     }));
@@ -221,12 +221,12 @@ export default function Graph() {
       instance.fitView();
       resumeTemporal();
     },
-    [resumeTemporal]
+    [resumeTemporal],
   );
 
   const onContextMenu = (
     event: React.MouseEvent,
-    target?: model.AtomNode | model.SchemeNode | model.Edge
+    target?: model.AtomNode | model.SchemeNode | model.Edge,
   ) => {
     setCtxMenu({
       event,
@@ -240,15 +240,15 @@ export default function Graph() {
       setState((state) => {
         const partialSelection = {
           nodes: elems.nodes.map((selectedNode) =>
-            state.nodes.findIndex((node) => node.id === selectedNode.id)
+            state.nodes.findIndex((node) => node.id === selectedNode.id),
           ),
           edges: elems.edges.map((selectedEdge) =>
-            state.edges.findIndex((edge) => edge.id === selectedEdge.id)
+            state.edges.findIndex((edge) => edge.id === selectedEdge.id),
           ),
         };
 
         const nodeTypes = elems.nodes.map(
-          (node) => node.type as "scheme" | "atom"
+          (node) => node.type as "scheme" | "atom",
         );
 
         return {
@@ -258,14 +258,14 @@ export default function Graph() {
           },
         };
       }),
-    []
+    [],
   );
 
   const onElementClick = useCallback(
     (event: React.MouseEvent, elem: model.Node | model.Edge) => {
       setState({ rightSidebarOpen: true });
     },
-    []
+    [],
   );
 
   const onClickConnectStart: OnConnectStart = useCallback((event, params) => {
@@ -277,7 +277,7 @@ export default function Graph() {
         if (node !== undefined) {
           node.data.userdata.clickConnect = true;
         }
-      })
+      }),
     );
   }, []);
 
@@ -287,7 +287,7 @@ export default function Graph() {
         draft.nodes
           .filter((node) => node.data.userdata.clickConnect)
           .forEach((node) => delete node.data.userdata.clickConnect);
-      })
+      }),
     );
   }, []);
 

@@ -115,7 +115,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         ),
       });
     },
-    [closeSnackbar, enqueueSnackbar]
+    [closeSnackbar, enqueueSnackbar],
   );
 
   return (
@@ -161,7 +161,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
             setState(
               produce((draft: State) => {
                 draft.nodes.push(node);
-              })
+              }),
             );
           }}
           close={close}
@@ -177,7 +177,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
             setState(
               produce((draft: State) => {
                 draft.nodes.push(node);
-              })
+              }),
             );
           }}
           close={close}

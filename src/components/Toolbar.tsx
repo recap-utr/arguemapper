@@ -57,7 +57,7 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
     () => {
       undoable && undo();
     },
-    { preventDefault: true }
+    { preventDefault: true },
   );
 
   useHotkeys(
@@ -65,7 +65,7 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
     () => {
       redoable && redo();
     },
-    { preventDefault: true }
+    { preventDefault: true },
   );
 
   return (

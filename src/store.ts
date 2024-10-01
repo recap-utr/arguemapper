@@ -98,7 +98,7 @@ const storage: PersistStorage<PersistState> = {
     }
 
     const { version, state } = JSON.parse(
-      serializedState
+      serializedState,
     ) as StorageValue<SerializedState>;
     const { nodes, edges, graph } = convert.importGraph(state.graph);
     const analyst = new arguebuf.Analyst(state.analyst);
@@ -119,7 +119,7 @@ const storage: PersistStorage<PersistState> = {
     const { nodes, edges, graph } = state;
     const serializedGraph = convert.exportGraph(
       { nodes, edges, graph },
-      "arguebuf"
+      "arguebuf",
     );
 
     const serializedState: StorageValue<SerializedState> = {
@@ -178,7 +178,7 @@ const temporalOptions: ZundoOptions<State, ZundoState> = {
   equality: (a, b) => {
     const debouncedFunc = throttle(
       (a: ZundoState, b: ZundoState) => dequal(a, b),
-      500
+      500,
     );
     const debouncedResult = debouncedFunc(a, b);
 
@@ -224,9 +224,9 @@ const initialState: State = {
 export const useStore = createWithEqualityFn<State>()(
   temporal(
     persist(() => initialState, persistOptions),
-    temporalOptions
+    temporalOptions,
   ),
-  Object.is
+  Object.is,
 );
 
 useStore.temporal.getState().pause();
@@ -241,7 +241,7 @@ export const resetState = (preset?: model.Wrapper) => {
     edges: s.edges,
     graph: s.graph,
     shouldLayout: s.nodes.every(
-      (node) => node.position.x === 0 && node.position.y === 0
+      (node) => node.position.x === 0 && node.position.y === 0,
     ),
     shouldFitView: true,
   });
@@ -265,5 +265,5 @@ export const canvasCenter = () => {
 };
 
 export const useTemporalStore = <T>(
-  selector: (state: TemporalState<ZundoState>) => T
+  selector: (state: TemporalState<ZundoState>) => T,
 ) => wrapStore(useStore.temporal, selector);

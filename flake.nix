@@ -11,6 +11,10 @@
       url = "github:mirkolenz/flocken/v2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     inputs@{
@@ -22,12 +26,15 @@
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import systems;
+      imports = [
+        inputs.treefmt-nix.flakeModule
+      ];
       perSystem =
         {
           pkgs,
           system,
           lib,
-          self',
+          config,
           ...
         }:
         let
@@ -42,7 +49,7 @@
               persist_config off
             }
             :${caddyport} {
-              root * ${self'.packages.default}
+              root * ${config.packages.default}
               encode gzip
               file_server {
                 index index.html
@@ -56,10 +63,25 @@
               ${lib.getExe' nodejs "npm"} install
               ${lib.getExe nodejs} --version > .node-version
             '';
-            packages = [ nodejs ];
+            packages = [
+              nodejs
+              config.treefmt.build.wrapper
+            ];
           };
           checks = {
-            inherit (self'.packages) arguemapper server;
+            inherit (config.packages) arguemapper server;
+          };
+          treefmt = {
+            projectRootFile = "flake.nix";
+            programs = {
+              prettier = {
+                enable = true;
+                excludes = [
+                  "CHANGELOG.md"
+                ];
+              };
+              nixfmt.enable = true;
+            };
           };
           packages = {
             default = npmlock2nix.v2.build {
@@ -75,7 +97,7 @@
                 buildInputs = [ python ];
               };
             };
-            arguemapper = self'.packages.default;
+            arguemapper = config.packages.default;
             server = pkgs.writeShellApplication {
               name = "server";
               text = ''
@@ -88,7 +110,7 @@
               created = "now";
               contents = [ pkgs.dockerTools.fakeNss ];
               config = {
-                entrypoint = [ (lib.getExe self'.packages.server) ];
+                entrypoint = [ (lib.getExe config.packages.server) ];
                 exposedPorts = {
                   "${caddyport}/tcp" = { };
                 };

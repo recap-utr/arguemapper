@@ -22,7 +22,7 @@ const ExtractedAdus = z.object({
   adus: z
     .array(ExtractedAdu)
     .describe(
-      "An array of extracted argumentative discourse units from a resource"
+      "An array of extracted argumentative discourse units from a resource",
     ),
 });
 
@@ -30,7 +30,7 @@ const IdentifiedMajorClaim = z.object({
   id: z
     .string()
     .describe(
-      "The ID of the argumentative discourse unit (ADU) that you consider to be the major claim / conclusion of the argument"
+      "The ID of the argumentative discourse unit (ADU) that you consider to be the major claim / conclusion of the argument",
     ),
   explanation: z
     .string()
@@ -48,7 +48,7 @@ const PredictedRelations = z.object({
   relations: z
     .array(PredictedRelation)
     .describe(
-      "An array of predicted relations between argumentative discourse units (ADUs)"
+      "An array of predicted relations between argumentative discourse units (ADUs)",
     ),
 });
 
@@ -56,7 +56,7 @@ const ExtractedAduWithId = ExtractedAdu.extend({
   id: z
     .string()
     .describe(
-      "An arbitrary ID for the ADU to be used as source/target in relations"
+      "An arbitrary ID for the ADU to be used as source/target in relations",
     ),
 });
 
@@ -117,7 +117,7 @@ ${customPrompt}
     systemMessage,
     userMessage,
     ExtractedAdus,
-    "extracted_adus"
+    "extracted_adus",
   );
   const extractedAdus = res.adus;
 
@@ -148,7 +148,7 @@ ${customPrompt}
       draft.nodes = extractedAtomNodes;
       draft.edges = [];
       draft.shouldLayout = true;
-    })
+    }),
   );
 }
 
@@ -158,7 +158,7 @@ export async function identifyMajorClaim(customPrompt: string) {
     .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
 
   const userMessage = JSON.stringify(
-    atomNodes.map((node) => ({ text: node.text, id: node.id }))
+    atomNodes.map((node) => ({ text: node.text, id: node.id })),
   );
 
   const systemMessage = `
@@ -177,12 +177,12 @@ ${customPrompt}
     systemMessage,
     userMessage,
     IdentifiedMajorClaim,
-    "identified_major_claim"
+    "identified_major_claim",
   );
 
   if (atomNodes.find((node) => node.id === mc.id) === undefined) {
     throw new Error(
-      "The model identified an invalid major claim id. Please try again or set one manually."
+      "The model identified an invalid major claim id. Please try again or set one manually.",
     );
   }
 
@@ -194,7 +194,7 @@ ${customPrompt}
       mcUserdata.assistant = mcUserdata.assistant || {};
       mcUserdata.assistant.mcConfig = openaiConfig;
       mcUserdata.assistant.mcExplanation = mc.explanation;
-    })
+    }),
   );
 }
 
@@ -226,7 +226,7 @@ ${customPrompt}
     systemMessage,
     userMessage,
     PredictedRelations,
-    "predicted_relations"
+    "predicted_relations",
   );
   const predictedRelations = res.relations;
 
@@ -238,10 +238,10 @@ ${customPrompt}
 
       predictedRelations.forEach((relation) => {
         const source = draft.nodes.find(
-          (node) => node.data.id === relation.source
+          (node) => node.data.id === relation.source,
         );
         const target = draft.nodes.find(
-          (node) => node.data.id === relation.target
+          (node) => node.data.id === relation.target,
         );
 
         if (
@@ -275,7 +275,7 @@ ${customPrompt}
           draft.edges.push(edge1, edge2);
         }
       });
-    })
+    }),
   );
 }
 
@@ -307,7 +307,7 @@ ${customPrompt}
     systemMessage,
     userMessage,
     GeneratedGraph,
-    "generated_graph"
+    "generated_graph",
   );
 
   setState(
@@ -341,7 +341,7 @@ ${customPrompt}
           });
 
           return [adu.id, atomNode];
-        })
+        }),
       );
 
       generatedGraph.relations.forEach((relation) => {
@@ -401,7 +401,7 @@ ${customPrompt}
       if (mc.id !== undefined && mc.id in generatedAtomNodes) {
         const generatedMcNode = generatedAtomNodes[mc.id];
         const mcNode = draft.nodes.find(
-          (node) => node.data.id === generatedMcNode.data.id
+          (node) => node.data.id === generatedMcNode.data.id,
         );
 
         // now check if the major claim is part of the graph
@@ -413,7 +413,7 @@ ${customPrompt}
           mcUserdata.assistant.mcExplanation = mc.explanation;
         }
       }
-    })
+    }),
   );
 }
 
@@ -422,7 +422,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
   systemMessage: string,
   userMessage: string,
   schema: T,
-  schema_name: string
+  schema_name: string,
 ): Promise<z.infer<T>> {
   const {
     model,
@@ -437,7 +437,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
 
   if (apiKey === "") {
     throw new Error(
-      "Cannot perform LLM request because an API Key is missing. Please open the inspector and set it in the field 'Assistant Config'."
+      "Cannot perform LLM request because an API Key is missing. Please open the inspector and set it in the field 'Assistant Config'.",
     );
   }
 
@@ -464,17 +464,17 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
       return res.parsed;
     } else if (res.refusal) {
       throw new Error(
-        `Got an unexpected response from the LLM, please try again: ${res.refusal}`
+        `Got an unexpected response from the LLM, please try again: ${res.refusal}`,
       );
     }
     throw new Error(
-      `Got an unexpected response from the LLM, please try again.`
+      `Got an unexpected response from the LLM, please try again.`,
     );
   } catch (e: unknown) {
     throw new Error(
       `Got an unexpected response from the LLM, please try again: ${
         (e as Error).message
-      }`
+      }`,
     );
   }
 }

@@ -18,11 +18,11 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const strokeColor = useMemo(
     () => (selected ? theme.palette.text.primary : color.grey[500]),
-    [selected, theme.palette.text.primary]
+    [selected, theme.palette.text.primary],
   );
   const markerId = useMemo(
     () => (selected ? "arguemapper-marker-selected" : "arguemapper-marker"),
-    [selected]
+    [selected],
   );
   const size = isMobile ? 5 : 2.5;
   const extendedProps: EdgeProps = {

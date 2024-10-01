@@ -16,7 +16,7 @@ export function setSessionStorage<T>(key: string, value: T): void {
 
 export function useSessionStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(getSessionStorage(key, initialValue));
 

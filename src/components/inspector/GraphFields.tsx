@@ -71,7 +71,7 @@ export const GraphFields: React.FC<Props> = () => {
   const notes: string = useStore((state) => state.graph.userdata.notes);
   const [assistantKey, setAssistantKey] = useSessionStorage<string>(
     "assistantKey",
-    ""
+    "",
   );
 
   const confirm = useConfirm();
@@ -114,7 +114,7 @@ export const GraphFields: React.FC<Props> = () => {
         reader.readAsText(event.target.files[0]);
       }
     },
-    []
+    [],
   );
 
   const verifyAnalyst = useCallback(
@@ -125,7 +125,7 @@ export const GraphFields: React.FC<Props> = () => {
         callback();
       }
     },
-    [analyst]
+    [analyst],
   );
 
   const [expanded, setExpanded] = React.useState<string | false>("import");
@@ -141,7 +141,7 @@ export const GraphFields: React.FC<Props> = () => {
         convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
       });
     },
-    { preventDefault: true }
+    { preventDefault: true },
   );
 
   return (
@@ -219,7 +219,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.exportGraph(getWrapper(), "arguebuf")
+                      convert.exportGraph(getWrapper(), "arguebuf"),
                     );
                   });
                 }}
@@ -232,7 +232,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.exportGraph(getWrapper(), "aif")
+                      convert.exportGraph(getWrapper(), "aif"),
                     );
                   });
                 }}
@@ -292,9 +292,9 @@ export const GraphFields: React.FC<Props> = () => {
                       draft.graph.addParticipant(
                         new arguebuf.Participant({
                           name: "Unknown",
-                        })
+                        }),
                       );
-                    })
+                    }),
                   );
                 }}
               >
@@ -444,7 +444,7 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.model = value;
-                    })
+                    }),
                   );
                 }}
               />
@@ -457,7 +457,7 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.baseURL = event.target.value;
-                    })
+                    }),
                   );
                 }}
               />
@@ -471,9 +471,9 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.temperature = parseFloat(
-                        event.target.value
+                        event.target.value,
                       );
-                    })
+                    }),
                   );
                 }}
               />
@@ -487,9 +487,9 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.topP = parseFloat(
-                        event.target.value
+                        event.target.value,
                       );
-                    })
+                    }),
                   );
                 }}
               />
@@ -503,9 +503,9 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.frequencyPenalty = parseFloat(
-                        event.target.value
+                        event.target.value,
                       );
-                    })
+                    }),
                   );
                 }}
               />
@@ -519,9 +519,9 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.presencePenalty = parseFloat(
-                        event.target.value
+                        event.target.value,
                       );
-                    })
+                    }),
                   );
                 }}
               />
@@ -538,7 +538,7 @@ export const GraphFields: React.FC<Props> = () => {
                         event.target.value === ""
                           ? null
                           : Math.abs(parseInt(event.target.value));
-                    })
+                    }),
                   );
                 }}
               />
@@ -556,7 +556,7 @@ export const GraphFields: React.FC<Props> = () => {
             setState(
               produce((draft: State) => {
                 draft.graph.userdata.notes = event.target.value;
-              })
+              }),
             );
           }}
         />
@@ -578,7 +578,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
 
   const callbackIsFunction = useMemo(
     () => typeof callback === "function",
-    [callback]
+    [callback],
   );
   const onConfirm = () => {
     if (typeof callback === "function") {
@@ -605,7 +605,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
             setState(
               produce((draft: State) => {
                 draft.analyst.name = event.target.value;
-              })
+              }),
             );
           }}
         />
@@ -619,7 +619,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
             setState(
               produce((draft: State) => {
                 draft.analyst.email = event.target.value;
-              })
+              }),
             );
           }}
         />
@@ -658,7 +658,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].name = event.target.value;
-            })
+            }),
           );
         }}
       />
@@ -671,7 +671,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].email = event.target.value;
-            })
+            }),
           );
         }}
       />
@@ -683,7 +683,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].username = event.target.value;
-            })
+            }),
           );
         }}
       />
@@ -695,7 +695,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               delete draft.graph.participants[id];
-            })
+            }),
           );
         }}
       >

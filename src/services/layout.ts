@@ -36,7 +36,7 @@ const layoutOptions: { [key in model.LayoutAlgorithm]: LayoutOptions } = {
 export const layout = async (
   nodes: Array<model.Node>,
   edges: Array<model.Edge>,
-  algorithm: model.LayoutAlgorithm
+  algorithm: model.LayoutAlgorithm,
 ): Promise<Array<model.Node>> => {
   if (nodes.length === 0) {
     return [];
@@ -56,7 +56,7 @@ export const layout = async (
 
   const elkEdges: ElkExtendedEdge[] = edges
     .filter(
-      (edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target)
+      (edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target),
     )
     .map((edge) => ({
       id: edge.id,
@@ -81,6 +81,6 @@ export const layout = async (
           y: elkNode.y,
         };
       }
-    })
+    }),
   );
 };
