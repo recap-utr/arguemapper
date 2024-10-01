@@ -72,7 +72,10 @@
           pre-commit.settings.hooks = {
             prettier = {
               enable = true;
-              excludes = [ "flake.lock" ];
+              excludes = [
+                "flake.lock"
+                "CHANGELOG.md"
+              ];
             };
             nixfmt-rfc-style.enable = true;
           };
