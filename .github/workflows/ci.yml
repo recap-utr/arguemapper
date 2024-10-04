@@ -20,7 +20,7 @@ jobs:
         id: git-push
         with:
           commit-message: "chore: reformat code"
-          push-args: "origin HEAD:${{ github.head_ref || github.ref }}"
+          push-ref: "HEAD:${{ github.head_ref || github.ref }}"
   check:
     runs-on: ubuntu-latest
     needs: format
