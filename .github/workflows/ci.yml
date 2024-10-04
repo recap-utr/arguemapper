@@ -15,7 +15,7 @@ jobs:
       - run: nix flake check --show-trace
   release:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.repository_owner == 'recap-utr' && github.event_name == 'push' }}
     needs: check
     permissions:
       contents: write
