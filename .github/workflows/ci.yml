@@ -8,19 +8,17 @@ jobs:
     permissions:
       contents: write
     outputs:
-      git-head: ${{ steps.git-push.outputs.head-sha }}
+      git-head: ${{ steps.commit.outputs.commit_hash || github.sha }}
+    if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: DeterminateSystems/nix-installer-action@v14
       - uses: DeterminateSystems/magic-nix-cache-action@v8
       - run: nix fmt
-      - uses: cihelper/action-git-push@v1
-        id: git-push
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        id: commit
         with:
-          commit-message: "chore: reformat code"
-          push-ref: "HEAD:${{ github.head_ref || github.ref }}"
+          commit_message: "chore: reformat code"
   check:
     runs-on: ubuntu-latest
     needs: format
@@ -35,7 +33,7 @@ jobs:
       - run: nix flake check --show-trace
   release:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'recap-utr' && github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' }}
     needs:
       - check
       - format
