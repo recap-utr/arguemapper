@@ -94,7 +94,7 @@ Since LLMs (like GPT-4o) behave unpredictably compared to typical software, itâ€
 
 Prompts can also **introduce errors**. Sometimes the model does not follow the structure given in a prompt, especially when told to adhere to a specific format in its responses.
 
-## Example for Custom Instruction Prompts
+## Examples for Custom Instruction Prompts
 
 ```txt
 Firstly look for the correct major claim, this can be usually found at the end of the given essay, eg "in conclusion i think xyz is good" then the major claim would be "xyz is good" and the arguments are there to exacerbate this.
