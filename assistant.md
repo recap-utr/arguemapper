@@ -1,6 +1,9 @@
 # Guidelines for Using the AI Assistant in Arguemapper
+
 ## The Interface
+
 ![Overview of the interface](assets/ArguemapperOverview.png)
+
 ## How to Access
 
 In the Inspector on the right, there is a tab labeled "Assistant" that can be opened by clicking.
@@ -15,7 +18,7 @@ This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 - **Model:**
 
   - Choose a model that will perform the actions.
-  - Currently available by default: GPT-4o and GPT-4o-mini. 
+  - Currently available by default: GPT-4o and GPT-4o-mini.
   - For a list of all OpenAI models, please visit their [models overview](https://platform.openai.com/docs/models/gpt-4o-mini). Keep in mind that only models capable of [structured outputs](https://platform.openai.com/docs/guides/structured-outputs) can be used. More models will become available over time, including the option to connect to privately hosted models (e.g., LLama by Meta).
 
 - **Base URL:**
@@ -64,7 +67,7 @@ The following notes describe our experiences using GPT-4o and GPT-4o-mini.
 Generally the **most useful workflow** we found thus far, excluding more complex prompt engineering, is **workflow 1**. This saves a lot of time in connecting the nodes manually and is usually met with only low error rates.
 Generating the **full graph** has the **highest error rate**, since the model needs to do anything in this scenario, so if it missteps once, significant parts of the graph can be wrong as a result.
 
-Surprisingly, the models also sometimes **struggle to find the best Major Claim**, so 3) can be a useful workflow here. It also appears that knowing the Major Claim from a Custom Instruction Prompt helps a model to find the Arguments. This can be done simply by adding "The Major Claim is: &lt;*claim*&gt;" into the Custom Instruction Dialog.
+Surprisingly, the models also sometimes **struggle to find the best Major Claim**, so 3) can be a useful workflow here. It also appears that knowing the Major Claim from a Custom Instruction Prompt helps a model to find the Arguments. This can be done simply by adding "The Major Claim is: &lt;_claim_&gt;" into the Custom Instruction Dialog.
 
 Finally, if a text is fairly convoluted and even difficult for a human to process correctly, or if it's fairly vague, it is very likely that the models will also struggle more, leading to a higher error rate. This is however not predictable. Rarely the models also try to hallucinate some text or add something to an extracted Argument, so you might need to watch out for that, especially with weaker models (eg GPT3.5, or similar ones)
 
@@ -82,6 +85,7 @@ If you are using or experimenting with a Custom Intruction it is helpful to edit
 **Model performance varies widely**. For example, GPT-3.5-Turbo often performs significantly worse than GPT-4, but can still be useful in some scenarios. Always consider the **trade-off between cost and performance**. For instance, generating a Complete Graph with GPT-4 costs roughly $0.015 - $0.03 (as of September 2024).
 
 ## New models
+
 The new reasoning models by OpenAI, currently not available in the Assistant (as of September 2024), o1-preview and o1-mini seem to be very capbable of extracting even entire graphs, especially o1-preview, with o1-mini struggling with a decent graph structure.
 
 ## Custom Instruction Prompt Engineering Tips
@@ -134,11 +138,14 @@ arguments:
 -(support for main claim)
 #schools offer to students a good environment with experienced professors and high quality programs for studying
 ```
+
 Another way to improve the quality of the graphs produced by the assistant is by specifying in detail what form ADUs and the major claim should have. One of our testers successfully used the following custom instructions to do this:
-```txt   
+
+```txt
 Extract argument discourse units (adus). These are explicitly not facts, but statements, which can be proven right or wrong by argumentation. Also, only the actual statements should be extracted (e.g., "the region is important"), not the context (e.g., "person A says that the region is important").
 ```
-```txt   
+
+```txt
 Identify, which of the extracted argument discourse units (adus) is the major claim, i.e., the quintessence of the entire argumentation. It should have the character of a summarization of the other points or a conclusion.
 ```
 
@@ -150,11 +157,13 @@ If you have trouble coming up with a prompt, the models themselves, wherever the
 ## Customizable Model Parameters
 
 ---
+
 **Notes**:
 
 - The **effects of these on generation quality** are yet to be explored or need to be explored by the user depending on their use case.
 - LLM (or similar AI models) are not outputting words, but instead something called **tokens** one after another. The models have a large set of tokens (which can be anything from numbers to letters, or parts of words, ...) for which they will **calculate the odds** of being the next one. For example: This sentence is already put out "This tree is gr...", now the model estimates what comes next with what chance, "een" will get a much higher liklihood than "ey", since "This tree is green" is a much more likely solution than "This tree is grey". The odds of any new token is based on all the **tokens** that came **beforehand** however(\*), so for example if the full text in this example is: "Everything is grey. The sky is grey. The ground is grey. The tree is gr..." then "ey" will be more likely than "een" as the next token. A simple overview over the functioning principles of LLMs can be found [here](https://arstechnica.com/science/2023/07/a-jargon-free-explanation-of-how-ai-large-language-models-work/).
-**(\*)** within the context window of the model, there is a **limited number of tokens (context window)** the model can use as input and anything before these will be ignored. The exact number depends on the [model](https://platform.openai.com/docs/models/gpt-4o), but is generally greater than 32000 Tokens, with some models able to use millions. 
+  **(\*)** within the context window of the model, there is a **limited number of tokens (context window)** the model can use as input and anything before these will be ignored. The exact number depends on the [model](https://platform.openai.com/docs/models/gpt-4o), but is generally greater than 32000 Tokens, with some models able to use millions.
+
 ---
 
 ### Frequency Penalty
