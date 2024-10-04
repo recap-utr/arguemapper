@@ -5,6 +5,7 @@ on:
     branches: [main, beta]
 jobs:
   autofix:
+    if: ${{ github.repository_owner == 'recap-utr' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
