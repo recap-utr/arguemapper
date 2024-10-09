@@ -118,7 +118,7 @@
               };
             };
           };
-          legacyPackages.dockerManifest = flocken.legacyPackages.${system}.mkDockerManifest {
+          apps.docker-manifest = flocken.legacyPackages.${system}.mkDockerManifest {
             github = {
               enable = true;
               token = "$GH_TOKEN";
