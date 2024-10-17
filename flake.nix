@@ -70,6 +70,7 @@
           };
           checks = {
             inherit (config.packages) arguemapper server;
+            docker = config.packages.docker.passthru.stream;
           };
           treefmt = {
             projectRootFile = "flake.nix";
@@ -84,9 +85,17 @@
             };
           };
           packages = {
-            default = npmlock2nix.v2.build {
+            default = config.packages.arguemapper;
+            arguemapper = npmlock2nix.v2.build {
               src = ./.;
-              installPhase = "cp -r dist/. $out";
+              installPhase = ''
+                runHook preInstall
+
+                mkdir -p $out
+                cp -r dist/. $out
+
+                runHook postInstall
+              '';
               buildCommands = [
                 "HOME=$TMPDIR"
                 "npm run build"
@@ -97,7 +106,6 @@
                 buildInputs = [ python ];
               };
             };
-            arguemapper = config.packages.default;
             server = pkgs.writeShellApplication {
               name = "server";
               text = ''
@@ -108,17 +116,24 @@
               name = "arguemapper";
               tag = "latest";
               created = "now";
-              contents = [ pkgs.dockerTools.fakeNss ];
+              contents = with pkgs; [
+                cacert
+                tzdata
+                dockerTools.fakeNss
+              ];
+              extraCommands = ''
+                mkdir -m 1777 tmp
+              '';
               config = {
-                entrypoint = [ (lib.getExe config.packages.server) ];
-                exposedPorts = {
+                Entrypoint = [ (lib.getExe config.packages.server) ];
+                ExposedPorts = {
                   "${caddyport}/tcp" = { };
                 };
-                user = "nobody:nobody";
+                User = "nobody:nobody";
               };
             };
           };
-          apps.docker-manifest = flocken.legacyPackages.${system}.mkDockerManifest {
+          apps.docker-manifest.program = flocken.legacyPackages.${system}.mkDockerManifest {
             github = {
               enable = true;
               token = "$GH_TOKEN";
