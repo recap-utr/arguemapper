@@ -96,10 +96,9 @@
 
                 runHook postInstall
               '';
-              buildCommands = [
-                "HOME=$TMPDIR"
-                "npm run build"
-              ];
+              preBuild = ''
+                export HOME=$TMPDIR
+              '';
               node_modules_attrs = {
                 inherit nodejs;
                 # Python is needed for node-gyp/libsass
