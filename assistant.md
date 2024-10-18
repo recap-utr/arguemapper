@@ -1,9 +1,5 @@
 # Guidelines for Using the AI Assistant in Arguemapper
 
-## The Interface
-
-![Overview of the interface](assets/ArguemapperOverview.png)
-
 ## How to Access
 
 In the Inspector on the right, there is a tab labeled "Assistant" that can be opened by clicking.
