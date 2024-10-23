@@ -42,7 +42,8 @@
             inherit system;
             overlays = [
               (final: prev: {
-                npmlock2nix = import inputs.npmlock2nix { pkgs = final; };
+                npmlock2nix = final.callPackage inputs.npmlock2nix { };
+                nodejs-16_x = final.nodejs;
                 nodejs = final.nodejs_20;
               })
             ];
