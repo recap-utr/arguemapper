@@ -46,7 +46,7 @@
     "preview": "vite preview",
     "build": "npm run generate-meta-tag && tsc && vite build",
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint src"
   },
   "browserslist": {
     "production": [
