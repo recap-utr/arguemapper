@@ -46,7 +46,7 @@
     "preview": "vite preview",
     "build": "npm run generate-meta-tag && tsc && vite build",
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
-    "lint": "eslint -c .eslintrc.full.json src --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
   },
   "browserslist": {
     "production": [
@@ -61,6 +61,8 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/eslint__js": "^8",
     "@types/jest": "^29",
     "@types/lodash": "^4",
     "@types/node": "^22",
@@ -68,10 +70,10 @@
     "@types/react-dom": "^18",
     "@types/uuid": "^10",
     "@vitejs/plugin-react": "^4",
-    "eslint": "^8",
-    "eslint-config-react-app": "^7",
+    "eslint": "^9",
     "node-sass": "^9",
     "typescript": "^5",
+    "typescript-eslint": "^8",
     "vite": "^5",
     "vite-plugin-checker": "^0.8",
     "web-worker": "^1"
