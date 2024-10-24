@@ -1,24 +1,27 @@
 {
-  npmlock2nix,
+  buildNpmPackage,
+  importNpmLock,
   nodejs,
-  python3,
+  xcbuild,
+  stdenv,
+  lib,
 }:
-npmlock2nix.v2.build {
-  src = ./.;
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out
-    cp -r dist/. $out
-
-    runHook postInstall
-  '';
-  preBuild = ''
-    export HOME=$TMPDIR
-  '';
-  node_modules_attrs = {
-    inherit nodejs;
-    # Python is needed for node-gyp/libsass
-    buildInputs = [ (python3.withPackages (p: with p; [ setuptools ])) ];
+let
+  npmDeps = importNpmLock {
+    npmRoot = ./.;
   };
+in
+buildNpmPackage {
+  inherit npmDeps;
+  inherit (npmDeps) pname version;
+  inherit (importNpmLock) npmConfigHook;
+
+  src = ./.;
+
+  # Python is needed for node-gyp/libsass
+  nativeBuildInputs = [
+    (nodejs.passthru.python.withPackages (ps: with ps; [ setuptools ]))
+  ] ++ (lib.optional stdenv.hostPlatform.isDarwin xcbuild);
+
+  meta = { };
 }

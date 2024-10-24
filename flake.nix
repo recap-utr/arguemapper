@@ -3,10 +3,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    npmlock2nix = {
-      url = "github:nix-community/npmlock2nix";
-      flake = false;
-    };
     flocken = {
       url = "github:mirkolenz/flocken/v2";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,8 +38,6 @@
             inherit system;
             overlays = [
               (final: prev: {
-                npmlock2nix = final.callPackage inputs.npmlock2nix { };
-                nodejs-16_x = final.nodejs;
                 nodejs = final.nodejs_20;
               })
             ];
