@@ -155,7 +155,7 @@ ${customPrompt}
 export async function identifyMajorClaim(customPrompt: string) {
   const atomNodes = getState()
     .nodes.map((node) => node.data)
-    .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
+    .filter((node) => node.type === "atom") as model.AtomNodeData[];
 
   const userMessage = JSON.stringify(
     atomNodes.map((node) => ({ text: node.text, id: node.id })),
@@ -189,8 +189,8 @@ ${customPrompt}
   setState(
     produce((draft: State) => {
       draft.graph.majorClaim = mc.id;
-      const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)!
-        .data.userdata;
+      const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)
+        ?.data.userdata;
       mcUserdata.assistant = mcUserdata.assistant || {};
       mcUserdata.assistant.mcConfig = openaiConfig;
       mcUserdata.assistant.mcExplanation = mc.explanation;
@@ -201,7 +201,7 @@ ${customPrompt}
 export async function predictRelations(customPrompt: string) {
   const atomNodes = getState()
     .nodes.map((node) => node.data)
-    .filter((node) => node.type === "atom") as Array<model.AtomNodeData>;
+    .filter((node) => node.type === "atom") as model.AtomNodeData[];
 
   const userMessage = JSON.stringify({
     atomNodes: atomNodes.map((node) => ({ text: node.text, id: node.id })),

@@ -62,7 +62,7 @@ const Input = styled("input")({
   display: "none",
 });
 
-export interface Props extends React.PropsWithChildren {}
+export type Props = React.PropsWithChildren;
 
 export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
@@ -319,7 +319,9 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faEdit} />}
                 variant="contained"
                 onClick={() => {
-                  setAnalystCallback(() => () => {});
+                  setAnalystCallback(() => () => {
+                    /* empty */
+                  });
                 }}
               >
                 Edit Analyst
@@ -694,6 +696,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
         onClick={() => {
           setState(
             produce((draft: State) => {
+              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
               delete draft.graph.participants[id];
             }),
           );

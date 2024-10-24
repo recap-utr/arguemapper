@@ -261,12 +261,9 @@ export default function Graph() {
     [],
   );
 
-  const onElementClick = useCallback(
-    (event: React.MouseEvent, elem: model.Node | model.Edge) => {
-      setState({ rightSidebarOpen: true });
-    },
-    [],
-  );
+  const onElementClick = useCallback(() => {
+    setState({ rightSidebarOpen: true });
+  }, []);
 
   const onClickConnectStart: OnConnectStart = useCallback((event, params) => {
     const { nodeId } = params;

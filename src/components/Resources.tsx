@@ -13,9 +13,7 @@ import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import { State, canvasCenter, setState, useStore } from "../store.js";
 
-interface Props {}
-
-const Resources: React.FC<Props> = () => {
+const Resources: React.FC = () => {
   const references = useStore(
     (state) =>
       Object.fromEntries(
@@ -111,7 +109,7 @@ const Resources: React.FC<Props> = () => {
 interface ResourceProps {
   id: string;
   index: number;
-  references: { [k: string]: arguebuf.Reference };
+  references: Record<string, arguebuf.Reference>;
 }
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
@@ -244,6 +242,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const deleteResource = useCallback(() => {
     setState(
       produce((draft: State) => {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete draft.graph.resources[id];
       }),
     );
@@ -270,9 +269,9 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         multiline
         minRows={5}
         value={resource.text}
-        onChange={onChange as any}
+        onChange={onChange as never}
         InputProps={{
-          inputComponent: HighlightWithinTextarea as any,
+          inputComponent: HighlightWithinTextarea as never,
           inputProps: {
             selection: systemSelection,
             highlight,

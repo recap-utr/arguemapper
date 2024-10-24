@@ -13,7 +13,7 @@ declare module "cytoscape-elk" {
     transform?: (node: cy.NodeSingular, pos: cy.Position) => cy.Position;
     ready?: () => void;
     stop?: () => void;
-    elk?: { [key: string]: any };
+    elk?: Record<string, unknown>;
     priority?: (edge: cy.EdgeSingular) => null | number;
   }
 

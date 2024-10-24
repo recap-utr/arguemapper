@@ -249,7 +249,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            assistantCallback!(customPrompt);
+            assistantCallback?.(customPrompt);
             setAssistantCallback(undefined);
             setCustomPrompt("");
           }}

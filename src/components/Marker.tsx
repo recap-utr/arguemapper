@@ -53,7 +53,7 @@ const MarkerSymbol: React.FC<MarkerSymbolProps> = ({
   />
 );
 
-interface MarkerDefinitionsProps extends React.PropsWithChildren {}
+type MarkerDefinitionsProps = React.PropsWithChildren;
 
 export function MarkerDefinition({ children }: MarkerDefinitionsProps) {
   return (

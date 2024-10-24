@@ -33,7 +33,7 @@ export interface AssistantConfig {
 }
 export interface State {
   analyst: arguebuf.Analyst;
-  edges: Array<model.Edge>;
+  edges: model.Edge[];
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
   graph: model.Graph;
@@ -42,7 +42,7 @@ export interface State {
   isLoading: boolean;
   layoutAlgorithm: model.LayoutAlgorithm;
   leftSidebarOpen: boolean;
-  nodes: Array<model.Node>;
+  nodes: model.Node[];
   prettifyJson: boolean;
   rightSidebarOpen: boolean;
   selectedResourceTab: number;
@@ -62,7 +62,7 @@ interface SerializedState {
   analyst: arguebuf.AnalystInterface;
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
-  graph: { [key: string]: any };
+  graph: Record<string, unknown>;
   nodes: undefined;
   edges: undefined;
   imageScale: number;

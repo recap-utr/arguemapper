@@ -41,7 +41,7 @@ export function generateFilename() {
 }
 
 // https://stackoverflow.com/a/55613750/7626878
-export async function downloadJson(data: any) {
+export async function downloadJson(data: unknown) {
   const prettify = useStore.getState().prettifyJson;
   const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
   const blob = new Blob([json], { type: "application/json" });

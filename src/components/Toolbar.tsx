@@ -33,9 +33,7 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
   );
 };
 
-export interface ToolbarProps {}
-
-export const Toolbar: React.FC<ToolbarProps> = () => {
+export const Toolbar: React.FC = () => {
   const undo = useTemporalStore((state) => state.undo);
   const redo = useTemporalStore((state) => state.redo);
   const futureStates = useTemporalStore((state) => state.futureStates);
@@ -55,7 +53,9 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
   useHotkeys(
     "mod+z",
     () => {
-      undoable && undo();
+      if (undoable) {
+        undo();
+      }
     },
     { preventDefault: true },
   );
@@ -63,7 +63,9 @@ export const Toolbar: React.FC<ToolbarProps> = () => {
   useHotkeys(
     "mod+y, mod+shift+z",
     () => {
-      redoable && redo();
+      if (redoable) {
+        redo();
+      }
     },
     { preventDefault: true },
   );

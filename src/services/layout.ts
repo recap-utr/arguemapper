@@ -34,10 +34,10 @@ const layoutOptions: { [key in model.LayoutAlgorithm]: LayoutOptions } = {
 
 // https://github.com/wbkd/react-flow/issues/5#issuecomment-1026515350
 export const layout = async (
-  nodes: Array<model.Node>,
-  edges: Array<model.Edge>,
+  nodes: model.Node[],
+  edges: model.Edge[],
   algorithm: model.LayoutAlgorithm,
-): Promise<Array<model.Node>> => {
+): Promise<model.Node[]> => {
   if (nodes.length === 0) {
     return [];
   }

@@ -12,18 +12,18 @@ export type Graph = Omit<arguebuf.Graph, "nodes" | "edges">;
 
 export type Element = Node | Edge;
 export type OptionalElement = Element | undefined;
-export type Elements = Array<Element> | OptionalElement;
+export type Elements = Element[] | OptionalElement;
 export type ElementType = "atom" | "scheme" | "edge" | "graph";
 
 export interface Wrapper {
-  nodes: Array<Node>;
-  edges: Array<Edge>;
+  nodes: Node[];
+  edges: Edge[];
   graph: Graph;
 }
 
 export interface WrapperInitProps {
-  nodes?: Array<Node>;
-  edges?: Array<Edge>;
+  nodes?: Node[];
+  edges?: Edge[];
   graph?: Graph;
 }
 
@@ -113,8 +113,8 @@ export enum EdgeStyle {
 }
 
 export interface Selection {
-  nodes: Array<number>;
-  edges: Array<number>;
+  nodes: number[];
+  edges: number[];
   type: SelectionType;
 }
 
@@ -122,7 +122,7 @@ export type SelectionType = ElementType | "multiple";
 
 export const selectionType = (
   sel: Omit<Selection, "type">,
-  nodeTypes: Array<"atom" | "scheme">,
+  nodeTypes: ("atom" | "scheme")[],
 ): SelectionType => {
   if (sel.nodes.length === 0 && sel.edges.length === 0) {
     return "graph";

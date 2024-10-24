@@ -33,7 +33,6 @@ function Layout() {
   const isProduction = process.env.NODE_ENV === "production";
 
   return (
-    // @ts-ignore
     <CacheBuster
       currentVersion={npmVersion}
       isEnabled={isProduction}

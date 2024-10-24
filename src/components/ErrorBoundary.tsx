@@ -9,7 +9,8 @@ import {
 import React, { ErrorInfo } from "react";
 import * as convert from "../services/convert.js";
 
-interface Props extends React.PropsWithChildren {}
+type Props = React.PropsWithChildren;
+
 interface State {
   error: Error | null;
   errorInfo: ErrorInfo | null;
@@ -19,7 +20,7 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
-  constructor(props: any) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       error: null,
@@ -45,11 +46,15 @@ class ErrorBoundary extends React.Component<Props, State> {
 
       try {
         aif = JSON.stringify(convert.exportGraph(wrapper, "aif"));
-      } catch {}
+      } catch {
+        /* empty */
+      }
 
       try {
         arguebuf = JSON.stringify(convert.exportGraph(wrapper, "arguebuf"));
-      } catch {}
+      } catch {
+        /* empty */
+      }
     }
 
     this.setState({

@@ -44,7 +44,7 @@ export interface Props extends React.PropsWithChildren {
 
 type OptionalSchemeType = SchemeType | typeof NULL_VALUE;
 
-const SchemeFields: React.FC<Props> = ({ idx = 0, children }) => {
+const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.SchemeNode,
