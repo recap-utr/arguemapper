@@ -422,7 +422,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
   systemMessage: string,
   userMessage: string,
   schema: T,
-  schema_name: string,
+  schemaName: string,
 ): Promise<z.infer<T>> {
   const {
     model,
@@ -450,7 +450,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
         { role: "system", content: systemMessage },
         { role: "user", content: userMessage },
       ],
-      response_format: zodResponseFormat(schema, schema_name),
+      response_format: zodResponseFormat(schema, schemaName),
       temperature,
       top_p: topP,
       frequency_penalty: frequencyPenalty,
@@ -459,17 +459,15 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
     });
 
     const res = completion.choices[0].message;
+    const parsed = res.parsed;
 
-    if (res.parsed) {
-      return res.parsed;
-    } else if (res.refusal) {
+    if (parsed) {
+      return parsed;
+    } else {
       throw new Error(
         `Got an unexpected response from the LLM, please try again: ${res.refusal}`,
       );
     }
-    throw new Error(
-      `Got an unexpected response from the LLM, please try again.`,
-    );
   } catch (e: unknown) {
     throw new Error(
       `Got an unexpected response from the LLM, please try again: ${
