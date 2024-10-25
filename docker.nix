@@ -23,5 +23,11 @@ dockerTools.streamLayeredImage {
       "${toString arguemapper-server.passthru.port}/tcp" = { };
     };
     User = "nobody:nobody";
+    Env = [
+      "XDG_CONFIG_HOME=/config"
+      "XDG_DATA_HOME=/data"
+      "HOME=/root"
+    ];
+    WorkingDir = "/srv";
   };
 }
