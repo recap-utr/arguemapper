@@ -30,4 +30,7 @@ writeShellApplication {
   derivationArgs = {
     passthru.port = caddyPort;
   };
+  meta = arguemapper.meta // {
+    inherit (caddy.meta) platforms;
+  };
 }
