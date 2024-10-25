@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.6](https://github.com/recap-utr/arguemapper/compare/v2.2.5...v2.2.6) (2024-10-25)
+
+
+### Bug Fixes
+
+* **docker:** add folder config for caddy ([a43180a](https://github.com/recap-utr/arguemapper/commit/a43180a05abd8a875231f3b3495431c89d3b9537))
+
 ## [2.2.5](https://github.com/recap-utr/arguemapper/compare/v2.2.4...v2.2.5) (2024-10-25)
 
 
