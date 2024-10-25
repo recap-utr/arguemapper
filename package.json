@@ -4,6 +4,17 @@
   "exports": "./src/index.tsx",
   "private": true,
   "type": "module",
+  "repository": "github:recap-utr/arguemapper",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "vite --open",
+    "preview": "vite preview",
+    "build": "npm run generate-meta-tag && tsc && vite build",
+    "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
+    "lint": "eslint ./src"
+  },
   "dependencies": {
     "@bufbuild/protobuf": "^1",
     "@connectrpc/connect": "^1",
@@ -41,25 +52,6 @@
     "zundo": "^2",
     "zustand": "^4"
   },
-  "scripts": {
-    "start": "vite --open",
-    "preview": "vite preview",
-    "build": "npm run generate-meta-tag && tsc && vite build",
-    "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
-    "lint": "eslint src"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "@eslint/js": "^9",
     "@types/eslint__js": "^8",
@@ -77,5 +69,17 @@
     "vite": "^5",
     "vite-plugin-checker": "^0.8",
     "web-worker": "^1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
