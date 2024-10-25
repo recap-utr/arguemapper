@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.5](https://github.com/recap-utr/arguemapper/compare/v2.2.4...v2.2.5) (2024-10-25)
+
+
+### Bug Fixes
+
+* **assistant:** improve openai requests ([3743b78](https://github.com/recap-utr/arguemapper/commit/3743b783dfb42538ebccc5bd79420ff15f1904c4))
+* **assistant:** update suggested model names ([77ddc86](https://github.com/recap-utr/arguemapper/commit/77ddc86cd279460f329d879723eacdc2a1e80dd7))
+* **assistant:** use function calling for better compatibility ([fcdf72b](https://github.com/recap-utr/arguemapper/commit/fcdf72b646fa83272c88691761a493eaaaaa5ab0))
+* improve code quality by applying eslint suggestions ([2c45f60](https://github.com/recap-utr/arguemapper/commit/2c45f6044145058ed064d2f88c1aa9760d379f4c))
+
 ## [2.2.4](https://github.com/recap-utr/arguemapper/compare/v2.2.3...v2.2.4) (2024-09-19)
 
 
