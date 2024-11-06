@@ -92,7 +92,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
             x: 0,
             y: 0,
           },
-        } as Node),
+        }) as Node,
     ),
     edges: Object.entries(obj.edges).map(
       ([id, edge]) =>
@@ -101,7 +101,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
           data: edge,
           source: edge.source,
           target: edge.target,
-        } as Edge),
+        }) as Edge,
     ),
     graph: arguebuf.copy(obj, { nodes: [], edges: [] }),
   };
@@ -154,7 +154,7 @@ export const selectionType = (
 };
 
 export const initSelection = () =>
-  ({ nodes: [], edges: [], type: "graph" } as Selection);
+  ({ nodes: [], edges: [], type: "graph" }) as Selection;
 
 export interface InitNodeProps<T> {
   id?: string;
