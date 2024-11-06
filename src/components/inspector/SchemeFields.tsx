@@ -20,9 +20,7 @@ enum SchemeType {
   PREFERENCE = "preference",
 }
 
-const defaultSchemes: {
-  [key in SchemeType]: arguebuf.Scheme;
-} = {
+const defaultSchemes: Record<SchemeType, arguebuf.Scheme> = {
   support: { case: "support", value: arguebuf.Support.DEFAULT },
   attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
   rephrase: { case: "rephrase", value: arguebuf.Rephrase.DEFAULT },
@@ -120,12 +118,12 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data.userdata.notes ?? ""}
+        value={(element.data.userdata as model.Userdata).notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
               const node = draft.nodes[selectedIndex];
-              node.data.userdata.notes = event.target.value;
+              (node.data.userdata as model.Userdata).notes = event.target.value;
             }),
           );
         }}

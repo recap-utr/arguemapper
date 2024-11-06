@@ -47,8 +47,11 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
 }) => {
   const theme = useTheme();
   const background = useMemo(
-    () => (node.data.userdata.clickConnect ? color.orange[500] : bg),
-    [node.data.userdata.clickConnect, bg],
+    () =>
+      (node.data.userdata as model.Userdata).clickConnect
+        ? color.orange[500]
+        : bg,
+    [(node.data.userdata as model.Userdata).clickConnect, bg],
   );
   const borderColor = useMemo(
     () => (node.selected ? theme.palette.text.primary : background),

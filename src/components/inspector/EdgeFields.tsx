@@ -24,7 +24,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data?.userdata?.notes ?? ""}
+        value={(element.data?.userdata as model.Userdata).notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
@@ -34,7 +34,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
                 throw new Error("Edge data is undefined");
               }
 
-              edge.data.userdata.notes = event.target.value;
+              (edge.data.userdata as model.Userdata).notes = event.target.value;
             }),
           );
         }}

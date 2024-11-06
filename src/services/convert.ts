@@ -1,4 +1,4 @@
-import type { JsonObject } from "arguebuf";
+import { JsonObject } from "@bufbuild/protobuf";
 import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/types.js";
@@ -28,7 +28,7 @@ export function exportGraph(
     graph.addAnalyst(currentAnalyst);
   }
 
-  return arguebuf.dump.json(graph, format);
+  return arguebuf.dump.json(graph, format) as JsonObject;
 }
 
 export function generateFilename() {
@@ -93,12 +93,10 @@ export enum ImgFormat {
   JPG = "jpg",
 }
 
-const imgFormatMap: {
-  [key in ImgFormat]: (
-    elem: HTMLElement,
-    options?: ImgOptions,
-  ) => Promise<string>;
-} = {
+const imgFormatMap: Record<
+  ImgFormat,
+  (elem: HTMLElement, options?: ImgOptions) => Promise<string>
+> = {
   png: toPng,
   jpg: toJpeg,
 };

@@ -10,6 +10,20 @@ export type AtomNode = FlowNode<AtomNodeData>;
 export type SchemeNode = FlowNode<SchemeNodeData>;
 export type Graph = Omit<arguebuf.Graph, "nodes" | "edges">;
 
+export interface Userdata {
+  notes?: string;
+  clickConnect?: boolean;
+  arguemapper: {
+    position: XYPosition;
+  };
+  assistant?: {
+    explanation?: string;
+    mcExplanation?: string;
+    config?: unknown;
+    mcConfig?: unknown;
+  };
+}
+
 export type Element = Node | Edge;
 export type OptionalElement = Element | undefined;
 export type Elements = Element[] | OptionalElement;
@@ -42,8 +56,9 @@ export function initWrapper({
 function nodeToArguebuf(obj: Node): arguebuf.Node {
   // immer freezes the object, so we need to clone it
   const node = structuredClone(obj.data) as arguebuf.Node;
-  node.userdata.arguemapper = node.userdata.arguemapper || {};
-  node.userdata.arguemapper.position = obj.position;
+  const userdata = node.userdata as Userdata;
+  userdata.arguemapper = userdata.arguemapper ?? {};
+  userdata.arguemapper.position = obj.position;
 
   return node;
 }
@@ -73,8 +88,11 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
           id,
           data: node,
           type: node.type,
-          position: node.userdata.arguemapper?.position ?? { x: 0, y: 0 },
-        }) as Node,
+          position: (node.userdata as Userdata).arguemapper?.position ?? {
+            x: 0,
+            y: 0,
+          },
+        } as Node),
     ),
     edges: Object.entries(obj.edges).map(
       ([id, edge]) =>
@@ -83,7 +101,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
           data: edge,
           source: edge.source,
           target: edge.target,
-        }) as Edge,
+        } as Edge),
     ),
     graph: arguebuf.copy(obj, { nodes: [], edges: [] }),
   };
@@ -136,7 +154,7 @@ export const selectionType = (
 };
 
 export const initSelection = () =>
-  ({ nodes: [], edges: [], type: "graph" }) as Selection;
+  ({ nodes: [], edges: [], type: "graph" } as Selection);
 
 export interface InitNodeProps<T> {
   id?: string;

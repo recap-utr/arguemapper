@@ -10,7 +10,7 @@ const commonOptions: LayoutOptions = {
   "elk.spacing.nodeNode": "50",
 };
 
-const layoutOptions: { [key in model.LayoutAlgorithm]: LayoutOptions } = {
+const layoutOptions: Record<model.LayoutAlgorithm, LayoutOptions> = {
   layered: {
     ...commonOptions,
     algorithm: "layered",

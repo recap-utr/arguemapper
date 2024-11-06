@@ -7,10 +7,6 @@ import * as model from "../model";
 import { getSessionStorage } from "../storage";
 import { AssistantConfig, State, getState, setState } from "../store";
 
-export type Mapping<U> = {
-  [key in string]: U;
-};
-
 const ExtractedAdu = z.object({
   text: z.string().describe("The text of the ADU"),
   explanation: z
@@ -73,9 +69,7 @@ enum SchemeType {
   ATTACK = "attack",
 }
 
-const schemeLookup: {
-  [key in SchemeType]: arguebuf.Scheme;
-} = {
+const schemeLookup: Record<SchemeType, arguebuf.Scheme> = {
   support: { case: "support", value: arguebuf.Support.DEFAULT },
   attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
 };
@@ -188,12 +182,22 @@ ${customPrompt}
 
   setState(
     produce((draft: State) => {
+      const mcNode = draft.nodes.find((node) => node.data.id === mc.id);
+
+      if (mcNode === undefined) {
+        throw new Error("Major claim node not found in nodes.");
+      }
+
       draft.graph.majorClaim = mc.id;
-      const mcUserdata = draft.nodes.find((node) => node.data.id === mc.id)
-        ?.data.userdata;
-      mcUserdata.assistant = mcUserdata.assistant || {};
-      mcUserdata.assistant.mcConfig = openaiConfig;
-      mcUserdata.assistant.mcExplanation = mc.explanation;
+      const userdata = mcNode.data.userdata as model.Userdata;
+
+      userdata.assistant = {
+        ...(userdata.assistant ?? {}),
+        ...{
+          mcConfig: openaiConfig,
+          mcExplanation: mc.explanation,
+        },
+      };
     }),
   );
 }
@@ -407,10 +411,15 @@ ${customPrompt}
         // now check if the major claim is part of the graph
         if (mcNode !== undefined) {
           draft.graph.majorClaim = mcNode.data.id;
-          const mcUserdata = mcNode.data.userdata;
-          mcUserdata.assistant = mcUserdata.assistant || {};
-          mcUserdata.assistant.mcConfig = openaiConfig;
-          mcUserdata.assistant.mcExplanation = mc.explanation;
+          const mcUserdata = mcNode.data.userdata as model.Userdata;
+
+          mcUserdata.assistant = {
+            ...(mcUserdata.assistant ?? {}),
+            ...{
+              mcConfig: openaiConfig,
+              mcExplanation: mc.explanation,
+            },
+          };
         }
       }
     }),

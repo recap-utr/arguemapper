@@ -272,7 +272,7 @@ export default function Graph() {
         const node = draft.nodes.find((node) => node.id === nodeId);
 
         if (node !== undefined) {
-          node.data.userdata.clickConnect = true;
+          (node.data.userdata as model.Userdata).clickConnect = true;
         }
       }),
     );
@@ -282,8 +282,11 @@ export default function Graph() {
     setState(
       produce((draft: State) => {
         draft.nodes
-          .filter((node) => node.data.userdata.clickConnect)
-          .forEach((node) => delete node.data.userdata.clickConnect);
+          .filter((node) => (node.data.userdata as model.Userdata).clickConnect)
+          .forEach(
+            (node) =>
+              delete (node.data.userdata as model.Userdata).clickConnect,
+          );
       }),
     );
   }, []);

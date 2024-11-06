@@ -18,6 +18,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
     (state) => state.nodes[selectedIndex] as model.AtomNode,
     dequal,
   );
+  const userdata = element.data.userdata as model.Userdata;
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
   return (
@@ -60,7 +61,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
           );
         }}
       />
-      {element.data.userdata.assistant && (
+      {userdata.assistant && (
         <TextField
           fullWidth
           multiline
@@ -68,10 +69,10 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
           InputProps={{
             readOnly: true,
           }}
-          value={element.data.userdata.assistant.explanation ?? ""}
+          value={userdata.assistant.explanation ?? ""}
         />
       )}
-      {element.data.userdata.assistant?.mcExplanation && (
+      {userdata.assistant?.mcExplanation && (
         <TextField
           fullWidth
           multiline
@@ -79,7 +80,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
           InputProps={{
             readOnly: true,
           }}
-          value={element.data.userdata.assistant.mcExplanation}
+          value={userdata.assistant.mcExplanation}
         />
       )}
       <Button
@@ -101,12 +102,12 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         multiline
         minRows={1}
         label="Notes"
-        value={element.data.userdata.notes ?? ""}
+        value={userdata.notes ?? ""}
         onChange={(event) => {
           setState(
             produce((draft: State) => {
               const node = draft.nodes[selectedIndex];
-              node.data.userdata.notes = event.target.value;
+              (node.data.userdata as model.Userdata).notes = event.target.value;
             }),
           );
         }}

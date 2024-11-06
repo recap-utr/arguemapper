@@ -68,7 +68,9 @@ export const GraphFields: React.FC<Props> = () => {
   const participants = useStore((state) => state.graph.participants);
   const analyst = useStore((state) => state.analyst);
   const assistantConfig = useStore((state) => state.assistantConfig);
-  const notes: string = useStore((state) => state.graph.userdata.notes);
+  const notes: string | undefined = useStore(
+    (state) => (state.graph.userdata as model.Userdata).notes,
+  );
   const [assistantKey, setAssistantKey] = useSessionStorage<string>(
     "assistantKey",
     "",
@@ -557,7 +559,8 @@ export const GraphFields: React.FC<Props> = () => {
           onChange={(event) => {
             setState(
               produce((draft: State) => {
-                draft.graph.userdata.notes = event.target.value;
+                (draft.graph.userdata as model.Userdata).notes =
+                  event.target.value;
               }),
             );
           }}
