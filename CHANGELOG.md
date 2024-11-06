@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.7](https://github.com/recap-utr/arguemapper/compare/v2.2.6...v2.2.7) (2024-11-06)
+
+
+### Bug Fixes
+
+* update typings for new eslint config ([b50e76d](https://github.com/recap-utr/arguemapper/commit/b50e76d60fbd3a40f74a3b5572b2dcb985c606b6))
+
 ## [2.2.6](https://github.com/recap-utr/arguemapper/compare/v2.2.5...v2.2.6) (2024-10-25)
 
 
