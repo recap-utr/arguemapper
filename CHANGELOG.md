@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.8](https://github.com/recap-utr/arguemapper/compare/v2.2.7...v2.2.8) (2024-11-08)
+
+### Bug Fixes
+
+* improve styling of resources pane text field ([f09407c](https://github.com/recap-utr/arguemapper/commit/f09407c14ab4f238653804ab732260be678a660b))
+
 ## [2.2.7](https://github.com/recap-utr/arguemapper/compare/v2.2.6...v2.2.7) (2024-11-06)
 
 
