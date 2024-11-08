@@ -4,6 +4,7 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
+import "draft-js/dist/Draft.css";
 import { produce } from "immer";
 import React, { useCallback, useMemo, useState } from "react";
 import HighlightWithinTextarea, {
@@ -273,6 +274,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         InputProps={{
           inputComponent: HighlightWithinTextarea as never,
           inputProps: {
+            placeholder: "",
             selection: systemSelection,
             highlight,
           },
