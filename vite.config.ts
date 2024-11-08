@@ -10,6 +10,7 @@ export default defineConfig({
     checker({
       eslint: {
         lintCommand: "eslint ./src",
+        useFlatConfig: true,
       },
     }),
   ],
