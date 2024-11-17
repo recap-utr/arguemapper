@@ -24,11 +24,6 @@ root.render(
 );
 
 function Layout() {
-  // https://stackoverflow.com/a/58936230
-  // const query = window.matchMedia("(prefers-color-scheme: dark)");
-  // const [darkMode, setDarkMode] = useState(query.matches);
-  // query.addEventListener("change", (e) => setDarkMode(e.matches));
-
   const darkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const isProduction = process.env.NODE_ENV === "production";
 
