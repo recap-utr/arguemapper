@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.9](https://github.com/recap-utr/arguemapper/compare/v2.2.8...v2.2.9) (2024-11-18)
+
+### Bug Fixes
+
+* **deps:** bump nix flocken ([d6171b7](https://github.com/recap-utr/arguemapper/commit/d6171b70a222c18f243488569b7c02c8d2207f34))
+
 ## [2.2.8](https://github.com/recap-utr/arguemapper/compare/v2.2.7...v2.2.8) (2024-11-08)
 
 ### Bug Fixes
