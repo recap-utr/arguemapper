@@ -27,7 +27,7 @@
     "@fortawesome/free-regular-svg-icons": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0.2",
-    "@mui/lab": "^6.0.0-beta.13",
+    "@mui/lab": "^6.0.0-beta.15",
     "@mui/material": "^6",
     "arg-services": "^3",
     "arguebuf": "^1",
