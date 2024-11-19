@@ -45,11 +45,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1731942725,
-        "narHash": "sha256-YKzckJjeKkiD8SyTeXicTTgbjJ3Uw7v1ntaeshKyM7g=",
+        "lastModified": 1732012926,
+        "narHash": "sha256-Fi91870Ovo9xRE21n/KvcMyGmxnQKTgm68zCGZgQ1FE=",
         "owner": "mirkolenz",
         "repo": "flocken",
-        "rev": "ee86f8a51caff2a49e5e9e8c7d933d66fef056ba",
+        "rev": "0e3aa49c0072dd89f83223b03080603f6218083b",
         "type": "github"
       },
       "original": {
