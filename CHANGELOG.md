@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.10](https://github.com/recap-utr/arguemapper/compare/v2.2.9...v2.2.10) (2024-11-19)
+
+### Bug Fixes
+
+* update flocken to properly set docker annotations ([360eb9a](https://github.com/recap-utr/arguemapper/commit/360eb9a1a9fea7daba1f97880ae895d2b97430bd))
+
 ## [2.2.9](https://github.com/recap-utr/arguemapper/compare/v2.2.8...v2.2.9) (2024-11-18)
 
 ### Bug Fixes
