@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.12](https://github.com/recap-utr/arguemapper/compare/v2.2.11...v2.2.12) (2024-11-19)
+
+### Bug Fixes
+
+* trigger release ([8cc7d1f](https://github.com/recap-utr/arguemapper/commit/8cc7d1fb414ce547113add58f2e7dca8b06b34ef))
+
 ## [2.2.11](https://github.com/recap-utr/arguemapper/compare/v2.2.10...v2.2.11) (2024-11-19)
 
 ### Bug Fixes
