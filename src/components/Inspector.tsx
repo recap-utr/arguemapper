@@ -119,9 +119,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
               <FontAwesomeIcon icon={faGithub} />
             </IconButton>
           </Tooltip>
-          <Typography color="GrayText" align="center">
-            v{npmVersion}
-          </Typography>
+          <Typography align="center">v{npmVersion}</Typography>
         </Stack>
       </Stack>
     </>
