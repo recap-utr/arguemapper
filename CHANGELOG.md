@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.11](https://github.com/recap-utr/arguemapper/compare/v2.2.10...v2.2.11) (2024-11-19)
+
+### Bug Fixes
+
+* **inspector:** improve contrast of version number ([87d8bfd](https://github.com/recap-utr/arguemapper/commit/87d8bfd6fe1f11e42060cbd22c010b2c76230fde))
+
 ## [2.2.10](https://github.com/recap-utr/arguemapper/compare/v2.2.9...v2.2.10) (2024-11-19)
 
 ### Bug Fixes
