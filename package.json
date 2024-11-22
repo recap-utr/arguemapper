@@ -29,7 +29,7 @@
     "@fortawesome/react-fontawesome": "^0.2",
     "@mui/lab": "^6.0.0-beta.15",
     "@mui/material": "^6",
-    "arg-services": "^3",
+    "arg-services": "^4.0.0",
     "arguebuf": "^1",
     "dequal": "^2",
     "draft-js": "^0.11",
