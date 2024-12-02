@@ -64,7 +64,7 @@
     "node-sass": "^9",
     "typescript": "^5",
     "typescript-eslint": "^8",
-    "vite": "^5",
+    "vite": "^6.0.0",
     "vite-plugin-checker": "^0.8",
     "web-worker": "^1"
   },
