@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "^1",
-    "@connectrpc/connect": "^1",
+    "@connectrpc/connect": "^2.0.0",
     "@connectrpc/connect-web": "^1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
