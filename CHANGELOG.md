@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.13](https://github.com/recap-utr/arguemapper/compare/v2.2.12...v2.2.13) (2024-12-11)
+
+### Bug Fixes
+
+* **assistant:** use structured outputs ([f02ad73](https://github.com/recap-utr/arguemapper/commit/f02ad73c5d5c4c754dc5386d6b860bcb659917d1))
+
 ## [2.2.12](https://github.com/recap-utr/arguemapper/compare/v2.2.11...v2.2.12) (2024-11-19)
 
 ### Bug Fixes
