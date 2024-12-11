@@ -1,7 +1,7 @@
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import OpenAI from "openai";
-import { zodFunction } from "openai/helpers/zod";
+import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import * as model from "../model";
 import { getSessionStorage } from "../storage";
@@ -459,8 +459,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
         { role: "system", content: systemMessage },
         { role: "user", content: userMessage },
       ],
-      tools: [zodFunction({ name: schemaName, parameters: schema })],
-      tool_choice: { type: "function", function: { name: schemaName } },
+      response_format: zodResponseFormat(schema, schemaName),
       temperature,
       top_p: topP,
       frequency_penalty: frequencyPenalty,
@@ -469,10 +468,9 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
     });
 
     const res = completion.choices[0].message;
-    const parsed = res.tool_calls[0].function.parsed_arguments;
 
-    if (parsed) {
-      return parsed;
+    if (res.parsed) {
+      return res.parsed;
     } else {
       throw new Error(
         `Got an unexpected response from the LLM, please try again: ${res.refusal}`,
