@@ -32,7 +32,9 @@ function Layout() {
       currentVersion={npmVersion}
       isEnabled={isProduction}
       isVerboseMode={false}
+      reloadOnDowngrade={true}
       loadingComponent={undefined}
+      onCacheClear={undefined}
     >
       <ThemeProvider theme={theme(darkMode)}>
         <CssBaseline />
