@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.14](https://github.com/recap-utr/arguemapper/compare/v2.2.13...v2.2.14) (2024-12-15)
+
+### Bug Fixes
+
+* trigger release ([e5e4e23](https://github.com/recap-utr/arguemapper/commit/e5e4e2386863fc88565a177830e48c380a115cd0))
+* update cache buster ([8592e8e](https://github.com/recap-utr/arguemapper/commit/8592e8ece422c7deb45f3de0fb6500e10cc61697))
+
 ## [2.2.13](https://github.com/recap-utr/arguemapper/compare/v2.2.12...v2.2.13) (2024-12-11)
 
 ### Bug Fixes
