@@ -1,17 +1,17 @@
-import { JsonObject } from "@bufbuild/protobuf";
+import { type GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import { Options as ImgOptions } from "html-to-image/lib/types.js";
 import * as model from "../model.js";
 import { useStore } from "../store.js";
 
-export function importGraph(obj: JsonObject): model.Wrapper {
+export function importGraph(obj: GraphJson): model.Wrapper {
   return model.fromArguebuf(arguebuf.load.json(obj));
 }
 export function exportGraph(
   obj: model.Wrapper,
   format: "aif" | "arguebuf",
-): JsonObject {
+): GraphJson {
   const graph = model.toArguebuf(obj);
   const currentAnalyst = useStore.getState().analyst;
 
@@ -28,7 +28,7 @@ export function exportGraph(
     graph.addAnalyst(currentAnalyst);
   }
 
-  return arguebuf.dump.json(graph, format) as JsonObject;
+  return arguebuf.dump.json(graph, format) as GraphJson;
 }
 
 export function generateFilename() {

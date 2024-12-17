@@ -16,9 +16,6 @@
     "lint": "eslint ./src"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^1",
-    "@connectrpc/connect": "^1",
-    "@connectrpc/connect-web": "^1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fontsource/roboto": "^5",
@@ -29,8 +26,7 @@
     "@fortawesome/react-fontawesome": "^0.2",
     "@mui/lab": "^6.0.0-beta.19",
     "@mui/material": "^6",
-    "arg-services": "^3",
-    "arguebuf": "^1",
+    "arguebuf": "^2",
     "dequal": "^2",
     "draft-js": "^0.11",
     "elkjs": "^0.9",

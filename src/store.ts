@@ -1,4 +1,4 @@
-import { JsonObject } from "@bufbuild/protobuf";
+import { type GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { throttle } from "lodash";
@@ -63,7 +63,7 @@ interface SerializedState {
   analyst: arguebuf.AnalystInterface;
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
-  graph: JsonObject;
+  graph: GraphJson;
   nodes: undefined;
   edges: undefined;
   imageScale: number;
