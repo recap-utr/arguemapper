@@ -215,7 +215,7 @@ const initialState: State = {
   assistantConfig: {
     model: assistantModels[0],
     baseURL: "https://api.openai.com/v1",
-    temperature: 1.0,
+    temperature: 0.0,
     topP: 1.0,
     frequencyPenalty: 0.0,
     presencePenalty: 0.0,
