@@ -16,11 +16,10 @@ import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
 export const assistantModels = [
+  "o1",
   "gpt-4o",
   "gpt-4o-mini",
   "chatgpt-4o-latest",
-  "gpt-4-turbo",
-  "gpt-3.5-turbo",
 ];
 
 export interface AssistantConfig {
