@@ -2,6 +2,7 @@ import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import "draft-js/dist/Draft.css";
@@ -10,7 +11,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import HighlightWithinTextarea, {
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
-import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import { State, canvasCenter, setState, useStore } from "../store.js";
 
@@ -223,7 +223,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     );
     const offset = userSelection.anchor;
 
-    const { x, y } = flow.project(canvasCenter());
+    const { x, y } = flow.screenToFlowPosition(canvasCenter());
     const node = model.initAtom({
       data: {
         text,

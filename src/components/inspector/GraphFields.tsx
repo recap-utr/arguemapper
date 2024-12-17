@@ -39,13 +39,13 @@ import {
   Typography,
   styled,
 } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useReactFlow } from "reactflow";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";

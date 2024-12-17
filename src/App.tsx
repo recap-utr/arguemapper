@@ -1,7 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useStore as useFlowStore } from "@xyflow/react";
 import { useEffect } from "react";
-import { useStore as useFlowStore } from "reactflow";
 import Graph from "./components/Graph.js";
 import Header from "./components/Header.js";
 import Inspector from "./components/Inspector.js";

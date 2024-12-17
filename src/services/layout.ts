@@ -50,8 +50,8 @@ export const layout = async (
     .filter((node) => nodeIds.includes(node.id))
     .map((node) => ({
       id: node.id,
-      width: node.width ?? DEFAULT_WIDTH,
-      height: node.height ?? DEFAULT_HEIGHT,
+      width: node.measured?.width ?? DEFAULT_WIDTH,
+      height: node.measured?.height ?? DEFAULT_HEIGHT,
     }));
 
   const elkEdges: ElkExtendedEdge[] = edges

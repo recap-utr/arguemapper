@@ -6,9 +6,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
 import { produce } from "immer";
-import React, { MouseEvent, useCallback, useMemo } from "react";
-import { useReactFlow } from "reactflow";
+import React, { useCallback, useMemo } from "react";
 import * as model from "../model.js";
 import { canvasCenter, setState, State, useStore } from "../store.js";
 
@@ -44,7 +44,7 @@ const Item: React.FC<ItemProps> = ({
 };
 
 export interface Click {
-  event?: MouseEvent;
+  event?: MouseEvent | React.MouseEvent<Element, MouseEvent>;
   target?: model.Element;
   open: boolean;
 }
@@ -156,7 +156,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       <Item
         visible={showFor("graph")}
         callback={() => {
-          const { x, y } = flow.project(
+          const { x, y } = flow.screenToFlowPosition(
             click.event !== undefined
               ? {
                   x: click.event.clientX - (leftSidebarOpen ? sidebarWidth : 0),
@@ -183,7 +183,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       <Item
         visible={showFor("graph")}
         callback={() => {
-          const { x, y } = flow.project(canvasCenter());
+          const { x, y } = flow.screenToFlowPosition(canvasCenter());
           const node = model.initScheme({ data: {}, position: { x, y } });
           node.selected = true;
 

@@ -1,13 +1,13 @@
 import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
-import { ComponentType, useMemo } from "react";
 import {
   BezierEdge,
   EdgeProps,
   EdgeTypes as FlowEdgeTypes,
   SmoothStepEdge,
   StraightEdge,
-} from "reactflow";
+} from "@xyflow/react";
+import { ComponentType, useMemo } from "react";
 import * as model from "../model.js";
 import { useStore } from "../store.js";
 

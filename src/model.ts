@@ -1,13 +1,13 @@
+import { Edge as FlowEdge, Node as FlowNode, XYPosition } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
-import { Edge as FlowEdge, Node as FlowNode, XYPosition } from "reactflow";
 
+export type AtomNodeData = arguebuf.AtomNode & Record<string, unknown>;
+export type SchemeNodeData = arguebuf.SchemeNode & Record<string, unknown>;
+export type NodeData = AtomNodeData | SchemeNodeData;
+export type Node = FlowNode<NodeData, "atom" | "scheme">;
+export type AtomNode = FlowNode<AtomNodeData, "atom">;
+export type SchemeNode = FlowNode<SchemeNodeData, "scheme">;
 export type Edge = FlowEdge<Omit<arguebuf.Edge, "source" | "target">>;
-export type NodeData = arguebuf.Node;
-export type AtomNodeData = arguebuf.AtomNode;
-export type SchemeNodeData = arguebuf.SchemeNode;
-export type Node = FlowNode<NodeData>;
-export type AtomNode = FlowNode<AtomNodeData>;
-export type SchemeNode = FlowNode<SchemeNodeData>;
 export type Graph = Omit<arguebuf.Graph, "nodes" | "edges">;
 
 export interface Userdata {
@@ -179,7 +179,7 @@ export function initAtom({
   return {
     id: parsedId,
     type: "atom",
-    data: new arguebuf.AtomNode({ ...data, id: parsedId }),
+    data: new arguebuf.AtomNode({ ...data, id: parsedId }) as AtomNodeData,
     position: position ?? { x: 0, y: 0 },
   };
 }
@@ -194,7 +194,7 @@ export function initScheme({
   return {
     id: parsedId,
     type: "scheme",
-    data: new arguebuf.SchemeNode({ ...data, id: parsedId }),
+    data: new arguebuf.SchemeNode({ ...data, id: parsedId }) as SchemeNodeData,
     position: position ?? { x: 0, y: 0 },
   };
 }

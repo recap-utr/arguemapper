@@ -8,9 +8,6 @@ import {
   Stack,
   useTheme,
 } from "@mui/material";
-import { produce } from "immer";
-import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ConnectionLineType,
   OnConnect,
@@ -26,8 +23,11 @@ import {
   applyEdgeChanges,
   applyNodeChanges,
   useReactFlow,
-} from "reactflow";
-import "reactflow/dist/style.css";
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { produce } from "immer";
+import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
@@ -113,11 +113,6 @@ export default function Graph() {
     }
   }, [shouldFitView, shouldLayout, flow]);
 
-  const nodeHasDimension = useCallback(
-    (el: model.Node) => el.width && el.height,
-    [],
-  );
-
   useEffect(() => {
     const domNode = document.querySelector(
       "#react-flow .react-flow__renderer",
@@ -133,7 +128,11 @@ export default function Graph() {
   }, [isLoading]);
 
   useEffect(() => {
-    if (shouldLayout && nodes.length > 0 && nodes.every(nodeHasDimension)) {
+    if (
+      shouldLayout &&
+      nodes.length > 0 &&
+      nodes.every((node) => node.measured)
+    ) {
       layout(nodes, edges, layoutAlgorithm)
         .then((layoutedNodes) => {
           setState({ nodes: layoutedNodes });
@@ -142,14 +141,18 @@ export default function Graph() {
           setState({ shouldLayout: false });
         });
     }
-  }, [shouldLayout, layoutAlgorithm, nodes, edges, nodeHasDimension]);
+  }, [shouldLayout, layoutAlgorithm, nodes, edges]);
 
-  const onNodesChange: OnNodesChange = useCallback((changes) => {
-    setState((state) => ({ nodes: applyNodeChanges(changes, state.nodes) }));
+  const onNodesChange: OnNodesChange<model.Node> = useCallback((changes) => {
+    setState((state) => ({
+      nodes: applyNodeChanges(changes, state.nodes),
+    }));
   }, []);
 
-  const onEdgesChange: OnEdgesChange = useCallback((changes) => {
-    setState((state) => ({ edges: applyEdgeChanges(changes, state.edges) }));
+  const onEdgesChange: OnEdgesChange<model.Edge> = useCallback((changes) => {
+    setState((state) => ({
+      edges: applyEdgeChanges(changes, state.edges),
+    }));
   }, []);
 
   const onConnect: OnConnect = useCallback((connection) => {
@@ -194,20 +197,23 @@ export default function Graph() {
     );
   }, []);
 
-  const onNodesDelete: OnNodesDelete = useCallback((deletedNodes) => {
-    const deletedNodeIds = deletedNodes.map((node) => node.id);
-    setState((state) => ({
-      nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
-      // one could also use getConnectedEdges from reactflow:
-      // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
-      edges: state.edges.filter(
-        (edge) =>
-          !deletedNodeIds.includes(edge.source) &&
-          !deletedNodeIds.includes(edge.target),
-      ),
-      selection: model.initSelection(),
-    }));
-  }, []);
+  const onNodesDelete: OnNodesDelete<model.Node> = useCallback(
+    (deletedNodes) => {
+      const deletedNodeIds = deletedNodes.map((node) => node.id);
+      setState((state) => ({
+        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+        // one could also use getConnectedEdges from reactflow:
+        // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
+        edges: state.edges.filter(
+          (edge) =>
+            !deletedNodeIds.includes(edge.source) &&
+            !deletedNodeIds.includes(edge.target),
+        ),
+        selection: model.initSelection(),
+      }));
+    },
+    [],
+  );
   const onEdgesDelete: OnEdgesDelete = useCallback((deletedEdges) => {
     const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
     setState((state) => ({
@@ -216,7 +222,7 @@ export default function Graph() {
     }));
   }, []);
 
-  const onInit: OnInit = useCallback(
+  const onInit: OnInit<model.Node, model.Edge> = useCallback(
     (instance) => {
       instance.fitView();
       resumeTemporal();
@@ -225,8 +231,8 @@ export default function Graph() {
   );
 
   const onContextMenu = (
-    event: React.MouseEvent,
-    target?: model.AtomNode | model.SchemeNode | model.Edge,
+    event: MouseEvent | React.MouseEvent<Element, MouseEvent>,
+    target?: model.Node | model.Edge,
   ) => {
     setCtxMenu({
       event,
@@ -303,7 +309,7 @@ export default function Graph() {
   }, [edgeStyle]);
 
   return (
-    <ReactFlow
+    <ReactFlow<model.Node, model.Edge>
       id="react-flow"
       nodes={nodes}
       edges={edges}
@@ -330,6 +336,7 @@ export default function Graph() {
       onlyRenderVisibleElements={onlyRenderVisibleElements}
       connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
+      colorMode="system"
     >
       {isLoading && <Loader />}
       {/* <MiniMap

@@ -9,9 +9,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
 import React, { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useReactFlow } from "reactflow";
 import { setState, useTemporalStore } from "../store.js";
 
 interface ItemProps {

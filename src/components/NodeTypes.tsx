@@ -1,14 +1,14 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
-import { startCase } from "lodash";
-import React, { ComponentType, useMemo } from "react";
 import {
   NodeTypes as FlowNodeTypes,
   Handle,
   HandleProps,
   NodeProps,
   Position,
-} from "reactflow";
+} from "@xyflow/react";
+import { startCase } from "lodash";
+import React, { ComponentType, useMemo } from "react";
 import * as model from "../model.js";
 import { useStore } from "../store.js";
 
@@ -36,7 +36,7 @@ const NodeHandle: React.FC<HandleProps> = (props) => {
 };
 
 interface NodeComponentProps extends React.PropsWithChildren {
-  node: NodeProps<model.NodeData>;
+  node: NodeProps<model.Node>;
   bg: string;
 }
 
@@ -83,7 +83,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
   );
 };
 
-const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
+const AtomComponent: ComponentType<NodeProps<model.AtomNode>> = (node) => {
   const body = <div>{node.data.label()}</div>;
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
@@ -102,9 +102,7 @@ const AtomComponent: ComponentType<NodeProps<model.AtomNodeData>> = (node) => {
   );
 };
 
-const SchemeComponent: ComponentType<NodeProps<model.SchemeNodeData>> = (
-  node,
-) => {
+const SchemeComponent: ComponentType<NodeProps<model.SchemeNode>> = (node) => {
   const body = <div>{startCase(node.data.label())}</div>;
 
   const bg = useMemo(() => {

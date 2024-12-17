@@ -26,10 +26,10 @@ import {
   TextField,
   useTheme,
 } from "@mui/material";
+import { useReactFlow } from "@xyflow/react";
 import { produce } from "immer";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useState } from "react";
-import { useReactFlow } from "reactflow";
 import * as model from "../model.js";
 import {
   extractAdus,
@@ -151,7 +151,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
       >
         <Item
           callback={() => {
-            const { x, y } = flow.project(canvasCenter());
+            const { x, y } = flow.screenToFlowPosition(canvasCenter());
             const node = model.initAtom({
               data: { text: "" },
               position: { x, y },
@@ -170,7 +170,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         />
         <Item
           callback={() => {
-            const { x, y } = flow.project(canvasCenter());
+            const { x, y } = flow.screenToFlowPosition(canvasCenter());
             const node = model.initScheme({ data: {}, position: { x, y } });
             node.selected = true;
 
