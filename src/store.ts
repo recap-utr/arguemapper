@@ -16,9 +16,9 @@ import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
 export const assistantModels = [
-  "o1",
   "gpt-4o",
   "gpt-4o-mini",
+  "o1",
   "chatgpt-4o-latest",
 ];
 
