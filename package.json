@@ -1,6 +1,6 @@
 {
   "name": "arguemapper",
-  "version": "2.2.14",
+  "version": "2.3.0",
   "exports": "./src/index.tsx",
   "private": true,
   "type": "module",

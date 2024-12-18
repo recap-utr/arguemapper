@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/recap-utr/arguemapper/compare/v2.2.14...v2.3.0) (2024-12-18)
+
+### Features
+
+* migrate from reactflow to xyflow ([158585a](https://github.com/recap-utr/arguemapper/commit/158585a29fee57465f71a2258bcb4543b10d546b))
+* migrate to arg-services v4 and arguebuf v2 ([c4a98f1](https://github.com/recap-utr/arguemapper/commit/c4a98f1e4c82f970156aa76b9164dea1f8308ad4))
+
+### Bug Fixes
+
+* **assistant:** set temperature to 0.0 by default ([eb21cf0](https://github.com/recap-utr/arguemapper/commit/eb21cf072a54b3dfb897b21f34f0b63d4a74e1c6))
+* **assistant:** update models ([f724104](https://github.com/recap-utr/arguemapper/commit/f724104fa65011e3ee5812520f2e05e9f13bbc0e))
+
 ## [2.2.14](https://github.com/recap-utr/arguemapper/compare/v2.2.13...v2.2.14) (2024-12-15)
 
 ### Bug Fixes
