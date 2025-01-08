@@ -24,7 +24,7 @@
     "@fortawesome/free-regular-svg-icons": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0.2",
-    "@mui/lab": "^6.0.0-beta.20",
+    "@mui/lab": "^6.0.0-beta.22",
     "@mui/material": "^6",
     "@xyflow/react": "^12.3.6",
     "arguebuf": "^2",
@@ -61,7 +61,7 @@
     "node-sass": "^9",
     "typescript": "^5",
     "typescript-eslint": "^8",
-    "vite": "^5",
+    "vite": "^6",
     "vite-plugin-checker": "^0.8",
     "web-worker": "^1"
   },
