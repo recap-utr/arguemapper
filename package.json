@@ -24,9 +24,9 @@
     "@fortawesome/free-regular-svg-icons": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0.2",
-    "@mui/lab": "^6.0.0-beta.22",
+    "@mui/lab": "^6.0.0-beta.23",
     "@mui/material": "^6",
-    "@xyflow/react": "^12.3.6",
+    "@xyflow/react": "^12",
     "arguebuf": "^2",
     "dequal": "^2",
     "draft-js": "^0.11",
@@ -37,16 +37,22 @@
     "material-ui-confirm": "^3",
     "notistack": "^3",
     "openai": "^4",
-    "react": "^18",
+    "react": "^19",
     "react-cache-buster": "^0.1",
-    "react-dom": "^18",
+    "react-dom": "^19",
     "react-highlight-within-textarea": "^3",
     "react-hotkeys-hook": "^4",
     "use-immer": "^0.11",
     "use-sync-external-store": "^1",
-    "zod": "^3.24.1",
+    "zod": "^3",
     "zundo": "^2",
     "zustand": "^4"
+  },
+  "overrides": {
+    "notistack": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9",
