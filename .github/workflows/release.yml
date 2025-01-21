@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v16
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
   deploy-docker:
@@ -39,7 +39,7 @@ jobs:
         with:
           ref: ${{ needs.release.outputs.git-head }}
       - uses: DeterminateSystems/nix-installer-action@v16
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
       - run: nix run .#docker-manifest --impure
         env:
           VERSION: ${{ needs.release.outputs.version }}
