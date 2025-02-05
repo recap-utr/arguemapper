@@ -12,6 +12,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://recap.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "recap.cachix.org-1:KElwRDtaJbbQxmmS2SyxWHqs9bdJbaZHzb2iINTfQws="
+    ];
+  };
   outputs =
     inputs@{
       flake-parts,
