@@ -404,9 +404,11 @@ export const GraphFields: React.FC<Props> = () => {
                   startIcon={<FontAwesomeIcon icon={faTrash} />}
                   variant="contained"
                   onClick={() => {
-                    confirm().then(() => {
-                      localStorage.clear();
-                      window.location.reload();
+                    confirm().then(({ confirmed }) => {
+                      if (confirmed) {
+                        localStorage.clear();
+                        window.location.reload();
+                      }
                     });
                   }}
                 >
