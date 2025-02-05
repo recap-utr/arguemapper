@@ -34,7 +34,7 @@
     "html-to-image": "^1",
     "immer": "^10",
     "lodash": "^4",
-    "material-ui-confirm": "^3",
+    "material-ui-confirm": "^4.0.0",
     "notistack": "^3",
     "openai": "^4",
     "react": "^19",
