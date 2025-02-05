@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1](https://github.com/recap-utr/arguemapper/compare/v2.3.0...v2.3.1) (2025-02-05)
+
+### Bug Fixes
+
+* **deps:** update material-ui-confirm to v4 ([de250a6](https://github.com/recap-utr/arguemapper/commit/de250a6a2bbea60eb13faf8a64ac3cee9983bd48))
+
 ## [2.3.0](https://github.com/recap-utr/arguemapper/compare/v2.2.14...v2.3.0) (2024-12-18)
 
 ### Features
