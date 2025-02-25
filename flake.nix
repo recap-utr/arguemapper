@@ -46,11 +46,11 @@
         {
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
-            overlays = [
-              (final: prev: {
-                nodejs = final.nodejs_20;
-              })
-            ];
+            overlays = lib.singleton (
+              final: prev: {
+                nodejs = final.nodejs_22;
+              }
+            );
           };
           devShells.default = pkgs.mkShell {
             shellHook = ''

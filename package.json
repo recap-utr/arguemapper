@@ -24,7 +24,7 @@
     "@fortawesome/free-regular-svg-icons": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0.2",
-    "@mui/lab": "^6.0.0-beta.26",
+    "@mui/lab": "^6.0.0-beta.28",
     "@mui/material": "^6",
     "@xyflow/react": "^12",
     "arguebuf": "^2",
@@ -56,7 +56,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9",
-    "@types/eslint__js": "^8",
     "@types/jest": "^29",
     "@types/lodash": "^4",
     "@types/node": "^22",
@@ -68,7 +67,7 @@
     "typescript": "^5",
     "typescript-eslint": "^8",
     "vite": "^6",
-    "vite-plugin-checker": "^0.8",
+    "vite-plugin-checker": "^0.9",
     "web-worker": "^1"
   },
   "browserslist": {
