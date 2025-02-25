@@ -48,12 +48,6 @@
     "zundo": "^2",
     "zustand": "^4"
   },
-  "overrides": {
-    "notistack": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    }
-  },
   "devDependencies": {
     "@eslint/js": "^9",
     "@types/jest": "^29",
