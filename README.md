@@ -11,12 +11,7 @@ There are no server-side components in this app, so your data never leaves your 
 ## Docker Image
 
 ```shell
-# Building
-nix build .#docker -o arguemapper.tar.gz --system x86_64-linux
-# Loading
-docker load -i arguemapper.tar.gz
-# Running
-docker run -p 8080:8080 arguemapper
+docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ```
 
 ## Tutorial
