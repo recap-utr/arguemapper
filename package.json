@@ -24,13 +24,13 @@
     "@fortawesome/free-regular-svg-icons": "^6",
     "@fortawesome/free-solid-svg-icons": "^6",
     "@fortawesome/react-fontawesome": "^0.2",
-    "@mui/lab": "^6.0.0-beta.28",
+    "@mui/lab": "^6.0.0-beta.31",
     "@mui/material": "^6",
     "@xyflow/react": "^12",
     "arguebuf": "^2",
     "dequal": "^2",
     "draft-js": "^0.11",
-    "elkjs": "^0.9",
+    "elkjs": "^0.10",
     "html-to-image": "^1",
     "immer": "^10",
     "lodash": "^4",
@@ -46,7 +46,7 @@
     "use-sync-external-store": "^1",
     "zod": "^3",
     "zundo": "^2",
-    "zustand": "^4"
+    "zustand": "^5"
   },
   "devDependencies": {
     "@eslint/js": "^9",
