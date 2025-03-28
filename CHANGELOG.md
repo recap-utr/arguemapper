@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.2](https://github.com/recap-utr/arguemapper/compare/v2.3.1...v2.3.2) (2025-03-28)
+
+### Bug Fixes
+
+* **deps:** update to material ui v7 ([e362b41](https://github.com/recap-utr/arguemapper/commit/e362b416c18b0bdf3a96340300245f8199b44ec5))
+
 ## [2.3.1](https://github.com/recap-utr/arguemapper/compare/v2.3.0...v2.3.1) (2025-02-05)
 
 ### Bug Fixes
