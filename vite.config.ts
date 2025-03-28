@@ -20,4 +20,7 @@ export default defineConfig({
       transformMixedEsModules: true,
     },
   },
+  resolve: {
+    conditions: ["mui-modern", "module", "browser", "development|production"],
+  },
 });
