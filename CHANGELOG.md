@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.3](https://github.com/recap-utr/arguemapper/compare/v2.3.2...v2.3.3) (2025-04-11)
+
+### Bug Fixes
+
+* **deps:** improve hotkeys on international layouts ([32c768a](https://github.com/recap-utr/arguemapper/commit/32c768ab430450c57375ad474d908a15fcb76c6a))
+
 ## [2.3.2](https://github.com/recap-utr/arguemapper/compare/v2.3.1...v2.3.2) (2025-03-28)
 
 ### Bug Fixes
