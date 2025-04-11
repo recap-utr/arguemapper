@@ -57,7 +57,7 @@ export const Toolbar: React.FC = () => {
         undo();
       }
     },
-    { preventDefault: true },
+    { preventDefault: true, useKey: true },
   );
 
   useHotkeys(
@@ -67,7 +67,7 @@ export const Toolbar: React.FC = () => {
         redo();
       }
     },
-    { preventDefault: true },
+    { preventDefault: true, useKey: true },
   );
 
   return (

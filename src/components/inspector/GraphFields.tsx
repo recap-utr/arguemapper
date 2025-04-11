@@ -143,7 +143,7 @@ export const GraphFields: React.FC<Props> = () => {
         convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
       });
     },
-    { preventDefault: true },
+    { preventDefault: true, useKey: true },
   );
 
   return (
