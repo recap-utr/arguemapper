@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.4](https://github.com/recap-utr/arguemapper/compare/v2.3.3...v2.3.4) (2025-05-05)
+
+### Bug Fixes
+
+* **assistant:** update models ([07707e9](https://github.com/recap-utr/arguemapper/commit/07707e9c4c5a2715ffc7c7516d1d385e0e5e00fd))
+
 ## [2.3.3](https://github.com/recap-utr/arguemapper/compare/v2.3.2...v2.3.3) (2025-04-11)
 
 ### Bug Fixes
