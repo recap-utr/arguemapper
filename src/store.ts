@@ -18,8 +18,11 @@ import * as convert from "./services/convert.js";
 export const assistantModels = [
   "gpt-4o",
   "gpt-4o-mini",
-  "o1",
-  "chatgpt-4o-latest",
+  "gpt-4.1",
+  "gpt-4.1-mini",
+  "gpt-4.1-nano",
+  "o4-mini",
+  "o3",
 ];
 
 export interface AssistantConfig {
