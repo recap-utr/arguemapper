@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.5](https://github.com/recap-utr/arguemapper/compare/v2.3.4...v2.3.5) (2025-05-30)
+
+### Bug Fixes
+
+* **deps:** migrate to openai v5 ([b44e76d](https://github.com/recap-utr/arguemapper/commit/b44e76d0d11f720b60622aa49821e40603562442))
+
 ## [2.3.4](https://github.com/recap-utr/arguemapper/compare/v2.3.3...v2.3.4) (2025-05-05)
 
 ### Bug Fixes
