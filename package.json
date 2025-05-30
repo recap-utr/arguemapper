@@ -36,7 +36,7 @@
     "lodash": "^4",
     "material-ui-confirm": "^4",
     "notistack": "^3",
-    "openai": "^4",
+    "openai": "^5",
     "react": "^19",
     "react-cache-buster": "^0.1",
     "react-dom": "^19",

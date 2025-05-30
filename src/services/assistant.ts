@@ -5,7 +5,8 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import * as model from "../model";
 import { getSessionStorage } from "../storage";
-import { AssistantConfig, State, getState, setState } from "../store";
+import { getState, setState } from "../store";
+import type { AssistantConfig, State } from "../store";
 
 const ExtractedAdu = z.object({
   text: z.string().describe("The text of the ADU"),
@@ -453,7 +454,7 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
   const client = new OpenAI({ baseURL, apiKey, dangerouslyAllowBrowser: true });
 
   try {
-    const completion = await client.beta.chat.completions.parse({
+    const completion = await client.chat.completions.parse({
       model,
       messages: [
         { role: "system", content: systemMessage },
@@ -471,11 +472,11 @@ async function fetchOpenAI<T extends z.ZodTypeAny>(
 
     if (res.parsed) {
       return res.parsed;
-    } else {
-      throw new Error(
-        `Got an unexpected response from the LLM, please try again: ${res.refusal}`,
-      );
     }
+
+    throw new Error(
+      `Got an unexpected response from the LLM, please try again: ${res.refusal}`,
+    );
   } catch (e: unknown) {
     throw new Error(
       `Got an unexpected response from the LLM, please try again: ${
