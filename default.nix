@@ -5,16 +5,14 @@
   xcbuild,
   stdenv,
   lib,
+  biome,
 }:
 let
-  npmDeps = importNpmLock {
-    npmRoot = ./.;
-  };
 in
-buildNpmPackage {
-  inherit npmDeps;
-  inherit (npmDeps) pname version;
+buildNpmPackage (finalAttrs: {
+  inherit (finalAttrs.npmDeps) pname version;
   inherit (importNpmLock) npmConfigHook;
+  npmDeps = importNpmLock { npmRoot = finalAttrs.src; };
 
   src = ./.;
   installPhase = ''
@@ -25,6 +23,8 @@ buildNpmPackage {
 
     runHook postInstall
   '';
+
+  BIOME_BINARY = lib.getExe biome;
 
   # Python is needed for node-gyp/libsass
   nativeBuildInputs = [
@@ -37,4 +37,4 @@ buildNpmPackage {
     maintainers = with maintainers; [ mirkolenz ];
     homepage = "https://github.com/recap-utr/arguemapper";
   };
-}
+})
