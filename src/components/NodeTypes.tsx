@@ -1,15 +1,16 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import {
-  NodeTypes as FlowNodeTypes,
+  type NodeTypes as FlowNodeTypes,
   Handle,
-  HandleProps,
-  NodeProps,
+  type HandleProps,
+  type NodeProps,
   Position,
 } from "@xyflow/react";
 import { startCase } from "lodash";
-import React, { ComponentType, useMemo } from "react";
-import * as model from "../model.js";
+import type React from "react";
+import { type ComponentType, useMemo } from "react";
+import type * as model from "../model.js";
 import { useStore } from "../store.js";
 
 const MAX_WIDTH = 300;
@@ -51,11 +52,11 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
       (node.data.userdata as model.Userdata).clickConnect
         ? color.orange[500]
         : bg,
-    [(node.data.userdata as model.Userdata).clickConnect, bg],
+    [(node.data.userdata as model.Userdata).clickConnect, bg]
   );
   const borderColor = useMemo(
     () => (node.selected ? theme.palette.text.primary : background),
-    [background, node.selected, theme.palette.text.primary],
+    [background, node.selected, theme.palette.text.primary]
   );
 
   return (

@@ -9,9 +9,9 @@ import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import { startCase } from "lodash";
-import React from "react";
-import * as model from "../../model.js";
-import { State, setState, useStore } from "../../store.js";
+import type React from "react";
+import type * as model from "../../model.js";
+import { type State, setState, useStore } from "../../store.js";
 
 enum SchemeType {
   SUPPORT = "support",
@@ -46,7 +46,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.SchemeNode,
-    dequal,
+    dequal
   );
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
 
@@ -67,10 +67,10 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
             setState(
               produce((draft: State) => {
                 const idx = draft.nodes.findIndex(
-                  (node) => node.id === element.id,
+                  (node) => node.id === element.id
                 );
                 (draft.nodes[idx] as model.SchemeNode).data.scheme = newScheme;
-              }),
+              })
             );
           }}
         >
@@ -92,11 +92,11 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
               setState(
                 produce((draft: State) => {
                   const idx = draft.nodes.findIndex(
-                    (node) => node.id === element.id,
+                    (node) => node.id === element.id
                   );
                   (draft.nodes[idx] as model.SchemeNode).data.scheme.value =
                     Number(event.target.value);
-                }),
+                })
               );
             }}
             defaultValue={0}
@@ -124,7 +124,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
             produce((draft: State) => {
               const node = draft.nodes[selectedIndex];
               (node.data.userdata as model.Userdata).notes = event.target.value;
-            }),
+            })
           );
         }}
       />

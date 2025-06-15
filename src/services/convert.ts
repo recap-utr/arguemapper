@@ -1,7 +1,7 @@
-import { type GraphJson } from "arg-services/graph/v1/graph_pb";
+import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
-import { Options as ImgOptions } from "html-to-image/lib/types.js";
+import type { Options as ImgOptions } from "html-to-image/lib/types.js";
 import * as model from "../model.js";
 import { useStore } from "../store.js";
 
@@ -10,7 +10,7 @@ export function importGraph(obj: GraphJson): model.Wrapper {
 }
 export function exportGraph(
   obj: model.Wrapper,
-  format: "aif" | "arguebuf",
+  format: "aif" | "arguebuf"
 ): GraphJson {
   const graph = model.toArguebuf(obj);
   const currentAnalyst = useStore.getState().analyst;
@@ -18,7 +18,7 @@ export function exportGraph(
   if (
     format === "arguebuf" &&
     !Object.values(graph.analysts).some(
-      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email,
+      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email
     )
   ) {
     if (Object.keys(graph.analysts).includes(currentAnalyst.id)) {
@@ -34,7 +34,7 @@ export function exportGraph(
 export function generateFilename() {
   const timestamp = arguebuf.date.format(
     arguebuf.date.now(),
-    "YYYY-MM-DD[T]HH-mm-ss",
+    "YYYY-MM-DD[T]HH-mm-ss"
   );
 
   return `arguemapper-${timestamp}`;
@@ -63,7 +63,7 @@ export const downloadImage = async (format: ImgFormat) => {
   ];
 
   const elem = document.querySelector(
-    selectors.join(" "),
+    selectors.join(" ")
   ) as HTMLElement | null;
   const func = imgFormatMap[format];
 
@@ -79,7 +79,7 @@ export const downloadImage = async (format: ImgFormat) => {
           ? Array.from(domNode.classList)
           : [];
         return !excludedClasses.some((className) =>
-          classList.includes(className),
+          classList.includes(className)
         );
       },
     });

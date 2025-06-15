@@ -1,9 +1,9 @@
 import { TextField } from "@mui/material";
 import { dequal } from "dequal";
 import { produce } from "immer";
-import React from "react";
-import * as model from "../../model.js";
-import { setState, State, useStore } from "../../store.js";
+import type React from "react";
+import type * as model from "../../model.js";
+import { type State, setState, useStore } from "../../store.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
@@ -13,7 +13,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
   const element = useStore(
     (state) => state.edges[selectedIndex] as model.Edge,
-    dequal,
+    dequal
   );
 
   return (
@@ -35,7 +35,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
               }
 
               (edge.data.userdata as model.Userdata).notes = event.target.value;
-            }),
+            })
           );
         }}
       />

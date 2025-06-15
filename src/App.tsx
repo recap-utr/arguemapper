@@ -31,7 +31,7 @@ export default function App() {
   };
 
   const resetSelectedElements = useFlowStore(
-    (state) => state.resetSelectedElements,
+    (state) => state.resetSelectedElements
   );
 
   return (

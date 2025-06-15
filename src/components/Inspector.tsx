@@ -10,7 +10,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useCallback } from "react";
+import type React from "react";
+import { useCallback } from "react";
 import { version as npmVersion } from "../../package.json";
 import * as model from "../model.js";
 import { setState, useStore } from "../store.js";
@@ -28,10 +29,10 @@ const Inspector: React.FC<Props> = ({ close }) => {
   const onDelete = useCallback(() => {
     setState((state) => ({
       nodes: state.nodes.filter(
-        (_node, idx) => !state.selection.nodes.includes(idx),
+        (_node, idx) => !state.selection.nodes.includes(idx)
       ),
       edges: state.edges.filter(
-        (_edge, idx) => !state.selection.edges.includes(idx),
+        (_edge, idx) => !state.selection.edges.includes(idx)
       ),
       selection: model.initSelection(),
     }));

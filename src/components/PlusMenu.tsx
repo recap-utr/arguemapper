@@ -1,4 +1,4 @@
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faBolt,
   faComments,
@@ -29,7 +29,8 @@ import {
 import { useReactFlow } from "@xyflow/react";
 import { produce } from "immer";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useState } from "react";
+import type React from "react";
+import { useCallback, useState } from "react";
 import * as model from "../model.js";
 import {
   extractAdus,
@@ -37,7 +38,7 @@ import {
   identifyMajorClaim,
   predictRelations,
 } from "../services/assistant.js";
-import { State, canvasCenter, setState } from "../store.js";
+import { type State, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -115,7 +116,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         ),
       });
     },
-    [closeSnackbar, enqueueSnackbar],
+    [closeSnackbar, enqueueSnackbar]
   );
 
   return (
@@ -161,7 +162,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
             setState(
               produce((draft: State) => {
                 draft.nodes.push(node);
-              }),
+              })
             );
           }}
           close={close}
@@ -177,7 +178,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
             setState(
               produce((draft: State) => {
                 draft.nodes.push(node);
-              }),
+              })
             );
           }}
           close={close}

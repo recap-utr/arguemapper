@@ -8,9 +8,8 @@ export default defineConfig({
   plugins: [
     react(),
     checker({
-      eslint: {
-        lintCommand: "eslint ./src",
-        useFlatConfig: true,
+      biome: {
+        command: "check",
       },
     }),
   ],

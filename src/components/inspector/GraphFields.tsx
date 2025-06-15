@@ -51,7 +51,7 @@ import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
 import { useSessionStorage } from "../../storage.js";
 import {
-  State,
+  type State,
   assistantModels,
   resetState,
   setState,
@@ -69,11 +69,11 @@ export const GraphFields: React.FC<Props> = () => {
   const analyst = useStore((state) => state.analyst);
   const assistantConfig = useStore((state) => state.assistantConfig);
   const notes: string | undefined = useStore(
-    (state) => (state.graph.userdata as model.Userdata).notes,
+    (state) => (state.graph.userdata as model.Userdata).notes
   );
   const [assistantKey, setAssistantKey] = useSessionStorage<string>(
     "assistantKey",
-    "",
+    ""
   );
 
   const confirm = useConfirm();
@@ -118,7 +118,7 @@ export const GraphFields: React.FC<Props> = () => {
         reader.readAsText(event.target.files[0]);
       }
     },
-    [],
+    []
   );
 
   const verifyAnalyst = useCallback(
@@ -129,7 +129,7 @@ export const GraphFields: React.FC<Props> = () => {
         callback();
       }
     },
-    [analyst],
+    [analyst]
   );
 
   const handleAifImport = useCallback(async () => {
@@ -139,7 +139,7 @@ export const GraphFields: React.FC<Props> = () => {
 
     if (!response.ok) {
       alert(
-        `Failed to fetch AIFdb.org data for ID ${aifdbId}, possibly due to CORS: ${response.statusText} (${response.status})`,
+        `Failed to fetch AIFdb.org data for ID ${aifdbId}, possibly due to CORS: ${response.statusText} (${response.status})`
       );
     }
 
@@ -162,7 +162,7 @@ export const GraphFields: React.FC<Props> = () => {
         convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
       });
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true }
   );
 
   return (
@@ -228,7 +228,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onChange={(e) => {
                   const value = e.target.value;
                   setAifdbId(
-                    value === "" ? undefined : Number.parseInt(value, 10),
+                    value === "" ? undefined : Number.parseInt(value, 10)
                   );
                 }}
                 helperText="Enter the numeric ID of an argument map from aifdb.org"
@@ -263,7 +263,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.exportGraph(getWrapper(), "arguebuf"),
+                      convert.exportGraph(getWrapper(), "arguebuf")
                     );
                   });
                 }}
@@ -276,7 +276,7 @@ export const GraphFields: React.FC<Props> = () => {
                 onClick={() => {
                   verifyAnalyst(() => {
                     convert.downloadJson(
-                      convert.exportGraph(getWrapper(), "aif"),
+                      convert.exportGraph(getWrapper(), "aif")
                     );
                   });
                 }}
@@ -336,9 +336,9 @@ export const GraphFields: React.FC<Props> = () => {
                       draft.graph.addParticipant(
                         new arguebuf.Participant({
                           name: "Unknown",
-                        }),
+                        })
                       );
-                    }),
+                    })
                   );
                 }}
               >
@@ -423,7 +423,7 @@ export const GraphFields: React.FC<Props> = () => {
                 label="Image Scaling Factor"
                 value={imageScale}
                 onChange={(event) => {
-                  setState({ imageScale: parseInt(event.target.value) });
+                  setState({ imageScale: Number.parseInt(event.target.value) });
                 }}
               />
               <FormControlLabel
@@ -492,7 +492,7 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.model = value;
-                    }),
+                    })
                   );
                 }}
               />
@@ -505,7 +505,7 @@ export const GraphFields: React.FC<Props> = () => {
                   setState(
                     produce((draft: State) => {
                       draft.assistantConfig.baseURL = event.target.value;
-                    }),
+                    })
                   );
                 }}
               />
@@ -518,10 +518,10 @@ export const GraphFields: React.FC<Props> = () => {
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.temperature = parseFloat(
-                        event.target.value,
+                      draft.assistantConfig.temperature = Number.parseFloat(
+                        event.target.value
                       );
-                    }),
+                    })
                   );
                 }}
               />
@@ -534,10 +534,10 @@ export const GraphFields: React.FC<Props> = () => {
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.topP = parseFloat(
-                        event.target.value,
+                      draft.assistantConfig.topP = Number.parseFloat(
+                        event.target.value
                       );
-                    }),
+                    })
                   );
                 }}
               />
@@ -550,10 +550,9 @@ export const GraphFields: React.FC<Props> = () => {
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.frequencyPenalty = parseFloat(
-                        event.target.value,
-                      );
-                    }),
+                      draft.assistantConfig.frequencyPenalty =
+                        Number.parseFloat(event.target.value);
+                    })
                   );
                 }}
               />
@@ -566,10 +565,10 @@ export const GraphFields: React.FC<Props> = () => {
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.presencePenalty = parseFloat(
-                        event.target.value,
+                      draft.assistantConfig.presencePenalty = Number.parseFloat(
+                        event.target.value
                       );
-                    }),
+                    })
                   );
                 }}
               />
@@ -585,8 +584,8 @@ export const GraphFields: React.FC<Props> = () => {
                       draft.assistantConfig.seed =
                         event.target.value === ""
                           ? null
-                          : Math.abs(parseInt(event.target.value));
-                    }),
+                          : Math.abs(Number.parseInt(event.target.value));
+                    })
                   );
                 }}
               />
@@ -605,7 +604,7 @@ export const GraphFields: React.FC<Props> = () => {
               produce((draft: State) => {
                 (draft.graph.userdata as model.Userdata).notes =
                   event.target.value;
-              }),
+              })
             );
           }}
         />
@@ -627,7 +626,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
 
   const callbackIsFunction = useMemo(
     () => typeof callback === "function",
-    [callback],
+    [callback]
   );
   const onConfirm = () => {
     if (typeof callback === "function") {
@@ -654,7 +653,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
             setState(
               produce((draft: State) => {
                 draft.analyst.name = event.target.value;
-              }),
+              })
             );
           }}
         />
@@ -668,7 +667,7 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({
             setState(
               produce((draft: State) => {
                 draft.analyst.email = event.target.value;
-              }),
+              })
             );
           }}
         />
@@ -707,7 +706,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].name = event.target.value;
-            }),
+            })
           );
         }}
       />
@@ -720,7 +719,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].email = event.target.value;
-            }),
+            })
           );
         }}
       />
@@ -732,7 +731,7 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
           setState(
             produce((draft: State) => {
               draft.graph.participants[id].username = event.target.value;
-            }),
+            })
           );
         }}
       />
@@ -743,9 +742,8 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({
         onClick={() => {
           setState(
             produce((draft: State) => {
-              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
               delete draft.graph.participants[id];
-            }),
+            })
           );
         }}
       >

@@ -2,7 +2,7 @@
 // https://gist.github.com/ambroseus/2f1ea898f39e8460e49cd80c9b5e9f5c
 
 import * as muiColor from "@mui/material/colors";
-import React from "react";
+import type React from "react";
 
 interface MarkerProps extends MarkerSymbolProps {
   id: string;

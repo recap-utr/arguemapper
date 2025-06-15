@@ -1,4 +1,4 @@
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faCompress,
   faMagnifyingGlassMinus,
@@ -10,7 +10,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import React, { useCallback } from "react";
+import type React from "react";
+import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { setState, useTemporalStore } from "../store.js";
 
@@ -57,7 +58,7 @@ export const Toolbar: React.FC = () => {
         undo();
       }
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true }
   );
 
   useHotkeys(
@@ -67,7 +68,7 @@ export const Toolbar: React.FC = () => {
         redo();
       }
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true }
   );
 
   return (

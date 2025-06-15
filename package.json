@@ -5,15 +5,15 @@
   "private": true,
   "type": "module",
   "repository": "github:recap-utr/arguemapper",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "start": "vite --open",
     "preview": "vite preview",
     "build": "npm run generate-meta-tag && tsc && vite build",
     "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
-    "lint": "eslint ./src"
+    "lint": "biome check ./src",
+    "lint:fix": "biome check --write ./src",
+    "format": "biome format --write ./src"
   },
   "dependencies": {
     "@emotion/react": "^11",
@@ -49,27 +49,21 @@
     "zustand": "^5"
   },
   "devDependencies": {
-    "@eslint/js": "^9",
+    "@biomejs/biome": "^1.9.4",
     "@types/jest": "^29",
     "@types/lodash": "^4",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4",
-    "eslint": "^9",
     "node-sass": "^9",
     "typescript": "^5",
-    "typescript-eslint": "^8",
     "vite": "^6",
     "vite-plugin-checker": "^0.9",
     "web-worker": "^1"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
+    "production": [">0.2%", "not dead", "not op_mini all"],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",

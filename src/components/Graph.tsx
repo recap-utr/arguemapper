@@ -10,15 +10,15 @@ import {
 } from "@mui/material";
 import {
   ConnectionLineType,
-  OnConnect,
-  OnConnectEnd,
-  OnConnectStart,
-  OnEdgesChange,
-  OnEdgesDelete,
-  OnInit,
-  OnNodesChange,
-  OnNodesDelete,
-  OnSelectionChangeFunc,
+  type OnConnect,
+  type OnConnectEnd,
+  type OnConnectStart,
+  type OnEdgesChange,
+  type OnEdgesDelete,
+  type OnInit,
+  type OnNodesChange,
+  type OnNodesDelete,
+  type OnSelectionChangeFunc,
   ReactFlow,
   applyEdgeChanges,
   applyNodeChanges,
@@ -26,19 +26,19 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { produce } from "immer";
-import { SnackbarAction, SnackbarKey, useSnackbar } from "notistack";
+import { type SnackbarAction, type SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
 import {
-  State,
+  type State,
   resetState,
   setState,
   useStore,
   useTemporalStore,
 } from "../store.js";
-import { ContextMenu, Click as ContextMenuClick } from "./ContextMenu.js";
+import { ContextMenu, type Click as ContextMenuClick } from "./ContextMenu.js";
 import { EdgeTypes } from "./EdgeTypes.js";
 import { Marker, MarkerDefinition } from "./Marker.js";
 import { NodeTypes } from "./NodeTypes.js";
@@ -89,7 +89,7 @@ export default function Graph() {
         </IconButton>
       </Stack>
     ),
-    [closeSnackbar],
+    [closeSnackbar]
   );
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function Graph() {
           persist: true,
           variant: "info",
           action: snackbarAction,
-        },
+        }
       );
     }
   }, [enqueueSnackbar, firstVisit, flow, snackbarAction]);
@@ -115,7 +115,7 @@ export default function Graph() {
 
   useEffect(() => {
     const domNode = document.querySelector(
-      "#react-flow .react-flow__renderer",
+      "#react-flow .react-flow__renderer"
     ) as HTMLElement | null;
 
     if (domNode) {
@@ -159,10 +159,10 @@ export default function Graph() {
     setState(
       produce((draft: State) => {
         const source = draft.nodes.find(
-          (node) => node.id === connection.source,
+          (node) => node.id === connection.source
         );
         const target = draft.nodes.find(
-          (node) => node.id === connection.target,
+          (node) => node.id === connection.target
         );
 
         if (
@@ -179,10 +179,10 @@ export default function Graph() {
 
           draft.nodes.push(scheme);
           draft.edges.push(
-            model.initEdge({ data: {}, source: source.id, target: scheme.id }),
+            model.initEdge({ data: {}, source: source.id, target: scheme.id })
           );
           draft.edges.push(
-            model.initEdge({ data: {}, source: scheme.id, target: target.id }),
+            model.initEdge({ data: {}, source: scheme.id, target: target.id })
           );
         } else if (connection.source !== null && connection.target !== null) {
           draft.edges.push(
@@ -190,10 +190,10 @@ export default function Graph() {
               data: {},
               source: connection.source,
               target: connection.target,
-            }),
+            })
           );
         }
-      }),
+      })
     );
   }, []);
 
@@ -207,12 +207,12 @@ export default function Graph() {
         edges: state.edges.filter(
           (edge) =>
             !deletedNodeIds.includes(edge.source) &&
-            !deletedNodeIds.includes(edge.target),
+            !deletedNodeIds.includes(edge.target)
         ),
         selection: model.initSelection(),
       }));
     },
-    [],
+    []
   );
   const onEdgesDelete: OnEdgesDelete = useCallback((deletedEdges) => {
     const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
@@ -227,12 +227,12 @@ export default function Graph() {
       instance.fitView();
       resumeTemporal();
     },
-    [resumeTemporal],
+    [resumeTemporal]
   );
 
   const onContextMenu = (
     event: MouseEvent | React.MouseEvent<Element, MouseEvent>,
-    target?: model.Node | model.Edge,
+    target?: model.Node | model.Edge
   ) => {
     setCtxMenu({
       event,
@@ -246,15 +246,15 @@ export default function Graph() {
       setState((state) => {
         const partialSelection = {
           nodes: elems.nodes.map((selectedNode) =>
-            state.nodes.findIndex((node) => node.id === selectedNode.id),
+            state.nodes.findIndex((node) => node.id === selectedNode.id)
           ),
           edges: elems.edges.map((selectedEdge) =>
-            state.edges.findIndex((edge) => edge.id === selectedEdge.id),
+            state.edges.findIndex((edge) => edge.id === selectedEdge.id)
           ),
         };
 
         const nodeTypes = elems.nodes.map(
-          (node) => node.type as "scheme" | "atom",
+          (node) => node.type as "scheme" | "atom"
         );
 
         return {
@@ -264,7 +264,7 @@ export default function Graph() {
           },
         };
       }),
-    [],
+    []
   );
 
   const onElementClick = useCallback(() => {
@@ -280,7 +280,7 @@ export default function Graph() {
         if (node !== undefined) {
           (node.data.userdata as model.Userdata).clickConnect = true;
         }
-      }),
+      })
     );
   }, []);
 
@@ -290,10 +290,9 @@ export default function Graph() {
         draft.nodes
           .filter((node) => (node.data.userdata as model.Userdata).clickConnect)
           .forEach(
-            (node) =>
-              delete (node.data.userdata as model.Userdata).clickConnect,
+            (node) => delete (node.data.userdata as model.Userdata).clickConnect
           );
-      }),
+      })
     );
   }, []);
 

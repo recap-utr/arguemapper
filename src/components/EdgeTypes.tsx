@@ -2,12 +2,12 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
 import {
   BezierEdge,
-  EdgeProps,
-  EdgeTypes as FlowEdgeTypes,
+  type EdgeProps,
+  type EdgeTypes as FlowEdgeTypes,
   SmoothStepEdge,
   StraightEdge,
 } from "@xyflow/react";
-import { ComponentType, useMemo } from "react";
+import { type ComponentType, useMemo } from "react";
 import * as model from "../model.js";
 import { useStore } from "../store.js";
 
@@ -18,11 +18,11 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const strokeColor = useMemo(
     () => (selected ? theme.palette.text.primary : color.grey[500]),
-    [selected, theme.palette.text.primary],
+    [selected, theme.palette.text.primary]
   );
   const markerId = useMemo(
     () => (selected ? "arguemapper-marker-selected" : "arguemapper-marker"),
-    [selected],
+    [selected]
   );
   const size = isMobile ? 5 : 2.5;
   const extendedProps: EdgeProps = {

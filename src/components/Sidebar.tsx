@@ -1,5 +1,5 @@
-import { Drawer, DrawerProps, useTheme } from "@mui/material";
-import React from "react";
+import { Drawer, type DrawerProps, useTheme } from "@mui/material";
+import type React from "react";
 
 interface SidebarProps extends React.PropsWithChildren {
   side: DrawerProps["anchor"];
