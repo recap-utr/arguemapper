@@ -87,6 +87,8 @@ export const GraphFields: React.FC<Props> = () => {
   const [analystCallback, setAnalystCallback] = useState<
     (() => void) | undefined
   >(undefined);
+  const [aifdbId, setAifdbId] = useState<number | undefined>(undefined);
+
   const disableAnalystCallback = () => {
     setAnalystCallback(undefined);
   };
@@ -129,6 +131,23 @@ export const GraphFields: React.FC<Props> = () => {
     },
     [analyst],
   );
+
+  const handleAifImport = useCallback(async () => {
+    if (!aifdbId) return;
+
+    const response = await fetch(`/api/aifdb/json/${aifdbId}`);
+
+    if (!response.ok) {
+      alert(
+        `Failed to fetch AIFdb.org data for ID ${aifdbId}, possibly due to CORS: ${response.statusText} (${response.status})`,
+      );
+    }
+
+    const aifData = await response.json();
+    const importedGraph = convert.importGraph(aifData);
+    resetState(importedGraph);
+    setAifdbId(undefined);
+  }, [aifdbId]);
 
   const [expanded, setExpanded] = React.useState<string | false>("import");
   const handleChange =
@@ -199,6 +218,29 @@ export const GraphFields: React.FC<Props> = () => {
                 }}
               >
                 Load Demo
+              </Button>
+              <TextField
+                label="AIFdb.org ID"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={aifdbId ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setAifdbId(
+                    value === "" ? undefined : Number.parseInt(value, 10),
+                  );
+                }}
+                helperText="Enter the numeric ID of an argument map from aifdb.org"
+              />
+              <Button
+                startIcon={<FontAwesomeIcon icon={faDownload} />}
+                variant="contained"
+                onClick={handleAifImport}
+                disabled={!aifdbId}
+                fullWidth
+              >
+                Import from AIFdb.org
               </Button>
             </Stack>
           </AccordionDetails>

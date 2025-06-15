@@ -14,6 +14,15 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      "/api/aifdb": {
+        target: "https://aifdb.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/aifdb/, ""),
+      },
+    },
+  },
   build: {
     chunkSizeWarningLimit: 5000,
     commonjsOptions: {
