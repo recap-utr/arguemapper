@@ -9,11 +9,10 @@
   "scripts": {
     "start": "vite --open",
     "preview": "vite preview",
-    "build": "npm run generate-meta-tag && tsc && vite build",
-    "generate-meta-tag": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
-    "lint": "biome check ./src",
-    "lint:fix": "biome check --write ./src",
-    "format": "biome format --write ./src"
+    "build": "npm run gen-meta && tsc && vite build",
+    "gen-meta": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
+    "tsc": "tsc --noEmit",
+    "biome": "biome check ./src"
   },
   "dependencies": {
     "@emotion/react": "^11",
