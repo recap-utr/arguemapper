@@ -109,7 +109,8 @@ const SchemeComponent: ComponentType<NodeProps<model.SchemeNode>> = (node) => {
   const bg = useMemo(() => {
     if (node.data.scheme.case === "support") {
       return color.green[500];
-    } else if (node.data.scheme.case === "attack") {
+    }
+    if (node.data.scheme.case === "attack") {
       return color.red[500];
     }
 

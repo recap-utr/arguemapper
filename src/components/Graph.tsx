@@ -287,11 +287,12 @@ export default function Graph() {
   const onClickConnectEnd: OnConnectEnd = useCallback(() => {
     setState(
       produce((draft: State) => {
-        draft.nodes
-          .filter((node) => (node.data.userdata as model.Userdata).clickConnect)
-          .forEach(
-            (node) => delete (node.data.userdata as model.Userdata).clickConnect
-          );
+        const nodesToUpdate = draft.nodes.filter(
+          (node) => (node.data.userdata as model.Userdata).clickConnect
+        );
+        for (const node of nodesToUpdate) {
+          (node.data.userdata as model.Userdata).clickConnect = undefined;
+        }
       })
     );
   }, []);

@@ -78,7 +78,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     (type?: model.ElementType | model.ElementType[]) => {
       if (type === undefined) {
         return true;
-      } else if (Array.isArray(type)) {
+      }
+      if (Array.isArray(type)) {
         return type.includes(clickedType);
       }
 

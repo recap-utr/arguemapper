@@ -57,7 +57,7 @@ type MarkerDefinitionsProps = React.PropsWithChildren;
 
 export function MarkerDefinition({ children }: MarkerDefinitionsProps) {
   return (
-    <svg>
+    <svg aria-hidden="true">
       <defs>{children}</defs>
     </svg>
   );

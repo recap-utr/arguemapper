@@ -241,7 +241,7 @@ ${customPrompt}
       draft.edges = [];
       draft.nodes = draft.nodes.filter((node) => node.data.type === "atom");
 
-      predictedRelations.forEach((relation) => {
+      for (const relation of predictedRelations) {
         const source = draft.nodes.find(
           (node) => node.data.id === relation.source
         );
@@ -279,7 +279,7 @@ ${customPrompt}
           });
           draft.edges.push(edge1, edge2);
         }
-      });
+      }
     })
   );
 }
@@ -349,7 +349,7 @@ ${customPrompt}
         })
       );
 
-      generatedGraph.relations.forEach((relation) => {
+      for (const relation of generatedGraph.relations) {
         if (
           relation.source !== undefined &&
           relation.source in generatedAtomNodes &&
@@ -398,7 +398,7 @@ ${customPrompt}
           });
           draft.edges.push(edge1, edge2);
         }
-      });
+      }
 
       const mc = generatedGraph.majorClaim;
 

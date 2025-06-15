@@ -114,7 +114,8 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
 export const elemType = (elem?: OptionalElement): ElementType => {
   if (elem === undefined) {
     return "graph";
-  } else if ("source" in elem && "target" in elem) {
+  }
+  if ("source" in elem && "target" in elem) {
     return "edge";
   }
 
@@ -148,9 +149,11 @@ export const selectionType = (
 ): SelectionType => {
   if (sel.nodes.length === 0 && sel.edges.length === 0) {
     return "graph";
-  } else if (sel.nodes.length === 0 && sel.edges.length === 1) {
+  }
+  if (sel.nodes.length === 0 && sel.edges.length === 1) {
     return "edge";
-  } else if (sel.nodes.length === 1 && sel.edges.length === 0) {
+  }
+  if (sel.nodes.length === 1 && sel.edges.length === 0) {
     return nodeTypes[0];
   }
 

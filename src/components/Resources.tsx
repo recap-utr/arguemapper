@@ -74,14 +74,17 @@ const Resources: React.FC = () => {
           variant="scrollable"
           scrollButtons={true}
         >
-          {resourceIds.map((key, index) => (
-            <Tab
-              key={index + 1}
-              label={(index + 1).toString()}
-              value={(index + 1).toString()}
-              sx={{ minWidth: 50 }}
-            />
-          ))}
+          {resourceIds.map((key) => {
+            const tabIndex = resourceIds.indexOf(key) + 1;
+            return (
+              <Tab
+                key={key}
+                label={tabIndex.toString()}
+                value={tabIndex.toString()}
+                sx={{ minWidth: 50 }}
+              />
+            );
+          })}
           <Tab
             label={lastResourceIndex}
             value={lastResourceIndex}
@@ -89,11 +92,14 @@ const Resources: React.FC = () => {
           />
         </TabList>
       </Box>
-      {resourceIds.map((id, index) => (
-        <TabPanel key={index + 1} value={(index + 1).toString()}>
-          <Resource id={id} index={index + 1} references={references} />
-        </TabPanel>
-      ))}
+      {resourceIds.map((id) => {
+        const tabIndex = resourceIds.indexOf(id) + 1;
+        return (
+          <TabPanel key={id} value={tabIndex.toString()}>
+            <Resource id={id} index={tabIndex} references={references} />
+          </TabPanel>
+        );
+      })}
       <TabPanel value={lastResourceIndex}>
         <Button
           fullWidth
@@ -179,7 +185,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
       if (firstHighlight !== undefined) {
         merged.push(firstHighlight);
 
-        raw.forEach(([nextStart, nextEnd]) => {
+        for (const [nextStart, nextEnd] of raw) {
           const lastIndex = merged.length - 1;
           const [prevStart, prevEnd] = merged[lastIndex];
 
@@ -188,12 +194,12 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           } else if (nextEnd > prevEnd) {
             merged[lastIndex] = [prevStart, nextEnd];
           }
-        });
+        }
       }
 
-      merged.forEach(([start, end]) => {
+      for (const [start, end] of merged) {
         callback(start, end);
-      });
+      }
     },
     [id, references, selection]
   );

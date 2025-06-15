@@ -102,7 +102,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
             defaultValue={0}
           >
             {Object.entries(schemeEnums[element.data.scheme.case])
-              .filter(([key]) => isNaN(Number(key)))
+              .filter(([key]) => Number.isNaN(Number(key)))
               .map(([key, value]) => {
                 return (
                   <MenuItem key={value} value={value}>
