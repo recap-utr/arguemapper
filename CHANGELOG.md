@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.4.0](https://github.com/recap-utr/arguemapper/compare/v2.3.5...v2.4.0) (2025-06-15)
+
+### Features
+
+* add support for bulk scheme operations ([16f6623](https://github.com/recap-utr/arguemapper/commit/16f662311e28cfa15cfc4f76e5d6e4987f7fc0d0))
+* add support for importing from aifdb ([8a850de](https://github.com/recap-utr/arguemapper/commit/8a850deba7f36f3c7d05d07c5c6a9cb0dad366d2))
+* make node handles larger on demand ([7d856b0](https://github.com/recap-utr/arguemapper/commit/7d856b06aeba08d1bc4b586e726d033d629df64d))
+
+### Bug Fixes
+
+* improve selection handling ([c816e41](https://github.com/recap-utr/arguemapper/commit/c816e4151c744dc5ce3611a452d1028d0d695eb7))
+* improve undo/redo handling ([712334b](https://github.com/recap-utr/arguemapper/commit/712334b13d1e9530719560fd7dd240d8c0f411e2))
+
 ## [2.3.5](https://github.com/recap-utr/arguemapper/compare/v2.3.4...v2.3.5) (2025-05-30)
 
 ### Bug Fixes
