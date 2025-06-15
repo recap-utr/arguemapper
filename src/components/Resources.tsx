@@ -13,7 +13,13 @@ import HighlightWithinTextarea, {
   Selection as TextSelection,
 } from "react-highlight-within-textarea";
 import * as model from "../model.js";
-import { type State, canvasCenter, setState, useStore } from "../store.js";
+import {
+  type State,
+  addNodeWithSelection,
+  canvasCenter,
+  setState,
+  useStore,
+} from "../store.js";
 
 const Resources: React.FC = () => {
   const references = useStore(
@@ -238,13 +244,8 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
       },
       position: { x, y },
     });
-    node.selected = true;
 
-    setState(
-      produce((draft: State) => {
-        draft.nodes.push(node);
-      })
-    );
+    addNodeWithSelection(node);
   }, [resource.text, userSelection, id, flow]);
 
   const deleteResource = useCallback(() => {

@@ -27,7 +27,6 @@ import {
   useTheme,
 } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { produce } from "immer";
 import { useSnackbar } from "notistack";
 import type React from "react";
 import { useCallback, useState } from "react";
@@ -38,7 +37,7 @@ import {
   identifyMajorClaim,
   predictRelations,
 } from "../services/assistant.js";
-import { type State, canvasCenter, setState } from "../store.js";
+import { addNodeWithSelection, canvasCenter, setState } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -157,13 +156,8 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
               data: { text: "" },
               position: { x, y },
             });
-            node.selected = true;
 
-            setState(
-              produce((draft: State) => {
-                draft.nodes.push(node);
-              })
-            );
+            addNodeWithSelection(node);
           }}
           close={close}
           icon={faPlus}
@@ -173,13 +167,8 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
           callback={() => {
             const { x, y } = flow.screenToFlowPosition(canvasCenter());
             const node = model.initScheme({ data: {}, position: { x, y } });
-            node.selected = true;
 
-            setState(
-              produce((draft: State) => {
-                draft.nodes.push(node);
-              })
-            );
+            addNodeWithSelection(node);
           }}
           close={close}
           icon={faPlus}

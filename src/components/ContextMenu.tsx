@@ -11,7 +11,13 @@ import { produce } from "immer";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import * as model from "../model.js";
-import { type State, canvasCenter, setState, useStore } from "../store.js";
+import {
+  type State,
+  addNodeWithSelection,
+  canvasCenter,
+  setState,
+  useStore,
+} from "../store.js";
 
 interface ItemProps {
   callback: () => void;
@@ -170,13 +176,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             data: { text: "" },
             position: { x, y },
           });
-          node.selected = true;
 
-          setState(
-            produce((draft: State) => {
-              draft.nodes.push(node);
-            })
-          );
+          addNodeWithSelection(node);
         }}
         close={close}
         icon={faPlus}
@@ -187,13 +188,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         callback={() => {
           const { x, y } = flow.screenToFlowPosition(canvasCenter());
           const node = model.initScheme({ data: {}, position: { x, y } });
-          node.selected = true;
 
-          setState(
-            produce((draft: State) => {
-              draft.nodes.push(node);
-            })
-          );
+          addNodeWithSelection(node);
         }}
         close={close}
         icon={faPlus}

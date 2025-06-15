@@ -1,6 +1,7 @@
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
+import { produce } from "immer";
 import { throttle } from "lodash";
 import type { TemporalState, ZundoOptions } from "zundo";
 import { temporal } from "zundo";
@@ -316,4 +317,71 @@ export const setStateWithoutHistory = (
   if (wasTracking) {
     resumeTemporal();
   }
+};
+
+// Centralized selection management utilities
+export const clearAllSelections = () => {
+  setState(
+    produce((draft: State) => {
+      // Clear visual selection on all elements
+      for (const node of draft.nodes) {
+        node.selected = false;
+      }
+      for (const edge of draft.edges) {
+        edge.selected = false;
+      }
+      // Reset selection state
+      draft.selection = model.initSelection();
+    })
+  );
+};
+
+export const selectSingleNode = (nodeIndex: number) => {
+  setState(
+    produce((draft: State) => {
+      // Clear existing selections
+      for (const node of draft.nodes) {
+        node.selected = false;
+      }
+      for (const edge of draft.edges) {
+        edge.selected = false;
+      }
+
+      // Select the specific node
+      if (draft.nodes[nodeIndex]) {
+        draft.nodes[nodeIndex].selected = true;
+        draft.selection = {
+          nodes: [nodeIndex],
+          edges: [],
+          type: draft.nodes[nodeIndex].type,
+        };
+      }
+    })
+  );
+};
+
+export const addNodeWithSelection = (node: model.Node) => {
+  setState(
+    produce((draft: State) => {
+      // Clear existing selections
+      for (const existingNode of draft.nodes) {
+        existingNode.selected = false;
+      }
+      for (const edge of draft.edges) {
+        edge.selected = false;
+      }
+
+      // Add the new node as selected
+      node.selected = true;
+      draft.nodes.push(node);
+
+      // Update selection state
+      const newNodeIndex = draft.nodes.length - 1;
+      draft.selection = {
+        nodes: [newNodeIndex],
+        edges: [],
+        type: node.type,
+      };
+    })
+  );
 };

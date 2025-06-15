@@ -1,13 +1,17 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useStore as useFlowStore } from "@xyflow/react";
 import { useEffect } from "react";
 import Graph from "./components/Graph.js";
 import Header from "./components/Header.js";
 import Inspector from "./components/Inspector.js";
 import Resources from "./components/Resources.js";
 import Sidebar from "./components/Sidebar.js";
-import { setState, setStateWithoutHistory, useStore } from "./store.js";
+import {
+  clearAllSelections,
+  setState,
+  setStateWithoutHistory,
+  useStore,
+} from "./store.js";
 
 // https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
 
@@ -32,10 +36,6 @@ export default function App() {
   const setRightSidebarOpen = (value: boolean) => {
     setState({ rightSidebarOpen: value });
   };
-
-  const resetSelectedElements = useFlowStore(
-    (state) => state.resetSelectedElements
-  );
 
   return (
     <Stack direction="row" sx={{ height: "100vh" }}>
@@ -72,7 +72,7 @@ export default function App() {
             if (isMobile) {
               setRightSidebarOpen(false);
             }
-            resetSelectedElements();
+            clearAllSelections();
           }}
         />
       </Sidebar>
