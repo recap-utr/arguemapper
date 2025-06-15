@@ -16,6 +16,7 @@ import { version as npmVersion } from "../../package.json";
 import * as model from "../model.js";
 import { setState, useStore } from "../store.js";
 import AtomFields from "./inspector/AtomFields.js";
+import BulkSchemeFields from "./inspector/BulkSchemeFields.js";
 import EdgeFields from "./inspector/EdgeFields.js";
 import GraphFields from "./inspector/GraphFields.js";
 import SchemeFields from "./inspector/SchemeFields.js";
@@ -26,6 +27,17 @@ interface Props {
 
 const Inspector: React.FC<Props> = ({ close }) => {
   const selectionType = useStore((state) => state.selection.type);
+  const selectedNodes = useStore((state) => state.selection.nodes);
+  const nodes = useStore((state) => state.nodes);
+
+  // Check if all selected nodes are scheme nodes
+  const selectedSchemeNodes = selectedNodes
+    .map((idx) => nodes[idx])
+    .filter((node) => node?.type === "scheme");
+  const allSelectedAreSchemes =
+    selectedNodes.length > 0 &&
+    selectedSchemeNodes.length === selectedNodes.length;
+
   const onDelete = useCallback(() => {
     setState((state) => ({
       nodes: state.nodes.filter(
@@ -62,7 +74,10 @@ const Inspector: React.FC<Props> = ({ close }) => {
         {selectionType === "scheme" && <SchemeFields />}
         {selectionType === "edge" && <EdgeFields />}
         {selectionType === "graph" && <GraphFields />}
-        {selectionType === "multiple" && (
+        {selectionType === "multiple" && allSelectedAreSchemes && (
+          <BulkSchemeFields />
+        )}
+        {selectionType === "multiple" && !allSelectedAreSchemes && (
           <>
             <Typography variant="h6">Multiple elements selected</Typography>
             <Typography variant="body1">
