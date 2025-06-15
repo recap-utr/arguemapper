@@ -1,6 +1,7 @@
 import { TextField } from "@mui/material";
 import { dequal } from "dequal";
 import { produce } from "immer";
+import { useCallback } from "react";
 import type React from "react";
 import type * as model from "../../model.js";
 import { type State, setState, useStore } from "../../store.js";
@@ -16,6 +17,18 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
     dequal
   );
 
+  const updateNotes = useCallback((value: string, selectedIndex: number) => {
+    setState(
+      produce((draft: State) => {
+        const edge = draft.edges[selectedIndex];
+        if (edge.data === undefined) {
+          throw new Error("Edge data is undefined");
+        }
+        (edge.data.userdata as model.Userdata).notes = value;
+      })
+    );
+  }, []);
+
   return (
     <>
       <TextField fullWidth label="ID" value={element.id} disabled />
@@ -26,17 +39,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Notes"
         value={(element.data?.userdata as model.Userdata).notes ?? ""}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              const edge = draft.edges[selectedIndex];
-
-              if (edge.data === undefined) {
-                throw new Error("Edge data is undefined");
-              }
-
-              (edge.data.userdata as model.Userdata).notes = event.target.value;
-            })
-          );
+          updateNotes(event.target.value, selectedIndex);
         }}
       />
       {children}

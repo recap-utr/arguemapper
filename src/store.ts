@@ -164,6 +164,10 @@ const persistOptions: PersistOptions<State, PersistState> = {
   }),
 };
 
+// Store the last comparison result to avoid race conditions
+let lastEqualityResult = true;
+let lastComparedStates: [ZundoState, ZundoState] | null = null;
+
 const temporalOptions: ZundoOptions<State, ZundoState> = {
   partialize: (state) => {
     const { nodes, edges, graph, selectedResourceTab, selection } = state;
@@ -181,13 +185,24 @@ const temporalOptions: ZundoOptions<State, ZundoState> = {
     };
   },
   equality: (a, b) => {
-    const debouncedFunc = throttle(
-      (a: ZundoState, b: ZundoState) => dequal(a, b),
-      500
-    );
-    const debouncedResult = debouncedFunc(a, b);
+    // If states are the same reference, they're equal
+    if (a === b) return true;
 
-    return debouncedResult ?? true;
+    // Check if we're comparing the same states as last time
+    if (
+      lastComparedStates &&
+      lastComparedStates[0] === a &&
+      lastComparedStates[1] === b
+    ) {
+      return lastEqualityResult;
+    }
+
+    // Perform the actual comparison
+    const isEqual = dequal(a, b);
+    lastEqualityResult = isEqual;
+    lastComparedStates = [a, b];
+
+    return isEqual;
   },
   limit: 100,
   handleSet: (callback) =>
@@ -272,3 +287,33 @@ export const canvasCenter = () => {
 export const useTemporalStore = <T>(
   selector: (state: TemporalState<ZundoState>) => T
 ) => wrapStore(useStore.temporal, selector);
+
+// Temporal control utilities
+export const pauseTemporal = () => {
+  useStore.temporal.getState().pause();
+};
+
+export const resumeTemporal = () => {
+  useStore.temporal.getState().resume();
+};
+
+// Utility to execute state updates without affecting undo/redo history
+export const setStateWithoutHistory = (
+  updater: Partial<State> | ((state: State) => Partial<State>)
+) => {
+  const wasTracking = useStore.temporal.getState().isTracking;
+
+  if (wasTracking) {
+    pauseTemporal();
+  }
+
+  if (typeof updater === "function") {
+    setState((state) => updater(state));
+  } else {
+    setState(updater);
+  }
+
+  if (wasTracking) {
+    resumeTemporal();
+  }
+};

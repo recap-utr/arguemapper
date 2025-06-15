@@ -7,7 +7,7 @@ import Header from "./components/Header.js";
 import Inspector from "./components/Inspector.js";
 import Resources from "./components/Resources.js";
 import Sidebar from "./components/Sidebar.js";
-import { setState, useStore } from "./store.js";
+import { setState, setStateWithoutHistory, useStore } from "./store.js";
 
 // https://dev.to/maciejtrzcinski/100vh-problem-with-ios-safari-3ge9
 
@@ -19,7 +19,10 @@ export default function App() {
   const rightSidebarOpen = useStore((state) => state.rightSidebarOpen);
 
   useEffect(() => {
-    setState({ leftSidebarOpen: !isMobile, rightSidebarOpen: !isMobile });
+    setStateWithoutHistory({
+      leftSidebarOpen: !isMobile,
+      rightSidebarOpen: !isMobile,
+    });
   }, [isMobile]);
 
   const setLeftSidebarOpen = (value: boolean) => {

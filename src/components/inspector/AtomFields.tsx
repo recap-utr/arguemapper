@@ -4,6 +4,7 @@ import { Button, TextField } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
+import { useCallback } from "react";
 import type React from "react";
 import type * as model from "../../model.js";
 import { type State, setState, useStore } from "../../store.js";
@@ -21,6 +22,42 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
   const userdata = element.data.userdata as model.Userdata;
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
+  const updateText = useCallback((value: string, selectedIndex: number) => {
+    setState(
+      produce((draft: State) => {
+        const node = draft.nodes[selectedIndex] as model.AtomNode;
+        node.data.text = value;
+      })
+    );
+  }, []);
+
+  const updateReference = useCallback(
+    (value: string, selectedIndex: number) => {
+      setState(
+        produce((draft: State) => {
+          const node = draft.nodes[selectedIndex] as model.AtomNode;
+          if (node.data.reference === undefined) {
+            node.data.reference = new arguebuf.Reference({
+              text: value,
+            });
+          } else {
+            node.data.reference.text = value;
+          }
+        })
+      );
+    },
+    []
+  );
+
+  const updateNotes = useCallback((value: string, selectedIndex: number) => {
+    setState(
+      produce((draft: State) => {
+        const node = draft.nodes[selectedIndex];
+        (node.data.userdata as model.Userdata).notes = value;
+      })
+    );
+  }, []);
+
   return (
     <>
       <TextField fullWidth label="ID" value={element.id} disabled />
@@ -31,12 +68,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Text"
         value={element.data.text ?? ""}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              const node = draft.nodes[selectedIndex] as model.AtomNode;
-              node.data.text = event.target.value;
-            })
-          );
+          updateText(event.target.value, selectedIndex);
         }}
       />
       <TextField
@@ -46,19 +78,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Original Text"
         value={element.data.reference?.text ?? ""}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              const node = draft.nodes[selectedIndex] as model.AtomNode;
-
-              if (node.data.reference === undefined) {
-                node.data.reference = new arguebuf.Reference({
-                  text: event.target.value,
-                });
-              } else {
-                node.data.reference.text = event.target.value;
-              }
-            })
-          );
+          updateReference(event.target.value, selectedIndex);
         }}
       />
       {userdata.assistant && (
@@ -104,12 +124,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Notes"
         value={userdata.notes ?? ""}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              const node = draft.nodes[selectedIndex];
-              (node.data.userdata as model.Userdata).notes = event.target.value;
-            })
-          );
+          updateNotes(event.target.value, selectedIndex);
         }}
       />
       {children}

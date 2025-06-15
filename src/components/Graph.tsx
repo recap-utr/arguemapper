@@ -34,9 +34,10 @@ import { layout } from "../services/layout.js";
 import {
   type State,
   resetState,
+  resumeTemporal,
   setState,
+  setStateWithoutHistory,
   useStore,
-  useTemporalStore,
 } from "../store.js";
 import { ContextMenu, type Click as ContextMenuClick } from "./ContextMenu.js";
 import { EdgeTypes } from "./EdgeTypes.js";
@@ -52,7 +53,6 @@ export default function Graph() {
   const flow = useReactFlow();
   const theme = useTheme();
 
-  const resumeTemporal = useTemporalStore((state) => state.resume);
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
@@ -109,7 +109,7 @@ export default function Graph() {
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {
       flow.fitView();
-      setState({ shouldFitView: false });
+      setStateWithoutHistory({ shouldFitView: false });
     }
   }, [shouldFitView, shouldLayout, flow]);
 
@@ -135,10 +135,10 @@ export default function Graph() {
     ) {
       layout(nodes, edges, layoutAlgorithm)
         .then((layoutedNodes) => {
-          setState({ nodes: layoutedNodes });
+          setStateWithoutHistory({ nodes: layoutedNodes });
         })
         .finally(() => {
-          setState({ shouldLayout: false });
+          setStateWithoutHistory({ shouldLayout: false });
         });
     }
   }, [shouldLayout, layoutAlgorithm, nodes, edges]);

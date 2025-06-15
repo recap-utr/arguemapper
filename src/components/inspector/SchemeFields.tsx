@@ -9,6 +9,7 @@ import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
 import { startCase } from "lodash";
+import { useCallback } from "react";
 import type React from "react";
 import type * as model from "../../model.js";
 import { type State, setState, useStore } from "../../store.js";
@@ -49,6 +50,15 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
     dequal
   );
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
+
+  const updateNotes = useCallback((value: string, selectedIndex: number) => {
+    setState(
+      produce((draft: State) => {
+        const node = draft.nodes[selectedIndex];
+        (node.data.userdata as model.Userdata).notes = value;
+      })
+    );
+  }, []);
 
   return (
     <>
@@ -120,12 +130,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
         label="Notes"
         value={(element.data.userdata as model.Userdata).notes ?? ""}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              const node = draft.nodes[selectedIndex];
-              (node.data.userdata as model.Userdata).notes = event.target.value;
-            })
-          );
+          updateNotes(event.target.value, selectedIndex);
         }}
       />
     </>
