@@ -47,7 +47,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore(
     (state) => state.nodes[selectedIndex] as model.SchemeNode,
-    dequal
+    dequal,
   );
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
 
@@ -56,7 +56,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
       produce((draft: State) => {
         const node = draft.nodes[selectedIndex];
         (node.data.userdata as model.Userdata).notes = value;
-      })
+      }),
     );
   }, []);
 
@@ -77,10 +77,10 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
             setState(
               produce((draft: State) => {
                 const idx = draft.nodes.findIndex(
-                  (node) => node.id === element.id
+                  (node) => node.id === element.id,
                 );
                 (draft.nodes[idx] as model.SchemeNode).data.scheme = newScheme;
-              })
+              }),
             );
           }}
         >
@@ -102,11 +102,11 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
               setState(
                 produce((draft: State) => {
                   const idx = draft.nodes.findIndex(
-                    (node) => node.id === element.id
+                    (node) => node.id === element.id,
                   );
                   (draft.nodes[idx] as model.SchemeNode).data.scheme.value =
                     Number(event.target.value);
-                })
+                }),
               );
             }}
             defaultValue={0}

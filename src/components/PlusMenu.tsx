@@ -115,7 +115,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({
         ),
       });
     },
-    [closeSnackbar, enqueueSnackbar]
+    [closeSnackbar, enqueueSnackbar],
   );
 
   return (

@@ -14,7 +14,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
   const element = useStore(
     (state) => state.edges[selectedIndex] as model.Edge,
-    dequal
+    dequal,
   );
 
   const updateNotes = useCallback((value: string, selectedIndex: number) => {
@@ -25,7 +25,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
           throw new Error("Edge data is undefined");
         }
         (edge.data.userdata as model.Userdata).notes = value;
-      })
+      }),
     );
   }, []);
 

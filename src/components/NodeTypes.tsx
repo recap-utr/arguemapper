@@ -58,7 +58,7 @@ const NodeHandle: React.FC<NodeHandleProps> = (props) => {
       borderWidth: size / 5,
       transition: "width 0.2s ease, height 0.2s ease, border-width 0.2s ease",
     }),
-    [size, theme.palette.text.primary]
+    [size, theme.palette.text.primary],
   );
 
   return <Handle {...handleProps} style={style} />;
@@ -80,11 +80,11 @@ const NodeComponent: React.FC<NodeComponentProps> = ({
       (node.data.userdata as model.Userdata).clickConnect
         ? color.orange[500]
         : bg,
-    [(node.data.userdata as model.Userdata).clickConnect, bg]
+    [node.data.userdata, bg],
   );
   const borderColor = useMemo(
     () => (node.selected ? theme.palette.text.primary : background),
-    [background, node.selected, theme.palette.text.primary]
+    [background, node.selected, theme.palette.text.primary],
   );
 
   return (

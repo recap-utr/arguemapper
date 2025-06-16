@@ -40,7 +40,7 @@ const layoutOptions: Record<model.LayoutAlgorithm, LayoutOptions> = {
 export const layout = async (
   nodes: model.Node[],
   edges: model.Edge[],
-  algorithm: model.LayoutAlgorithm
+  algorithm: model.LayoutAlgorithm,
 ): Promise<model.Node[]> => {
   if (nodes.length === 0) {
     return [];
@@ -60,7 +60,7 @@ export const layout = async (
 
   const elkEdges: ElkExtendedEdge[] = edges
     .filter(
-      (edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target)
+      (edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target),
     )
     .map((edge) => ({
       id: edge.id,
@@ -85,6 +85,6 @@ export const layout = async (
           y: elkNode.y,
         };
       }
-    })
+    }),
   );
 };

@@ -28,21 +28,21 @@ const Resources: React.FC = () => {
         state.nodes
           .filter(
             (node) =>
-              node.data.type === "atom" && node.data.reference !== undefined
+              node.data.type === "atom" && node.data.reference !== undefined,
           )
           .map((node) => [
             node.id,
             (node as model.AtomNode).data.reference as arguebuf.Reference,
-          ])
+          ]),
       ),
-    dequal
+    dequal,
   );
   const resourceIds = useStore(
     (state) => Object.keys(state.graph.resources),
-    dequal
+    dequal,
   );
   const activeTab = useStore((state) =>
-    (state.selectedResourceTab + 1).toString()
+    (state.selectedResourceTab + 1).toString(),
   );
   const setActiveTab = useCallback((value: number) => {
     setState({ selectedResourceTab: value - 1 });
@@ -52,7 +52,7 @@ const Resources: React.FC = () => {
     (_event: React.SyntheticEvent, newValue: string) => {
       setActiveTab(Number.parseInt(newValue));
     },
-    [setActiveTab]
+    [setActiveTab],
   );
 
   const addResource = useCallback(() => {
@@ -61,15 +61,15 @@ const Resources: React.FC = () => {
         draft.graph.addResource(
           new arguebuf.Resource({
             text: "",
-          })
+          }),
         );
-      })
+      }),
     );
   }, []);
 
   const lastResourceIndex = useMemo(
     () => (resourceIds.length + 1).toString(),
-    [resourceIds]
+    [resourceIds],
   );
 
   return (
@@ -132,7 +132,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const flow = useReactFlow();
 
   const [userSelection, setUserSelection] = useState<TextSelection>(
-    new TextSelection(0, 0)
+    new TextSelection(0, 0),
   );
 
   const [systemSelection, setSystemSelection] = useState<
@@ -207,7 +207,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         callback(start, end);
       }
     },
-    [id, references, selection]
+    [id, references, selection],
   );
 
   const onChange = useCallback(
@@ -222,17 +222,17 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         setState(
           produce((draft: State) => {
             draft.graph.resources[id].text = value;
-          })
+          }),
         );
       }
     },
-    [id, resource.text]
+    [id, resource.text],
   );
 
   const addAtom = useCallback(() => {
     const text = resource.text.substring(
       userSelection.anchor,
-      userSelection.focus
+      userSelection.focus,
     );
     const offset = userSelection.anchor;
 
@@ -252,7 +252,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     setState(
       produce((draft: State) => {
         delete draft.graph.resources[id];
-      })
+      }),
     );
   }, [id]);
 
@@ -267,7 +267,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           setState(
             produce((draft: State) => {
               draft.graph.resources[id].title = event.target.value;
-            })
+            }),
           );
         }}
       />
@@ -295,7 +295,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           setState(
             produce((draft: State) => {
               draft.graph.resources[id].source = event.target.value;
-            })
+            }),
           );
         }}
       />

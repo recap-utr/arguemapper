@@ -96,7 +96,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
             x: 0,
             y: 0,
           },
-        }) as Node
+        }) as Node,
     ),
     edges: Object.entries(obj.edges).map(
       ([id, edge]) =>
@@ -105,7 +105,7 @@ export function fromArguebuf(obj: arguebuf.Graph): Wrapper {
           data: edge,
           source: edge.source,
           target: edge.target,
-        }) as Edge
+        }) as Edge,
     ),
     graph: arguebuf.copy(obj, { nodes: [], edges: [] }),
   };
@@ -145,7 +145,7 @@ export type SelectionType = ElementType | "multiple";
 
 export const selectionType = (
   sel: Omit<Selection, "type">,
-  nodeTypes: ("atom" | "scheme")[]
+  nodeTypes: ("atom" | "scheme")[],
 ): SelectionType => {
   if (sel.nodes.length === 0 && sel.edges.length === 0) {
     return "graph";

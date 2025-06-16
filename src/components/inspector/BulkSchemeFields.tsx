@@ -58,7 +58,7 @@ const BulkSchemeFields: React.FC = () => {
 
   // Determine current scheme type (mixed if different types)
   const schemeTypes = schemeNodes.map(
-    (node) => node.data.scheme?.case ?? NULL_VALUE
+    (node) => node.data.scheme?.case ?? NULL_VALUE,
   );
   const uniqueSchemeTypes = [...new Set(schemeTypes)];
   const currentSchemeType =
@@ -94,7 +94,7 @@ const BulkSchemeFields: React.FC = () => {
             (draft.nodes[idx] as model.SchemeNode).data.scheme = newScheme;
           }
         }
-      })
+      }),
     );
   };
 
@@ -105,14 +105,14 @@ const BulkSchemeFields: React.FC = () => {
     setState(
       produce((draft: State) => {
         for (const node of schemeNodes.filter(
-          (node) => node.data.scheme?.case === currentSchemeType
+          (node) => node.data.scheme?.case === currentSchemeType,
         )) {
           const idx = draft.nodes.findIndex((n) => n.id === node.id);
           if (idx !== -1) {
             (draft.nodes[idx] as model.SchemeNode).data.scheme.value = newValue;
           }
         }
-      })
+      }),
     );
   };
 
@@ -128,7 +128,7 @@ const BulkSchemeFields: React.FC = () => {
             draft.nodes[idx].data.userdata = userData;
           }
         }
-      })
+      }),
     );
   };
 

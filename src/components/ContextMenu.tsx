@@ -76,7 +76,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     setClick(
       produce((draft) => {
         draft.open = false;
-      })
+      }),
     );
   }, [setClick]);
 
@@ -91,7 +91,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
       return type === clickedType;
     },
-    [clickedType]
+    [clickedType],
   );
 
   return (
@@ -118,7 +118,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             produce((draft: State) => {
               draft.graph.majorClaim =
                 majorClaim !== target.id ? target.id : undefined;
-            })
+            }),
           );
         }}
         close={close}
@@ -141,19 +141,19 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             setState(
               produce((draft: State) => {
                 draft.edges = draft.edges.filter(
-                  (edge) => target.id !== edge.id
+                  (edge) => target.id !== edge.id,
                 );
                 draft.selection = model.initSelection();
-              })
+              }),
             );
           } else {
             setState(
               produce((draft: State) => {
                 draft.nodes = draft.nodes.filter(
-                  (node) => target.id !== node.id
+                  (node) => target.id !== node.id,
                 );
                 draft.selection = model.initSelection();
-              })
+              }),
             );
           }
         }}
@@ -170,7 +170,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   x: click.event.clientX - (leftSidebarOpen ? sidebarWidth : 0),
                   y: click.event.clientY - headerHeight,
                 }
-              : canvasCenter()
+              : canvasCenter(),
           );
           const node = model.initAtom({
             data: { text: "" },

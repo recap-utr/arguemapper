@@ -104,7 +104,7 @@ const storage: PersistStorage<PersistState> = {
     }
 
     const { version, state } = JSON.parse(
-      serializedState
+      serializedState,
     ) as StorageValue<SerializedState>;
     const { nodes, edges, graph } = convert.importGraph(state.graph);
     const analyst = new arguebuf.Analyst(state.analyst);
@@ -125,7 +125,7 @@ const storage: PersistStorage<PersistState> = {
     const { nodes, edges, graph } = state;
     const serializedGraph = convert.exportGraph(
       { nodes, edges, graph },
-      "arguebuf"
+      "arguebuf",
     );
 
     const serializedState: StorageValue<SerializedState> = {
@@ -245,9 +245,9 @@ const initialState: State = {
 export const useStore = createWithEqualityFn<State>()(
   temporal(
     persist(() => initialState, persistOptions),
-    temporalOptions
+    temporalOptions,
   ),
-  Object.is
+  Object.is,
 );
 
 useStore.temporal.getState().pause();
@@ -262,7 +262,7 @@ export const resetState = (preset?: model.Wrapper) => {
     edges: s.edges,
     graph: s.graph,
     shouldLayout: s.nodes.every(
-      (node) => node.position.x === 0 && node.position.y === 0
+      (node) => node.position.x === 0 && node.position.y === 0,
     ),
     shouldFitView: true,
   });
@@ -286,7 +286,7 @@ export const canvasCenter = () => {
 };
 
 export const useTemporalStore = <T>(
-  selector: (state: TemporalState<ZundoState>) => T
+  selector: (state: TemporalState<ZundoState>) => T,
 ) => wrapStore(useStore.temporal, selector);
 
 // Temporal control utilities
@@ -300,7 +300,7 @@ export const resumeTemporal = () => {
 
 // Utility to execute state updates without affecting undo/redo history
 export const setStateWithoutHistory = (
-  updater: Partial<State> | ((state: State) => Partial<State>)
+  updater: Partial<State> | ((state: State) => Partial<State>),
 ) => {
   const wasTracking = useStore.temporal.getState().isTracking;
 
@@ -332,7 +332,7 @@ export const clearAllSelections = () => {
       }
       // Reset selection state
       draft.selection = model.initSelection();
-    })
+    }),
   );
 };
 
@@ -356,7 +356,7 @@ export const selectSingleNode = (nodeIndex: number) => {
           type: draft.nodes[nodeIndex].type,
         };
       }
-    })
+    }),
   );
 };
 
@@ -382,6 +382,6 @@ export const addNodeWithSelection = (node: model.Node) => {
         edges: [],
         type: node.type,
       };
-    })
+    }),
   );
 };
