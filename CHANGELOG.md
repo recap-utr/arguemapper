@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.1](https://github.com/recap-utr/arguemapper/compare/v2.4.0...v2.4.1) (2025-06-16)
+
+### Bug Fixes
+
+* trigger release ([4768f90](https://github.com/recap-utr/arguemapper/commit/4768f9091ac867154265b383b996bee2dbc9a18b))
+
 ## [2.4.0](https://github.com/recap-utr/arguemapper/compare/v2.3.5...v2.4.0) (2025-06-15)
 
 ### Features
