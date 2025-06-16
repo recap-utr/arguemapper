@@ -14,7 +14,7 @@
     "build": "npm run gen-meta && tsc && vite build",
     "gen-meta": "node ./node_modules/react-cache-buster/dist/generate-meta-tag.js",
     "tsc": "tsc --noEmit",
-    "biome": "biome check ./src"
+    "biome": "biome check"
   },
   "dependencies": {
     "@emotion/react": "^11",
