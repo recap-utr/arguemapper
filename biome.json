@@ -8,15 +8,5 @@
   },
   "formatter": {
     "indentStyle": "space"
-  },
-  "overrides": [
-    {
-      "includes": ["package.json"],
-      "json": {
-        "formatter": {
-          "lineWidth": 1
-        }
-      }
-    }
-  ]
+  }
 }
