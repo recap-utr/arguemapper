@@ -182,7 +182,7 @@ export const GraphFields: React.FC<Props> = () => {
             <Stack spacing={1}>
               <label htmlFor="upload-file-button">
                 <Input
-                  accept="text/json"
+                  accept="application/json"
                   id="upload-file-button"
                   type="file"
                   // Reset the value after every upload so that the user can upload the same file twice.
