@@ -5,8 +5,8 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import * as model from "../model";
 import { getSessionStorage } from "../storage";
-import { getState, setState } from "../store";
 import type { AssistantConfig, State } from "../store";
+import { getState, setState } from "../store";
 
 const ExtractedAdu = z.object({
   text: z.string().describe("The text of the ADU"),

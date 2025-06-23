@@ -8,5 +8,10 @@
   },
   "formatter": {
     "indentStyle": "space"
+  },
+  "linter": {
+    "rules": {
+      "nursery": "off"
+    }
   }
 }

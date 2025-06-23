@@ -34,10 +34,10 @@ import {
   Select,
   Stack,
   Switch,
+  styled,
   TextField,
   Tooltip,
   Typography,
-  styled,
 } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
@@ -51,9 +51,9 @@ import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
 import { useSessionStorage } from "../../storage.js";
 import {
-  type State,
   assistantModels,
   resetState,
+  type State,
   setState,
   useStore,
 } from "../../store.js";
@@ -151,7 +151,7 @@ export const GraphFields: React.FC<Props> = () => {
 
   const [expanded, setExpanded] = React.useState<string | false>("import");
   const handleChange =
-    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
     };
 

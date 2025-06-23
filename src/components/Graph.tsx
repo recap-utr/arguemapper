@@ -9,6 +9,8 @@ import {
   useTheme,
 } from "@mui/material";
 import {
+  applyEdgeChanges,
+  applyNodeChanges,
   ConnectionLineType,
   type OnConnect,
   type OnConnectEnd,
@@ -20,8 +22,6 @@ import {
   type OnNodesDelete,
   type OnSelectionChangeFunc,
   ReactFlow,
-  applyEdgeChanges,
-  applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -32,9 +32,9 @@ import * as model from "../model.js";
 import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
 import {
-  type State,
   resetState,
   resumeTemporal,
+  type State,
   setState,
   setStateWithoutHistory,
   useStore,
@@ -268,7 +268,7 @@ export default function Graph() {
     setState({ rightSidebarOpen: true });
   }, []);
 
-  const onClickConnectStart: OnConnectStart = useCallback((event, params) => {
+  const onClickConnectStart: OnConnectStart = useCallback((_event, params) => {
     const { nodeId } = params;
     setState(
       produce((draft: State) => {

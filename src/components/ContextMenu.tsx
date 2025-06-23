@@ -12,9 +12,9 @@ import type React from "react";
 import { useCallback, useMemo } from "react";
 import * as model from "../model.js";
 import {
-  type State,
   addNodeWithSelection,
   canvasCenter,
+  type State,
   setState,
   useStore,
 } from "../store.js";

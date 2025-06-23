@@ -14,9 +14,9 @@ import HighlightWithinTextarea, {
 } from "react-highlight-within-textarea";
 import * as model from "../model.js";
 import {
-  type State,
   addNodeWithSelection,
   canvasCenter,
+  type State,
   setState,
   useStore,
 } from "../store.js";

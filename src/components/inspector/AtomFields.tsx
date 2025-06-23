@@ -4,8 +4,8 @@ import { Button, TextField } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import { produce } from "immer";
-import { useCallback } from "react";
 import type React from "react";
+import { useCallback } from "react";
 import type * as model from "../../model.js";
 import { type State, setState, useStore } from "../../store.js";
 

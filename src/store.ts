@@ -9,8 +9,8 @@ import { useStore as wrapStore } from "zustand";
 import {
   type PersistOptions,
   type PersistStorage,
-  type StorageValue,
   persist,
+  type StorageValue,
 } from "zustand/middleware";
 import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
