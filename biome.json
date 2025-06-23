@@ -11,7 +11,7 @@
   },
   "overrides": [
     {
-      "include": ["package.json"],
+      "includes": ["package.json"],
       "json": {
         "formatter": {
           "lineWidth": 1
