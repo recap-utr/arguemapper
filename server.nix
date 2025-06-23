@@ -31,8 +31,11 @@ let
         uri strip_prefix /api/aifdb
       }
 
-      try_files {path} /index.html
-      file_server
+      # Serve static files with SPA fallback
+      handle {
+        try_files {path} /index.html
+        file_server
+      }
     }
   '';
 in
