@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/recap-utr/arguemapper/compare/v2.4.1...v2.4.2) (2025-06-23)
+
+### Bug Fixes
+
+* **import:** update json specification for uploading files ([f40a106](https://github.com/recap-utr/arguemapper/commit/f40a106259282283d1fbb4ecbe5f47ae0af21ecd))
+* **server:** properly handle main app ([002ce7a](https://github.com/recap-utr/arguemapper/commit/002ce7a44f37c354dc7abb6376149dfbaa8b9ac2))
+
 ## [2.4.1](https://github.com/recap-utr/arguemapper/compare/v2.4.0...v2.4.1) (2025-06-16)
 
 ### Bug Fixes
