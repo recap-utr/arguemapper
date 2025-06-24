@@ -8,9 +8,8 @@ export default defineConfig({
   plugins: [
     react(),
     checker({
-      biome: {
-        command: "check",
-      },
+      // https://github.com/fi3ework/vite-plugin-checker/issues/511
+      biome: false,
     }),
   ],
   server: {
