@@ -46,7 +46,11 @@ export default function App() {
         isOpen={leftSidebarOpen}
         setIsOpen={setLeftSidebarOpen}
       >
-        <Resources />
+        <Resources
+          close={() => {
+            setLeftSidebarOpen(false);
+          }}
+        />
       </Sidebar>
       <Stack sx={{ flexGrow: 1 }}>
         <Header
@@ -69,9 +73,7 @@ export default function App() {
       >
         <Inspector
           close={() => {
-            if (isMobile) {
-              setRightSidebarOpen(false);
-            }
+            setRightSidebarOpen(false);
             clearAllSelections();
           }}
         />

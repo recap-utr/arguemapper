@@ -60,13 +60,11 @@ const Inspector: React.FC<Props> = ({ close }) => {
           alignItems="center"
         >
           <Typography variant="h5">Inspector</Typography>
-          {selectionType !== "graph" && (
-            <Tooltip describeChild title="Close inspector for current element">
-              <IconButton onClick={close}>
-                <FontAwesomeIcon icon={faXmark} />
-              </IconButton>
-            </Tooltip>
-          )}
+          <Tooltip describeChild title="Close inspector">
+            <IconButton onClick={close}>
+              <FontAwesomeIcon icon={faXmark} />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Toolbar>
       <Stack spacing={3} padding={3}>

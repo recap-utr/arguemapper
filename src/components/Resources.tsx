@@ -1,7 +1,21 @@
-import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlusCircle,
+  faTrash,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Tab,
+  TextField,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
@@ -21,7 +35,11 @@ import {
   useStore,
 } from "../store.js";
 
-const Resources: React.FC = () => {
+interface Props {
+  close: () => void;
+}
+
+const Resources: React.FC<Props> = ({ close }) => {
   const references = useStore(
     (state) =>
       Object.fromEntries(
@@ -73,50 +91,67 @@ const Resources: React.FC = () => {
   );
 
   return (
-    <TabContext value={activeTab}>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <TabList
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons={true}
+    <>
+      <Toolbar>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          width={1}
+          alignItems="center"
         >
-          {resourceIds.map((key) => {
-            const tabIndex = resourceIds.indexOf(key) + 1;
-            return (
-              <Tab
-                key={key}
-                label={tabIndex.toString()}
-                value={tabIndex.toString()}
-                sx={{ minWidth: 50 }}
-              />
-            );
-          })}
-          <Tab
-            label={lastResourceIndex}
-            value={lastResourceIndex}
-            sx={{ minWidth: 50 }}
-          />
-        </TabList>
-      </Box>
-      {resourceIds.map((id) => {
-        const tabIndex = resourceIds.indexOf(id) + 1;
-        return (
-          <TabPanel key={id} value={tabIndex.toString()}>
-            <Resource id={id} index={tabIndex} references={references} />
-          </TabPanel>
-        );
-      })}
-      <TabPanel value={lastResourceIndex}>
-        <Button
-          fullWidth
-          variant="contained"
-          startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-          onClick={addResource}
-        >
-          Add Resource
-        </Button>
-      </TabPanel>
-    </TabContext>
+          <Typography variant="h5">Resources</Typography>
+          <Tooltip describeChild title="Close resources">
+            <IconButton onClick={close}>
+              <FontAwesomeIcon icon={faXmark} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      </Toolbar>
+      <TabContext value={activeTab}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <TabList
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons={true}
+          >
+            {resourceIds.map((key) => {
+              const tabIndex = resourceIds.indexOf(key) + 1;
+              return (
+                <Tab
+                  key={key}
+                  label={tabIndex.toString()}
+                  value={tabIndex.toString()}
+                  sx={{ minWidth: 50 }}
+                />
+              );
+            })}
+            <Tab
+              label={lastResourceIndex}
+              value={lastResourceIndex}
+              sx={{ minWidth: 50 }}
+            />
+          </TabList>
+        </Box>
+        {resourceIds.map((id) => {
+          const tabIndex = resourceIds.indexOf(id) + 1;
+          return (
+            <TabPanel key={id} value={tabIndex.toString()}>
+              <Resource id={id} index={tabIndex} references={references} />
+            </TabPanel>
+          );
+        })}
+        <TabPanel value={lastResourceIndex}>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+            onClick={addResource}
+          >
+            Add Resource
+          </Button>
+        </TabPanel>
+      </TabContext>
+    </>
   );
 };
 
