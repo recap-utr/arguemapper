@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.3](https://github.com/recap-utr/arguemapper/compare/v2.4.2...v2.4.3) (2025-06-24)
+
+### Bug Fixes
+
+* **sidebar:** always show close buttons ([56ba1eb](https://github.com/recap-utr/arguemapper/commit/56ba1eb6a2760eb626597cdeccfa303a334164f1))
+
 ## [2.4.2](https://github.com/recap-utr/arguemapper/compare/v2.4.1...v2.4.2) (2025-06-23)
 
 ### Bug Fixes
