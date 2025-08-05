@@ -39,20 +39,12 @@
         {
           pkgs,
           system,
-          lib,
           config,
           ...
         }:
         {
-          devShells.default = pkgs.mkShell {
-            shellHook = ''
-              ${lib.getExe' pkgs.nodejs "npm"} install
-              ${lib.getExe pkgs.nodejs} --version > .node-version
-            '';
-            packages = with pkgs; [
-              nodejs
-              config.treefmt.build.wrapper
-            ];
+          devShells.default = pkgs.callPackage ./shell.nix {
+            treefmt = config.treefmt.build.wrapper;
           };
           checks = {
             inherit (config.packages) arguemapper server docker;

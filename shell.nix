@@ -10,7 +10,6 @@ mkShell {
     ${lib.getExe nodejs} --version > .node-version
   '';
   packages = [
-    # importNpmLock.hooks.linkNodeModulesHook
     nodejs
     treefmt
   ];
