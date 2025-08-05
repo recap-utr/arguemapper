@@ -44,14 +44,6 @@
           ...
         }:
         {
-          _module.args.pkgs = import inputs.nixpkgs {
-            inherit system;
-            overlays = lib.singleton (
-              final: prev: {
-                nodejs = final.nodejs_22;
-              }
-            );
-          };
           devShells.default = pkgs.mkShell {
             shellHook = ''
               ${lib.getExe' pkgs.nodejs "npm"} install
