@@ -5,60 +5,60 @@ import * as muiColor from "@mui/material/colors";
 import type React from "react";
 
 interface MarkerProps extends MarkerSymbolProps {
-  id: string;
-  className?: string;
-  size?: number;
+	id: string;
+	className?: string;
+	size?: number;
 }
 
 // https://github.com/wbkd/react-flow/blob/e93db697febd787326c939d17640855a1dc404d5/src/container/EdgeRenderer/MarkerDefinitions.tsx#L28
 export const Marker: React.FC<MarkerProps> = ({
-  id,
-  className = "react-flow__arrowhead",
-  color = muiColor.grey[500],
-  strokeWidth = 1,
-  size = 15,
+	id,
+	className = "react-flow__arrowhead",
+	color = muiColor.grey[500],
+	strokeWidth = 1,
+	size = 15,
 }) => (
-  <marker
-    className={className}
-    id={id}
-    markerWidth={size}
-    markerHeight={size}
-    viewBox="-10 -10 20 20"
-    markerUnits="strokeWidth"
-    orient="auto"
-    refX="0"
-    refY="0"
-  >
-    <MarkerSymbol color={color} strokeWidth={strokeWidth} />
-  </marker>
+	<marker
+		className={className}
+		id={id}
+		markerWidth={size}
+		markerHeight={size}
+		viewBox="-10 -10 20 20"
+		markerUnits="strokeWidth"
+		orient="auto"
+		refX="0"
+		refY="0"
+	>
+		<MarkerSymbol color={color} strokeWidth={strokeWidth} />
+	</marker>
 );
 
 interface MarkerSymbolProps {
-  color?: string;
-  strokeWidth?: number;
+	color?: string;
+	strokeWidth?: number;
 }
 
 // https://github.com/wbkd/react-flow/blob/e93db697febd787326c939d17640855a1dc404d5/src/container/EdgeRenderer/MarkerSymbols.tsx#L20
 const MarkerSymbol: React.FC<MarkerSymbolProps> = ({
-  color,
-  strokeWidth = 1,
+	color,
+	strokeWidth = 1,
 }) => (
-  <polyline
-    stroke={color}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={strokeWidth}
-    fill={color}
-    points="-5,-4 0,0 -5,4 -5,-4"
-  />
+	<polyline
+		stroke={color}
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		strokeWidth={strokeWidth}
+		fill={color}
+		points="-5,-4 0,0 -5,4 -5,-4"
+	/>
 );
 
 type MarkerDefinitionsProps = React.PropsWithChildren;
 
 export function MarkerDefinition({ children }: MarkerDefinitionsProps) {
-  return (
-    <svg aria-hidden="true">
-      <defs>{children}</defs>
-    </svg>
-  );
+	return (
+		<svg aria-hidden="true">
+			<defs>{children}</defs>
+		</svg>
+	);
 }

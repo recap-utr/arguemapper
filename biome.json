@@ -1,17 +1,17 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
-    "defaultBranch": "main"
-  },
-  "formatter": {
-    "indentStyle": "space"
-  },
-  "linter": {
-    "rules": {
-      "nursery": "off"
-    }
-  }
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
+	"formatter": {
+		"indentStyle": "space"
+	},
+	"linter": {
+		"rules": {
+			"nursery": "off"
+		}
+	}
 }

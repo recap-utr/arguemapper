@@ -18,44 +18,44 @@ import theme from "./theme.js";
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
 root.render(
-  <React.StrictMode>
-    <Layout />
-  </React.StrictMode>,
+	<React.StrictMode>
+		<Layout />
+	</React.StrictMode>,
 );
 
 function Layout() {
-  const darkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const isProduction = process.env.NODE_ENV === "production";
+	const darkMode = useMediaQuery("(prefers-color-scheme: dark)");
+	const isProduction = process.env.NODE_ENV === "production";
 
-  return (
-    <CacheBuster
-      currentVersion={npmVersion}
-      isEnabled={isProduction}
-      isVerboseMode={false}
-      reloadOnDowngrade={true}
-      loadingComponent={undefined}
-      onCacheClear={undefined}
-    >
-      <ThemeProvider theme={theme(darkMode)}>
-        <CssBaseline />
-        <ConfirmProvider
-          defaultOptions={{
-            title: "Are you sure?",
-            description: "This action is destructive and cannot be undone!",
-            confirmationText: "OK",
-            cancellationText: "Cancel",
-            confirmationButtonProps: { autoFocus: true },
-          }}
-        >
-          <SnackbarProvider maxSnack={3} preventDuplicate>
-            <ErrorBoundary>
-              <ReactFlowProvider>
-                <App />
-              </ReactFlowProvider>
-            </ErrorBoundary>
-          </SnackbarProvider>
-        </ConfirmProvider>
-      </ThemeProvider>
-    </CacheBuster>
-  );
+	return (
+		<CacheBuster
+			currentVersion={npmVersion}
+			isEnabled={isProduction}
+			isVerboseMode={false}
+			reloadOnDowngrade={true}
+			loadingComponent={undefined}
+			onCacheClear={undefined}
+		>
+			<ThemeProvider theme={theme(darkMode)}>
+				<CssBaseline />
+				<ConfirmProvider
+					defaultOptions={{
+						title: "Are you sure?",
+						description: "This action is destructive and cannot be undone!",
+						confirmationText: "OK",
+						cancellationText: "Cancel",
+						confirmationButtonProps: { autoFocus: true },
+					}}
+				>
+					<SnackbarProvider maxSnack={3} preventDuplicate>
+						<ErrorBoundary>
+							<ReactFlowProvider>
+								<App />
+							</ReactFlowProvider>
+						</ErrorBoundary>
+					</SnackbarProvider>
+				</ConfirmProvider>
+			</ThemeProvider>
+		</CacheBuster>
+	);
 }

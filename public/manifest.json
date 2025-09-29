@@ -1,14 +1,14 @@
 {
-  "short_name": "ArgueMapper",
-  "name": "ArgueMapper",
-  "icons": [
-    {
-      "src": "logo.svg",
-      "type": "image/svg+xml"
-    }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#0d47a1"
+	"short_name": "ArgueMapper",
+	"name": "ArgueMapper",
+	"icons": [
+		{
+			"src": "logo.svg",
+			"type": "image/svg+xml"
+		}
+	],
+	"start_url": ".",
+	"display": "standalone",
+	"theme_color": "#ffffff",
+	"background_color": "#0d47a1"
 }
