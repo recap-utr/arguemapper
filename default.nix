@@ -29,7 +29,8 @@ buildNpmPackage (finalAttrs: {
   # Python is needed for node-gyp/libsass
   nativeBuildInputs = [
     (nodejs.passthru.python.withPackages (ps: with ps; [ setuptools ]))
-  ] ++ (lib.optional stdenv.hostPlatform.isDarwin xcbuild);
+  ]
+  ++ (lib.optional stdenv.hostPlatform.isDarwin xcbuild);
 
   meta = with lib; {
     description = "Convert arguments in plain texts (e.g., newspaper articles) to structured argument graphs";

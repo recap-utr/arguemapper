@@ -6,106 +6,106 @@ import * as model from "../model.js";
 import { useStore } from "../store.js";
 
 export function importGraph(obj: GraphJson): model.Wrapper {
-  return model.fromArguebuf(arguebuf.load.json(obj));
+	return model.fromArguebuf(arguebuf.load.json(obj));
 }
 export function exportGraph(
-  obj: model.Wrapper,
-  format: "aif" | "arguebuf",
+	obj: model.Wrapper,
+	format: "aif" | "arguebuf",
 ): GraphJson {
-  const graph = model.toArguebuf(obj);
-  const currentAnalyst = useStore.getState().analyst;
+	const graph = model.toArguebuf(obj);
+	const currentAnalyst = useStore.getState().analyst;
 
-  if (
-    format === "arguebuf" &&
-    !Object.values(graph.analysts).some(
-      (x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email,
-    )
-  ) {
-    if (Object.keys(graph.analysts).includes(currentAnalyst.id)) {
-      graph.removeAnalyst(currentAnalyst.id);
-    }
+	if (
+		format === "arguebuf" &&
+		!Object.values(graph.analysts).some(
+			(x) => x.name === currentAnalyst.name && x.email === currentAnalyst.email,
+		)
+	) {
+		if (Object.keys(graph.analysts).includes(currentAnalyst.id)) {
+			graph.removeAnalyst(currentAnalyst.id);
+		}
 
-    graph.addAnalyst(currentAnalyst);
-  }
+		graph.addAnalyst(currentAnalyst);
+	}
 
-  return arguebuf.dump.json(graph, format) as GraphJson;
+	return arguebuf.dump.json(graph, format) as GraphJson;
 }
 
 export function generateFilename() {
-  const timestamp = arguebuf.date.format(
-    arguebuf.date.now(),
-    "YYYY-MM-DD[T]HH-mm-ss",
-  );
+	const timestamp = arguebuf.date.format(
+		arguebuf.date.now(),
+		"YYYY-MM-DD[T]HH-mm-ss",
+	);
 
-  return `arguemapper-${timestamp}`;
+	return `arguemapper-${timestamp}`;
 }
 
 // https://stackoverflow.com/a/55613750/7626878
 export async function downloadJson(data: unknown) {
-  const prettify = useStore.getState().prettifyJson;
-  const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
-  const blob = new Blob([json], { type: "application/json" });
-  downloadBlob(blob, ".json");
+	const prettify = useStore.getState().prettifyJson;
+	const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
+	const blob = new Blob([json], { type: "application/json" });
+	downloadBlob(blob, ".json");
 }
 
 export async function downloadBlob(data: Blob, suffix: string) {
-  const href = URL.createObjectURL(data);
-  const filename = generateFilename() + suffix;
-  downloadFile(href, filename);
+	const href = URL.createObjectURL(data);
+	const filename = generateFilename() + suffix;
+	downloadFile(href, filename);
 }
 
 export const downloadImage = async (format: ImgFormat) => {
-  const selectors = ["#react-flow"];
-  const excludedClasses = [
-    "react-flow__handle",
-    "arguemapper-hidden",
-    "react-flow__attribution",
-  ];
+	const selectors = ["#react-flow"];
+	const excludedClasses = [
+		"react-flow__handle",
+		"arguemapper-hidden",
+		"react-flow__attribution",
+	];
 
-  const elem = document.querySelector(
-    selectors.join(" "),
-  ) as HTMLElement | null;
-  const func = imgFormatMap[format];
+	const elem = document.querySelector(
+		selectors.join(" "),
+	) as HTMLElement | null;
+	const func = imgFormatMap[format];
 
-  if (elem !== null) {
-    const href = await func(elem, {
-      backgroundColor: "white",
-      cacheBust: true,
-      quality: 1.0,
-      pixelRatio: useStore.getState().imageScale,
-      // https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
-      filter: (domNode: HTMLElement) => {
-        const classList = domNode.classList
-          ? Array.from(domNode.classList)
-          : [];
-        return !excludedClasses.some((className) =>
-          classList.includes(className),
-        );
-      },
-    });
-    const filename = `${generateFilename()}.${format}`;
-    downloadFile(href, filename);
-  }
+	if (elem !== null) {
+		const href = await func(elem, {
+			backgroundColor: "white",
+			cacheBust: true,
+			quality: 1.0,
+			pixelRatio: useStore.getState().imageScale,
+			// https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
+			filter: (domNode: HTMLElement) => {
+				const classList = domNode.classList
+					? Array.from(domNode.classList)
+					: [];
+				return !excludedClasses.some((className) =>
+					classList.includes(className),
+				);
+			},
+		});
+		const filename = `${generateFilename()}.${format}`;
+		downloadFile(href, filename);
+	}
 };
 
 export enum ImgFormat {
-  PNG = "png",
-  JPG = "jpg",
+	PNG = "png",
+	JPG = "jpg",
 }
 
 const imgFormatMap: Record<
-  ImgFormat,
-  (elem: HTMLElement, options?: ImgOptions) => Promise<string>
+	ImgFormat,
+	(elem: HTMLElement, options?: ImgOptions) => Promise<string>
 > = {
-  png: toPng,
-  jpg: toJpeg,
+	png: toPng,
+	jpg: toJpeg,
 };
 
 const downloadFile = async (href: string, filename: string) => {
-  const link = document.createElement("a");
-  link.href = href;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+	const link = document.createElement("a");
+	link.href = href;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
 };
