@@ -19,7 +19,7 @@ jobs:
       name: release
       url: https://github.com/wi2trier/cbrkit/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
   deploy-docker:
@@ -33,7 +33,7 @@ jobs:
       name: release
       url: https://ghcr.io/recap-utr/arguemapper
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.release.outputs.git-head }}
       - uses: DeterminateSystems/nix-installer-action@v21
