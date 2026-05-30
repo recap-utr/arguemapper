@@ -1,6 +1,7 @@
 import { ArgueMapper } from "./ArgueMapper.js";
 import { AifdbImport } from "./standalone/AifdbImport.js";
 import { ClearCacheButton } from "./standalone/ClearCacheButton.js";
+import { SideToggle } from "./standalone/SideToggle.js";
 import { WelcomeSnackbar } from "./standalone/WelcomeSnackbar.js";
 
 // The standalone app is the full-feature configuration of the embeddable <ArgueMapper>, with the
@@ -10,11 +11,19 @@ export default function App() {
     <ArgueMapper
       persistKey="state"
       header
-      leftSidebar
-      rightSidebar
+      sidebar
+      side="right"
       toolbar
       assistant={{}}
-      inspectorSlots={{ import: <AifdbImport />, configuration: <ClearCacheButton /> }}
+      inspectorSlots={{
+        import: <AifdbImport />,
+        configuration: (
+          <>
+            <SideToggle />
+            <ClearCacheButton />
+          </>
+        ),
+      }}
       style={{ height: "100vh" }}
     >
       <WelcomeSnackbar />

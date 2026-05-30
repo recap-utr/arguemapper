@@ -24,6 +24,7 @@ export {
   type InspectorSlots,
   type ReasoningEffort,
   reasoningEfforts,
+  type SidebarSection,
   type State,
   useArgueActions,
   useStore,

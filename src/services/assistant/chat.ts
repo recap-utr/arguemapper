@@ -40,7 +40,9 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
     const config = store.getState().assistantConfig;
     const baseURL = options.baseURL ?? config.baseURL;
     const model = options.model ?? config.model;
-    return createOpenAI({ baseURL, apiKey })(model);
+    // The key is optional (local OpenAI-compatible servers don't need one). A placeholder keeps the
+    // provider from throwing up front; remote servers simply reject it on connect.
+    return createOpenAI({ baseURL, apiKey: apiKey || "unused" })(model);
   };
 
   return new Agent({
@@ -54,11 +56,6 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
       // Only resolves runtime call settings (model client + reasoning effort) from the live config,
       // never the prompt, so the cached prefix is preserved for maximal KV-cache reuse.
       const apiKey = options.apiKey ?? store.getState().assistantApiKey;
-      if (apiKey === "") {
-        throw new Error(
-          "Cannot perform the request because the API key is missing. Open the inspector and set it under 'Assistant'.",
-        );
-      }
       const reasoningEffort = options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
       return {
         model: resolveModel(apiKey),

@@ -21,6 +21,8 @@ export interface CreateArgueStoreOptions {
   assistantConfig?: Partial<AssistantConfig>;
   /** Initial assistant API key (held in memory only). */
   assistantApiKey?: string;
+  /** Side the sidebar docks to. Defaults to `"right"`; persisted state takes precedence. */
+  side?: "left" | "right";
 }
 
 const defaultAssistantConfig: AssistantConfig = {
@@ -40,8 +42,6 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     graph: wrapper.graph,
     analyst: new arguebuf.Analyst({}),
     firstVisit: true,
-    leftSidebarOpen: true,
-    rightSidebarOpen: true,
     layoutAlgorithm: model.LayoutAlgorithm.LAYERED,
     edgeStyle: model.EdgeStyle.STEP,
     shouldLayout: model.needsLayout(wrapper.nodes),
@@ -50,10 +50,11 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     prettifyJson: true,
     imageScale: 3,
     selectedResourceTab: 0,
-    sidebarWidth: 400,
+    sidebarSide: options.side ?? "right",
+    sidebarSections: ["inspector"],
+    sidebarWidth: 480,
     headerHeight: 64,
     assistantConfig: { ...defaultAssistantConfig, ...options.assistantConfig },
-    assistantPanelOpen: false,
     assistantBusy: false,
     assistantApiKey: options.assistantApiKey ?? "",
   };

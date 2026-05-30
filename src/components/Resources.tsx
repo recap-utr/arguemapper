@@ -1,17 +1,7 @@
-import { faPlusCircle, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-import {
-  Box,
-  Button,
-  IconButton,
-  Stack,
-  Tab,
-  TextField,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
@@ -20,9 +10,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
 import { type State, useArgueActions, useStore } from "../store.js";
 import { HighlightTextarea, type HighlightRange } from "./HighlightTextarea.js";
+import { SectionHeader } from "./sidebar/SectionHeader.js";
 
 interface Props {
-  close: () => void;
+  onClose: () => void;
 }
 
 interface SelectedAtom {
@@ -80,7 +71,7 @@ function computeHighlightRanges(
   return merged;
 }
 
-const Resources: React.FC<Props> = ({ close }) => {
+const Resources: React.FC<Props> = ({ onClose }) => {
   const references = useStore(
     (state) =>
       Object.fromEntries(
@@ -130,52 +121,38 @@ const Resources: React.FC<Props> = ({ close }) => {
 
   return (
     <>
-      <Toolbar>
-        <Stack
-          direction="row"
-          sx={{
-            justifyContent: "space-between",
-            width: 1,
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h5">Resources</Typography>
-          <Tooltip describeChild title="Close resources">
-            <IconButton onClick={close}>
-              <FontAwesomeIcon icon={faXmark} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Toolbar>
-      <TabContext value={activeTab}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <TabList onChange={handleTabChange} variant="scrollable" scrollButtons={true}>
-            {resourceIds.map((key, index) => {
-              const value = (index + 1).toString();
-              return <Tab key={key} label={value} value={value} sx={{ minWidth: 50 }} />;
-            })}
-            <Tab label={lastResourceIndex} value={lastResourceIndex} sx={{ minWidth: 50 }} />
-          </TabList>
-        </Box>
-        {resourceIds.map((id, index) => {
-          const tabIndex = index + 1;
-          return (
-            <TabPanel key={id} value={tabIndex.toString()}>
-              <Resource id={id} index={tabIndex} references={references} />
-            </TabPanel>
-          );
-        })}
-        <TabPanel value={lastResourceIndex}>
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
-            onClick={addResource}
-          >
-            Add Resource
-          </Button>
-        </TabPanel>
-      </TabContext>
+      <SectionHeader title="Resources" onClose={onClose} />
+      <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+        <TabContext value={activeTab}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <TabList onChange={handleTabChange} variant="scrollable" scrollButtons={true}>
+              {resourceIds.map((key, index) => {
+                const value = (index + 1).toString();
+                return <Tab key={key} label={value} value={value} sx={{ minWidth: 50 }} />;
+              })}
+              <Tab label={lastResourceIndex} value={lastResourceIndex} sx={{ minWidth: 50 }} />
+            </TabList>
+          </Box>
+          {resourceIds.map((id, index) => {
+            const tabIndex = index + 1;
+            return (
+              <TabPanel key={id} value={tabIndex.toString()}>
+                <Resource id={id} index={tabIndex} references={references} />
+              </TabPanel>
+            );
+          })}
+          <TabPanel value={lastResourceIndex}>
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
+              onClick={addResource}
+            >
+              Add Resource
+            </Button>
+          </TabPanel>
+        </TabContext>
+      </Box>
     </>
   );
 };

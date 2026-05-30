@@ -13,11 +13,11 @@ export type PersistState = Pick<
   | "graph"
   | "imageScale"
   | "layoutAlgorithm"
-  | "leftSidebarOpen"
   | "nodes"
   | "prettifyJson"
-  | "rightSidebarOpen"
   | "selectedResourceTab"
+  | "sidebarSide"
+  | "sidebarSections"
   | "assistantConfig"
 >;
 
@@ -84,9 +84,9 @@ export const partialize = (state: State): PersistState => ({
   prettifyJson: state.prettifyJson,
   imageScale: state.imageScale,
   edgeStyle: state.edgeStyle,
-  leftSidebarOpen: state.leftSidebarOpen,
-  rightSidebarOpen: state.rightSidebarOpen,
   selectedResourceTab: state.selectedResourceTab,
+  sidebarSide: state.sidebarSide,
+  sidebarSections: state.sidebarSections,
   assistantConfig: state.assistantConfig,
 });
 

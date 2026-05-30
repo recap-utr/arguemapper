@@ -8,12 +8,13 @@ import {
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, IconButton, Stack, Tooltip } from "@mui/material";
+import { IconButton, Stack, Tooltip } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useArgueActions, useInstanceFocused, useTemporalStore } from "../store.js";
+import { canvasButtonSx } from "./canvasControls.js";
 
 interface ItemProps {
   disabled?: boolean;
@@ -26,8 +27,8 @@ const Item: React.FC<ItemProps> = ({ disabled, text, callback, icon }) => {
   return (
     <Tooltip describeChild title={text} placement="right">
       <span>
-        <IconButton disabled={disabled ?? false} onClick={callback}>
-          <FontAwesomeIcon icon={icon} />
+        <IconButton disabled={disabled ?? false} onClick={callback} sx={canvasButtonSx}>
+          <FontAwesomeIcon icon={icon} fixedWidth />
         </IconButton>
       </span>
     </Tooltip>
@@ -74,49 +75,44 @@ export const Toolbar: React.FC = () => {
   );
 
   return (
-    <Box
-      className="arguemapper-hidden"
-      sx={{ position: "absolute", left: 0, bottom: 0, zIndex: 10 }}
-    >
-      <Stack direction="column">
-        <Item
-          text="Automatically layout graph elements"
-          callback={layoutCallback}
-          icon={faSitemap}
-        />
-        <Item
-          text="Undo last action"
-          disabled={!undoable}
-          callback={() => {
-            undo();
-          }}
-          icon={faUndo}
-        />
-        <Item
-          text="Redo last action"
-          disabled={!redoable}
-          callback={() => {
-            redo();
-          }}
-          icon={faRedo}
-        />
-        <Item
-          text="Zoom in"
-          callback={() => {
-            void flow.zoomIn();
-          }}
-          icon={faMagnifyingGlassPlus}
-        />
-        <Item
-          text="Zoom out"
-          callback={() => {
-            void flow.zoomOut();
-          }}
-          icon={faMagnifyingGlassMinus}
-        />
-        <Item text="Fit graph in view" callback={fitViewCallback} icon={faCompress} />
-      </Stack>
-    </Box>
+    <Stack direction="column" sx={{ alignItems: "center" }}>
+      <Item
+        text="Automatically layout graph elements"
+        callback={layoutCallback}
+        icon={faSitemap}
+      />
+      <Item
+        text="Undo last action"
+        disabled={!undoable}
+        callback={() => {
+          undo();
+        }}
+        icon={faUndo}
+      />
+      <Item
+        text="Redo last action"
+        disabled={!redoable}
+        callback={() => {
+          redo();
+        }}
+        icon={faRedo}
+      />
+      <Item
+        text="Zoom in"
+        callback={() => {
+          void flow.zoomIn();
+        }}
+        icon={faMagnifyingGlassPlus}
+      />
+      <Item
+        text="Zoom out"
+        callback={() => {
+          void flow.zoomOut();
+        }}
+        icon={faMagnifyingGlassMinus}
+      />
+      <Item text="Fit graph in view" callback={fitViewCallback} icon={faCompress} />
+    </Stack>
   );
 };
 

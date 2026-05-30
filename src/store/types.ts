@@ -24,6 +24,15 @@ export interface AssistantConfig {
   reasoningEffort: ReasoningEffort;
 }
 
+/** A pane in the unified sidebar; any number can be open at once, stacked in canonical order. */
+export type SidebarSection =
+  | "inspector"
+  | "resources"
+  | "assistant"
+  | "importExport"
+  | "participants"
+  | "configuration";
+
 export interface State {
   analyst: arguebuf.Analyst;
   edges: model.Edge[];
@@ -33,17 +42,18 @@ export interface State {
   headerHeight: number;
   imageScale: number;
   layoutAlgorithm: model.LayoutAlgorithm;
-  leftSidebarOpen: boolean;
   nodes: model.Node[];
   prettifyJson: boolean;
-  rightSidebarOpen: boolean;
   selectedResourceTab: number;
   selection: model.Selection;
   shouldLayout: boolean;
   shouldFitView: boolean;
+  /** Which side of the canvas the sidebar is docked to. */
+  sidebarSide: "left" | "right";
+  /** The set of open panes; rendered top-to-bottom in canonical section order. Empty => collapsed. */
+  sidebarSections: SidebarSection[];
   sidebarWidth: number;
   assistantConfig: AssistantConfig;
-  assistantPanelOpen: boolean;
   assistantBusy: boolean;
   /** API key for the assistant; held in memory only (never persisted). */
   assistantApiKey: string;

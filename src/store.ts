@@ -28,5 +28,6 @@ export {
   assistantModels,
   type ReasoningEffort,
   reasoningEfforts,
+  type SidebarSection,
   type State,
 } from "./store/types.js";

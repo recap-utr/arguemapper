@@ -37,11 +37,11 @@ export interface ArgueMapperProps extends React.PropsWithChildren {
   readOnly?: boolean;
   /** Show the on-canvas toolbar (undo/redo/zoom/fit/layout). */
   toolbar?: boolean;
-  /** Show the left Resources sidebar. */
-  leftSidebar?: boolean;
-  /** Show the right Inspector sidebar. */
-  rightSidebar?: boolean;
-  /** Show the standalone header bar with sidebar toggles. */
+  /** Show the unified sidebar (activity rail + collapsible panel). */
+  sidebar?: boolean;
+  /** Which side the sidebar docks to. Defaults to `"right"`. */
+  side?: "left" | "right";
+  /** Show the standalone header bar. */
   header?: boolean;
   /** Enable the AI assistant (absent => disabled). */
   assistant?: ArgueMapperAssistantConfig;
@@ -80,8 +80,8 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
     onChange,
     readOnly = false,
     toolbar = false,
-    leftSidebar = false,
-    rightSidebar = false,
+    sidebar = false,
+    side = "right",
     header = false,
     assistant,
     persistKey,
@@ -102,6 +102,7 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
     storeRef.current = createArgueStore({
       initialGraph,
       persistKey,
+      side,
       assistantConfig: assistant
         ? { model: assistant.model, baseURL: assistant.baseURL }
         : undefined,
@@ -115,8 +116,8 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
 
   const assistantEnabled = assistant != null;
   const config = useMemo(
-    () => ({ id, readOnly, toolbar, assistant: assistantEnabled }),
-    [id, readOnly, toolbar, assistantEnabled],
+    () => ({ id, readOnly, toolbar, assistant: assistantEnabled, sidebar }),
+    [id, readOnly, toolbar, assistantEnabled, sidebar],
   );
 
   // Keep the latest onChange in a ref so the subscription below never re-subscribes when the host
@@ -191,12 +192,7 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
             <ArgueConfigProvider value={config}>
               <InstanceFocusProvider value={focused}>
                 <InspectorSlotsProvider value={inspectorSlots ?? EMPTY_SLOTS}>
-                  <ArgueMapperLayout
-                    header={header}
-                    leftSidebar={leftSidebar}
-                    rightSidebar={rightSidebar}
-                    assistant={assistant}
-                  />
+                  <ArgueMapperLayout header={header} sidebar={sidebar} assistant={assistant} />
                   {children}
                 </InspectorSlotsProvider>
               </InstanceFocusProvider>

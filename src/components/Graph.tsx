@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material";
+import { Box, Divider, Stack, useTheme } from "@mui/material";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -33,15 +33,15 @@ import { EdgeTypes } from "./EdgeTypes.js";
 import { Marker, MarkerDefinition } from "./Marker.js";
 import { NodeTypes } from "./NodeTypes.js";
 import { PlusMenu } from "./PlusMenu.js";
+import { SectionSwitcher } from "./SectionSwitcher.js";
 import { Toolbar } from "./Toolbar.js";
 
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
-  const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
   const flow = useReactFlow();
   const theme = useTheme();
-  const { setState, setStateWithoutHistory, resumeTemporal } = useArgueActions();
-  const { id, readOnly, toolbar } = useArgueConfig();
+  const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } = useArgueActions();
+  const { id, readOnly, toolbar, sidebar } = useArgueConfig();
   const wrapperRef = useFlowWrapperRef();
 
   const numberOfNodes = useStore((state) => state.nodes.length);
@@ -188,9 +188,11 @@ export default function Graph() {
     [setState],
   );
 
-  const onElementClick = useCallback(() => {
-    setState({ rightSidebarOpen: true });
-  }, [setState]);
+  // Double-clicking an element reveals it in the Inspector for quick edits, without single-clicks
+  // hijacking the sidebar.
+  const onElementDoubleClick = useCallback(() => {
+    openSidebarSection("inspector");
+  }, [openSidebarSection]);
 
   const onClickConnectStart: OnConnectStart = useCallback(
     (_event, params) => {
@@ -245,8 +247,8 @@ export default function Graph() {
       onNodeContextMenu={readOnly ? undefined : onContextMenu}
       onEdgeContextMenu={readOnly ? undefined : onContextMenu}
       onPaneContextMenu={readOnly ? undefined : onContextMenu}
-      onNodeClick={onElementClick}
-      onEdgeClick={onElementClick}
+      onNodeDoubleClick={onElementDoubleClick}
+      onEdgeDoubleClick={onElementDoubleClick}
       onNodesDelete={readOnly ? undefined : onNodesDelete}
       onEdgesDelete={readOnly ? undefined : onEdgesDelete}
       onSelectionChange={onSelectionChange}
@@ -271,9 +273,25 @@ export default function Graph() {
         <Marker id={markerId(id, false)} />
         <Marker id={markerId(id, true)} color={theme.palette.text.primary} />
       </MarkerDefinition>
-      {toolbar && <Toolbar />}
+      <Box
+        className="arguemapper-hidden"
+        sx={{ position: "absolute", left: 10, bottom: 10, zIndex: 10 }}
+      >
+        <Stack direction="column" sx={{ alignItems: "center" }}>
+          {toolbar && <Toolbar />}
+          {toolbar && !readOnly && <Divider flexItem sx={{ mt: 0.5, mb: 1.5 }} />}
+          <PlusMenu />
+        </Stack>
+      </Box>
       {!readOnly && <ContextMenu click={ctxMenu} setClick={setCtxMenu} />}
-      <PlusMenu plusButton={plusButton} setPlusButton={setPlusButton} />
+      {sidebar && (
+        <Box
+          className="arguemapper-hidden"
+          sx={{ position: "absolute", right: 10, bottom: 10, zIndex: 10 }}
+        >
+          <SectionSwitcher />
+        </Box>
+      )}
     </ReactFlow>
   );
 }

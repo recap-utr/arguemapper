@@ -1,41 +1,27 @@
-import { faInfoCircle, faParagraph } from "@fortawesome/free-solid-svg-icons";
+import { faAnglesLeft, faAnglesRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AppBar, IconButton, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
-import { useStore } from "../store.js";
+import { AppBar, IconButton, Toolbar, Tooltip, Typography } from "@mui/material";
+import { useArgueActions, useArgueConfig, useStore } from "../store.js";
 
-export default function Header({
-  toggleLeft,
-  toggleRight,
-}: {
-  toggleLeft: () => void;
-  toggleRight: () => void;
-}) {
+export default function Header() {
   const height = useStore((state) => state.headerHeight);
+  const side = useStore((state) => state.sidebarSide);
+  const anyOpen = useStore((state) => state.sidebarSections.length > 0);
+  const { sidebar } = useArgueConfig();
+  const { closeSidebar } = useArgueActions();
 
   return (
     <AppBar position="sticky" sx={{ height }}>
-      <Toolbar>
-        <Stack
-          direction="row"
-          sx={{
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            textAlign: "center",
-          }}
-        >
-          <Tooltip describeChild title="Toggle resource pane">
-            <IconButton onClick={toggleLeft}>
-              <FontAwesomeIcon icon={faParagraph} />
+      {/* Title stays absolutely centered so the optional collapse button never shifts it. */}
+      <Toolbar sx={{ position: "relative", justifyContent: "center" }}>
+        <Typography variant="h6">ArgueMapper</Typography>
+        {sidebar && anyOpen && (
+          <Tooltip describeChild title="Hide all panes">
+            <IconButton color="inherit" onClick={closeSidebar} sx={{ position: "absolute", [side]: 8 }}>
+              <FontAwesomeIcon icon={side === "right" ? faAnglesRight : faAnglesLeft} />
             </IconButton>
           </Tooltip>
-          <Typography variant="h6">ArgueMapper</Typography>
-          <Tooltip describeChild title="Toggle inspector">
-            <IconButton onClick={toggleRight}>
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        )}
       </Toolbar>
     </AppBar>
   );

@@ -1,7 +1,7 @@
 import type { XYPosition } from "@xyflow/react";
 import { produce } from "immer";
 import * as model from "../model.js";
-import type { ArgueStore, State } from "./types.js";
+import type { ArgueStore, SidebarSection, State } from "./types.js";
 
 export interface ArgueActions {
   setState: ArgueStore["setState"];
@@ -11,7 +11,12 @@ export interface ArgueActions {
   setStateWithoutHistory: (updater: Partial<State> | ((state: State) => Partial<State>)) => void;
   pauseTemporal: () => void;
   resumeTemporal: () => void;
-  toggleAssistantPanel: () => void;
+  /** Show/hide a single pane, leaving the others untouched. */
+  toggleSidebarSection: (section: SidebarSection) => void;
+  /** Ensure a pane is open (no-op if already open). */
+  openSidebarSection: (section: SidebarSection) => void;
+  /** Collapse the sidebar by hiding every pane. */
+  closeSidebar: () => void;
   clearAllSelections: () => void;
   selectSingleNode: (nodeIndex: number) => void;
   addNodeWithSelection: (node: model.Node) => void;
@@ -131,8 +136,24 @@ export function createActions(
     addNodeWithSelection(model.initScheme({ data: {}, position: { x, y } }));
   };
 
-  const toggleAssistantPanel = () => {
-    setState((state) => ({ assistantPanelOpen: !state.assistantPanelOpen }));
+  const toggleSidebarSection = (section: SidebarSection) => {
+    setState((state) => ({
+      sidebarSections: state.sidebarSections.includes(section)
+        ? state.sidebarSections.filter((s) => s !== section)
+        : [...state.sidebarSections, section],
+    }));
+  };
+
+  const openSidebarSection = (section: SidebarSection) => {
+    setState((state) =>
+      state.sidebarSections.includes(section)
+        ? {}
+        : { sidebarSections: [...state.sidebarSections, section] },
+    );
+  };
+
+  const closeSidebar = () => {
+    setState({ sidebarSections: [] });
   };
 
   return {
@@ -143,7 +164,9 @@ export function createActions(
     setStateWithoutHistory,
     pauseTemporal,
     resumeTemporal,
-    toggleAssistantPanel,
+    toggleSidebarSection,
+    openSidebarSection,
+    closeSidebar,
     clearAllSelections,
     selectSingleNode,
     addNodeWithSelection,

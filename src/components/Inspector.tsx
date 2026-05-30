@@ -1,27 +1,27 @@
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import type React from "react";
 import { useCallback } from "react";
-import { version as npmVersion } from "../../package.json";
 import * as model from "../model.js";
 import { useArgueActions, useStore } from "../store.js";
 import AtomFields from "./inspector/AtomFields.js";
 import BulkSchemeFields from "./inspector/BulkSchemeFields.js";
 import EdgeFields from "./inspector/EdgeFields.js";
-import GraphFields from "./inspector/GraphFields.js";
+import { NotesField } from "./inspector/NotesField.js";
 import SchemeFields from "./inspector/SchemeFields.js";
+import { SectionHeader } from "./sidebar/SectionHeader.js";
 
 interface Props {
-  close: () => void;
+  onClose: () => void;
 }
 
-const Inspector: React.FC<Props> = ({ close }) => {
+const Inspector: React.FC<Props> = ({ onClose }) => {
   const selectionType = useStore((state) => state.selection.type);
   const selectedNodes = useStore((state) => state.selection.nodes);
   const nodes = useStore((state) => state.nodes);
-  const { setState } = useArgueActions();
+  const graphNotes = useStore((state) => (state.graph.userdata as model.Userdata).notes);
+  const { setState, mutate } = useArgueActions();
 
   // Check if all selected nodes are scheme nodes
   const selectedSchemeNodes = selectedNodes
@@ -40,62 +40,49 @@ const Inspector: React.FC<Props> = ({ close }) => {
 
   return (
     <>
-      <Toolbar>
-        <Stack
-          direction="row"
-          sx={{
-            justifyContent: "space-between",
-            width: 1,
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h5">Inspector</Typography>
-          <Tooltip describeChild title="Close inspector">
-            <IconButton onClick={close}>
-              <FontAwesomeIcon icon={faXmark} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Toolbar>
-      <Stack spacing={3} sx={{ padding: 3 }}>
-        {selectionType === "atom" && <AtomFields />}
-        {selectionType === "scheme" && <SchemeFields />}
-        {selectionType === "edge" && <EdgeFields />}
-        {selectionType === "graph" && <GraphFields />}
-        {selectionType === "multiple" && allSelectedAreSchemes && <BulkSchemeFields />}
-        {selectionType === "multiple" && !allSelectedAreSchemes && (
-          <>
-            <Typography variant="h6">Multiple elements selected</Typography>
-            <Typography variant="body1">
-              Please select only one if you want to edit their values. You can still move multiple
-              elements together in the canvas or delete them.
+      <SectionHeader title="Inspector" onClose={onClose} />
+      <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+        {selectionType === "graph" ? (
+          <Stack spacing={2} sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Nothing selected. Double-click an element on the canvas to edit it here.
             </Typography>
-          </>
-        )}
-        {selectionType !== "graph" && (
-          <Button
-            color="error"
-            startIcon={<FontAwesomeIcon icon={faTrash} />}
-            variant="contained"
-            onClick={onDelete}
-          >
-            Delete selection
-          </Button>
-        )}
-        <Stack direction="column">
-          <Tooltip describeChild title="Open GitHub repository">
-            <IconButton
-              component={Link}
-              href="https://github.com/recap-utr/arguemapper"
-              target="_blank"
-              sx={{ ":hover": { backgroundColor: "transparent" } }}
+            <NotesField
+              label="Graph Notes"
+              value={graphNotes ?? ""}
+              onChange={(value) => {
+                mutate((draft) => {
+                  (draft.graph.userdata as model.Userdata).notes = value;
+                });
+              }}
+            />
+          </Stack>
+        ) : (
+          <Stack spacing={2} sx={{ p: 2 }}>
+            {selectionType === "atom" && <AtomFields />}
+            {selectionType === "scheme" && <SchemeFields />}
+            {selectionType === "edge" && <EdgeFields />}
+            {selectionType === "multiple" && allSelectedAreSchemes && <BulkSchemeFields />}
+            {selectionType === "multiple" && !allSelectedAreSchemes && (
+              <>
+                <Typography variant="h6">Multiple elements selected</Typography>
+                <Typography variant="body1">
+                  Please select only one if you want to edit their values. You can still move
+                  multiple elements together in the canvas or delete them.
+                </Typography>
+              </>
+            )}
+            <Button
+              color="error"
+              startIcon={<FontAwesomeIcon icon={faTrash} />}
+              variant="contained"
+              onClick={onDelete}
             >
-              <FontAwesomeIcon icon={faGithub} />
-            </IconButton>
-          </Tooltip>
-          <Typography align="center">v{npmVersion}</Typography>
-        </Stack>
-      </Stack>
+              Delete selection
+            </Button>
+          </Stack>
+        )}
+      </Box>
     </>
   );
 };

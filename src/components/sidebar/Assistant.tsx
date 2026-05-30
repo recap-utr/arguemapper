@@ -1,30 +1,14 @@
-import {
-  faPaperPlane,
-  faRobot,
-  faStop,
-  faTrashCan,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPaperPlane, faStop, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  Box,
-  Chip,
-  IconButton,
-  Paper,
-  Stack,
-  TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
 import { useChat } from "@ai-sdk/react";
+import { Box, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type AssistantOptions, createAssistantChat } from "../../services/assistant/chat.js";
-import { useArgueActions, useStore, useStoreApi } from "../../store.js";
-import { MessagePart } from "./MessagePart.js";
-
-export interface AssistantPanelProps {
-  options: AssistantOptions;
-}
+import { useArgueActions, useStoreApi } from "../../store.js";
+import { MessagePart } from "../assistant/MessagePart.js";
+import { AssistantSettingsDialog } from "./AssistantSettingsDialog.js";
+import { SectionHeader } from "./SectionHeader.js";
 
 const QUICK_ACTIONS: { label: string; prompt: string }[] = [
   {
@@ -53,8 +37,12 @@ const QUICK_ACTIONS: { label: string; prompt: string }[] = [
   },
 ];
 
-export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
-  const open = useStore((state) => state.assistantPanelOpen);
+interface Props {
+  options: AssistantOptions;
+  onClose: () => void;
+}
+
+export const Assistant: React.FC<Props> = ({ options, onClose }) => {
   const { setState } = useArgueActions();
   const store = useStoreApi();
   // Depend on the individual settings (which fully determine the chat) rather than the `options`
@@ -66,6 +54,7 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
   );
   const { messages, status, error, sendMessage, stop, setMessages } = useChat({ chat });
   const [input, setInput] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const busy = status === "streaming" || status === "submitted";
@@ -75,15 +64,8 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
   }, [busy, setState]);
 
   useEffect(() => {
-    if (open) {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
+  }, [messages]);
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -93,44 +75,26 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
   };
 
   return (
-    <Paper
-      elevation={8}
-      sx={{
-        position: "fixed",
-        right: 16,
-        bottom: 72,
-        zIndex: (theme) => theme.zIndex.drawer + 2,
-        width: 400,
-        maxWidth: "calc(100vw - 32px)",
-        height: 560,
-        maxHeight: "calc(100vh - 96px)",
-        display: open ? "flex" : "none",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ px: 2, py: 1, borderBottom: 1, borderColor: "divider", alignItems: "center" }}
-      >
-        <FontAwesomeIcon icon={faRobot} />
-        <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-          Assistant
-        </Typography>
-        <Tooltip title="Clear conversation">
+    <>
+      <SectionHeader title="Assistant" onClose={onClose}>
+        <Tooltip describeChild title="Clear conversation">
           <span>
-            <IconButton size="small" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>
+            <IconButton
+              size="small"
+              disabled={busy || messages.length === 0}
+              onClick={() => setMessages([])}
+            >
               <FontAwesomeIcon icon={faTrashCan} />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Hide">
-          <IconButton size="small" onClick={() => setState({ assistantPanelOpen: false })}>
-            <FontAwesomeIcon icon={faXmark} />
+        <Tooltip describeChild title="Assistant settings">
+          <IconButton size="small" onClick={() => setSettingsOpen(true)}>
+            <FontAwesomeIcon icon={faGear} />
           </IconButton>
         </Tooltip>
-      </Stack>
+      </SectionHeader>
+      <AssistantSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Box ref={scrollRef} sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
         <Stack spacing={2}>
@@ -165,7 +129,7 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
         </Stack>
       </Box>
 
-      <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider" }}>
+      <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider", flexShrink: 0 }}>
         <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }}>
           {QUICK_ACTIONS.map((action) => (
             <Chip
@@ -181,6 +145,7 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
           <TextField
             fullWidth
             multiline
+            minRows={1}
             maxRows={5}
             size="small"
             placeholder="Message the assistant…"
@@ -202,7 +167,11 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
           ) : (
             <Tooltip title="Send">
               <span>
-                <IconButton color="primary" disabled={input.trim() === ""} onClick={() => send(input)}>
+                <IconButton
+                  color="primary"
+                  disabled={input.trim() === ""}
+                  onClick={() => send(input)}
+                >
                   <FontAwesomeIcon icon={faPaperPlane} />
                 </IconButton>
               </span>
@@ -210,8 +179,8 @@ export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
           )}
         </Stack>
       </Box>
-    </Paper>
+    </>
   );
 };
 
-export default AssistantPanel;
+export default Assistant;

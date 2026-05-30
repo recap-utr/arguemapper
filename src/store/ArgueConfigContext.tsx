@@ -7,8 +7,10 @@ export interface ArgueConfig {
   readOnly: boolean;
   /** Show the on-canvas toolbar (undo/redo/zoom/fit/layout). */
   toolbar: boolean;
-  /** Whether the assistant is enabled (shows the assistant toggle button). */
+  /** Whether the assistant is enabled (shows the assistant section). */
   assistant: boolean;
+  /** Whether the unified sidebar is enabled (shows the on-canvas section switcher). */
+  sidebar: boolean;
 }
 
 const ArgueConfigContext = createContext<ArgueConfig>({
@@ -16,6 +18,7 @@ const ArgueConfigContext = createContext<ArgueConfig>({
   readOnly: false,
   toolbar: false,
   assistant: false,
+  sidebar: false,
 });
 
 export const ArgueConfigProvider = ArgueConfigContext.Provider;
