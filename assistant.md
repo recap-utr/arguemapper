@@ -7,12 +7,10 @@ In the Inspector on the right, there is a tab labeled "Assistant" that can be op
 This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 
 - **API Key:**
-
   - Paste a key (if necessary) into this field, e.g., your OpenAI API Key.
   - Billing (if necessary) will be tied to this key.
 
 - **Model:**
-
   - Choose a model that will perform the actions.
   - Currently available by default: GPT-4o and GPT-4o-mini.
   - For a list of all OpenAI models, please visit their [models overview](https://platform.openai.com/docs/models/gpt-4o-mini). Keep in mind that only models capable of [structured outputs](https://platform.openai.com/docs/guides/structured-outputs) can be used. More models will become available over time, including the option to connect to privately hosted models (e.g., LLama by Meta).
@@ -25,20 +23,17 @@ This tab contains three fields: **API Key**, **Model**, and **Base URL**.
 You can click the Blue Action Button in the main UI, where you would also add new Scheme and Argument Nodes. Several options are available: **Generate Complete Graph**, **Extract ADUs**, **Identify Major Claim**, and **Predict Relations**.
 
 - **Generate Complete Graph:**
-
   - Extracts the Major Claim, ADUs, and predicts their relations in a single step.
   - The AI uses the Text Resource on the left; if it is empty, no extraction will occur.
   - It only uses the currently visible text resource and ignores any others if multiple exist.
   - As the AI takes over the entire process, errors can be propagated from one task to the next. Because of this, argument graphs produced using this option tend to vary from one run to another and might deviate noticeably from a graph produced by a human annotator.
 
 - **Extract ADUs:**
-
   - Only extracts the Argument Nodes.
   - Existing Nodes in the UI will be deleted during this process.
   - Custom Instructions that request the model to keep certain nodes (e.g., a Major Claim) may result in errors.
 
 - **Identify Major Claim:**
-
   - Identifies the Major Claim.
   - Searches only within existing Argument Nodes. If no nodes exist, an error will result.
 
