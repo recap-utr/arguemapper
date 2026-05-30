@@ -1,27 +1,36 @@
 import { Box } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 import {
   type ChangeEvent,
+  type ComponentPropsWithoutRef,
   forwardRef,
   type UIEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
 } from "react";
 
 export type HighlightRange = readonly [start: number, end: number];
 
-export interface HighlightTextareaProps {
+export interface HighlightTextareaProps extends Omit<
+  ComponentPropsWithoutRef<"textarea">,
+  "onChange" | "value" | "ref"
+> {
   value: string;
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   /** Sorted, non-overlapping character ranges to highlight. */
   ranges: readonly HighlightRange[];
   /** Reports the current text selection as character offsets. */
   onSelectionChange?: (start: number, end: number) => void;
-  className?: string;
+  /** Scrolls this range into view whenever it changes (e.g. its node is selected). */
+  revealRange?: HighlightRange;
+  /** Injected by MUI when used as an input slot; must not reach the DOM. */
+  ownerState?: unknown;
 }
 
 interface Segment {
+  offset: number;
   text: string;
   highlight: boolean;
 }
@@ -34,14 +43,24 @@ function buildSegments(text: string, ranges: readonly HighlightRange[]): Segment
     const start = Math.max(cursor, Math.min(rawStart, text.length));
     const end = Math.max(start, Math.min(rawEnd, text.length));
 
-    if (start > cursor) segments.push({ text: text.slice(cursor, start), highlight: false });
-    if (end > start) segments.push({ text: text.slice(start, end), highlight: true });
+    if (start > cursor)
+      segments.push({ offset: cursor, text: text.slice(cursor, start), highlight: false });
+    if (end > start)
+      segments.push({ offset: start, text: text.slice(start, end), highlight: true });
     cursor = end;
   }
 
-  if (cursor < text.length) segments.push({ text: text.slice(cursor), highlight: false });
+  if (cursor < text.length)
+    segments.push({ offset: cursor, text: text.slice(cursor), highlight: false });
   return segments;
 }
+
+// Styled once at module scope so emotion does not re-serialize per highlight.
+const Highlight = styled("mark")(({ theme }) => ({
+  color: "transparent",
+  borderRadius: "2px",
+  backgroundColor: alpha(theme.palette.warning.main, 0.4),
+}));
 
 // Shared typography so the backdrop and textarea wrap identically.
 const sharedSx = {
@@ -62,7 +81,19 @@ const sharedSx = {
  * used as the `htmlInput` slot of a MUI `TextField`.
  */
 export const HighlightTextarea = forwardRef<HTMLTextAreaElement, HighlightTextareaProps>(
-  function HighlightTextarea({ value, onChange, ranges, onSelectionChange, className, ...rest }, ref) {
+  function HighlightTextarea(
+    {
+      value,
+      onChange,
+      ranges,
+      onSelectionChange,
+      revealRange,
+      className,
+      ownerState: _ownerState,
+      ...rest
+    },
+    ref,
+  ) {
     const backdropRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -83,31 +114,57 @@ export const HighlightTextarea = forwardRef<HTMLTextAreaElement, HighlightTextar
       backdropRef.current.scrollLeft = event.currentTarget.scrollLeft;
     }, []);
 
+    // Reports selection only while this textarea is focused, so changes in
+    // other inputs never feed it stale offsets.
     const reportSelection = useCallback(() => {
       const node = textareaRef.current;
-      if (node) onSelectionChange?.(node.selectionStart, node.selectionEnd);
+      if (node && document.activeElement === node)
+        onSelectionChange?.(node.selectionStart, node.selectionEnd);
     }, [onSelectionChange]);
+
+    // `selectionchange` fires for every selection update — including caret
+    // moves and collapses that the element-level `select` event drops, which
+    // is what made the reported selection (and the consuming button) flaky.
+    useEffect(() => {
+      document.addEventListener("selectionchange", reportSelection);
+      return () => document.removeEventListener("selectionchange", reportSelection);
+    }, [reportSelection]);
+
+    // Scroll the revealed range (the first backdrop mark) into view.
+    const revealStart = revealRange?.[0];
+    const revealEnd = revealRange?.[1];
+    useEffect(() => {
+      const textarea = textareaRef.current;
+      const backdrop = backdropRef.current;
+      if (revealStart === undefined || revealEnd === undefined || !textarea || !backdrop) return;
+      const mark = backdrop.querySelector<HTMLElement>("mark");
+      if (!mark) return;
+      textarea.scrollTop = Math.max(
+        0,
+        mark.offsetTop - (textarea.clientHeight - mark.offsetHeight) / 2,
+      );
+      backdrop.scrollTop = textarea.scrollTop;
+    }, [revealStart, revealEnd]);
 
     return (
       <Box className={className} sx={{ position: "relative", width: "100%" }}>
         <Box
           ref={backdropRef}
           aria-hidden
-          sx={{ ...sharedSx, position: "absolute", inset: 0, overflow: "hidden", color: "transparent", pointerEvents: "none" }}
+          sx={{
+            ...sharedSx,
+            position: "absolute",
+            inset: 0,
+            overflow: "hidden",
+            color: "transparent",
+            pointerEvents: "none",
+          }}
         >
-          {segments.map((segment, index) =>
+          {segments.map((segment) =>
             segment.highlight ? (
-              <Box
-                // biome-ignore lint/suspicious/noArrayIndexKey: segments are positional
-                key={index}
-                component="mark"
-                sx={{ color: "transparent", borderRadius: "2px", backgroundColor: (theme) => alpha(theme.palette.warning.main, 0.4) }}
-              >
-                {segment.text}
-              </Box>
+              <Highlight key={segment.offset}>{segment.text}</Highlight>
             ) : (
-              // biome-ignore lint/suspicious/noArrayIndexKey: segments are positional
-              <span key={index}>{segment.text}</span>
+              <span key={segment.offset}>{segment.text}</span>
             ),
           )}
           {/* Keep the backdrop tall enough when the text ends with a newline. */}
@@ -119,8 +176,19 @@ export const HighlightTextarea = forwardRef<HTMLTextAreaElement, HighlightTextar
           value={value}
           onChange={onChange}
           onScroll={syncScroll}
-          onSelect={reportSelection}
-          sx={{ ...sharedSx, position: "relative", display: "block", width: "100%", boxSizing: "border-box", resize: "none", outline: "none", color: "text.primary", backgroundColor: "transparent", overflow: "auto" }}
+          onFocus={reportSelection}
+          sx={{
+            ...sharedSx,
+            position: "relative",
+            display: "block",
+            width: "100%",
+            boxSizing: "border-box",
+            resize: "none",
+            outline: "none",
+            color: "text.primary",
+            backgroundColor: "transparent",
+            overflow: "auto",
+          }}
           {...rest}
         />
       </Box>

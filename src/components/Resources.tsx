@@ -15,18 +15,77 @@ import {
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
-import "draft-js/dist/Draft.css";
 import { produce } from "immer";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
-import HighlightWithinTextarea, {
-  Selection as TextSelection,
-} from "react-highlight-within-textarea";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
-import { addNodeWithSelection, canvasCenter, type State, setState, useStore } from "../store.js";
+import {
+  addNodeWithSelection,
+  canvasCenter,
+  type State,
+  setState,
+  setStateWithoutHistory,
+  useStore,
+} from "../store.js";
+import { HighlightTextarea, type HighlightRange } from "./HighlightTextarea.js";
 
 interface Props {
   close: () => void;
+}
+
+interface SelectedAtom {
+  selected: boolean;
+  reference?: arguebuf.Reference;
+}
+
+// The selected atom state — the one input both the highlight computation and
+// the tab-reveal effect need from global state.
+const selectSelectedAtom = (state: State): SelectedAtom => {
+  if (state.selection.type !== "atom") return { selected: false };
+  return {
+    selected: true,
+    reference: (state.nodes[state.selection.nodes[0]] as model.AtomNode | undefined)?.data
+      .reference,
+  };
+};
+
+function computeHighlightRanges(
+  text: string,
+  references: Record<string, arguebuf.Reference>,
+  resourceId: string,
+  selectedAtom: SelectedAtom,
+): HighlightRange[] {
+  const matchRange = (reference: arguebuf.Reference): HighlightRange | undefined => {
+    const start = reference.offset;
+    if (start === undefined) return undefined;
+    const end = start + reference.text.length;
+    return text.substring(start, end) === reference.text ? [start, end] : undefined;
+  };
+
+  // While a single atom is selected, highlight only its own reference.
+  // If the selected atom has no reference, no resource text should be highlighted.
+  if (selectedAtom.selected) {
+    const { reference: selectedReference } = selectedAtom;
+    if (selectedReference === undefined) return [];
+    if (selectedReference.resource !== resourceId) return [];
+    const range = matchRange(selectedReference);
+    return range ? [range] : [];
+  }
+
+  const ranges = Object.values(references)
+    .filter((reference) => reference.resource === resourceId)
+    .map(matchRange)
+    .filter((range): range is HighlightRange => range !== undefined)
+    .sort((a, b) => a[0] - b[0]);
+
+  // Merge overlapping ranges so adjacent highlights render as one.
+  const merged: [number, number][] = [];
+  for (const [start, end] of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else merged.push([start, end]);
+  }
+  return merged;
 }
 
 const Resources: React.FC<Props> = ({ close }) => {
@@ -40,10 +99,19 @@ const Resources: React.FC<Props> = ({ close }) => {
     dequal,
   );
   const resourceIds = useStore((state) => Object.keys(state.graph.resources), dequal);
+  const selectedAtom = useStore(selectSelectedAtom, dequal);
   const activeTab = useStore((state) => (state.selectedResourceTab + 1).toString());
   const setActiveTab = useCallback((value: number) => {
     setState({ selectedResourceTab: value - 1 });
   }, []);
+
+  // Reveal the resource a selected atom references so its highlight is visible.
+  useEffect(() => {
+    const resourceId = selectedAtom.reference?.resource;
+    if (resourceId === undefined) return;
+    const tabIndex = resourceIds.indexOf(resourceId);
+    if (tabIndex >= 0) setStateWithoutHistory({ selectedResourceTab: tabIndex });
+  }, [selectedAtom, resourceIds]);
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
@@ -64,7 +132,7 @@ const Resources: React.FC<Props> = ({ close }) => {
     );
   }, []);
 
-  const lastResourceIndex = useMemo(() => (resourceIds.length + 1).toString(), [resourceIds]);
+  const lastResourceIndex = (resourceIds.length + 1).toString();
 
   return (
     <>
@@ -88,22 +156,15 @@ const Resources: React.FC<Props> = ({ close }) => {
       <TabContext value={activeTab}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <TabList onChange={handleTabChange} variant="scrollable" scrollButtons={true}>
-            {resourceIds.map((key) => {
-              const tabIndex = resourceIds.indexOf(key) + 1;
-              return (
-                <Tab
-                  key={key}
-                  label={tabIndex.toString()}
-                  value={tabIndex.toString()}
-                  sx={{ minWidth: 50 }}
-                />
-              );
+            {resourceIds.map((key, index) => {
+              const value = (index + 1).toString();
+              return <Tab key={key} label={value} value={value} sx={{ minWidth: 50 }} />;
             })}
             <Tab label={lastResourceIndex} value={lastResourceIndex} sx={{ minWidth: 50 }} />
           </TabList>
         </Box>
-        {resourceIds.map((id) => {
-          const tabIndex = resourceIds.indexOf(id) + 1;
+        {resourceIds.map((id, index) => {
+          const tabIndex = index + 1;
           return (
             <TabPanel key={id} value={tabIndex.toString()}>
               <Resource id={id} index={tabIndex} references={references} />
@@ -133,97 +194,35 @@ interface ResourceProps {
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
-  const selection = useStore((state) => state.selection);
+  const selectedAtom = useStore(selectSelectedAtom, dequal);
   const flow = useReactFlow();
 
-  const [userSelection, setUserSelection] = useState<TextSelection>(new TextSelection(0, 0));
+  const [textSelection, setTextSelection] = useState({ start: 0, end: 0 });
 
-  const [systemSelection, setSystemSelection] = useState<TextSelection | undefined>(undefined);
-
-  const highlight = useCallback(
-    (text: string, callback: (start: number, end: number) => void) => {
-      if (selection.type === "atom") {
-        const selectedAtom = useStore.getState().nodes[selection.nodes[0]] as model.AtomNode;
-        const selectedReference = selectedAtom.data.reference;
-
-        if (selectedReference !== undefined) {
-          const start = selectedReference.offset;
-          const end = start !== undefined ? start + selectedReference.text.length : undefined;
-
-          if (
-            start !== undefined &&
-            end !== undefined &&
-            text.substring(start, end) === selectedReference.text
-          ) {
-            callback(start, end);
-          }
-
-          return;
-        }
-      }
-
-      const raw = Object.values(references)
-        .filter((ref) => ref.resource === id)
-        .map((ref) => {
-          const start = ref.offset;
-          const end = start !== undefined ? start + ref.text.length : undefined;
-
-          if (start !== undefined && end !== undefined && text.substring(start, end) === ref.text) {
-            return [start, end];
-          }
-
-          return undefined;
-        })
-        .filter((entry): entry is number[] => entry !== undefined)
-        .sort((a, b) => a[0] - b[0]);
-
-      const merged = [] as number[][];
-      const firstHighlight = raw.shift();
-
-      if (firstHighlight !== undefined) {
-        merged.push(firstHighlight);
-
-        for (const [nextStart, nextEnd] of raw) {
-          const lastIndex = merged.length - 1;
-          const [prevStart, prevEnd] = merged[lastIndex];
-
-          if (nextStart > prevEnd) {
-            merged.push([nextStart, nextEnd]);
-          } else if (nextEnd > prevEnd) {
-            merged[lastIndex] = [prevStart, nextEnd];
-          }
-        }
-      }
-
-      for (const [start, end] of merged) {
-        callback(start, end);
-      }
-    },
-    [id, references, selection],
+  const ranges = useMemo(
+    () => computeHighlightRanges(resource.text, references, id, selectedAtom),
+    [resource.text, references, id, selectedAtom],
   );
 
-  const onChange = useCallback(
-    (value: string, selection?: TextSelection) => {
-      setSystemSelection(undefined);
+  // When an atom is selected `ranges` holds only its own reference, if any.
+  const revealRange = selectedAtom.reference ? ranges[0] : undefined;
 
-      if (selection !== undefined && value === resource.text) {
-        const start = Math.min(selection.anchor, selection.focus);
-        const end = Math.max(selection.anchor, selection.focus);
-        setUserSelection(new TextSelection(start, end));
-      } else {
+  const updateField = useCallback(
+    (field: "title" | "text" | "source") =>
+      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { value } = event.target;
         setState(
           produce((draft: State) => {
-            draft.graph.resources[id].text = value;
+            draft.graph.resources[id][field] = value;
           }),
         );
-      }
-    },
-    [id, resource.text],
+      },
+    [id],
   );
 
   const addAtom = useCallback(() => {
-    const text = resource.text.substring(userSelection.anchor, userSelection.focus);
-    const offset = userSelection.anchor;
+    const text = resource.text.substring(textSelection.start, textSelection.end);
+    const offset = textSelection.start;
 
     const { x, y } = flow.screenToFlowPosition(canvasCenter());
     const node = model.initAtom({
@@ -235,7 +234,14 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     });
 
     addNodeWithSelection(node);
-  }, [resource.text, userSelection, id, flow]);
+    // Clearing collapses the button back to disabled so the same span can't be
+    // added twice by accident; a fresh selection re-enables it.
+    setTextSelection({ start: 0, end: 0 });
+  }, [resource.text, textSelection, id, flow]);
+
+  const handleSelectionChange = useCallback((start: number, end: number) => {
+    setTextSelection({ start, end });
+  }, []);
 
   const deleteResource = useCallback(() => {
     setState(
@@ -248,33 +254,20 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   return (
     <Stack spacing={2}>
       <Typography variant="h5">Resource {index}</Typography>
-      <TextField
-        fullWidth
-        label="Title"
-        value={resource.title}
-        onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.resources[id].title = event.target.value;
-            }),
-          );
-        }}
-      />
+      <TextField fullWidth label="Title" value={resource.title} onChange={updateField("title")} />
       <TextField
         label="Text"
         fullWidth
         multiline
-        minRows={5}
+        rows={5}
         value={resource.text}
-        onChange={onChange as never}
-        slots={{
-          htmlInput: HighlightWithinTextarea as React.ElementType,
-        }}
+        onChange={updateField("text")}
+        slots={{ htmlInput: HighlightTextarea }}
         slotProps={{
           htmlInput: {
-            placeholder: "",
-            selection: systemSelection,
-            highlight,
+            ranges,
+            revealRange,
+            onSelectionChange: handleSelectionChange,
           },
         }}
       />
@@ -282,13 +275,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         fullWidth
         label="Source"
         value={resource.source}
-        onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.resources[id].source = event.target.value;
-            }),
-          );
-        }}
+        onChange={updateField("source")}
       />
       <Button
         fullWidth
@@ -302,6 +289,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
       <Button
         fullWidth
         variant="contained"
+        disabled={textSelection.start === textSelection.end}
         startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
         onClick={addAtom}
       >
