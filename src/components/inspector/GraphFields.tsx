@@ -11,7 +11,6 @@ import {
   faMinusCircle,
   faPlusCircle,
   faRobot,
-  faTrash,
   faUpload,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
@@ -36,26 +35,24 @@ import {
   Switch,
   styled,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { startCase } from "lodash";
-import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
-import { useSessionStorage } from "../../storage.js";
 import {
   assistantModels,
-  mutate,
   type ReasoningEffort,
   reasoningEfforts,
-  resetState,
-  setState,
+  useArgueActions,
+  useFlowWrapperRef,
+  useInspectorSlots,
+  useInstanceFocused,
   useStore,
 } from "../../store.js";
 import { NotesField } from "./NotesField.js";
@@ -73,10 +70,13 @@ export const GraphFields: React.FC<Props> = () => {
   const notes: string | undefined = useStore(
     (state) => (state.graph.userdata as model.Userdata).notes,
   );
-  const [assistantKey, setAssistantKey] = useSessionStorage<string>("assistantKey", "");
+  const assistantApiKey = useStore((state) => state.assistantApiKey);
 
-  const confirm = useConfirm();
   const flow = useReactFlow();
+  const wrapperRef = useFlowWrapperRef();
+  const slots = useInspectorSlots();
+  const focused = useInstanceFocused();
+  const { getState, setState, mutate, resetState } = useArgueActions();
 
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
   const edgeStyle = useStore((state) => state.edgeStyle);
@@ -84,21 +84,20 @@ export const GraphFields: React.FC<Props> = () => {
   const imageScale = useStore((state) => state.imageScale);
 
   const [analystCallback, setAnalystCallback] = useState<(() => void) | undefined>(undefined);
-  const [aifdbId, setAifdbId] = useState<number | undefined>(undefined);
 
   const disableAnalystCallback = () => {
     setAnalystCallback(undefined);
   };
 
   const getWrapper: () => model.Wrapper = useCallback(() => {
-    const state = useStore.getState();
+    const state = getState();
 
     return {
       nodes: state.nodes,
       edges: state.edges,
       graph: state.graph,
     };
-  }, []);
+  }, [getState]);
 
   const upload: React.ChangeEventHandler<HTMLInputElement> = useCallback((event) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -113,7 +112,7 @@ export const GraphFields: React.FC<Props> = () => {
 
       reader.readAsText(event.target.files[0]);
     }
-  }, []);
+  }, [resetState]);
 
   const verifyAnalyst = useCallback(
     (callback: () => void) => {
@@ -126,36 +125,36 @@ export const GraphFields: React.FC<Props> = () => {
     [analyst],
   );
 
-  const handleAifImport = useCallback(async () => {
-    if (!aifdbId) return;
-
-    const response = await fetch(`/api/aifdb/json/${aifdbId}`);
-
-    if (!response.ok) {
-      alert(
-        `Failed to fetch AIFdb.org data for ID ${aifdbId}, possibly due to CORS: ${response.statusText} (${response.status})`,
-      );
-    }
-
-    const aifData = await response.json();
-    const importedGraph = convert.importGraph(aifData);
-    resetState(importedGraph);
-    setAifdbId(undefined);
-  }, [aifdbId]);
-
   const [expanded, setExpanded] = React.useState<string | false>("import");
   const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const downloadGraph = useCallback(
+    (format: "aif" | "arguebuf") => {
+      convert.downloadJson(convert.exportGraph(getWrapper(), format, analyst), prettifyJson);
+    },
+    [getWrapper, analyst, prettifyJson],
+  );
+
+  const downloadGraphImage = useCallback(
+    (format: convert.ImgFormat) => {
+      const element = wrapperRef?.current ?? null;
+      if (element !== null) {
+        void convert.downloadImage(format, { element, pixelRatio: imageScale });
+      }
+    },
+    [imageScale, wrapperRef],
+  );
+
   useHotkeys(
     "mod+s",
     () => {
       verifyAnalyst(() => {
-        convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
+        downloadGraph("arguebuf");
       });
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true, enabled: focused },
   );
 
   return (
@@ -209,27 +208,7 @@ export const GraphFields: React.FC<Props> = () => {
               >
                 Load Demo
               </Button>
-              <TextField
-                label="AIFdb.org ID"
-                type="number"
-                fullWidth
-                variant="outlined"
-                value={aifdbId ?? ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setAifdbId(value === "" ? undefined : Number.parseInt(value, 10));
-                }}
-                helperText="Enter the numeric ID of an argument map from aifdb.org"
-              />
-              <Button
-                startIcon={<FontAwesomeIcon icon={faDownload} />}
-                variant="contained"
-                onClick={handleAifImport}
-                disabled={!aifdbId}
-                fullWidth
-              >
-                Import from AIFdb.org
-              </Button>
+              {slots.import}
             </Stack>
           </AccordionDetails>
         </Accordion>
@@ -247,7 +226,7 @@ export const GraphFields: React.FC<Props> = () => {
                 variant="contained"
                 onClick={() => {
                   verifyAnalyst(() => {
-                    convert.downloadJson(convert.exportGraph(getWrapper(), "arguebuf"));
+                    downloadGraph("arguebuf");
                   });
                 }}
               >
@@ -258,7 +237,7 @@ export const GraphFields: React.FC<Props> = () => {
                 variant="contained"
                 onClick={() => {
                   verifyAnalyst(() => {
-                    convert.downloadJson(convert.exportGraph(getWrapper(), "aif"));
+                    downloadGraph("aif");
                   });
                 }}
               >
@@ -269,7 +248,7 @@ export const GraphFields: React.FC<Props> = () => {
                 variant="contained"
                 onClick={() => {
                   void flow.fitView();
-                  void convert.downloadImage(convert.ImgFormat.PNG);
+                  downloadGraphImage(convert.ImgFormat.PNG);
                 }}
               >
                 PNG
@@ -279,7 +258,7 @@ export const GraphFields: React.FC<Props> = () => {
                 variant="contained"
                 onClick={() => {
                   void flow.fitView();
-                  void convert.downloadImage(convert.ImgFormat.JPG);
+                  downloadGraphImage(convert.ImgFormat.JPG);
                 }}
               >
                 JPG
@@ -409,26 +388,7 @@ export const GraphFields: React.FC<Props> = () => {
                 }
                 label="Prettify JSON"
               />
-              <Tooltip
-                title="If errors occur, you can clear your browser's cache and reload the page with this button"
-                describeChild
-              >
-                <Button
-                  color="error"
-                  startIcon={<FontAwesomeIcon icon={faTrash} />}
-                  variant="contained"
-                  onClick={() => {
-                    void confirm().then(({ confirmed }) => {
-                      if (confirmed) {
-                        localStorage.clear();
-                        window.location.reload();
-                      }
-                    });
-                  }}
-                >
-                  Clear cache
-                </Button>
-              </Tooltip>
+              {slots.configuration}
             </Stack>
           </AccordionDetails>
         </Accordion>
@@ -448,9 +408,9 @@ export const GraphFields: React.FC<Props> = () => {
                 fullWidth
                 type="password"
                 label="API Key"
-                value={assistantKey}
+                value={assistantApiKey}
                 onChange={(event) => {
-                  setAssistantKey(event.target.value);
+                  setState({ assistantApiKey: event.target.value });
                 }}
               />
               <Autocomplete
@@ -518,6 +478,7 @@ interface AnalystDialogProps {
 
 const AnalystDialog: React.FC<AnalystDialogProps> = ({ callback, disableCallback }) => {
   const analyst = useStore((state) => state.analyst);
+  const { setState, mutate } = useArgueActions();
 
   const callbackIsFunction = useMemo(() => typeof callback === "function", [callback]);
   const onConfirm = () => {
@@ -581,6 +542,8 @@ interface ParticipantModalProps {
 }
 
 const ParticipantModal: React.FC<ParticipantModalProps> = ({ id, participant }) => {
+  const { mutate } = useArgueActions();
+
   return (
     <Stack spacing={1}>
       <TextField

@@ -9,26 +9,24 @@ import {
 } from "@xyflow/react";
 import { type ComponentType, useMemo } from "react";
 import * as model from "../model.js";
-import { useStore } from "../store.js";
+import { markerId, useArgueConfig, useStore } from "../store.js";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;
   const edgeStyle = useStore((state) => state.edgeStyle);
+  const { id: instanceId } = useArgueConfig();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const strokeColor = useMemo(
     () => (selected ? theme.palette.text.primary : color.grey[500]),
     [selected, theme.palette.text.primary],
   );
-  const markerId = useMemo(
-    () => (selected ? "arguemapper-marker-selected" : "arguemapper-marker"),
-    [selected],
-  );
+  const marker = markerId(instanceId, selected ?? false);
   const size = isMobile ? 5 : 2.5;
   const extendedProps: EdgeProps = {
     ...props,
     style: { stroke: strokeColor, strokeWidth: size },
-    markerEnd: `url(#${markerId})`,
+    markerEnd: `url(#${marker})`,
   };
 
   switch (edgeStyle) {

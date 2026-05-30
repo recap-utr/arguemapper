@@ -2,48 +2,21 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
-import { ReactFlowProvider } from "@xyflow/react";
-import { ConfirmProvider } from "material-ui-confirm";
-import { SnackbarProvider } from "notistack";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
+import { ArgueMapperProviders } from "./ArgueMapperProviders.js";
 import ErrorBoundary from "./components/ErrorBoundary.js";
 import "./style.css";
-import theme from "./theme.js";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <Layout />
+    <ArgueMapperProviders>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </ArgueMapperProviders>
   </React.StrictMode>,
 );
-
-function Layout() {
-  const darkMode = useMediaQuery("(prefers-color-scheme: dark)");
-
-  return (
-    <ThemeProvider theme={theme(darkMode)}>
-      <CssBaseline />
-      <ConfirmProvider
-        defaultOptions={{
-          title: "Are you sure?",
-          description: "This action is destructive and cannot be undone!",
-          confirmationText: "OK",
-          cancellationText: "Cancel",
-          confirmationButtonProps: { autoFocus: true },
-        }}
-      >
-        <SnackbarProvider maxSnack={3} preventDuplicate>
-          <ErrorBoundary>
-            <ReactFlowProvider>
-              <App />
-            </ReactFlowProvider>
-          </ErrorBoundary>
-        </SnackbarProvider>
-      </ConfirmProvider>
-    </ThemeProvider>
-  );
-}

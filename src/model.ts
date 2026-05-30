@@ -49,6 +49,11 @@ export function initWrapper({ nodes, edges, graph }: WrapperInitProps): Wrapper 
   };
 }
 
+/** A graph needs auto-layout when it carries no coordinates (every node sits at the origin). */
+export function needsLayout(nodes: Node[]): boolean {
+  return nodes.every((node) => node.position.x === 0 && node.position.y === 0);
+}
+
 function nodeToArguebuf(obj: Node): arguebuf.Node {
   // immer freezes the object, so we need to clone it
   const node = structuredClone(obj.data) as arguebuf.Node;

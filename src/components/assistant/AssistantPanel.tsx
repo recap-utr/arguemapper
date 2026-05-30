@@ -17,10 +17,14 @@ import {
   Typography,
 } from "@mui/material";
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useRef, useState } from "react";
-import { assistantChat } from "../../services/assistant/chat.js";
-import { setState, useStore } from "../../store.js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type AssistantOptions, createAssistantChat } from "../../services/assistant/chat.js";
+import { useArgueActions, useStore, useStoreApi } from "../../store.js";
 import { MessagePart } from "./MessagePart.js";
+
+export interface AssistantPanelProps {
+  options: AssistantOptions;
+}
 
 const QUICK_ACTIONS: { label: string; prompt: string }[] = [
   {
@@ -49,9 +53,18 @@ const QUICK_ACTIONS: { label: string; prompt: string }[] = [
   },
 ];
 
-export const AssistantPanel: React.FC = () => {
+export const AssistantPanel: React.FC<AssistantPanelProps> = ({ options }) => {
   const open = useStore((state) => state.assistantPanelOpen);
-  const { messages, status, error, sendMessage, stop, setMessages } = useChat({ chat: assistantChat });
+  const { setState } = useArgueActions();
+  const store = useStoreApi();
+  // Depend on the individual settings (which fully determine the chat) rather than the `options`
+  // object, so a fresh `options` literal from the host doesn't rebuild the whole chat each render.
+  const { apiKey, model, baseURL, reasoningEffort } = options;
+  const chat = useMemo(
+    () => createAssistantChat(store, { apiKey, model, baseURL, reasoningEffort }),
+    [store, apiKey, model, baseURL, reasoningEffort],
+  );
+  const { messages, status, error, sendMessage, stop, setMessages } = useChat({ chat });
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +72,7 @@ export const AssistantPanel: React.FC = () => {
 
   useEffect(() => {
     setState({ assistantBusy: busy });
-  }, [busy]);
+  }, [busy, setState]);
 
   useEffect(() => {
     if (open) {

@@ -1,7 +1,7 @@
 import { FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
 import type React from "react";
 import * as model from "../../model.js";
-import { mutate, useStore } from "../../store.js";
+import { useArgueActions, useStore } from "../../store.js";
 import { NotesField } from "./NotesField.js";
 import { MIXED_VALUE, NULL_VALUE, schemeTypeItems, schemeValueItems } from "./schemeSelect.js";
 
@@ -10,6 +10,7 @@ type OptionalSchemeType = model.SchemeCase | typeof NULL_VALUE | typeof MIXED_VA
 const BulkSchemeFields: React.FC = () => {
   const selectedIndices = useStore((state) => state.selection.nodes);
   const nodes = useStore((state) => state.nodes);
+  const { mutate } = useArgueActions();
 
   // Get only scheme nodes from selection
   const schemeNodes = selectedIndices

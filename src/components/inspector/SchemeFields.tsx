@@ -3,7 +3,7 @@ import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
 import * as model from "../../model.js";
-import { mutate, useStore } from "../../store.js";
+import { useArgueActions, useStore } from "../../store.js";
 import { NotesField } from "./NotesField.js";
 import { NULL_VALUE, schemeTypeItems, schemeValueItems } from "./schemeSelect.js";
 
@@ -17,6 +17,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore((state) => state.nodes[selectedIndex] as model.SchemeNode, dequal);
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
+  const { mutate } = useArgueActions();
 
   const updateNotes = useCallback(
     (value: string) => {
@@ -24,7 +25,7 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
         (draft.nodes[selectedIndex].data.userdata as model.Userdata).notes = value;
       });
     },
-    [selectedIndex],
+    [selectedIndex, mutate],
   );
 
   return (

@@ -1,11 +1,10 @@
 import { faCommentDots, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Menu } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import { produce } from "immer";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import * as model from "../model.js";
-import { addAtomAt, addSchemeAt, mutate, useStore } from "../store.js";
+import { useArgueActions, useStore } from "../store.js";
 import { IconMenuItem } from "./IconMenuItem.js";
 
 export interface Click {
@@ -20,10 +19,7 @@ export interface ContextMenuProps {
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
-  const flow = useReactFlow();
-  const leftSidebarOpen = useStore((state) => state.leftSidebarOpen);
-  const headerHeight = useStore((state) => state.headerHeight);
-  const sidebarWidth = useStore((state) => state.sidebarWidth);
+  const { addAtomAt, addSchemeAt, mutate } = useArgueActions();
   const clickedType = useMemo(() => model.elemType(click.target), [click]);
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
@@ -113,12 +109,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
         onClick={withClose(() => {
           const screenPos =
             click.event !== undefined
-              ? {
-                  x: click.event.clientX - (leftSidebarOpen ? sidebarWidth : 0),
-                  y: click.event.clientY - headerHeight,
-                }
+              ? { x: click.event.clientX, y: click.event.clientY }
               : undefined;
-          addAtomAt(flow, screenPos);
+          addAtomAt(screenPos);
         })}
       />
       <IconMenuItem
@@ -126,7 +119,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
         icon={faPlus}
         text="Add Scheme"
         onClick={withClose(() => {
-          addSchemeAt(flow);
+          addSchemeAt();
         })}
       />
     </Menu>

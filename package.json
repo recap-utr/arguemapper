@@ -7,28 +7,44 @@
     "dist"
   ],
   "type": "module",
-  "exports": "./src/index.tsx",
+  "main": "./dist/lib.js",
+  "module": "./dist/lib.js",
+  "types": "./dist/src/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/lib.d.ts",
+      "import": "./dist/lib.js"
+    },
+    "./style.css": "./dist/lib.css"
+  },
   "scripts": {
     "start": "vite --open",
     "preview": "vite preview",
     "build": "tsc && vite build",
+    "build:lib": "tsc && LIB=1 vite build",
     "tsc": "tsc --noEmit",
     "lint": "oxlint"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/lab": "^9.0.0-beta.3",
+    "@mui/material": "^9",
+    "@xyflow/react": "^12",
+    "material-ui-confirm": "^4",
+    "notistack": "^3",
+    "react": "^19",
+    "react-dom": "^19"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3",
     "@ai-sdk/react": "^3.0.193",
-    "@emotion/react": "^11",
-    "@emotion/styled": "^11",
     "@fontsource/roboto": "^5",
     "@fortawesome/fontawesome-svg-core": "^7",
     "@fortawesome/free-brands-svg-icons": "^7",
     "@fortawesome/free-regular-svg-icons": "^7",
     "@fortawesome/free-solid-svg-icons": "^7",
     "@fortawesome/react-fontawesome": "^3",
-    "@mui/lab": "^9.0.0-beta.3",
-    "@mui/material": "^9",
-    "@xyflow/react": "^12",
     "ai": "^6",
     "arguebuf": "^2",
     "dequal": "^2",
@@ -36,10 +52,6 @@
     "html-to-image": "^1",
     "immer": "^11",
     "lodash": "^4",
-    "material-ui-confirm": "^4",
-    "notistack": "^3",
-    "react": "^19",
-    "react-dom": "^19",
     "react-hotkeys-hook": "^5",
     "use-immer": "^0.11",
     "web-worker": "^1",
@@ -54,6 +66,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
     "typescript": "^6",
-    "vite": "^8"
+    "vite": "^8",
+    "vite-plugin-dts": "^5.0.1"
   }
 }

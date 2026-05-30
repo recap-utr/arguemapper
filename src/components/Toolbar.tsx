@@ -13,7 +13,7 @@ import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { setState, useTemporalStore } from "../store.js";
+import { useArgueActions, useInstanceFocused, useTemporalStore } from "../store.js";
 
 interface ItemProps {
   disabled?: boolean;
@@ -42,14 +42,16 @@ export const Toolbar: React.FC = () => {
   const undoable = pastStates.length > 0;
   const redoable = futureStates.length > 0;
   const flow = useReactFlow();
+  const { setState } = useArgueActions();
+  const focused = useInstanceFocused();
 
   const layoutCallback = useCallback(() => {
     setState({ shouldLayout: true });
-  }, []);
+  }, [setState]);
 
   const fitViewCallback = useCallback(() => {
     setState({ shouldFitView: true });
-  }, []);
+  }, [setState]);
 
   useHotkeys(
     "mod+z",
@@ -58,7 +60,7 @@ export const Toolbar: React.FC = () => {
         undo();
       }
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true, enabled: focused },
   );
 
   useHotkeys(
@@ -68,7 +70,7 @@ export const Toolbar: React.FC = () => {
         redo();
       }
     },
-    { preventDefault: true, useKey: true },
+    { preventDefault: true, useKey: true, enabled: focused },
   );
 
   return (

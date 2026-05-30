@@ -1,9 +1,8 @@
 import { faPlus, faRobot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Badge, Box, IconButton, Menu, Stack, useTheme } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
 import type React from "react";
-import { addAtomAt, addSchemeAt, toggleAssistantPanel, useStore } from "../store.js";
+import { useArgueActions, useArgueConfig, useStore } from "../store.js";
 import { IconMenuItem } from "./IconMenuItem.js";
 
 export interface PlusMenuProps {
@@ -20,10 +19,16 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
   const close = () => {
     setPlusButton(null);
   };
-  const flow = useReactFlow();
+  const { addAtomAt, addSchemeAt, toggleAssistantPanel } = useArgueActions();
+  const { readOnly, assistant } = useArgueConfig();
   const busy = useStore((state) => state.assistantBusy);
 
   const buttonSx = { backgroundColor: theme.palette.primary.dark } as const;
+
+  // Nothing to show: read-only viewer without the assistant.
+  if (readOnly && !assistant) {
+    return null;
+  }
 
   return (
     <>
@@ -32,14 +37,18 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
         sx={{ position: "absolute", right: 10, bottom: 10, zIndex: 10 }}
       >
         <Stack spacing={1}>
-          <Badge color="secondary" variant="dot" invisible={!busy} overlap="circular">
-            <IconButton size="large" sx={buttonSx} onClick={() => toggleAssistantPanel()}>
-              <FontAwesomeIcon icon={faRobot} />
+          {assistant && (
+            <Badge color="secondary" variant="dot" invisible={!busy} overlap="circular">
+              <IconButton size="large" sx={buttonSx} onClick={() => toggleAssistantPanel()}>
+                <FontAwesomeIcon icon={faRobot} />
+              </IconButton>
+            </Badge>
+          )}
+          {!readOnly && (
+            <IconButton size="large" sx={buttonSx} onClick={open}>
+              <FontAwesomeIcon icon={faPlus} />
             </IconButton>
-          </Badge>
-          <IconButton size="large" sx={buttonSx} onClick={open}>
-            <FontAwesomeIcon icon={faPlus} />
-          </IconButton>
+          )}
         </Stack>
       </Box>
       <Menu
@@ -54,7 +63,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
           icon={faPlus}
           text="Add Atom"
           onClick={() => {
-            addAtomAt(flow);
+            addAtomAt();
             close();
           }}
         />
@@ -62,7 +71,7 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
           icon={faPlus}
           text="Add Scheme"
           onClick={() => {
-            addSchemeAt(flow);
+            addSchemeAt();
             close();
           }}
         />

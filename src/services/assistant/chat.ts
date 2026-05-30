@@ -6,9 +6,8 @@ import {
   type InferAgentUIMessage,
   stepCountIs,
 } from "ai";
-import { getSessionStorage } from "../../storage.js";
-import { getState, setState } from "../../store.js";
-import { tools } from "./tools.js";
+import type { ArgueStore, ReasoningEffort } from "../../store.js";
+import { createTools } from "./tools.js";
 
 const SYSTEM_PROMPT = `
 You are an assistant that helps an analyst build and refine argument graphs.
@@ -28,44 +27,59 @@ Tool usage:
 Briefly explain what you are doing and summarise the result for the analyst.
 `.trim();
 
-function assistantModel(apiKey: string) {
-  const { model, baseURL } = getState().assistantConfig;
-  return createOpenAI({ baseURL, apiKey })(model);
+export interface AssistantOptions {
+  /** API key. If omitted, the live `assistantApiKey` from the store is used (standalone). */
+  apiKey?: string;
+  model?: string;
+  baseURL?: string;
+  reasoningEffort?: ReasoningEffort;
 }
 
-function openaiModel() {
-  const apiKey = getSessionStorage<string>("assistantKey", "");
-  if (apiKey === "") {
-    throw new Error(
-      "Cannot perform the request because the API key is missing. Open the inspector and set it under 'Assistant'.",
-    );
-  }
-  return assistantModel(apiKey);
+function buildAgent(store: ArgueStore, options: AssistantOptions) {
+  const resolveModel = (apiKey: string) => {
+    const config = store.getState().assistantConfig;
+    const baseURL = options.baseURL ?? config.baseURL;
+    const model = options.model ?? config.model;
+    return createOpenAI({ baseURL, apiKey })(model);
+  };
+
+  return new Agent({
+    // The model is a required setting; prepareCall overrides it per call with the current
+    // runtime config, so an empty key here is fine (it only throws when actually sending).
+    model: resolveModel(""),
+    instructions: SYSTEM_PROMPT, // STATIC — keeps the cached prompt prefix stable across turns
+    tools: createTools(store),
+    stopWhen: stepCountIs(32),
+    prepareCall: () => {
+      // Only resolves runtime call settings (model client + reasoning effort) from the live config,
+      // never the prompt, so the cached prefix is preserved for maximal KV-cache reuse.
+      const apiKey = options.apiKey ?? store.getState().assistantApiKey;
+      if (apiKey === "") {
+        throw new Error(
+          "Cannot perform the request because the API key is missing. Open the inspector and set it under 'Assistant'.",
+        );
+      }
+      const reasoningEffort = options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
+      return {
+        model: resolveModel(apiKey),
+        ...(reasoningEffort ? { providerOptions: { openai: { reasoningEffort } } } : {}),
+      };
+    },
+    onFinish: () => {
+      store.setState({ shouldFitView: true });
+    },
+  });
 }
 
-const agent = new Agent({
-  // The model is a required setting; prepareCall overrides it per call with the current
-  // runtime config, so an empty key here is fine (it only throws when actually sending).
-  model: assistantModel(""),
-  instructions: SYSTEM_PROMPT, // STATIC — keeps the cached prompt prefix stable across turns
-  tools,
-  stopWhen: stepCountIs(32),
-  prepareCall: () => {
-    // Only resolves runtime call settings (model client + reasoning effort) from the live config,
-    // never the prompt, so the cached prefix is preserved for maximal KV-cache reuse.
-    const { reasoningEffort } = getState().assistantConfig;
-    return {
-      model: openaiModel(),
-      ...(reasoningEffort ? { providerOptions: { openai: { reasoningEffort } } } : {}),
-    };
-  },
-  onFinish: () => {
-    setState({ shouldFitView: true });
-  },
-});
+type AssistantAgent = ReturnType<typeof buildAgent>;
+export type AssistantUIMessage = InferAgentUIMessage<AssistantAgent>;
 
-export type AssistantUIMessage = InferAgentUIMessage<typeof agent>;
-
-export const assistantChat = new Chat<AssistantUIMessage>({
-  transport: new DirectChatTransport({ agent }),
-});
+/** Create a chat bound to a specific instance's store and assistant configuration. */
+export function createAssistantChat(
+  store: ArgueStore,
+  options: AssistantOptions,
+): Chat<AssistantUIMessage> {
+  return new Chat<AssistantUIMessage>({
+    transport: new DirectChatTransport({ agent: buildAgent(store, options) }),
+  });
+}

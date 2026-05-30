@@ -6,7 +6,7 @@ import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
 import type * as model from "../../model.js";
-import { mutate, useStore } from "../../store.js";
+import { useArgueActions, useStore } from "../../store.js";
 import { NotesField } from "./NotesField.js";
 
 export interface Props extends React.PropsWithChildren {
@@ -18,6 +18,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
   const element = useStore((state) => state.nodes[selectedIndex] as model.AtomNode, dequal);
   const userdata = element.data.userdata as model.Userdata;
   const majorClaim = useStore((state) => state.graph.majorClaim);
+  const { mutate } = useArgueActions();
 
   const updateText = useCallback(
     (value: string) => {
@@ -25,7 +26,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         (draft.nodes[selectedIndex] as model.AtomNode).data.text = value;
       });
     },
-    [selectedIndex],
+    [selectedIndex, mutate],
   );
 
   const updateReference = useCallback(
@@ -39,7 +40,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         }
       });
     },
-    [selectedIndex],
+    [selectedIndex, mutate],
   );
 
   const updateNotes = useCallback(
@@ -48,7 +49,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         (draft.nodes[selectedIndex].data.userdata as model.Userdata).notes = value;
       });
     },
-    [selectedIndex],
+    [selectedIndex, mutate],
   );
 
   return (

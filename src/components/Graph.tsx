@@ -1,6 +1,4 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, IconButton, Stack, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -19,17 +17,15 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { produce } from "immer";
-import { type SnackbarAction, type SnackbarKey, useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
-import { generateDemo } from "../services/demo.js";
 import { layout } from "../services/layout.js";
 import {
-  resetState,
-  resumeTemporal,
+  markerId,
   type State,
-  setState,
-  setStateWithoutHistory,
+  useArgueActions,
+  useArgueConfig,
+  useFlowWrapperRef,
   useStore,
 } from "../store.js";
 import { ContextMenu, type Click as ContextMenuClick } from "./ContextMenu.js";
@@ -42,68 +38,27 @@ import { Toolbar } from "./Toolbar.js";
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
   const [plusButton, setPlusButton] = React.useState<null | HTMLElement>(null);
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const flow = useReactFlow();
   const theme = useTheme();
+  const { setState, setStateWithoutHistory, resumeTemporal } = useArgueActions();
+  const { id, readOnly, toolbar } = useArgueConfig();
+  const wrapperRef = useFlowWrapperRef();
 
   const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
-  const firstVisit = useStore((state) => state.firstVisit);
   const edgeStyle = useStore((state) => state.edgeStyle);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const shouldFitView = useStore((state) => state.shouldFitView);
   const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
 
-  const snackbarAction: SnackbarAction = useCallback(
-    (key: SnackbarKey) => (
-      <Stack direction="row" spacing={1}>
-        <Button
-          size="small"
-          disableElevation
-          variant="contained"
-          onClick={() => {
-            resetState(generateDemo());
-            closeSnackbar(key);
-            setState({ firstVisit: false });
-          }}
-        >
-          Load Demo
-        </Button>
-        <IconButton
-          onClick={() => {
-            closeSnackbar(key);
-            setState({ firstVisit: false });
-          }}
-        >
-          <FontAwesomeIcon icon={faXmark} />
-        </IconButton>
-      </Stack>
-    ),
-    [closeSnackbar],
-  );
-
-  useEffect(() => {
-    if (firstVisit) {
-      enqueueSnackbar(
-        "Hi there! If you are using this app for the first time, you may want to load our demo.",
-        {
-          key: "welcome",
-          persist: true,
-          variant: "info",
-          action: snackbarAction,
-        },
-      );
-    }
-  }, [enqueueSnackbar, firstVisit, snackbarAction]);
-
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {
       void flow.fitView();
       setStateWithoutHistory({ shouldFitView: false });
     }
-  }, [shouldFitView, shouldLayout, flow]);
+  }, [shouldFitView, shouldLayout, flow, setStateWithoutHistory]);
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
@@ -115,19 +70,25 @@ export default function Graph() {
           setStateWithoutHistory({ shouldLayout: false });
         });
     }
-  }, [shouldLayout, layoutAlgorithm, nodes, edges]);
+  }, [shouldLayout, layoutAlgorithm, nodes, edges, setStateWithoutHistory]);
 
-  const onNodesChange: OnNodesChange<model.Node> = useCallback((changes) => {
-    setState((state) => ({
-      nodes: applyNodeChanges(changes, state.nodes),
-    }));
-  }, []);
+  const onNodesChange: OnNodesChange<model.Node> = useCallback(
+    (changes) => {
+      setState((state) => ({
+        nodes: applyNodeChanges(changes, state.nodes),
+      }));
+    },
+    [setState],
+  );
 
-  const onEdgesChange: OnEdgesChange<model.Edge> = useCallback((changes) => {
-    setState((state) => ({
-      edges: applyEdgeChanges(changes, state.edges),
-    }));
-  }, []);
+  const onEdgesChange: OnEdgesChange<model.Edge> = useCallback(
+    (changes) => {
+      setState((state) => ({
+        edges: applyEdgeChanges(changes, state.edges),
+      }));
+    },
+    [setState],
+  );
 
   const onConnect: OnConnect = useCallback((connection) => {
     setState(
@@ -156,32 +117,41 @@ export default function Graph() {
         }
       }),
     );
-  }, []);
+  }, [setState]);
 
-  const onNodesDelete: OnNodesDelete<model.Node> = useCallback((deletedNodes) => {
-    const deletedNodeIds = deletedNodes.map((node) => node.id);
-    setState((state) => ({
-      nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
-      // one could also use getConnectedEdges from reactflow:
-      // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
-      edges: state.edges.filter(
-        (edge) => !deletedNodeIds.includes(edge.source) && !deletedNodeIds.includes(edge.target),
-      ),
-      selection: model.initSelection(),
-    }));
-  }, []);
-  const onEdgesDelete: OnEdgesDelete = useCallback((deletedEdges) => {
-    const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
-    setState((state) => ({
-      edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
-      selection: model.initSelection(),
-    }));
-  }, []);
+  const onNodesDelete: OnNodesDelete<model.Node> = useCallback(
+    (deletedNodes) => {
+      const deletedNodeIds = deletedNodes.map((node) => node.id);
+      setState((state) => ({
+        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
+        // one could also use getConnectedEdges from reactflow:
+        // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
+        edges: state.edges.filter(
+          (edge) => !deletedNodeIds.includes(edge.source) && !deletedNodeIds.includes(edge.target),
+        ),
+        selection: model.initSelection(),
+      }));
+    },
+    [setState],
+  );
+  const onEdgesDelete: OnEdgesDelete = useCallback(
+    (deletedEdges) => {
+      const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
+      setState((state) => ({
+        edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
+        selection: model.initSelection(),
+      }));
+    },
+    [setState],
+  );
 
-  const onInit: OnInit<model.Node, model.Edge> = useCallback((instance) => {
-    void instance.fitView();
-    resumeTemporal();
-  }, []);
+  const onInit: OnInit<model.Node, model.Edge> = useCallback(
+    (instance) => {
+      void instance.fitView();
+      resumeTemporal();
+    },
+    [resumeTemporal],
+  );
 
   const onContextMenu = (
     event: MouseEvent | React.MouseEvent<Element, MouseEvent>,
@@ -215,25 +185,28 @@ export default function Graph() {
           },
         };
       }),
-    [],
+    [setState],
   );
 
   const onElementClick = useCallback(() => {
     setState({ rightSidebarOpen: true });
-  }, []);
+  }, [setState]);
 
-  const onClickConnectStart: OnConnectStart = useCallback((_event, params) => {
-    const { nodeId } = params;
-    setState(
-      produce((draft: State) => {
-        const node = draft.nodes.find((node) => node.id === nodeId);
+  const onClickConnectStart: OnConnectStart = useCallback(
+    (_event, params) => {
+      const { nodeId } = params;
+      setState(
+        produce((draft: State) => {
+          const node = draft.nodes.find((node) => node.id === nodeId);
 
-        if (node !== undefined) {
-          (node.data.userdata as model.Userdata).clickConnect = true;
-        }
-      }),
-    );
-  }, []);
+          if (node !== undefined) {
+            (node.data.userdata as model.Userdata).clickConnect = true;
+          }
+        }),
+      );
+    },
+    [setState],
+  );
 
   const onClickConnectEnd: OnConnectEnd = useCallback(() => {
     setState(
@@ -246,7 +219,7 @@ export default function Graph() {
         }
       }),
     );
-  }, []);
+  }, [setState]);
 
   const connectionLineType: ConnectionLineType = useMemo(() => {
     switch (edgeStyle) {
@@ -261,23 +234,28 @@ export default function Graph() {
 
   return (
     <ReactFlow<model.Node, model.Edge>
-      id="react-flow"
+      id={id}
+      ref={wrapperRef}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
+      onConnect={readOnly ? undefined : onConnect}
       onInit={onInit}
-      onNodeContextMenu={onContextMenu}
-      onEdgeContextMenu={onContextMenu}
-      onPaneContextMenu={onContextMenu}
+      onNodeContextMenu={readOnly ? undefined : onContextMenu}
+      onEdgeContextMenu={readOnly ? undefined : onContextMenu}
+      onPaneContextMenu={readOnly ? undefined : onContextMenu}
       onNodeClick={onElementClick}
       onEdgeClick={onElementClick}
-      onNodesDelete={onNodesDelete}
-      onEdgesDelete={onEdgesDelete}
+      onNodesDelete={readOnly ? undefined : onNodesDelete}
+      onEdgesDelete={readOnly ? undefined : onEdgesDelete}
       onSelectionChange={onSelectionChange}
-      onClickConnectStart={onClickConnectStart}
-      onClickConnectEnd={onClickConnectEnd}
+      onClickConnectStart={readOnly ? undefined : onClickConnectStart}
+      onClickConnectEnd={readOnly ? undefined : onClickConnectEnd}
+      nodesDraggable={!readOnly}
+      nodesConnectable={!readOnly}
+      edgesReconnectable={!readOnly}
+      deleteKeyCode={readOnly ? null : undefined}
       selectNodesOnDrag={true}
       nodeTypes={NodeTypes}
       edgeTypes={EdgeTypes}
@@ -287,24 +265,14 @@ export default function Graph() {
       onlyRenderVisibleElements={onlyRenderVisibleElements}
       connectionLineType={connectionLineType}
       attributionPosition="bottom-center"
-      colorMode="system"
+      colorMode={theme.palette.mode}
     >
-      {/* <MiniMap
-        // style={}
-        nodeStrokeColor=""
-        nodeColor={() => {
-          return "#333";
-        }}
-        nodeBorderRadius={0}
-        maskColor="#eee"
-      /> */}
-      {/* <Controls/> */}
       <MarkerDefinition>
-        <Marker id="arguemapper-marker" />
-        <Marker id="arguemapper-marker-selected" color={theme.palette.text.primary} />
+        <Marker id={markerId(id, false)} />
+        <Marker id={markerId(id, true)} color={theme.palette.text.primary} />
       </MarkerDefinition>
-      <Toolbar />
-      <ContextMenu click={ctxMenu} setClick={setCtxMenu} />
+      {toolbar && <Toolbar />}
+      {!readOnly && <ContextMenu click={ctxMenu} setClick={setCtxMenu} />}
       <PlusMenu plusButton={plusButton} setPlusButton={setPlusButton} />
     </ReactFlow>
   );

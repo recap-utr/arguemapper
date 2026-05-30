@@ -6,7 +6,7 @@ import type React from "react";
 import { useCallback } from "react";
 import { version as npmVersion } from "../../package.json";
 import * as model from "../model.js";
-import { setState, useStore } from "../store.js";
+import { useArgueActions, useStore } from "../store.js";
 import AtomFields from "./inspector/AtomFields.js";
 import BulkSchemeFields from "./inspector/BulkSchemeFields.js";
 import EdgeFields from "./inspector/EdgeFields.js";
@@ -21,6 +21,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
   const selectionType = useStore((state) => state.selection.type);
   const selectedNodes = useStore((state) => state.selection.nodes);
   const nodes = useStore((state) => state.nodes);
+  const { setState } = useArgueActions();
 
   // Check if all selected nodes are scheme nodes
   const selectedSchemeNodes = selectedNodes
@@ -35,7 +36,7 @@ const Inspector: React.FC<Props> = ({ close }) => {
       edges: state.edges.filter((_edge, idx) => !state.selection.edges.includes(idx)),
       selection: model.initSelection(),
     }));
-  }, []);
+  }, [setState]);
 
   return (
     <>

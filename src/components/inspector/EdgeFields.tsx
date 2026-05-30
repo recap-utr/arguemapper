@@ -3,7 +3,7 @@ import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
 import type * as model from "../../model.js";
-import { mutate, useStore } from "../../store.js";
+import { useArgueActions, useStore } from "../../store.js";
 import { NotesField } from "./NotesField.js";
 
 export interface Props extends React.PropsWithChildren {
@@ -13,6 +13,7 @@ export interface Props extends React.PropsWithChildren {
 export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
   const element = useStore((state) => state.edges[selectedIndex] as model.Edge, dequal);
+  const { mutate } = useArgueActions();
 
   const updateNotes = useCallback(
     (value: string) => {
@@ -24,7 +25,7 @@ export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
         (edge.data.userdata as model.Userdata).notes = value;
       });
     },
-    [selectedIndex],
+    [selectedIndex, mutate],
   );
 
   return (

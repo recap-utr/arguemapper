@@ -3,9 +3,13 @@ import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { z } from "zod";
 import * as model from "../../model.js";
-import { type AssistantConfig, getState, setState, type State } from "../../store.js";
+import type { ArgueStore, AssistantConfig, State } from "../../store.js";
 
 const schemeType = z.enum(model.schemeCases);
+
+/** Build the assistant tool set bound to a specific instance's store. */
+export function createTools(store: ArgueStore): ToolSet {
+  const { getState, setState } = store;
 
 /** Result envelope shared by every tool so the agent can self-correct on failure. */
 type Ok<T> = { ok: true } & T;
@@ -201,8 +205,8 @@ function graphWarnings(
   return warnings;
 }
 
-export const tools = {
-  listResources: tool({
+  const tools = {
+    listResources: tool({
     description:
       "List the source resources (documents) in the project. Returns their ids, titles and sources.",
     inputSchema: z.object({}),
@@ -570,4 +574,7 @@ export const tools = {
       return { ok: true };
     },
   }),
-} satisfies ToolSet;
+  } satisfies ToolSet;
+
+  return tools;
+}

@@ -14,6 +14,50 @@ There are no server-side components in this app, so your data never leaves your 
 docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ```
 
+## Embedding in a React app
+
+ArgueMapper is also published as a reusable `<ArgueMapper>` component.
+Each instance owns its own state, so you can render several independent graphs on one page.
+Editing, the toolbar, both sidebars, and the AI assistant are all opt-in props; with none of them set you get a read-only viewer.
+
+The component expects the host to provide an MUI theme (and, for editing/assistant features, notistack and material-ui-confirm providers).
+The bundled `<ArgueMapperProviders>` sets these up for you, or wire your own.
+
+```tsx
+import { ArgueMapper, ArgueMapperProviders, type GraphJson } from "arguemapper";
+import "arguemapper/style.css";
+import { useRef } from "react";
+
+function Example({ graph }: { graph: GraphJson }) {
+  const ref = useRef<ArgueMapperHandle>(null);
+
+  return (
+    <ArgueMapperProviders>
+      {/* A small read-only viewer */}
+      <div style={{ height: 300 }}>
+        <ArgueMapper initialGraph={graph} readOnly />
+      </div>
+
+      {/* A full editor that reports changes back to the host */}
+      <div style={{ height: 600 }}>
+        <ArgueMapper
+          ref={ref}
+          initialGraph={graph}
+          toolbar
+          leftSidebar
+          rightSidebar
+          onChange={(updated) => console.log(updated)}
+          assistant={{ apiKey: "sk-…" }}
+        />
+      </div>
+    </ArgueMapperProviders>
+  );
+}
+```
+
+The host owns nothing about the graph internally — pass `initialGraph` to seed it, listen via `onChange`, and use the imperative `ref` (`exportGraph`, `importGraph`, `fitView`, `undo`/`redo`, …) for explicit actions.
+`react`, `react-dom`, `@mui/material`, `@emotion/*`, `@xyflow/react`, `notistack`, and `material-ui-confirm` are peer dependencies, so the host's copies are reused.
+
 ## Tutorial
 
 Short guide for sample use cases, more details to any feature further below.

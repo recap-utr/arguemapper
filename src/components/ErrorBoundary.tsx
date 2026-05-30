@@ -1,4 +1,5 @@
 import { Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
+import * as arguebuf from "arguebuf";
 import React, { type ErrorInfo } from "react";
 import * as convert from "../services/convert.js";
 
@@ -27,24 +28,22 @@ class ErrorBoundary extends React.Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const stateString = localStorage.getItem("state");
     let aif = null;
-    let arguebuf = null;
+    let arguebufJson = null;
 
     if (stateString) {
       const state = JSON.parse(stateString).state;
-      const wrapper = {
-        nodes: state.nodes,
-        edges: state.edges,
-        graph: state.graph,
-      };
+      const { nodes, edges, graph } = convert.importGraph(state.graph);
+      const wrapper = { nodes, edges, graph };
+      const analyst = new arguebuf.Analyst(state.analyst);
 
       try {
-        aif = JSON.stringify(convert.exportGraph(wrapper, "aif"));
+        aif = JSON.stringify(convert.exportGraph(wrapper, "aif", analyst));
       } catch {
         /* empty */
       }
 
       try {
-        arguebuf = JSON.stringify(convert.exportGraph(wrapper, "arguebuf"));
+        arguebufJson = JSON.stringify(convert.exportGraph(wrapper, "arguebuf", analyst));
       } catch {
         /* empty */
       }
@@ -55,7 +54,7 @@ class ErrorBoundary extends React.Component<Props, State> {
       errorInfo,
       state: stateString,
       aif,
-      arguebuf,
+      arguebuf: arguebufJson,
     });
   }
 

@@ -18,15 +18,7 @@ import { dequal } from "dequal";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
-import {
-  addNodeWithSelection,
-  canvasCenter,
-  mutate,
-  type State,
-  setState,
-  setStateWithoutHistory,
-  useStore,
-} from "../store.js";
+import { type State, useArgueActions, useStore } from "../store.js";
 import { HighlightTextarea, type HighlightRange } from "./HighlightTextarea.js";
 
 interface Props {
@@ -101,9 +93,13 @@ const Resources: React.FC<Props> = ({ close }) => {
   const resourceIds = useStore((state) => Object.keys(state.graph.resources), dequal);
   const selectedAtom = useStore(selectSelectedAtom, dequal);
   const activeTab = useStore((state) => (state.selectedResourceTab + 1).toString());
-  const setActiveTab = useCallback((value: number) => {
-    setState({ selectedResourceTab: value - 1 });
-  }, []);
+  const { setState, setStateWithoutHistory, mutate } = useArgueActions();
+  const setActiveTab = useCallback(
+    (value: number) => {
+      setState({ selectedResourceTab: value - 1 });
+    },
+    [setState],
+  );
 
   // Reveal the resource a selected atom references so its highlight is visible.
   useEffect(() => {
@@ -111,7 +107,7 @@ const Resources: React.FC<Props> = ({ close }) => {
     if (resourceId === undefined) return;
     const tabIndex = resourceIds.indexOf(resourceId);
     if (tabIndex >= 0) setStateWithoutHistory({ selectedResourceTab: tabIndex });
-  }, [selectedAtom, resourceIds]);
+  }, [selectedAtom, resourceIds, setStateWithoutHistory]);
 
   const handleTabChange = useCallback(
     (_event: React.SyntheticEvent, newValue: string) => {
@@ -128,7 +124,7 @@ const Resources: React.FC<Props> = ({ close }) => {
         }),
       );
     });
-  }, []);
+  }, [mutate]);
 
   const lastResourceIndex = (resourceIds.length + 1).toString();
 
@@ -194,6 +190,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
   const selectedAtom = useStore(selectSelectedAtom, dequal);
   const flow = useReactFlow();
+  const { mutate, addNodeWithSelection, canvasCenter } = useArgueActions();
 
   const [textSelection, setTextSelection] = useState({ start: 0, end: 0 });
 
@@ -213,7 +210,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
           draft.graph.resources[id][field] = value;
         });
       },
-    [id],
+    [id, mutate],
   );
 
   const addAtom = useCallback(() => {
@@ -226,7 +223,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     // Clearing collapses the button back to disabled so the same span can't be
     // added twice by accident; a fresh selection re-enables it.
     setTextSelection({ start: 0, end: 0 });
-  }, [resource.text, textSelection, id, flow]);
+  }, [resource.text, textSelection, id, flow, addNodeWithSelection, canvasCenter]);
 
   const handleSelectionChange = useCallback((start: number, end: number) => {
     setTextSelection({ start, end });
@@ -236,7 +233,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     mutate((draft) => {
       delete draft.graph.resources[id];
     });
-  }, [id]);
+  }, [id, mutate]);
 
   return (
     <Stack spacing={2}>
