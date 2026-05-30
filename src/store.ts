@@ -1,3 +1,4 @@
+import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
@@ -16,24 +17,24 @@ import { createWithEqualityFn } from "zustand/traditional";
 import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 
-export const assistantModels = [
-  "gpt-4o",
-  "gpt-4o-mini",
-  "gpt-4.1",
-  "gpt-4.1-mini",
-  "gpt-4.1-nano",
-  "o4-mini",
-  "o3",
-];
+export const assistantModels = ["gpt-5.5-nano", "gpt-5.5-mini", "gpt-5.5"];
+
+// `undefined` lets the provider pick its default effort; explicit values come from the AI SDK.
+export type ReasoningEffort = OpenAIResponsesProviderOptions["reasoningEffort"];
+export const reasoningEfforts = [
+  undefined,
+  "none",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+] as const satisfies readonly ReasoningEffort[];
 
 export interface AssistantConfig {
   model: string;
   baseURL: string;
-  temperature: number;
-  topP: number;
-  frequencyPenalty: number;
-  presencePenalty: number;
-  seed: null | number;
+  reasoningEffort: ReasoningEffort;
 }
 export interface State {
   analyst: arguebuf.Analyst;
@@ -43,7 +44,6 @@ export interface State {
   graph: model.Graph;
   headerHeight: number;
   imageScale: number;
-  isLoading: boolean;
   layoutAlgorithm: model.LayoutAlgorithm;
   leftSidebarOpen: boolean;
   nodes: model.Node[];
@@ -55,6 +55,8 @@ export interface State {
   shouldFitView: boolean;
   sidebarWidth: number;
   assistantConfig: AssistantConfig;
+  assistantPanelOpen: boolean;
+  assistantBusy: boolean;
 }
 
 type ZundoState = Pick<State, "edges" | "graph" | "nodes" | "selectedResourceTab" | "selection">;
@@ -212,7 +214,6 @@ const initialState: State = {
   edgeStyle: model.EdgeStyle.STEP,
   shouldLayout: false,
   shouldFitView: false,
-  isLoading: false,
   selection: model.initSelection(),
   prettifyJson: true,
   imageScale: 3,
@@ -222,12 +223,10 @@ const initialState: State = {
   assistantConfig: {
     model: assistantModels[0],
     baseURL: "https://api.openai.com/v1",
-    temperature: 0.0,
-    topP: 1.0,
-    frequencyPenalty: 0.0,
-    presencePenalty: 0.0,
-    seed: null,
+    reasoningEffort: undefined,
   },
+  assistantPanelOpen: false,
+  assistantBusy: false,
 };
 
 export const useStore = createWithEqualityFn<State>()(
@@ -240,7 +239,13 @@ export const useStore = createWithEqualityFn<State>()(
 
 useStore.temporal.getState().pause();
 
+// zustand exposes these as standalone closures (they don't rely on `this`), so destructuring is safe.
+// oxlint-disable-next-line typescript/unbound-method
 export const { getState, setState, subscribe } = useStore;
+
+export const toggleAssistantPanel = () => {
+  setState((state) => ({ assistantPanelOpen: !state.assistantPanelOpen }));
+};
 
 export const resetState = (preset?: model.Wrapper) => {
   const s = preset ?? model.initWrapper({});

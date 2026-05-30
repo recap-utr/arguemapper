@@ -101,14 +101,14 @@ export const Toolbar: React.FC = () => {
         <Item
           text="Zoom in"
           callback={() => {
-            flow.zoomIn();
+            void flow.zoomIn();
           }}
           icon={faMagnifyingGlassPlus}
         />
         <Item
           text="Zoom out"
           callback={() => {
-            flow.zoomOut();
+            void flow.zoomOut();
           }}
           icon={faMagnifyingGlassMinus}
         />

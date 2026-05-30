@@ -50,7 +50,15 @@ import * as model from "../../model.js";
 import * as convert from "../../services/convert.js";
 import { generateDemo } from "../../services/demo.js";
 import { useSessionStorage } from "../../storage.js";
-import { assistantModels, resetState, type State, setState, useStore } from "../../store.js";
+import {
+  assistantModels,
+  type ReasoningEffort,
+  reasoningEfforts,
+  resetState,
+  type State,
+  setState,
+  useStore,
+} from "../../store.js";
 
 const Input = styled("input")({
   display: "none",
@@ -260,8 +268,8 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
-                  flow.fitView();
-                  convert.downloadImage(convert.ImgFormat.PNG);
+                  void flow.fitView();
+                  void convert.downloadImage(convert.ImgFormat.PNG);
                 }}
               >
                 PNG
@@ -270,8 +278,8 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faFileImage} />}
                 variant="contained"
                 onClick={() => {
-                  flow.fitView();
-                  convert.downloadImage(convert.ImgFormat.JPG);
+                  void flow.fitView();
+                  void convert.downloadImage(convert.ImgFormat.JPG);
                 }}
               >
                 JPG
@@ -412,7 +420,7 @@ export const GraphFields: React.FC<Props> = () => {
                   startIcon={<FontAwesomeIcon icon={faTrash} />}
                   variant="contained"
                   onClick={() => {
-                    confirm().then(({ confirmed }) => {
+                    void confirm().then(({ confirmed }) => {
                       if (confirmed) {
                         localStorage.clear();
                         window.location.reload();
@@ -475,79 +483,25 @@ export const GraphFields: React.FC<Props> = () => {
               />
               <TextField
                 fullWidth
-                type="number"
-                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
-                label="Temperature"
-                value={assistantConfig.temperature}
+                select
+                label="Reasoning Effort"
+                value={assistantConfig.reasoningEffort ?? "auto"}
                 onChange={(event) => {
                   setState(
                     produce((draft: State) => {
-                      draft.assistantConfig.temperature = Number.parseFloat(event.target.value);
+                      const { value } = event.target;
+                      draft.assistantConfig.reasoningEffort =
+                        value === "auto" ? undefined : (value as ReasoningEffort);
                     }),
                   );
                 }}
-              />
-              <TextField
-                fullWidth
-                type="number"
-                slotProps={{ htmlInput: { min: 0, max: 1, step: 0.1 } }}
-                label="Top P"
-                value={assistantConfig.topP}
-                onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.topP = Number.parseFloat(event.target.value);
-                    }),
-                  );
-                }}
-              />
-              <TextField
-                fullWidth
-                type="number"
-                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
-                label="Frequency Penalty"
-                value={assistantConfig.frequencyPenalty}
-                onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.frequencyPenalty = Number.parseFloat(
-                        event.target.value,
-                      );
-                    }),
-                  );
-                }}
-              />
-              <TextField
-                fullWidth
-                type="number"
-                slotProps={{ htmlInput: { min: 0, max: 2, step: 0.1 } }}
-                label="Presence Penalty"
-                value={assistantConfig.presencePenalty}
-                onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.presencePenalty = Number.parseFloat(event.target.value);
-                    }),
-                  );
-                }}
-              />
-              <TextField
-                fullWidth
-                type="number"
-                slotProps={{ htmlInput: { min: 0 } }}
-                label="Seed (optional)"
-                value={assistantConfig.seed ?? ""}
-                onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.seed =
-                        event.target.value === ""
-                          ? null
-                          : Math.abs(Number.parseInt(event.target.value));
-                    }),
-                  );
-                }}
-              />
+              >
+                {reasoningEfforts.map((effort) => (
+                  <MenuItem key={effort ?? "auto"} value={effort ?? "auto"}>
+                    {startCase(effort ?? "auto")}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Stack>
           </AccordionDetails>
         </Accordion>

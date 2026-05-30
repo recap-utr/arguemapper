@@ -1,52 +1,28 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faBolt,
-  faComments,
-  faDiagramProject,
-  faPlus,
-  faStar,
-  faTimeline,
-  faXmark,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faRobot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  Badge,
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
-  TextField,
+  Stack,
   useTheme,
 } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
-import { useSnackbar } from "notistack";
 import type React from "react";
-import { useCallback, useState } from "react";
 import * as model from "../model.js";
-import {
-  extractAdus,
-  generateGraph,
-  identifyMajorClaim,
-  predictRelations,
-} from "../services/assistant.js";
-import { addNodeWithSelection, canvasCenter, setState } from "../store.js";
+import { addNodeWithSelection, canvasCenter, toggleAssistantPanel, useStore } from "../store.js";
 
 interface ItemProps {
   callback: () => void;
   close: () => void;
-  icon: IconProp;
   text: string;
 }
 
-const Item: React.FC<ItemProps> = ({ callback, close, icon, text }) => {
+const Item: React.FC<ItemProps> = ({ callback, close, text }) => {
   return (
     <MenuItem
       onClick={() => {
@@ -55,7 +31,7 @@ const Item: React.FC<ItemProps> = ({ callback, close, icon, text }) => {
       }}
     >
       <ListItemIcon>
-        <FontAwesomeIcon icon={icon} />
+        <FontAwesomeIcon icon={faPlus} />
       </ListItemIcon>
       <ListItemText>{text}</ListItemText>
     </MenuItem>
@@ -77,43 +53,9 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
     setPlusButton(null);
   };
   const flow = useReactFlow();
-  const setIsLoading = useCallback((value: boolean) => {
-    setState({ isLoading: value });
-  }, []);
+  const busy = useStore((state) => state.assistantBusy);
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  const [assistantCallback, setAssistantCallback] = useState<
-    undefined | ((customPrompt: string) => void)
-  >(undefined);
-  const [customPrompt, setCustomPrompt] = useState("");
-
-  const handleError = useCallback(
-    (e: unknown) => {
-      let errorMsg = "Unknown error";
-      if (typeof e === "string") {
-        errorMsg = e.toUpperCase();
-      } else if (e instanceof Error) {
-        errorMsg = e.message;
-      }
-      console.log(errorMsg);
-
-      enqueueSnackbar(errorMsg, {
-        variant: "error",
-        autoHideDuration: 5000,
-        action: (key) => (
-          <IconButton
-            onClick={() => {
-              closeSnackbar(key);
-            }}
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </IconButton>
-        ),
-      });
-    },
-    [closeSnackbar, enqueueSnackbar],
-  );
+  const buttonSx = { backgroundColor: theme.palette.primary.dark } as const;
 
   return (
     <>
@@ -121,153 +63,44 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
         className="arguemapper-hidden"
         sx={{ position: "absolute", right: 10, bottom: 10, zIndex: 10 }}
       >
-        <IconButton
-          size="large"
-          sx={{ backgroundColor: theme.palette.primary.dark }}
-          onClick={open}
-        >
-          <FontAwesomeIcon icon={faBolt} />
-        </IconButton>
+        <Stack spacing={1}>
+          <Badge color="secondary" variant="dot" invisible={!busy} overlap="circular">
+            <IconButton size="large" sx={buttonSx} onClick={() => toggleAssistantPanel()}>
+              <FontAwesomeIcon icon={faRobot} />
+            </IconButton>
+          </Badge>
+          <IconButton size="large" sx={buttonSx} onClick={open}>
+            <FontAwesomeIcon icon={faPlus} />
+          </IconButton>
+        </Stack>
       </Box>
       <Menu
         open={isOpen}
         onClose={close}
         anchorEl={plusButton}
         sx={{ zIndex: 10, marginBottom: 10 }}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "right",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Item
           callback={() => {
             const { x, y } = flow.screenToFlowPosition(canvasCenter());
-            const node = model.initAtom({
-              data: { text: "" },
-              position: { x, y },
-            });
-
+            const node = model.initAtom({ data: { text: "" }, position: { x, y } });
             addNodeWithSelection(node);
           }}
           close={close}
-          icon={faPlus}
           text="Add Atom"
         />
         <Item
           callback={() => {
             const { x, y } = flow.screenToFlowPosition(canvasCenter());
             const node = model.initScheme({ data: {}, position: { x, y } });
-
             addNodeWithSelection(node);
           }}
           close={close}
-          icon={faPlus}
           text="Add Scheme"
         />
-        <Divider />
-        <Item
-          callback={() => {
-            setAssistantCallback(() => (customPrompt: string) => {
-              setIsLoading(true);
-              generateGraph(customPrompt)
-                .catch(handleError)
-                .finally(() => setIsLoading(false));
-            });
-          }}
-          close={close}
-          icon={faTimeline}
-          text="Generate Complete Graph"
-        />
-        <Divider />
-        <Item
-          callback={() => {
-            setAssistantCallback(() => (customPrompt: string) => {
-              setIsLoading(true);
-              extractAdus(customPrompt)
-                .catch(handleError)
-                .finally(() => setIsLoading(false));
-            });
-          }}
-          close={close}
-          icon={faComments}
-          text="Extract ADUs"
-        />
-        <Item
-          callback={() => {
-            setAssistantCallback(() => (customPrompt: string) => {
-              setIsLoading(true);
-              identifyMajorClaim(customPrompt)
-                .catch(handleError)
-                .finally(() => setIsLoading(false));
-            });
-          }}
-          close={close}
-          icon={faStar}
-          text="Identify Major Claim"
-        />
-        <Item
-          callback={() => {
-            setAssistantCallback(() => (customPrompt: string) => {
-              setIsLoading(true);
-              predictRelations(customPrompt)
-                .catch(handleError)
-                .finally(() => setIsLoading(false));
-            });
-          }}
-          close={close}
-          icon={faDiagramProject}
-          text="Predict Relations"
-        />
       </Menu>
-      <Dialog
-        open={assistantCallback !== undefined}
-        onClose={() => {
-          setAssistantCallback(undefined);
-          setCustomPrompt("");
-        }}
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            assistantCallback?.(customPrompt);
-            setAssistantCallback(undefined);
-            setCustomPrompt("");
-          }}
-        >
-          <DialogTitle>Prompt Customization</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Adding custom instructions allows you to guide the assistant to generate the content
-              you need.
-            </DialogContentText>
-            <TextField
-              label="Custom instructions (optional)"
-              autoFocus
-              fullWidth
-              multiline
-              margin="dense"
-              value={customPrompt}
-              onChange={(event) => {
-                setCustomPrompt(event.target.value);
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setCustomPrompt("");
-              }}
-            >
-              Clear
-            </Button>
-            <Button type="submit">Start generation</Button>
-          </DialogActions>
-        </form>
-      </Dialog>
     </>
   );
 };

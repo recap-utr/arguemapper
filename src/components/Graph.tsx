@@ -1,6 +1,6 @@
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, CircularProgress, IconButton, Stack, useTheme } from "@mui/material";
+import { Button, IconButton, Stack, useTheme } from "@mui/material";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -50,7 +50,6 @@ export default function Graph() {
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const firstVisit = useStore((state) => state.firstVisit);
-  const isLoading = useStore((state) => state.isLoading);
   const edgeStyle = useStore((state) => state.edgeStyle);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const shouldFitView = useStore((state) => state.shouldFitView);
@@ -101,28 +100,14 @@ export default function Graph() {
 
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {
-      flow.fitView();
+      void flow.fitView();
       setStateWithoutHistory({ shouldFitView: false });
     }
   }, [shouldFitView, shouldLayout, flow]);
 
   useEffect(() => {
-    const domNode = document.querySelector(
-      "#react-flow .react-flow__renderer",
-    ) as HTMLElement | null;
-
-    if (domNode) {
-      if (isLoading) {
-        domNode.style.opacity = "0";
-      } else {
-        domNode.style.opacity = "1";
-      }
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
-      layout(nodes, edges, layoutAlgorithm)
+      void layout(nodes, edges, layoutAlgorithm)
         .then((layoutedNodes) => {
           setStateWithoutHistory({ nodes: layoutedNodes });
         })
@@ -194,7 +179,7 @@ export default function Graph() {
   }, []);
 
   const onInit: OnInit<model.Node, model.Edge> = useCallback((instance) => {
-    instance.fitView();
+    void instance.fitView();
     resumeTemporal();
   }, []);
 
@@ -304,7 +289,6 @@ export default function Graph() {
       attributionPosition="bottom-center"
       colorMode="system"
     >
-      {isLoading && <Loader />}
       {/* <MiniMap
         // style={}
         nodeStrokeColor=""
@@ -325,16 +309,3 @@ export default function Graph() {
     </ReactFlow>
   );
 }
-
-const Loader: React.FC = () => (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "100vh",
-    }}
-  >
-    <CircularProgress size="25%" />
-  </Box>
-);

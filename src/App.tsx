@@ -1,6 +1,7 @@
 import { Box, Stack, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
+import AssistantPanel from "./components/assistant/AssistantPanel.js";
 import Graph from "./components/Graph.js";
 import Header from "./components/Header.js";
 import Inspector from "./components/Inspector.js";
@@ -70,6 +71,7 @@ export default function App() {
           }}
         />
       </Sidebar>
+      <AssistantPanel />
     </Stack>
   );
 }
