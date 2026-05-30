@@ -1,4 +1,5 @@
 import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+import type { ReactFlowInstance, XYPosition } from "@xyflow/react";
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
@@ -243,6 +244,11 @@ useStore.temporal.getState().pause();
 // oxlint-disable-next-line typescript/unbound-method
 export const { getState, setState, subscribe } = useStore;
 
+/** Apply an immer recipe to the store, removing the repeated `setState(produce(...))` ceremony. */
+export const mutate = (recipe: (draft: State) => void) => {
+  setState(produce(recipe));
+};
+
 export const toggleAssistantPanel = () => {
   setState((state) => ({ assistantPanelOpen: !state.assistantPanelOpen }));
 };
@@ -310,68 +316,54 @@ export const setStateWithoutHistory = (
 };
 
 // Centralized selection management utilities
+const deselectAll = (draft: State) => {
+  for (const node of draft.nodes) {
+    node.selected = false;
+  }
+  for (const edge of draft.edges) {
+    edge.selected = false;
+  }
+};
+
+const selectNodeAtIndex = (draft: State, index: number) => {
+  const node = draft.nodes[index];
+  node.selected = true;
+  draft.selection = { nodes: [index], edges: [], type: node.type };
+};
+
 export const clearAllSelections = () => {
-  setState(
-    produce((draft: State) => {
-      // Clear visual selection on all elements
-      for (const node of draft.nodes) {
-        node.selected = false;
-      }
-      for (const edge of draft.edges) {
-        edge.selected = false;
-      }
-      // Reset selection state
-      draft.selection = model.initSelection();
-    }),
-  );
+  mutate((draft) => {
+    deselectAll(draft);
+    draft.selection = model.initSelection();
+  });
 };
 
 export const selectSingleNode = (nodeIndex: number) => {
-  setState(
-    produce((draft: State) => {
-      // Clear existing selections
-      for (const node of draft.nodes) {
-        node.selected = false;
-      }
-      for (const edge of draft.edges) {
-        edge.selected = false;
-      }
-
-      // Select the specific node
-      if (draft.nodes[nodeIndex]) {
-        draft.nodes[nodeIndex].selected = true;
-        draft.selection = {
-          nodes: [nodeIndex],
-          edges: [],
-          type: draft.nodes[nodeIndex].type,
-        };
-      }
-    }),
-  );
+  mutate((draft) => {
+    deselectAll(draft);
+    if (draft.nodes[nodeIndex]) {
+      selectNodeAtIndex(draft, nodeIndex);
+    }
+  });
 };
 
 export const addNodeWithSelection = (node: model.Node) => {
-  setState(
-    produce((draft: State) => {
-      // Clear existing selections
-      for (const existingNode of draft.nodes) {
-        existingNode.selected = false;
-      }
-      for (const edge of draft.edges) {
-        edge.selected = false;
-      }
+  mutate((draft) => {
+    deselectAll(draft);
+    node.selected = true;
+    draft.nodes.push(node);
+    selectNodeAtIndex(draft, draft.nodes.length - 1);
+  });
+};
 
-      // Add the new node as selected
-      node.selected = true;
-      draft.nodes.push(node);
+/** Create an atom at the given screen position (defaulting to the canvas center) and select it. */
+export const addAtomAt = (flow: ReactFlowInstance, screenPos?: XYPosition, text = "") => {
+  const { x, y } = flow.screenToFlowPosition(screenPos ?? canvasCenter());
+  addNodeWithSelection(model.initAtom({ data: { text }, position: { x, y } }));
+};
 
-      // Update selection state
-      const newNodeIndex = draft.nodes.length - 1;
-      draft.selection = {
-        nodes: [newNodeIndex],
-        edges: [],
-        type: node.type,
-      };
-    }),
-  );
+/** Create a scheme node at the given screen position (defaulting to the canvas center) and select it. */
+export const addSchemeAt = (flow: ReactFlowInstance, screenPos?: XYPosition) => {
+  const { x, y } = flow.screenToFlowPosition(screenPos ?? canvasCenter());
+  addNodeWithSelection(model.initScheme({ data: {}, position: { x, y } }));
 };

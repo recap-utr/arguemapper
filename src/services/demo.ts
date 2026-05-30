@@ -44,22 +44,8 @@ export function generateDemo(): model.Wrapper {
         text: "And another one that attacks it.",
       },
     }),
-    model.initScheme({
-      data: {
-        scheme: {
-          value: arguebuf.Support.DEFAULT,
-          case: "support",
-        },
-      },
-    }),
-    model.initScheme({
-      data: {
-        scheme: {
-          value: arguebuf.Attack.DEFAULT,
-          case: "attack",
-        },
-      },
-    }),
+    model.initScheme({ data: { scheme: model.defaultSchemes.support } }),
+    model.initScheme({ data: { scheme: model.defaultSchemes.attack } }),
   ];
 
   const edges = [

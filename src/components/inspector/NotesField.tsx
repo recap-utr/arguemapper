@@ -1,0 +1,30 @@
+import { type SxProps, TextField, type Theme } from "@mui/material";
+import type React from "react";
+
+interface Props {
+  onChange: (value: string) => void;
+  value?: string;
+  label?: string;
+  placeholder?: string;
+  sx?: SxProps<Theme>;
+}
+
+/** Shared multiline notes input used across the inspector field panels. */
+export const NotesField: React.FC<Props> = ({
+  onChange,
+  value,
+  label = "Notes",
+  placeholder,
+  sx,
+}) => (
+  <TextField
+    sx={sx}
+    fullWidth
+    multiline
+    minRows={1}
+    label={label}
+    placeholder={placeholder}
+    value={value}
+    onChange={(event) => onChange(event.target.value)}
+  />
+);

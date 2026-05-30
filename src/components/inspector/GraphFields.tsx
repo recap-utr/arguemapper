@@ -41,7 +41,6 @@ import {
 } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
-import { produce } from "immer";
 import { startCase } from "lodash";
 import { useConfirm } from "material-ui-confirm";
 import React, { useCallback, useMemo, useState } from "react";
@@ -52,13 +51,14 @@ import { generateDemo } from "../../services/demo.js";
 import { useSessionStorage } from "../../storage.js";
 import {
   assistantModels,
+  mutate,
   type ReasoningEffort,
   reasoningEfforts,
   resetState,
-  type State,
   setState,
   useStore,
 } from "../../store.js";
+import { NotesField } from "./NotesField.js";
 
 const Input = styled("input")({
   display: "none",
@@ -310,15 +310,13 @@ export const GraphFields: React.FC<Props> = () => {
                 startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
                 variant="contained"
                 onClick={() => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.graph.addParticipant(
-                        new arguebuf.Participant({
-                          name: "Unknown",
-                        }),
-                      );
-                    }),
-                  );
+                  mutate((draft) => {
+                    draft.graph.addParticipant(
+                      new arguebuf.Participant({
+                        name: "Unknown",
+                      }),
+                    );
+                  });
                 }}
               >
                 Add Participant
@@ -461,11 +459,9 @@ export const GraphFields: React.FC<Props> = () => {
                 renderInput={(params) => <TextField {...params} label="Model" />}
                 inputValue={assistantConfig.model}
                 onInputChange={(_event, value) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.model = value;
-                    }),
-                  );
+                  mutate((draft) => {
+                    draft.assistantConfig.model = value;
+                  });
                 }}
               />
               <TextField
@@ -474,11 +470,9 @@ export const GraphFields: React.FC<Props> = () => {
                 label="Base URL"
                 value={assistantConfig.baseURL}
                 onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      draft.assistantConfig.baseURL = event.target.value;
-                    }),
-                  );
+                  mutate((draft) => {
+                    draft.assistantConfig.baseURL = event.target.value;
+                  });
                 }}
               />
               <TextField
@@ -487,13 +481,11 @@ export const GraphFields: React.FC<Props> = () => {
                 label="Reasoning Effort"
                 value={assistantConfig.reasoningEffort ?? "auto"}
                 onChange={(event) => {
-                  setState(
-                    produce((draft: State) => {
-                      const { value } = event.target;
-                      draft.assistantConfig.reasoningEffort =
-                        value === "auto" ? undefined : (value as ReasoningEffort);
-                    }),
-                  );
+                  mutate((draft) => {
+                    const { value } = event.target;
+                    draft.assistantConfig.reasoningEffort =
+                      value === "auto" ? undefined : (value as ReasoningEffort);
+                  });
                 }}
               >
                 {reasoningEfforts.map((effort) => (
@@ -505,19 +497,13 @@ export const GraphFields: React.FC<Props> = () => {
             </Stack>
           </AccordionDetails>
         </Accordion>
-        <TextField
+        <NotesField
           sx={{ marginTop: 2 }}
-          fullWidth
-          multiline
-          minRows={1}
-          label="Notes"
           value={notes ?? ""}
-          onChange={(event) => {
-            setState(
-              produce((draft: State) => {
-                (draft.graph.userdata as model.Userdata).notes = event.target.value;
-              }),
-            );
+          onChange={(value) => {
+            mutate((draft) => {
+              (draft.graph.userdata as model.Userdata).notes = value;
+            });
           }}
         />
       </div>
@@ -556,11 +542,9 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({ callback, disableCallback
           margin="dense"
           value={analyst.name ?? ""}
           onChange={(event) => {
-            setState(
-              produce((draft: State) => {
-                draft.analyst.name = event.target.value;
-              }),
-            );
+            mutate((draft) => {
+              draft.analyst.name = event.target.value;
+            });
           }}
         />
         <TextField
@@ -570,11 +554,9 @@ const AnalystDialog: React.FC<AnalystDialogProps> = ({ callback, disableCallback
           margin="dense"
           value={analyst.email ?? ""}
           onChange={(event) => {
-            setState(
-              produce((draft: State) => {
-                draft.analyst.email = event.target.value;
-              }),
-            );
+            mutate((draft) => {
+              draft.analyst.email = event.target.value;
+            });
           }}
         />
       </DialogContent>
@@ -606,11 +588,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({ id, participant }) 
         label="Name"
         value={participant.name}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.participants[id].name = event.target.value;
-            }),
-          );
+          mutate((draft) => {
+            draft.graph.participants[id].name = event.target.value;
+          });
         }}
       />
       <TextField
@@ -619,11 +599,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({ id, participant }) 
         label="Email"
         value={participant.email}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.participants[id].email = event.target.value;
-            }),
-          );
+          mutate((draft) => {
+            draft.graph.participants[id].email = event.target.value;
+          });
         }}
       />
       <TextField
@@ -631,11 +609,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({ id, participant }) 
         label="Username"
         value={participant.username}
         onChange={(event) => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.participants[id].username = event.target.value;
-            }),
-          );
+          mutate((draft) => {
+            draft.graph.participants[id].username = event.target.value;
+          });
         }}
       />
       <Button
@@ -643,11 +619,9 @@ const ParticipantModal: React.FC<ParticipantModalProps> = ({ id, participant }) 
         color="error"
         variant="contained"
         onClick={() => {
-          setState(
-            produce((draft: State) => {
-              delete draft.graph.participants[id];
-            }),
-          );
+          mutate((draft) => {
+            delete draft.graph.participants[id];
+          });
         }}
       >
         Remove Participant

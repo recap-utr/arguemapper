@@ -15,13 +15,13 @@ import {
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
-import { produce } from "immer";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "../model.js";
 import {
   addNodeWithSelection,
   canvasCenter,
+  mutate,
   type State,
   setState,
   setStateWithoutHistory,
@@ -121,15 +121,13 @@ const Resources: React.FC<Props> = ({ close }) => {
   );
 
   const addResource = useCallback(() => {
-    setState(
-      produce((draft: State) => {
-        draft.graph.addResource(
-          new arguebuf.Resource({
-            text: "",
-          }),
-        );
-      }),
-    );
+    mutate((draft) => {
+      draft.graph.addResource(
+        new arguebuf.Resource({
+          text: "",
+        }),
+      );
+    });
   }, []);
 
   const lastResourceIndex = (resourceIds.length + 1).toString();
@@ -211,11 +209,9 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
     (field: "title" | "text" | "source") =>
       (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { value } = event.target;
-        setState(
-          produce((draft: State) => {
-            draft.graph.resources[id][field] = value;
-          }),
-        );
+        mutate((draft) => {
+          draft.graph.resources[id][field] = value;
+        });
       },
     [id],
   );
@@ -223,17 +219,10 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const addAtom = useCallback(() => {
     const text = resource.text.substring(textSelection.start, textSelection.end);
     const offset = textSelection.start;
+    const reference = new arguebuf.Reference({ offset, text, resource: id });
 
     const { x, y } = flow.screenToFlowPosition(canvasCenter());
-    const node = model.initAtom({
-      data: {
-        text,
-        reference: new arguebuf.Reference({ offset, text, resource: id }),
-      },
-      position: { x, y },
-    });
-
-    addNodeWithSelection(node);
+    addNodeWithSelection(model.initAtom({ data: { text, reference }, position: { x, y } }));
     // Clearing collapses the button back to disabled so the same span can't be
     // added twice by accident; a fresh selection re-enables it.
     setTextSelection({ start: 0, end: 0 });
@@ -244,11 +233,9 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   }, []);
 
   const deleteResource = useCallback(() => {
-    setState(
-      produce((draft: State) => {
-        delete draft.graph.resources[id];
-      }),
-    );
+    mutate((draft) => {
+      delete draft.graph.resources[id];
+    });
   }, [id]);
 
   return (

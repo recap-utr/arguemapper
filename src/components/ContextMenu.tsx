@@ -1,38 +1,12 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faCommentDots, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import { Menu } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import { produce } from "immer";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import * as model from "../model.js";
-import { addNodeWithSelection, canvasCenter, type State, setState, useStore } from "../store.js";
-
-interface ItemProps {
-  callback: () => void;
-  close: () => void;
-  icon: IconProp;
-  text: string;
-  visible: boolean;
-}
-
-const Item: React.FC<ItemProps> = ({ callback, close, icon, text, visible }) => {
-  return (
-    <MenuItem
-      sx={{ display: visible ? "flex" : "none" }}
-      onClick={() => {
-        callback();
-        close();
-      }}
-    >
-      <ListItemIcon>
-        <FontAwesomeIcon icon={icon} />
-      </ListItemIcon>
-      <ListItemText>{text}</ListItemText>
-    </MenuItem>
-  );
-};
+import { addAtomAt, addSchemeAt, mutate, useStore } from "../store.js";
+import { IconMenuItem } from "./IconMenuItem.js";
 
 export interface Click {
   event?: MouseEvent | React.MouseEvent<Element, MouseEvent>;
@@ -75,6 +49,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
     [clickedType],
   );
 
+  // Wrap a menu action so the menu always closes after it runs.
+  const withClose = (action: () => void) => () => {
+    action();
+    close();
+  };
+
   return (
     <Menu
       className="arguemapper-hidden"
@@ -91,82 +71,63 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
           : undefined
       }
     >
-      <Item
+      <IconMenuItem
         visible={showFor("atom")}
-        callback={() => {
-          const target = click.target as model.AtomNode;
-          setState(
-            produce((draft: State) => {
-              draft.graph.majorClaim = majorClaim !== target.id ? target.id : undefined;
-            }),
-          );
-        }}
-        close={close}
         icon={faCommentDots}
         text={
           showFor("atom") && majorClaim !== (click.target as model.AtomNode).id
             ? "Set as Major Claim"
             : "Unset Major Claim"
         }
+        onClick={withClose(() => {
+          const target = click.target as model.AtomNode;
+          mutate((draft) => {
+            draft.graph.majorClaim = majorClaim !== target.id ? target.id : undefined;
+          });
+        })}
       />
-      <Item
+      <IconMenuItem
         visible={showFor(["atom", "scheme", "edge"])}
-        callback={() => {
+        icon={faTrash}
+        text="Delete"
+        onClick={withClose(() => {
           const target = click.target as model.Edge | model.AtomNode | model.SchemeNode;
 
           if ("source" in target && "target" in target) {
-            setState(
-              produce((draft: State) => {
-                draft.edges = draft.edges.filter((edge) => target.id !== edge.id);
-                draft.selection = model.initSelection();
-              }),
-            );
+            mutate((draft) => {
+              draft.edges = draft.edges.filter((edge) => target.id !== edge.id);
+              draft.selection = model.initSelection();
+            });
           } else {
-            setState(
-              produce((draft: State) => {
-                draft.nodes = draft.nodes.filter((node) => target.id !== node.id);
-                draft.selection = model.initSelection();
-              }),
-            );
+            mutate((draft) => {
+              draft.nodes = draft.nodes.filter((node) => target.id !== node.id);
+              draft.selection = model.initSelection();
+            });
           }
-        }}
-        close={close}
-        icon={faTrash}
-        text="Delete"
+        })}
       />
-      <Item
+      <IconMenuItem
         visible={showFor("graph")}
-        callback={() => {
-          const { x, y } = flow.screenToFlowPosition(
+        icon={faPlus}
+        text="Add Atom"
+        onClick={withClose(() => {
+          const screenPos =
             click.event !== undefined
               ? {
                   x: click.event.clientX - (leftSidebarOpen ? sidebarWidth : 0),
                   y: click.event.clientY - headerHeight,
                 }
-              : canvasCenter(),
-          );
-          const node = model.initAtom({
-            data: { text: "" },
-            position: { x, y },
-          });
-
-          addNodeWithSelection(node);
-        }}
-        close={close}
-        icon={faPlus}
-        text="Add Atom"
+              : undefined;
+          addAtomAt(flow, screenPos);
+        })}
       />
-      <Item
+      <IconMenuItem
         visible={showFor("graph")}
-        callback={() => {
-          const { x, y } = flow.screenToFlowPosition(canvasCenter());
-          const node = model.initScheme({ data: {}, position: { x, y } });
-
-          addNodeWithSelection(node);
-        }}
-        close={close}
         icon={faPlus}
         text="Add Scheme"
+        onClick={withClose(() => {
+          addSchemeAt(flow);
+        })}
       />
     </Menu>
   );

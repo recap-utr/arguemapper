@@ -127,6 +127,32 @@ export enum EdgeStyle {
   STEP = "step",
 }
 
+export const schemeCases = ["support", "attack", "rephrase", "preference"] as const;
+export type SchemeCase = (typeof schemeCases)[number];
+
+/** Enum of concrete scheme values for each scheme case (e.g. the `arguebuf.Support` members). */
+export const schemeEnums = {
+  support: arguebuf.Support,
+  attack: arguebuf.Attack,
+  rephrase: arguebuf.Rephrase,
+  preference: arguebuf.Preference,
+} as const;
+
+/** The default `arguebuf.Scheme` for each case, used when (re)assigning a scheme node's type. */
+export const defaultSchemes: Record<SchemeCase, arguebuf.Scheme> = {
+  support: { case: "support", value: arguebuf.Support.DEFAULT },
+  attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
+  rephrase: { case: "rephrase", value: arguebuf.Rephrase.DEFAULT },
+  preference: { case: "preference", value: arguebuf.Preference.DEFAULT },
+};
+
+/** Named members of a scheme case's value enum as `[label, value]` pairs (numeric keys filtered out). */
+export function schemeValueEntries(schemeCase: SchemeCase): [string, number][] {
+  return Object.entries(schemeEnums[schemeCase]).filter(([key]) =>
+    Number.isNaN(Number(key)),
+  ) as [string, number][];
+}
+
 export interface Selection {
   nodes: number[];
   edges: number[];

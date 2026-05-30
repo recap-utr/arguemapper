@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, TextField } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
-import { produce } from "immer";
 import type React from "react";
 import { useCallback } from "react";
 import type * as model from "../../model.js";
-import { type State, setState, useStore } from "../../store.js";
+import { mutate, useStore } from "../../store.js";
+import { NotesField } from "./NotesField.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
@@ -19,38 +19,37 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
   const userdata = element.data.userdata as model.Userdata;
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
-  const updateText = useCallback((value: string, selectedIndex: number) => {
-    setState(
-      produce((draft: State) => {
-        const node = draft.nodes[selectedIndex] as model.AtomNode;
-        node.data.text = value;
-      }),
-    );
-  }, []);
+  const updateText = useCallback(
+    (value: string) => {
+      mutate((draft) => {
+        (draft.nodes[selectedIndex] as model.AtomNode).data.text = value;
+      });
+    },
+    [selectedIndex],
+  );
 
-  const updateReference = useCallback((value: string, selectedIndex: number) => {
-    setState(
-      produce((draft: State) => {
+  const updateReference = useCallback(
+    (value: string) => {
+      mutate((draft) => {
         const node = draft.nodes[selectedIndex] as model.AtomNode;
         if (node.data.reference === undefined) {
-          node.data.reference = new arguebuf.Reference({
-            text: value,
-          });
+          node.data.reference = new arguebuf.Reference({ text: value });
         } else {
           node.data.reference.text = value;
         }
-      }),
-    );
-  }, []);
+      });
+    },
+    [selectedIndex],
+  );
 
-  const updateNotes = useCallback((value: string, selectedIndex: number) => {
-    setState(
-      produce((draft: State) => {
-        const node = draft.nodes[selectedIndex];
-        (node.data.userdata as model.Userdata).notes = value;
-      }),
-    );
-  }, []);
+  const updateNotes = useCallback(
+    (value: string) => {
+      mutate((draft) => {
+        (draft.nodes[selectedIndex].data.userdata as model.Userdata).notes = value;
+      });
+    },
+    [selectedIndex],
+  );
 
   return (
     <>
@@ -62,7 +61,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Text"
         value={element.data.text ?? ""}
         onChange={(event) => {
-          updateText(event.target.value, selectedIndex);
+          updateText(event.target.value);
         }}
       />
       <TextField
@@ -72,7 +71,7 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         label="Original Text"
         value={element.data.reference?.text ?? ""}
         onChange={(event) => {
-          updateReference(event.target.value, selectedIndex);
+          updateReference(event.target.value);
         }}
       />
       {userdata.assistant && (
@@ -101,25 +100,14 @@ export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
         startIcon={<FontAwesomeIcon icon={faCommentDots} />}
         variant="contained"
         onClick={() => {
-          setState(
-            produce((draft: State) => {
-              draft.graph.majorClaim = majorClaim !== element.id ? element.id : undefined;
-            }),
-          );
+          mutate((draft) => {
+            draft.graph.majorClaim = majorClaim !== element.id ? element.id : undefined;
+          });
         }}
       >
         {majorClaim !== element.id ? "Set as Major Claim" : "Unset Major Claim"}
       </Button>
-      <TextField
-        fullWidth
-        multiline
-        minRows={1}
-        label="Notes"
-        value={userdata.notes ?? ""}
-        onChange={(event) => {
-          updateNotes(event.target.value, selectedIndex);
-        }}
-      />
+      <NotesField value={userdata.notes ?? ""} onChange={updateNotes} />
       {children}
     </>
   );

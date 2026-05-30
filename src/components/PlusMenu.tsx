@@ -1,42 +1,10 @@
 import { faPlus, faRobot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  Badge,
-  Box,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Stack,
-  useTheme,
-} from "@mui/material";
+import { Badge, Box, IconButton, Menu, Stack, useTheme } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import type React from "react";
-import * as model from "../model.js";
-import { addNodeWithSelection, canvasCenter, toggleAssistantPanel, useStore } from "../store.js";
-
-interface ItemProps {
-  callback: () => void;
-  close: () => void;
-  text: string;
-}
-
-const Item: React.FC<ItemProps> = ({ callback, close, text }) => {
-  return (
-    <MenuItem
-      onClick={() => {
-        callback();
-        close();
-      }}
-    >
-      <ListItemIcon>
-        <FontAwesomeIcon icon={faPlus} />
-      </ListItemIcon>
-      <ListItemText>{text}</ListItemText>
-    </MenuItem>
-  );
-};
+import { addAtomAt, addSchemeAt, toggleAssistantPanel, useStore } from "../store.js";
+import { IconMenuItem } from "./IconMenuItem.js";
 
 export interface PlusMenuProps {
   plusButton: null | HTMLElement;
@@ -82,23 +50,21 @@ export const PlusMenu: React.FC<PlusMenuProps> = ({ plusButton, setPlusButton })
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         transformOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Item
-          callback={() => {
-            const { x, y } = flow.screenToFlowPosition(canvasCenter());
-            const node = model.initAtom({ data: { text: "" }, position: { x, y } });
-            addNodeWithSelection(node);
-          }}
-          close={close}
+        <IconMenuItem
+          icon={faPlus}
           text="Add Atom"
-        />
-        <Item
-          callback={() => {
-            const { x, y } = flow.screenToFlowPosition(canvasCenter());
-            const node = model.initScheme({ data: {}, position: { x, y } });
-            addNodeWithSelection(node);
+          onClick={() => {
+            addAtomAt(flow);
+            close();
           }}
-          close={close}
+        />
+        <IconMenuItem
+          icon={faPlus}
           text="Add Scheme"
+          onClick={() => {
+            addSchemeAt(flow);
+            close();
+          }}
         />
       </Menu>
     </>

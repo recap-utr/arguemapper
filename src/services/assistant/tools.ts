@@ -5,15 +5,7 @@ import { z } from "zod";
 import * as model from "../../model.js";
 import { type AssistantConfig, getState, setState, type State } from "../../store.js";
 
-const schemeType = z.enum(["support", "attack", "rephrase", "preference"]);
-type SchemeType = z.infer<typeof schemeType>;
-
-const schemeLookup: Record<SchemeType, arguebuf.Scheme> = {
-  support: { case: "support", value: arguebuf.Support.DEFAULT },
-  attack: { case: "attack", value: arguebuf.Attack.DEFAULT },
-  rephrase: { case: "rephrase", value: arguebuf.Rephrase.DEFAULT },
-  preference: { case: "preference", value: arguebuf.Preference.DEFAULT },
-};
+const schemeType = z.enum(model.schemeCases);
 
 /** Result envelope shared by every tool so the agent can self-correct on failure. */
 type Ok<T> = { ok: true } & T;
@@ -338,7 +330,7 @@ export const tools = {
           for (const scheme of schemes) {
             const schemeNode = model.initScheme({
               data: {
-                scheme: schemeLookup[scheme.type],
+                scheme: model.defaultSchemes[scheme.type],
                 userdata: { assistant: { config: assistantConfig(), explanation: scheme.explanation } },
               },
             });
@@ -423,7 +415,7 @@ export const tools = {
 
       const schemeNode = model.initScheme({
         data: {
-          scheme: schemeLookup[type],
+          scheme: model.defaultSchemes[type],
           userdata: { assistant: { config: assistantConfig(), explanation } },
         },
       });
@@ -496,7 +488,7 @@ export const tools = {
           const node = draft.nodes.find((n) => n.id === id);
           const data = schemeData(node);
           if (data === undefined || node === undefined) return;
-          if (type !== undefined) data.scheme = schemeLookup[type];
+          if (type !== undefined) data.scheme = model.defaultSchemes[type];
           if (explanation !== undefined) {
             setAssistantExplanation(node.data.userdata as model.Userdata, explanation);
           }
