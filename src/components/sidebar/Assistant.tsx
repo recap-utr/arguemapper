@@ -5,7 +5,7 @@ import { Box, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@m
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type AssistantOptions, createAssistantChat } from "../../services/assistant/chat.js";
-import { useArgueActions, useStoreApi } from "../../store.js";
+import { useArgueActions, useStore, useStoreApi } from "../../store.js";
 import { MessagePart } from "../assistant/MessagePart.js";
 import { AssistantSettingsDialog } from "./AssistantSettingsDialog.js";
 import { SectionHeader } from "./SectionHeader.js";
@@ -48,6 +48,9 @@ export const Assistant: React.FC<Props> = ({ options, onClose }) => {
   // Depend on the individual settings (which fully determine the chat) rather than the `options`
   // object, so a fresh `options` literal from the host doesn't rebuild the whole chat each render.
   const { apiKey, model, baseURL, reasoningEffort } = options;
+  // Bumped whenever the graph is replaced wholesale (load/import/new); watched below to reset the
+  // conversation so a fresh graph starts a fresh chat.
+  const graphResetToken = useStore((state) => state.graphResetToken);
   const chat = useMemo(
     () => createAssistantChat(store, { apiKey, model, baseURL, reasoningEffort }),
     [store, apiKey, model, baseURL, reasoningEffort],
@@ -66,6 +69,28 @@ export const Assistant: React.FC<Props> = ({ options, onClose }) => {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  // Abort an in-flight stream when the panel unmounts or the chat is rebuilt, so a backgrounded
+  // request can't keep calling tools and mutating the graph after teardown. Depend on `chat`
+  // (stable across renders) rather than `stop`, whose identity could change and abort mid-stream.
+  useEffect(() => () => void chat.stop(), [chat]);
+
+  // When the graph is replaced wholesale (token bumps), abort any in-flight run and clear the live
+  // transcript so a fresh graph starts a fresh conversation. The token guard makes this a no-op on
+  // mount and on chat rebuilds (settings changes), which leave the token untouched.
+  const lastResetToken = useRef(graphResetToken);
+  useEffect(() => {
+    if (lastResetToken.current === graphResetToken) return;
+    lastResetToken.current = graphResetToken;
+    void chat.stop();
+    setMessages([]);
+  }, [graphResetToken, chat, setMessages]);
+
+  // Persist the transcript once a turn settles or is cleared. Gating on `!busy` avoids writing on
+  // every streamed token, which would re-serialize the whole graph; `busy` flips false at stream end.
+  useEffect(() => {
+    if (!busy) setState({ assistantMessages: messages });
+  }, [busy, messages, setState]);
 
   const send = (text: string) => {
     const trimmed = text.trim();

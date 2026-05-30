@@ -19,6 +19,7 @@ export type PersistState = Pick<
   | "sidebarSide"
   | "sidebarSections"
   | "assistantConfig"
+  | "assistantMessages"
 >;
 
 // On disk the graph is arguebuf JSON and nodes/edges are folded into it, so they are dropped.
@@ -88,6 +89,7 @@ export const partialize = (state: State): PersistState => ({
   sidebarSide: state.sidebarSide,
   sidebarSections: state.sidebarSections,
   assistantConfig: state.assistantConfig,
+  assistantMessages: state.assistantMessages,
 });
 
 export const persistVersion = 2;

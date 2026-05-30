@@ -57,6 +57,8 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     assistantConfig: { ...defaultAssistantConfig, ...options.assistantConfig },
     assistantBusy: false,
     assistantApiKey: options.assistantApiKey ?? "",
+    assistantMessages: [],
+    graphResetToken: 0,
   };
 }
 

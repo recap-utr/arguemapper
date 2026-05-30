@@ -1,4 +1,3 @@
-import type { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import type * as arguebuf from "arguebuf";
 import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
@@ -6,8 +5,7 @@ import type * as model from "../model.js";
 
 export const assistantModels = ["gpt-5.5-nano", "gpt-5.5-mini", "gpt-5.5"];
 
-// `undefined` lets the provider pick its default effort; explicit values come from the AI SDK.
-export type ReasoningEffort = OpenAIResponsesProviderOptions["reasoningEffort"];
+// `undefined` lets the server pick its default effort; explicit values are sent as `reasoning_effort`.
 export const reasoningEfforts = [
   undefined,
   "none",
@@ -16,7 +14,8 @@ export const reasoningEfforts = [
   "medium",
   "high",
   "xhigh",
-] as const satisfies readonly ReasoningEffort[];
+] as const;
+export type ReasoningEffort = (typeof reasoningEfforts)[number];
 
 export interface AssistantConfig {
   model: string;
@@ -57,6 +56,18 @@ export interface State {
   assistantBusy: boolean;
   /** API key for the assistant; held in memory only (never persisted). */
   assistantApiKey: string;
+  /**
+   * Assistant transcript; persisted across reloads but excluded from the undo history. Typed as an
+   * opaque blob rather than `UIMessage[]` because the AI SDK message union is too deep for immer's
+   * `Draft<>` to instantiate (TS2589); the Assistant component owns the real `AssistantUIMessage[]`.
+   */
+  assistantMessages: unknown[];
+  /**
+   * Monotonic counter bumped whenever the graph is replaced wholesale (load/import/new). The
+   * assistant watches it to rebuild its chat from the (cleared) transcript, so a fresh graph starts
+   * a fresh conversation. Transient — not persisted, not tracked by undo.
+   */
+  graphResetToken: number;
 }
 
 export type ZundoState = Pick<

@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
@@ -16,6 +16,7 @@ type OptionalSchemeType = model.SchemeCase | typeof NULL_VALUE;
 const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
   const element = useStore((state) => state.nodes[selectedIndex] as model.SchemeNode, dequal);
+  const userdata = element.data.userdata as model.Userdata;
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
   const { mutate } = useArgueActions();
 
@@ -70,10 +71,16 @@ const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
           </Select>
         </FormControl>
       )}
-      <NotesField
-        value={(element.data.userdata as model.Userdata).notes ?? ""}
-        onChange={updateNotes}
-      />
+      {userdata.assistant && (
+        <TextField
+          fullWidth
+          multiline
+          label="Assistant Explanation"
+          slotProps={{ input: { readOnly: true } }}
+          value={userdata.assistant.explanation ?? ""}
+        />
+      )}
+      <NotesField value={userdata.notes ?? ""} onChange={updateNotes} />
     </>
   );
 };

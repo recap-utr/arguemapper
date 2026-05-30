@@ -22,6 +22,7 @@ import {
 } from "ai";
 import type React from "react";
 import type { AssistantUIMessage } from "../../services/assistant/chat.js";
+import { Markdown } from "./Markdown.js";
 
 type Part = AssistantUIMessage["parts"][number];
 
@@ -33,11 +34,7 @@ const summarize = (value: unknown): string => {
 
 export const MessagePart: React.FC<{ part: Part }> = ({ part }) => {
   if (isTextUIPart(part)) {
-    return (
-      <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-        {part.text}
-      </Typography>
-    );
+    return <Markdown>{part.text}</Markdown>;
   }
 
   if (isReasoningUIPart(part)) {

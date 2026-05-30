@@ -1,4 +1,4 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { Chat } from "@ai-sdk/react";
 import {
   DirectChatTransport,
@@ -16,13 +16,11 @@ An argument graph consists of:
 - Atoms: argumentative discourse units (ADUs), i.e. the individual claims and premises.
 - Scheme nodes: the inferences that connect arguments. Each scheme node has one or more premise nodes and a single conclusion node, and a type of support, attack, rephrase or preference. A scheme with several premises is a linked argument. Premises and conclusions are usually atoms, but they may also be other scheme nodes (e.g. an attack whose conclusion is another scheme node represents an undercutting attack on that inference).
 - A major claim: the single root atom of the argument. It only appears as a conclusion, never as a premise.
+- Participants: the people behind the argument (e.g. the speakers in a debate). Each atom may be attributed to one participant.
 
-Build a hierarchical graph rooted at the major claim. Avoid flat graphs where every atom links directly to the major claim, cycles, and orphaned atoms. Extract atoms verbatim from the source resources; do not rewrite their wording unless explicitly asked.
+Build a single connected, hierarchical graph rooted at the major claim. Avoid flat graphs where every atom links directly to the major claim, cycles, orphaned atoms, and disconnected subgraphs (clusters of atoms not joined to the rest of the argument).
 
-Tool usage:
-- Call readGraph to inspect the current graph (atoms, scheme nodes with their premises/conclusion) before editing it, and listResources/readResource to read the source text.
-- Prefer writeGraph to construct a whole graph in a single call; it is additive, so to regenerate from scratch call clearGraph first, then writeGraph. It keeps the conversation small.
-- Use the single-item tools (writeAtom, writeScheme, editAtom, editScheme, editGraph, deleteAtom, deleteScheme) for surgical changes to an existing graph.
+Quote atom text verbatim from the source resources so each atom links back to its original span; do not rewrite the wording unless explicitly asked. An atom's original-text reference is recorded only when its text is found verbatim in a resource — if you must paraphrase, the atom simply carries no reference rather than a wrong one.
 
 Briefly explain what you are doing and summarise the result for the analyst.
 `.trim();
@@ -40,9 +38,14 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
     const config = store.getState().assistantConfig;
     const baseURL = options.baseURL ?? config.baseURL;
     const model = options.model ?? config.model;
-    // The key is optional (local OpenAI-compatible servers don't need one). A placeholder keeps the
-    // provider from throwing up front; remote servers simply reject it on connect.
-    return createOpenAI({ baseURL, apiKey: apiKey || "unused" })(model);
+    // Target the Chat Completions endpoint (`/chat/completions`), the universal standard implemented by
+    // OpenAI and every compatible server (llama.cpp, Ollama, vLLM, …). Unlike `@ai-sdk/openai`'s chat
+    // model, this provider parses the `reasoning_content` delta that reasoning models stream, surfacing
+    // it as reasoning UI parts. The key is optional — the Authorization header is omitted when it is
+    // empty, which is what local servers expect.
+    return createOpenAICompatible({ name: "openai", baseURL, apiKey: apiKey || undefined }).chatModel(
+      model,
+    );
   };
 
   return new Agent({
@@ -52,12 +55,14 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
     instructions: SYSTEM_PROMPT, // STATIC — keeps the cached prompt prefix stable across turns
     tools: createTools(store),
     stopWhen: stepCountIs(32),
-    prepareCall: () => {
-      // Only resolves runtime call settings (model client + reasoning effort) from the live config,
-      // never the prompt, so the cached prefix is preserved for maximal KV-cache reuse.
+    prepareCall: (call) => {
+      // The SDK uses the returned object as the full call args, so spread the incoming `call`
+      // (messages, static instructions, tools, …) and override only the runtime settings resolved
+      // from the live config. The prompt prefix is passed through untouched for KV-cache reuse.
       const apiKey = options.apiKey ?? store.getState().assistantApiKey;
       const reasoningEffort = options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
       return {
+        ...call,
         model: resolveModel(apiKey),
         ...(reasoningEffort ? { providerOptions: { openai: { reasoningEffort } } } : {}),
       };
@@ -77,6 +82,8 @@ export function createAssistantChat(
   options: AssistantOptions,
 ): Chat<AssistantUIMessage> {
   return new Chat<AssistantUIMessage>({
+    // Seed from the persisted transcript so reloads — and chat rebuilds on config changes — restore it.
+    messages: store.getState().assistantMessages as AssistantUIMessage[],
     transport: new DirectChatTransport({ agent: buildAgent(store, options) }),
   });
 }

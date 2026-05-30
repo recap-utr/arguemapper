@@ -160,6 +160,8 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
           graph: g,
           shouldLayout: model.needsLayout(nodes),
           shouldFitView: true,
+          assistantMessages: [],
+          graphResetToken: store.getState().graphResetToken + 1,
         });
       },
       clear: () => {
@@ -167,6 +169,8 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
           nodes: [],
           edges: [],
           shouldFitView: true,
+          assistantMessages: [],
+          graphResetToken: store.getState().graphResetToken + 1,
         });
       },
       fitView: () => {

@@ -86,6 +86,9 @@ export function createActions(
       graph: s.graph,
       shouldLayout: model.needsLayout(s.nodes),
       shouldFitView: true,
+      // A wholesale graph swap starts a fresh assistant conversation.
+      assistantMessages: [],
+      graphResetToken: getState().graphResetToken + 1,
     });
   };
 
