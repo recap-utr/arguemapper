@@ -16,7 +16,15 @@ let
 
     :${toString caddyPort} {
       root * ${arguemapper}
-      encode gzip
+      encode zstd gzip
+
+      header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        Content-Security-Policy "frame-ancestors 'none'"
+        -Server
+      }
 
       # CORS proxy for aifdb.org
       handle_path /api/aifdb/* {
@@ -44,6 +52,17 @@ let
 
       # Serve static files with SPA fallback
       handle {
+        @immutable path /assets/*
+        header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+        @html not path /assets/*
+        header @html Cache-Control "no-store"
+
+        header {
+          -ETag
+          -Last-Modified
+        }
+
         try_files {path} /index.html
         file_server
       }
