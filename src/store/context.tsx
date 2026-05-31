@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { ArgueStore } from "./types.js";
+import type { ArgueStore } from "@/store/types.js";
 
 const ArgueStoreContext = createContext<ArgueStore | null>(null);
 

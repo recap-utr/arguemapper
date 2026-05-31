@@ -7,10 +7,10 @@ import * as arguebuf from "arguebuf";
 import { dequal } from "dequal";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import * as model from "../model.js";
-import { type State, useArgueActions, useStore } from "../store.js";
-import { HighlightTextarea, type HighlightRange } from "./HighlightTextarea.js";
-import { SectionHeader } from "./sidebar/SectionHeader.js";
+import * as model from "@/model.js";
+import { type State, useArgueActions, useStore } from "@/store.js";
+import { HighlightTextarea, type HighlightRange } from "@/components/HighlightTextarea.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 interface Props {
   onClose: () => void;

@@ -2,8 +2,8 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, TextField } from "@mui/material";
 import { useCallback, useState } from "react";
-import * as convert from "../services/convert.js";
-import { useArgueActions } from "../store.js";
+import * as convert from "@/services/convert.js";
+import { useArgueActions } from "@/store.js";
 
 /** Standalone-only import source: pulls an argument map from aifdb.org via the dev/server proxy. */
 export const AifdbImport: React.FC = () => {

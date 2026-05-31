@@ -1,7 +1,7 @@
 import { Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import React, { type ErrorInfo } from "react";
-import * as convert from "../services/convert.js";
+import * as convert from "@/services/convert.js";
 
 type Props = React.PropsWithChildren;
 

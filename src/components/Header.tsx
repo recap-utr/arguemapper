@@ -1,7 +1,7 @@
 import { faAnglesLeft, faAnglesRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppBar, IconButton, Toolbar, Tooltip, Typography } from "@mui/material";
-import { useArgueActions, useArgueConfig, useStore } from "../store.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 
 export default function Header() {
   const height = useStore((state) => state.headerHeight);

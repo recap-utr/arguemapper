@@ -2,9 +2,9 @@ import { TextField } from "@mui/material";
 import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
-import type * as model from "../../model.js";
-import { useArgueActions, useStore } from "../../store.js";
-import { NotesField } from "./NotesField.js";
+import type * as model from "@/model.js";
+import { useArgueActions, useStore } from "@/store.js";
+import { NotesField } from "@/components/inspector/NotesField.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;

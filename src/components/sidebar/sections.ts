@@ -7,7 +7,7 @@ import {
   faRobot,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
-import type { SidebarSection } from "../../store.js";
+import type { SidebarSection } from "@/store.js";
 
 export interface SectionMeta {
   section: SidebarSection;

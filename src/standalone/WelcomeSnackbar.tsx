@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, IconButton, Stack } from "@mui/material";
 import { type SnackbarAction, type SnackbarKey, useSnackbar } from "notistack";
 import { useCallback, useEffect } from "react";
-import { generateDemo } from "../services/demo.js";
-import { useArgueActions, useStore } from "../store.js";
+import { generateDemo } from "@/services/demo.js";
+import { useArgueActions, useStore } from "@/store.js";
 
 /** Standalone-only onboarding prompt offering to load the demo on first visit. */
 export const WelcomeSnackbar: React.FC = () => {

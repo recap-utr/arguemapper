@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import type React from "react";
 import { useCallback } from "react";
-import * as model from "../model.js";
-import { useArgueActions, useStore } from "../store.js";
-import AtomFields from "./inspector/AtomFields.js";
-import BulkSchemeFields from "./inspector/BulkSchemeFields.js";
-import EdgeFields from "./inspector/EdgeFields.js";
-import { NotesField } from "./inspector/NotesField.js";
-import SchemeFields from "./inspector/SchemeFields.js";
-import { SectionHeader } from "./sidebar/SectionHeader.js";
+import * as model from "@/model.js";
+import { useArgueActions, useStore } from "@/store.js";
+import AtomFields from "@/components/inspector/AtomFields.js";
+import BulkSchemeFields from "@/components/inspector/BulkSchemeFields.js";
+import EdgeFields from "@/components/inspector/EdgeFields.js";
+import { NotesField } from "@/components/inspector/NotesField.js";
+import SchemeFields from "@/components/inspector/SchemeFields.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 interface Props {
   onClose: () => void;

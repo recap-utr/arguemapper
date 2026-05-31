@@ -56,6 +56,10 @@ export default defineConfig({
       : {}),
   },
   resolve: {
+    alias: {
+      "@root": resolve(__dirname),
+      "@": resolve(__dirname, "src"),
+    },
     conditions: ["mui-modern", "module", "browser", "development|production"],
   },
 });

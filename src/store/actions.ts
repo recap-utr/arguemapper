@@ -1,7 +1,7 @@
 import type { XYPosition } from "@xyflow/react";
 import { produce } from "immer";
-import * as model from "../model.js";
-import type { ArgueStore, SidebarSection, State } from "./types.js";
+import * as model from "@/model.js";
+import type { ArgueStore, SidebarSection, State } from "@/store/types.js";
 
 export interface ArgueActions {
   setState: ArgueStore["setState"];

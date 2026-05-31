@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { useArgueActions, useStore } from "../store.js";
+import { useArgueActions, useStore } from "@/store.js";
 
 /** Standalone-only control to dock the sidebar on the left or right (the lib uses the `side` prop). */
 export const SideToggle: React.FC = () => {

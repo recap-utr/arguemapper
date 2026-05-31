@@ -1,6 +1,6 @@
 import { MenuItem } from "@mui/material";
 import { startCase } from "lodash";
-import * as model from "../../model.js";
+import * as model from "@/model.js";
 
 /** Sentinel select values for "no scheme" and (in bulk editing) "mixed selection". */
 export const NULL_VALUE = "###NULL###";

@@ -13,8 +13,8 @@ import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useArgueActions, useInstanceFocused, useTemporalStore } from "../store.js";
-import { canvasButtonSx } from "./canvasControls.js";
+import { useArgueActions, useInstanceFocused, useTemporalStore } from "@/store.js";
+import { canvasButtonSx } from "@/components/canvasControls.js";
 
 interface ItemProps {
   disabled?: boolean;

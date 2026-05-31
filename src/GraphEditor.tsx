@@ -1,9 +1,9 @@
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import { ReactFlowProvider } from "@xyflow/react";
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
-import { GraphEditorLayout } from "./GraphEditorLayout.js";
-import * as convert from "./services/convert.js";
-import type { AssistantOptions } from "./services/assistant/chat.js";
+import { GraphEditorLayout } from "@/GraphEditorLayout.js";
+import * as convert from "@/services/convert.js";
+import type { AssistantOptions } from "@/services/assistant/chat.js";
 import {
   type ArgueStore,
   ArgueConfigProvider,
@@ -15,7 +15,7 @@ import {
   InstanceFocusProvider,
   resetGraphState,
   useFocusWithin,
-} from "./store.js";
+} from "@/store.js";
 
 export type GraphEditorAssistantConfig = AssistantOptions;
 

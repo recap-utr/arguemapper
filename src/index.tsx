@@ -4,10 +4,10 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.js";
-import { GraphProviders } from "./GraphProviders.js";
-import ErrorBoundary from "./components/ErrorBoundary.js";
-import "./style.css";
+import App from "@/App.js";
+import { GraphProviders } from "@/GraphProviders.js";
+import ErrorBoundary from "@/components/ErrorBoundary.js";
+import "@/style.css";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);

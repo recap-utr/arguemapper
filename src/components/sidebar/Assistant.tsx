@@ -4,11 +4,11 @@ import { useChat } from "@ai-sdk/react";
 import { Box, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type AssistantOptions, createAssistantChat } from "../../services/assistant/chat.js";
-import { useArgueActions, useStore, useStoreApi } from "../../store.js";
-import { MessagePart } from "../assistant/MessagePart.js";
-import { AssistantSettingsDialog } from "./AssistantSettingsDialog.js";
-import { SectionHeader } from "./SectionHeader.js";
+import { type AssistantOptions, createAssistantChat } from "@/services/assistant/chat.js";
+import { useArgueActions, useStore, useStoreApi } from "@/store.js";
+import { MessagePart } from "@/components/assistant/MessagePart.js";
+import { AssistantSettingsDialog } from "@/components/sidebar/AssistantSettingsDialog.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 const QUICK_ACTIONS: { label: string; prompt: string }[] = [
   {

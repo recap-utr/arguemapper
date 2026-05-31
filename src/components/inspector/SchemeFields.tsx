@@ -2,10 +2,10 @@ import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/mater
 import { dequal } from "dequal";
 import type React from "react";
 import { useCallback } from "react";
-import * as model from "../../model.js";
-import { useArgueActions, useStore } from "../../store.js";
-import { NotesField } from "./NotesField.js";
-import { NULL_VALUE, schemeTypeItems, schemeValueItems } from "./schemeSelect.js";
+import * as model from "@/model.js";
+import { useArgueActions, useStore } from "@/store.js";
+import { NotesField } from "@/components/inspector/NotesField.js";
+import { NULL_VALUE, schemeTypeItems, schemeValueItems } from "@/components/inspector/schemeSelect.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;

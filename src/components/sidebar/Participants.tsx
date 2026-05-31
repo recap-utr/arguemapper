@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
-import { useArgueActions, useStore } from "../../store.js";
-import { SectionHeader } from "./SectionHeader.js";
+import { useArgueActions, useStore } from "@/store.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 interface Props {
   onClose: () => void;

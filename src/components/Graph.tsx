@@ -14,20 +14,20 @@ import {
 } from "@xyflow/react";
 import { produce } from "immer";
 import React, { useCallback, useState } from "react";
-import * as model from "../model.js";
+import * as model from "@/model.js";
 import {
   type State,
   useArgueActions,
   useArgueConfig,
   useFlowWrapperRef,
   useStore,
-} from "../store.js";
-import { ContextMenu, type Click as ContextMenuClick } from "./ContextMenu.js";
-import { GraphCanvas } from "./GraphCanvas.js";
-import { PlusMenu } from "./PlusMenu.js";
-import { SectionSwitcher } from "./SectionSwitcher.js";
-import { Toolbar } from "./Toolbar.js";
-import { useAutoLayout } from "./useAutoLayout.js";
+} from "@/store.js";
+import { ContextMenu, type Click as ContextMenuClick } from "@/components/ContextMenu.js";
+import { GraphCanvas } from "@/components/GraphCanvas.js";
+import { PlusMenu } from "@/components/PlusMenu.js";
+import { SectionSwitcher } from "@/components/SectionSwitcher.js";
+import { Toolbar } from "@/components/Toolbar.js";
+import { useAutoLayout } from "@/components/useAutoLayout.js";
 
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });

@@ -11,8 +11,8 @@ import {
 import { startCase } from "lodash";
 import type React from "react";
 import { type ComponentType, useMemo } from "react";
-import type * as model from "../model.js";
-import { useGraphRender } from "./GraphRenderContext.js";
+import type * as model from "@/model.js";
+import { useGraphRender } from "@/components/GraphRenderContext.js";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;

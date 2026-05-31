@@ -13,18 +13,18 @@ import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import type * as model from "../../model.js";
-import * as convert from "../../services/convert.js";
-import { generateDemo } from "../../services/demo.js";
+import type * as model from "@/model.js";
+import * as convert from "@/services/convert.js";
+import { generateDemo } from "@/services/demo.js";
 import {
   useArgueActions,
   useFlowWrapperRef,
   useInspectorSlots,
   useInstanceFocused,
   useStore,
-} from "../../store.js";
-import { AnalystDialog } from "./AnalystDialog.js";
-import { SectionHeader } from "./SectionHeader.js";
+} from "@/store.js";
+import { AnalystDialog } from "@/components/sidebar/AnalystDialog.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 const Input = styled("input")({ display: "none" });
 

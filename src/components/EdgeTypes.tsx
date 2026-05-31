@@ -8,9 +8,9 @@ import {
   StraightEdge,
 } from "@xyflow/react";
 import { type ComponentType, useMemo } from "react";
-import * as model from "../model.js";
-import { markerId } from "../store.js";
-import { useGraphRender } from "./GraphRenderContext.js";
+import * as model from "@/model.js";
+import { markerId } from "@/store.js";
+import { useGraphRender } from "@/components/GraphRenderContext.js";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;

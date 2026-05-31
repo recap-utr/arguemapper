@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, Menu, useTheme } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
-import { useArgueActions, useArgueConfig } from "../store.js";
-import { canvasButtonSx } from "./canvasControls.js";
-import { IconMenuItem } from "./IconMenuItem.js";
+import { useArgueActions, useArgueConfig } from "@/store.js";
+import { canvasButtonSx } from "@/components/canvasControls.js";
+import { IconMenuItem } from "@/components/IconMenuItem.js";
 
 /** The add-node button (bottom-right of the canvas) and its atom/scheme menu. */
 export const PlusMenu: React.FC = () => {

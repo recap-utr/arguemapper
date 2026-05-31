@@ -21,8 +21,8 @@ import {
   isToolOrDynamicToolUIPart,
 } from "ai";
 import type React from "react";
-import type { AssistantUIMessage } from "../../services/assistant/chat.js";
-import { Markdown } from "./Markdown.js";
+import type { AssistantUIMessage } from "@/services/assistant/chat.js";
+import { Markdown } from "@/components/assistant/Markdown.js";
 
 type Part = AssistantUIMessage["parts"][number];
 

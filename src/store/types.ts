@@ -1,7 +1,7 @@
 import type * as arguebuf from "arguebuf";
 import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
-import type * as model from "../model.js";
+import type * as model from "@/model.js";
 
 export const assistantModels = ["gpt-5.5-nano", "gpt-5.5-mini", "gpt-5.5"];
 

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import * as model from "../model.js";
+import * as model from "@/model.js";
 
 /**
  * The minimal slice the node/edge renderers need to draw a graph. Supplying it via context (rather

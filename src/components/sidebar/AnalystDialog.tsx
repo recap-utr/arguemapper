@@ -10,7 +10,7 @@ import {
 import * as arguebuf from "arguebuf";
 import type React from "react";
 import { useMemo } from "react";
-import { useArgueActions, useStore } from "../../store.js";
+import { useArgueActions, useStore } from "@/store.js";
 
 interface Props {
   /** When a function, the dialog is open; on save it runs, then `disableCallback` is invoked. */

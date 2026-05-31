@@ -2,10 +2,10 @@ import { useReactFlow } from "@xyflow/react";
 import { useMemo } from "react";
 import type { TemporalState } from "zundo";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { type ArgueActions, createActions } from "./actions.js";
-import { useStoreApi } from "./context.js";
-import { useFlowWrapperRef } from "./FlowWrapperContext.js";
-import type { State, ZundoState } from "./types.js";
+import { type ArgueActions, createActions } from "@/store/actions.js";
+import { useStoreApi } from "@/store/context.js";
+import { useFlowWrapperRef } from "@/store/FlowWrapperContext.js";
+import type { State, ZundoState } from "@/store/types.js";
 
 /**
  * Subscribe to the current instance's store. Signature matches the previous global `useStore`, so

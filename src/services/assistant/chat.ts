@@ -6,8 +6,8 @@ import {
   type InferAgentUIMessage,
   stepCountIs,
 } from "ai";
-import type { ArgueStore, ReasoningEffort } from "../../store.js";
-import { createTools } from "./tools.js";
+import type { ArgueStore, ReasoningEffort } from "@/store.js";
+import { createTools } from "@/services/assistant/tools.js";
 
 const SYSTEM_PROMPT = `
 You are an assistant that helps an analyst build and refine argument graphs.

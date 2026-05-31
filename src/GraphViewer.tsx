@@ -15,11 +15,11 @@ import {
   useMemo,
   useState,
 } from "react";
-import { GraphCanvas } from "./components/GraphCanvas.js";
-import { useAutoLayout } from "./components/useAutoLayout.js";
+import { GraphCanvas } from "@/components/GraphCanvas.js";
+import { useAutoLayout } from "@/components/useAutoLayout.js";
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
-import * as model from "./model.js";
-import * as convert from "./services/convert.js";
+import * as model from "@/model.js";
+import * as convert from "@/services/convert.js";
 
 export interface GraphViewerProps {
   /** The graph to display (arguebuf JSON). Controlled: updating it re-renders the view. */

@@ -3,9 +3,9 @@ import { Menu } from "@mui/material";
 import { produce } from "immer";
 import type React from "react";
 import { useCallback, useMemo } from "react";
-import * as model from "../model.js";
-import { useArgueActions, useStore } from "../store.js";
-import { IconMenuItem } from "./IconMenuItem.js";
+import * as model from "@/model.js";
+import { useArgueActions, useStore } from "@/store.js";
+import { IconMenuItem } from "@/components/IconMenuItem.js";
 
 export interface Click {
   event?: MouseEvent | React.MouseEvent<Element, MouseEvent>;

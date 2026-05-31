@@ -17,7 +17,7 @@ import {
   reasoningEfforts,
   useArgueActions,
   useStore,
-} from "../../store.js";
+} from "@/store.js";
 
 interface Props {
   open: boolean;

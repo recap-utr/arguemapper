@@ -1,9 +1,9 @@
 import { FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
 import type React from "react";
-import * as model from "../../model.js";
-import { useArgueActions, useStore } from "../../store.js";
-import { NotesField } from "./NotesField.js";
-import { MIXED_VALUE, NULL_VALUE, schemeTypeItems, schemeValueItems } from "./schemeSelect.js";
+import * as model from "@/model.js";
+import { useArgueActions, useStore } from "@/store.js";
+import { NotesField } from "@/components/inspector/NotesField.js";
+import { MIXED_VALUE, NULL_VALUE, schemeTypeItems, schemeValueItems } from "@/components/inspector/schemeSelect.js";
 
 type OptionalSchemeType = model.SchemeCase | typeof NULL_VALUE | typeof MIXED_VALUE;
 

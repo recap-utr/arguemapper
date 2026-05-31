@@ -20,11 +20,11 @@ import {
 import { startCase } from "lodash";
 import type React from "react";
 import { useState } from "react";
-import { version as npmVersion } from "../../../package.json";
-import * as model from "../../model.js";
-import { useArgueActions, useInspectorSlots, useStore } from "../../store.js";
-import { AnalystDialog } from "./AnalystDialog.js";
-import { SectionHeader } from "./SectionHeader.js";
+import { version as npmVersion } from "@root/package.json";
+import * as model from "@/model.js";
+import { useArgueActions, useInspectorSlots, useStore } from "@/store.js";
+import { AnalystDialog } from "@/components/sidebar/AnalystDialog.js";
+import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 interface Props {
   onClose: () => void;

@@ -18,12 +18,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { type RefObject, useMemo } from "react";
-import * as model from "../model.js";
-import { markerId } from "../store.js";
-import { EdgeTypes } from "./EdgeTypes.js";
-import { GraphRenderProvider } from "./GraphRenderContext.js";
-import { Marker, MarkerDefinition } from "./Marker.js";
-import { NodeTypes } from "./NodeTypes.js";
+import * as model from "@/model.js";
+import { markerId } from "@/store.js";
+import { EdgeTypes } from "@/components/EdgeTypes.js";
+import { GraphRenderProvider } from "@/components/GraphRenderContext.js";
+import { Marker, MarkerDefinition } from "@/components/Marker.js";
+import { NodeTypes } from "@/components/NodeTypes.js";
 
 export interface GraphCanvasProps extends React.PropsWithChildren {
   /** Instance id; namespaces the ReactFlow instance and its SVG markers. */

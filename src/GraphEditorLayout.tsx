@@ -1,10 +1,10 @@
 import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect } from "react";
-import Graph from "./components/Graph.js";
-import Header from "./components/Header.js";
-import Sidebar from "./components/Sidebar.js";
-import type { AssistantOptions } from "./services/assistant/chat.js";
-import { useArgueActions, useStore } from "./store.js";
+import Graph from "@/components/Graph.js";
+import Header from "@/components/Header.js";
+import Sidebar from "@/components/Sidebar.js";
+import type { AssistantOptions } from "@/services/assistant/chat.js";
+import { useArgueActions, useStore } from "@/store.js";
 
 export interface GraphEditorLayoutProps {
   header: boolean;

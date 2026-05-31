@@ -2,9 +2,9 @@ import { tool, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { z } from "zod";
-import * as model from "../../model.js";
-import * as convert from "../convert.js";
-import type { ArgueStore, AssistantConfig, State } from "../../store.js";
+import * as model from "@/model.js";
+import * as convert from "@/services/convert.js";
+import type { ArgueStore, AssistantConfig, State } from "@/store.js";
 
 const schemeType = z.enum(model.schemeCases);
 

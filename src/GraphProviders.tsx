@@ -3,7 +3,7 @@ import { ConfirmProvider } from "material-ui-confirm";
 import { SnackbarProvider } from "notistack";
 import type React from "react";
 import { useMemo } from "react";
-import defaultTheme from "./theme.js";
+import defaultTheme from "@/theme.js";
 
 export interface GraphProvidersProps extends React.PropsWithChildren {
   /** Force dark/light mode. Defaults to the OS `prefers-color-scheme`. */

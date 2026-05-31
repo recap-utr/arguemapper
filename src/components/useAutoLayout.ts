@@ -1,7 +1,7 @@
 import { useReactFlow } from "@xyflow/react";
 import { useEffect } from "react";
-import type * as model from "../model.js";
-import { layout } from "../services/layout.js";
+import type * as model from "@/model.js";
+import { layout } from "@/services/layout.js";
 
 export interface AutoLayoutOptions {
   nodes: model.Node[];

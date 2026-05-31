@@ -2,7 +2,7 @@ import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import type { Options as ImgOptions } from "html-to-image/lib/types.js";
-import * as model from "../model.js";
+import * as model from "@/model.js";
 
 export function importGraph(obj: GraphJson): model.Wrapper {
   return model.fromArguebuf(arguebuf.load.json(obj));

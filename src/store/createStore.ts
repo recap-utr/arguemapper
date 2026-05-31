@@ -5,16 +5,16 @@ import { throttle } from "lodash";
 import { type TemporalState, temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
-import * as convert from "../services/convert.js";
-import * as model from "../model.js";
-import { localStorageBacked, partialize, persistVersion, type PersistState } from "./storage.js";
+import * as convert from "@/services/convert.js";
+import * as model from "@/model.js";
+import { localStorageBacked, partialize, persistVersion, type PersistState } from "@/store/storage.js";
 import {
   assistantModels,
   type AssistantConfig,
   type ArgueStore,
   type State,
   type ZundoState,
-} from "./types.js";
+} from "@/store/types.js";
 
 export interface CreateArgueStoreOptions {
   /** Seed graph (arguebuf JSON). Ignored for fields restored from persistence. */

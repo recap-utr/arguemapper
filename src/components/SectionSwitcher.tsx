@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CircularProgress, Divider, IconButton, Stack, Tooltip } from "@mui/material";
 import type React from "react";
-import { useArgueActions, useArgueConfig, useStore } from "../store.js";
-import { canvasButtonSx } from "./canvasControls.js";
-import { type SectionMeta, SECTION_GROUPS } from "./sidebar/sections.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { canvasButtonSx } from "@/components/canvasControls.js";
+import { type SectionMeta, SECTION_GROUPS } from "@/components/sidebar/sections.js";
 
 /** On-canvas switcher: each icon shows/hides its own pane; open panes stack in the sidebar. */
 export const SectionSwitcher: React.FC = () => {

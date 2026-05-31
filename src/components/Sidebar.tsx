@@ -1,14 +1,14 @@
 import { Box, Drawer, useMediaQuery, useTheme } from "@mui/material";
 import type React from "react";
-import type { AssistantOptions } from "../services/assistant/chat.js";
-import { type SidebarSection, useArgueActions, useStore } from "../store.js";
-import Inspector from "./Inspector.js";
-import Resources from "./Resources.js";
-import { Assistant } from "./sidebar/Assistant.js";
-import { Configuration } from "./sidebar/Configuration.js";
-import { ImportExport } from "./sidebar/ImportExport.js";
-import { Participants } from "./sidebar/Participants.js";
-import { SECTION_ORDER } from "./sidebar/sections.js";
+import type { AssistantOptions } from "@/services/assistant/chat.js";
+import { type SidebarSection, useArgueActions, useStore } from "@/store.js";
+import Inspector from "@/components/Inspector.js";
+import Resources from "@/components/Resources.js";
+import { Assistant } from "@/components/sidebar/Assistant.js";
+import { Configuration } from "@/components/sidebar/Configuration.js";
+import { ImportExport } from "@/components/sidebar/ImportExport.js";
+import { Participants } from "@/components/sidebar/Participants.js";
+import { SECTION_ORDER } from "@/components/sidebar/sections.js";
 
 interface Props {
   assistant?: AssistantOptions;
