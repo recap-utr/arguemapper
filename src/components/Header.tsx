@@ -17,7 +17,11 @@ export default function Header() {
         <Typography variant="h6">ArgueMapper</Typography>
         {sidebar && anyOpen && (
           <Tooltip describeChild title="Hide all panes">
-            <IconButton color="inherit" onClick={closeSidebar} sx={{ position: "absolute", [side]: 8 }}>
+            <IconButton
+              color="inherit"
+              onClick={closeSidebar}
+              sx={{ position: "absolute", [side]: 8 }}
+            >
               <FontAwesomeIcon icon={side === "right" ? faAnglesRight : faAnglesLeft} />
             </IconButton>
           </Tooltip>

@@ -24,10 +24,7 @@ export function useFocusWithin(ref: RefObject<HTMLElement | null>): boolean {
       const root = ref.current;
       const active = document.activeElement;
       setFocused(
-        root === null ||
-          active === null ||
-          active === document.body ||
-          root.contains(active),
+        root === null || active === null || active === document.body || root.contains(active),
       );
     };
 

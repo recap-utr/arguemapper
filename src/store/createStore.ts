@@ -8,7 +8,13 @@ import { createStore } from "zustand/vanilla";
 import * as convert from "../services/convert.js";
 import * as model from "../model.js";
 import { localStorageBacked, partialize, persistVersion, type PersistState } from "./storage.js";
-import { assistantModels, type AssistantConfig, type ArgueStore, type State, type ZundoState } from "./types.js";
+import {
+  assistantModels,
+  type AssistantConfig,
+  type ArgueStore,
+  type State,
+  type ZundoState,
+} from "./types.js";
 
 export interface CreateArgueStoreOptions {
   /** Seed graph (arguebuf JSON). Ignored for fields restored from persistence. */

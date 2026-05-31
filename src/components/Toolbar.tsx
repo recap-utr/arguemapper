@@ -76,11 +76,7 @@ export const Toolbar: React.FC = () => {
 
   return (
     <Stack direction="column" sx={{ alignItems: "center" }}>
-      <Item
-        text="Automatically layout graph elements"
-        callback={layoutCallback}
-        icon={faSitemap}
-      />
+      <Item text="Automatically layout graph elements" callback={layoutCallback} icon={faSitemap} />
       <Item
         text="Undo last action"
         disabled={!undoable}

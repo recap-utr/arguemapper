@@ -36,7 +36,9 @@ export interface AssistantOptions {
 function buildAgent(store: ArgueStore, options: AssistantOptions) {
   // Cache the provider across the turn's up-to-32 `prepareCall` steps; only baseURL/apiKey affect it,
   // so it's rebuilt only when those change rather than on every step.
-  let cached: { baseURL: string; apiKey: string; provider: ReturnType<typeof createOpenAICompatible> } | undefined;
+  let cached:
+    | { baseURL: string; apiKey: string; provider: ReturnType<typeof createOpenAICompatible> }
+    | undefined;
   const resolveModel = (apiKey: string) => {
     const config = store.getState().assistantConfig;
     const baseURL = options.baseURL ?? config.baseURL;
@@ -68,7 +70,8 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
       // (messages, static instructions, tools, …) and override only the runtime settings resolved
       // from the live config. The prompt prefix is passed through untouched for KV-cache reuse.
       const apiKey = options.apiKey ?? store.getState().assistantApiKey;
-      const reasoningEffort = options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
+      const reasoningEffort =
+        options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
       return {
         ...call,
         model: resolveModel(apiKey),

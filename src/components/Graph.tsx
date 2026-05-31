@@ -40,7 +40,8 @@ export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
   const flow = useReactFlow();
   const theme = useTheme();
-  const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } = useArgueActions();
+  const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } =
+    useArgueActions();
   const { id, readOnly, toolbar, sidebar } = useArgueConfig();
   const wrapperRef = useFlowWrapperRef();
 
@@ -90,34 +91,37 @@ export default function Graph() {
     [setState],
   );
 
-  const onConnect: OnConnect = useCallback((connection) => {
-    setState(
-      produce((draft: State) => {
-        const source = draft.nodes.find((node) => node.id === connection.source);
-        const target = draft.nodes.find((node) => node.id === connection.target);
+  const onConnect: OnConnect = useCallback(
+    (connection) => {
+      setState(
+        produce((draft: State) => {
+          const source = draft.nodes.find((node) => node.id === connection.source);
+          const target = draft.nodes.find((node) => node.id === connection.target);
 
-        if (source && target && source.data.type === "atom" && target.data.type === "atom") {
-          const schemePos = {
-            x: (source.position.x + target.position.x) / 2,
-            y: (source.position.y + target.position.y) / 2,
-          };
-          const scheme = model.initScheme({ data: {}, position: schemePos });
+          if (source && target && source.data.type === "atom" && target.data.type === "atom") {
+            const schemePos = {
+              x: (source.position.x + target.position.x) / 2,
+              y: (source.position.y + target.position.y) / 2,
+            };
+            const scheme = model.initScheme({ data: {}, position: schemePos });
 
-          draft.nodes.push(scheme);
-          draft.edges.push(model.initEdge({ data: {}, source: source.id, target: scheme.id }));
-          draft.edges.push(model.initEdge({ data: {}, source: scheme.id, target: target.id }));
-        } else if (connection.source !== null && connection.target !== null) {
-          draft.edges.push(
-            model.initEdge({
-              data: {},
-              source: connection.source,
-              target: connection.target,
-            }),
-          );
-        }
-      }),
-    );
-  }, [setState]);
+            draft.nodes.push(scheme);
+            draft.edges.push(model.initEdge({ data: {}, source: source.id, target: scheme.id }));
+            draft.edges.push(model.initEdge({ data: {}, source: scheme.id, target: target.id }));
+          } else if (connection.source !== null && connection.target !== null) {
+            draft.edges.push(
+              model.initEdge({
+                data: {},
+                source: connection.source,
+                target: connection.target,
+              }),
+            );
+          }
+        }),
+      );
+    },
+    [setState],
+  );
 
   const onNodesDelete: OnNodesDelete<model.Node> = useCallback(
     (deletedNodes) => {

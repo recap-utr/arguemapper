@@ -7,10 +7,7 @@ export {
   type ArgueMapperHandle,
   type ArgueMapperProps,
 } from "./ArgueMapper.js";
-export {
-  ArgueMapperProviders,
-  type ArgueMapperProvidersProps,
-} from "./ArgueMapperProviders.js";
+export { ArgueMapperProviders, type ArgueMapperProvidersProps } from "./ArgueMapperProviders.js";
 
 // Store: factory + context hooks for advanced/custom integrations.
 export {

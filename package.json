@@ -25,17 +25,6 @@
     "tsc": "tsc --noEmit",
     "lint": "oxlint"
   },
-  "peerDependencies": {
-    "@emotion/react": "^11",
-    "@emotion/styled": "^11",
-    "@mui/lab": "^9.0.0-beta.3",
-    "@mui/material": "^9",
-    "@xyflow/react": "^12",
-    "material-ui-confirm": "^4",
-    "notistack": "^3",
-    "react": "^19",
-    "react-dom": "^19"
-  },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2",
     "@ai-sdk/react": "^3.0.193",
@@ -69,5 +58,16 @@
     "typescript": "^6",
     "vite": "^8",
     "vite-plugin-dts": "^5.0.1"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/lab": "^9.0.0-beta.3",
+    "@mui/material": "^9",
+    "@xyflow/react": "^12",
+    "material-ui-confirm": "^4",
+    "notistack": "^3",
+    "react": "^19",
+    "react-dom": "^19"
   }
 }

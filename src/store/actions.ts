@@ -84,9 +84,7 @@ export function createActions(
     temporal.getState().resume();
   };
 
-  const setStateWithoutHistory = (
-    updater: Partial<State> | ((state: State) => Partial<State>),
-  ) => {
+  const setStateWithoutHistory = (updater: Partial<State> | ((state: State) => Partial<State>)) => {
     const wasTracking = temporal.getState().isTracking;
     if (wasTracking) pauseTemporal();
     if (typeof updater === "function") {

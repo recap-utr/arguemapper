@@ -153,9 +153,10 @@ export const defaultSchemes: Record<SchemeCase, arguebuf.Scheme> = {
 
 /** Named members of a scheme case's value enum as `[label, value]` pairs (numeric keys filtered out). */
 export function schemeValueEntries(schemeCase: SchemeCase): [string, number][] {
-  return Object.entries(schemeEnums[schemeCase]).filter(([key]) =>
-    Number.isNaN(Number(key)),
-  ) as [string, number][];
+  return Object.entries(schemeEnums[schemeCase]).filter(([key]) => Number.isNaN(Number(key))) as [
+    string,
+    number,
+  ][];
 }
 
 export interface Selection {

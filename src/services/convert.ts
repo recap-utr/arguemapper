@@ -17,9 +17,7 @@ export function exportGraph(
 
   if (
     format === "arguebuf" &&
-    !Object.values(graph.analysts).some(
-      (x) => x.name === analyst.name && x.email === analyst.email,
-    )
+    !Object.values(graph.analysts).some((x) => x.name === analyst.name && x.email === analyst.email)
   ) {
     if (Object.keys(graph.analysts).includes(analyst.id)) {
       graph.removeAnalyst(analyst.id);
