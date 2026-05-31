@@ -9,7 +9,7 @@ export const ArgueStoreProvider = ArgueStoreContext.Provider;
 export function useStoreApi(): ArgueStore {
   const store = useContext(ArgueStoreContext);
   if (store === null) {
-    throw new Error("useStoreApi must be used within an <ArgueMapper> (ArgueStoreProvider).");
+    throw new Error("useStoreApi must be used within a <GraphEditor> (ArgueStoreProvider).");
   }
   return store;
 }

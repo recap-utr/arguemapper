@@ -1,8 +1,7 @@
-import { Box, Divider, Stack, useTheme } from "@mui/material";
+import { Box, Divider, Stack } from "@mui/material";
 import {
   applyEdgeChanges,
   applyNodeChanges,
-  ConnectionLineType,
   type OnConnect,
   type OnConnectEnd,
   type OnConnectStart,
@@ -12,16 +11,11 @@ import {
   type OnNodesChange,
   type OnNodesDelete,
   type OnSelectionChangeFunc,
-  ReactFlow,
-  useReactFlow,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { produce } from "immer";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import * as model from "../model.js";
-import { layout } from "../services/layout.js";
 import {
-  markerId,
   type State,
   useArgueActions,
   useArgueConfig,
@@ -29,49 +23,47 @@ import {
   useStore,
 } from "../store.js";
 import { ContextMenu, type Click as ContextMenuClick } from "./ContextMenu.js";
-import { EdgeTypes } from "./EdgeTypes.js";
-import { Marker, MarkerDefinition } from "./Marker.js";
-import { NodeTypes } from "./NodeTypes.js";
+import { GraphCanvas } from "./GraphCanvas.js";
 import { PlusMenu } from "./PlusMenu.js";
 import { SectionSwitcher } from "./SectionSwitcher.js";
 import { Toolbar } from "./Toolbar.js";
+import { useAutoLayout } from "./useAutoLayout.js";
 
 export default function Graph() {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
-  const flow = useReactFlow();
-  const theme = useTheme();
   const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } =
     useArgueActions();
   const { id, readOnly, toolbar, sidebar } = useArgueConfig();
   const wrapperRef = useFlowWrapperRef();
 
-  const numberOfNodes = useStore((state) => state.nodes.length);
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const edgeStyle = useStore((state) => state.edgeStyle);
+  const majorClaim = useStore((state) => state.graph.majorClaim);
   const shouldLayout = useStore((state) => state.shouldLayout);
   const shouldFitView = useStore((state) => state.shouldFitView);
-  const onlyRenderVisibleElements = numberOfNodes > 100;
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
 
-  useEffect(() => {
-    if (!shouldLayout && shouldFitView) {
-      void flow.fitView();
-      setStateWithoutHistory({ shouldFitView: false });
-    }
-  }, [shouldFitView, shouldLayout, flow, setStateWithoutHistory]);
-
-  useEffect(() => {
-    if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
-      void layout(nodes, edges, layoutAlgorithm)
-        .then((layoutedNodes) => {
-          setStateWithoutHistory({ nodes: layoutedNodes });
-        })
-        .finally(() => {
-          setStateWithoutHistory({ shouldLayout: false });
-        });
-    }
-  }, [shouldLayout, layoutAlgorithm, nodes, edges, setStateWithoutHistory]);
+  // Layout/fit results bypass the undo history, so they go through `setStateWithoutHistory`.
+  useAutoLayout({
+    nodes,
+    edges,
+    layoutAlgorithm,
+    shouldLayout,
+    shouldFitView,
+    setNodes: useCallback(
+      (n: model.Node[]) => setStateWithoutHistory({ nodes: n }),
+      [setStateWithoutHistory],
+    ),
+    setShouldLayout: useCallback(
+      (v: boolean) => setStateWithoutHistory({ shouldLayout: v }),
+      [setStateWithoutHistory],
+    ),
+    setShouldFitView: useCallback(
+      (v: boolean) => setStateWithoutHistory({ shouldFitView: v }),
+      [setStateWithoutHistory],
+    ),
+  });
 
   const onNodesChange: OnNodesChange<model.Node> = useCallback(
     (changes) => {
@@ -227,23 +219,14 @@ export default function Graph() {
     );
   }, [setState]);
 
-  const connectionLineType: ConnectionLineType = useMemo(() => {
-    switch (edgeStyle) {
-      case model.EdgeStyle.BEZIER:
-        return ConnectionLineType.Bezier;
-      case model.EdgeStyle.STRAIGHT:
-        return ConnectionLineType.Straight;
-      case model.EdgeStyle.STEP:
-        return ConnectionLineType.SmoothStep;
-    }
-  }, [edgeStyle]);
-
   return (
-    <ReactFlow<model.Node, model.Edge>
+    <GraphCanvas
       id={id}
-      ref={wrapperRef}
+      wrapperRef={wrapperRef}
       nodes={nodes}
       edges={edges}
+      edgeStyle={edgeStyle}
+      majorClaim={majorClaim}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={readOnly ? undefined : onConnect}
@@ -262,21 +245,7 @@ export default function Graph() {
       nodesConnectable={!readOnly}
       edgesReconnectable={!readOnly}
       deleteKeyCode={readOnly ? null : undefined}
-      selectNodesOnDrag={true}
-      nodeTypes={NodeTypes}
-      edgeTypes={EdgeTypes}
-      minZoom={0.01}
-      maxZoom={3}
-      elevateEdgesOnSelect={true}
-      onlyRenderVisibleElements={onlyRenderVisibleElements}
-      connectionLineType={connectionLineType}
-      attributionPosition="bottom-center"
-      colorMode={theme.palette.mode}
     >
-      <MarkerDefinition>
-        <Marker id={markerId(id, false)} />
-        <Marker id={markerId(id, true)} color={theme.palette.text.primary} />
-      </MarkerDefinition>
       <Box
         className="arguemapper-hidden"
         sx={{ position: "absolute", left: 10, bottom: 10, zIndex: 10 }}
@@ -296,6 +265,6 @@ export default function Graph() {
           <SectionSwitcher />
         </Box>
       )}
-    </ReactFlow>
+    </GraphCanvas>
   );
 }

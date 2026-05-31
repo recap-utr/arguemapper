@@ -1,7 +1,7 @@
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import { ReactFlowProvider } from "@xyflow/react";
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
-import { ArgueMapperLayout } from "./ArgueMapperLayout.js";
+import { GraphEditorLayout } from "./GraphEditorLayout.js";
 import * as convert from "./services/convert.js";
 import type { AssistantOptions } from "./services/assistant/chat.js";
 import {
@@ -17,11 +17,11 @@ import {
   useFocusWithin,
 } from "./store.js";
 
-export type ArgueMapperAssistantConfig = AssistantOptions;
+export type GraphEditorAssistantConfig = AssistantOptions;
 
 const EMPTY_SLOTS: InspectorSlots = {};
 
-export interface ArgueMapperProps extends React.PropsWithChildren {
+export interface GraphEditorProps extends React.PropsWithChildren {
   /** Seed graph (arguebuf JSON). Used unless persisted state exists for `persistKey`. */
   initialGraph?: GraphJson;
   /** Called with the arguebuf JSON whenever the graph (nodes/edges/graph) changes. */
@@ -37,7 +37,7 @@ export interface ArgueMapperProps extends React.PropsWithChildren {
   /** Show the standalone header bar. */
   header?: boolean;
   /** Enable the AI assistant (absent => disabled). */
-  assistant?: ArgueMapperAssistantConfig;
+  assistant?: GraphEditorAssistantConfig;
   /** Persist to localStorage under this key (absent => no persistence). */
   persistKey?: string;
   /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
@@ -48,7 +48,7 @@ export interface ArgueMapperProps extends React.PropsWithChildren {
   className?: string;
 }
 
-export interface ArgueMapperHandle {
+export interface GraphEditorHandle {
   exportGraph: (format?: "aif" | "arguebuf") => GraphJson;
   importGraph: (graph: GraphJson) => void;
   clear: () => void;
@@ -67,7 +67,7 @@ const sliceGraph = (store: ArgueStore) => {
   return { wrapper: { nodes, edges, graph }, analyst };
 };
 
-export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(function ArgueMapper(
+export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(function GraphEditor(
   {
     initialGraph,
     onChange,
@@ -140,7 +140,7 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
 
   useImperativeHandle(
     ref,
-    (): ArgueMapperHandle => ({
+    (): GraphEditorHandle => ({
       exportGraph: (format = "arguebuf") => {
         const { wrapper, analyst } = sliceGraph(store);
         return convert.exportGraph(wrapper, format, analyst);
@@ -170,7 +170,7 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
             <ArgueConfigProvider value={config}>
               <InstanceFocusProvider value={focused}>
                 <InspectorSlotsProvider value={inspectorSlots ?? EMPTY_SLOTS}>
-                  <ArgueMapperLayout header={header} sidebar={sidebar} assistant={assistant} />
+                  <GraphEditorLayout header={header} sidebar={sidebar} assistant={assistant} />
                   {children}
                 </InspectorSlotsProvider>
               </InstanceFocusProvider>

@@ -102,8 +102,8 @@ function createTemporalOptions(): ZundoOptions<State, ZundoState> {
 }
 
 /**
- * Create an independent ArgueMapper store. Each `<ArgueMapper>` instance owns one, so multiple
- * graphs can coexist on a page without sharing nodes, undo history, or persistence.
+ * Create an independent graph store. Each `<GraphEditor>` instance owns one, so multiple graphs can
+ * coexist on a page without sharing nodes, undo history, or persistence.
  */
 export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueStore {
   const initialState = buildInitialState(options);

@@ -9,12 +9,12 @@ import {
 } from "@xyflow/react";
 import { type ComponentType, useMemo } from "react";
 import * as model from "../model.js";
-import { markerId, useArgueConfig, useStore } from "../store.js";
+import { markerId } from "../store.js";
+import { useGraphRender } from "./GraphRenderContext.js";
 
 const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   const selected = props.selected;
-  const edgeStyle = useStore((state) => state.edgeStyle);
-  const { id: instanceId } = useArgueConfig();
+  const { edgeStyle, instanceId } = useGraphRender();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const strokeColor = useMemo(

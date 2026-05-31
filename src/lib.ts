@@ -2,12 +2,13 @@ import "@xyflow/react/dist/style.css";
 import "./style.css";
 
 export {
-  ArgueMapper,
-  type ArgueMapperAssistantConfig,
-  type ArgueMapperHandle,
-  type ArgueMapperProps,
-} from "./ArgueMapper.js";
-export { ArgueMapperProviders, type ArgueMapperProvidersProps } from "./ArgueMapperProviders.js";
+  GraphEditor,
+  type GraphEditorAssistantConfig,
+  type GraphEditorHandle,
+  type GraphEditorProps,
+} from "./GraphEditor.js";
+export { GraphProviders, type GraphProvidersProps } from "./GraphProviders.js";
+export { GraphViewer, type GraphViewerHandle, type GraphViewerProps } from "./GraphViewer.js";
 
 // Store: factory + context hooks for advanced/custom integrations.
 export {

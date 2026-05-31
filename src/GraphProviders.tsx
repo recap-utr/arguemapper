@@ -5,7 +5,7 @@ import type React from "react";
 import { useMemo } from "react";
 import defaultTheme from "./theme.js";
 
-export interface ArgueMapperProvidersProps extends React.PropsWithChildren {
+export interface GraphProvidersProps extends React.PropsWithChildren {
   /** Force dark/light mode. Defaults to the OS `prefers-color-scheme`. */
   darkMode?: boolean;
   /** Provide a custom MUI theme. Overrides `darkMode`. */
@@ -13,10 +13,11 @@ export interface ArgueMapperProvidersProps extends React.PropsWithChildren {
 }
 
 /**
- * Bundles the providers `<ArgueMapper>` expects from its host (MUI theme, notistack snackbars,
- * confirm dialogs). Embedding apps that already set these up don't need this wrapper.
+ * Bundles the providers the graph components expect from their host (MUI theme, plus the notistack
+ * snackbars and confirm dialogs that `<GraphEditor>`'s editing/assistant features need).
+ * `<GraphViewer>` needs only the theme. Embedding apps that already set these up don't need this.
  */
-export const ArgueMapperProviders: React.FC<ArgueMapperProvidersProps> = ({
+export const GraphProviders: React.FC<GraphProvidersProps> = ({
   darkMode,
   theme,
   children,

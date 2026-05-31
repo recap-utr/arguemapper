@@ -12,7 +12,7 @@ import { startCase } from "lodash";
 import type React from "react";
 import { type ComponentType, useMemo } from "react";
 import type * as model from "../model.js";
-import { useStore } from "../store.js";
+import { useGraphRender } from "./GraphRenderContext.js";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
@@ -117,7 +117,7 @@ const NodeComponent: React.FC<NodeComponentProps> = ({ node, bg, children }) => 
 
 const AtomComponent: ComponentType<NodeProps<model.AtomNode>> = (node) => {
   const body = <div>{node.data.label()}</div>;
-  const majorClaim = useStore((state) => state.graph.majorClaim);
+  const { majorClaim } = useGraphRender();
 
   const bg = useMemo(() => {
     if (majorClaim === node.id) {

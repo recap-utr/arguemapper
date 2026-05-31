@@ -16,46 +16,49 @@ docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 
 ## Embedding in a React app
 
-ArgueMapper is also published as a reusable `<ArgueMapper>` component.
-Each instance owns its own state, so you can render several independent graphs on one page.
-Editing, the toolbar, both sidebars, and the AI assistant are all opt-in props; with none of them set you get a read-only viewer.
+ArgueMapper ships two embeddable components, layered on a shared rendering core, for different needs:
 
-The component expects the host to provide an MUI theme (and, for editing/assistant features, notistack and material-ui-confirm providers).
-The bundled `<ArgueMapperProviders>` sets these up for you, or wire your own.
+- **`<GraphViewer>`** — a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
+- **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It owns its own state, seeded once via `initialGraph` and reported back via `onChange`. Editing, the toolbar, the sidebar, and the AI assistant are opt-in props.
+
+Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistant features additionally need notistack and material-ui-confirm providers. The bundled `<GraphProviders>` sets all of these up for you, or wire your own. `<GraphViewer>` needs only the theme.
 
 ```tsx
-import { ArgueMapper, ArgueMapperProviders, type GraphJson } from "arguemapper";
+import { GraphEditor, GraphProviders, GraphViewer, type GraphJson } from "arguemapper";
 import "arguemapper/style.css";
 import { useRef } from "react";
 
-function Example({ graph }: { graph: GraphJson }) {
-  const ref = useRef<ArgueMapperHandle>(null);
+function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
+  const ref = useRef<GraphEditorHandle>(null);
 
   return (
-    <ArgueMapperProviders>
-      {/* A small read-only viewer */}
-      <div style={{ height: 300 }}>
-        <ArgueMapper initialGraph={graph} readOnly />
-      </div>
+    <GraphProviders>
+      {/* Present several small graphs read-only; click one to drill in */}
+      {graphs.map((g, i) => (
+        <div key={i} style={{ height: 240 }}>
+          <GraphViewer graph={g} minimap controls onNodeClick={(_e, node) => console.log(node)} />
+        </div>
+      ))}
 
       {/* A full editor that reports changes back to the host */}
       <div style={{ height: 600 }}>
-        <ArgueMapper
+        <GraphEditor
           ref={ref}
           initialGraph={graph}
           toolbar
-          leftSidebar
-          rightSidebar
+          sidebar
+          side="right"
           onChange={(updated) => console.log(updated)}
-          assistant={{ apiKey: "sk-…" }}
+          assistant={{}}
         />
       </div>
-    </ArgueMapperProviders>
+    </GraphProviders>
   );
 }
 ```
 
-The host owns nothing about the graph internally — pass `initialGraph` to seed it, listen via `onChange`, and use the imperative `ref` (`exportGraph`, `importGraph`, `fitView`, `undo`/`redo`, …) for explicit actions.
+`<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick`/`onSelectionChange`, and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
+`<GraphEditor>` owns its graph internally — pass `initialGraph` to seed it, listen via `onChange`, and use its imperative `ref` (`exportGraph`, `importGraph`, `fitView`, `undo`/`redo`, …) for explicit actions.
 `react`, `react-dom`, `@mui/material`, `@emotion/*`, `@xyflow/react`, `notistack`, and `material-ui-confirm` are peer dependencies, so the host's copies are reused.
 
 ## Tutorial

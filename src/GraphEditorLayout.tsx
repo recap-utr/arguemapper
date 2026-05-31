@@ -6,14 +6,14 @@ import Sidebar from "./components/Sidebar.js";
 import type { AssistantOptions } from "./services/assistant/chat.js";
 import { useArgueActions, useStore } from "./store.js";
 
-export interface ArgueMapperLayoutProps {
+export interface GraphEditorLayoutProps {
   header: boolean;
   sidebar: boolean;
   assistant?: AssistantOptions;
 }
 
 /** Internal layout: the graph canvas flanked by the single unified sidebar (left or right). */
-export const ArgueMapperLayout: React.FC<ArgueMapperLayoutProps> = ({
+export const GraphEditorLayout: React.FC<GraphEditorLayoutProps> = ({
   header,
   sidebar,
   assistant,

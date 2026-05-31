@@ -1,5 +1,5 @@
 // Barrel for the per-instance store module. Components consume the store through React context
-// (see `store/hooks.ts`); each `<ArgueMapper>` instance owns one created by `createArgueStore`.
+// (see `store/hooks.ts`); each `<GraphEditor>` instance owns one created by `createArgueStore`.
 export type { ArgueActions } from "./store/actions.js";
 export { createActions, resetGraphState } from "./store/actions.js";
 export {
