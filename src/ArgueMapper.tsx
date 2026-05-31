@@ -9,7 +9,6 @@ import {
   useRef,
 } from "react";
 import { ArgueMapperLayout } from "./ArgueMapperLayout.js";
-import * as model from "./model.js";
 import * as convert from "./services/convert.js";
 import type { AssistantOptions } from "./services/assistant/chat.js";
 import {
@@ -21,6 +20,7 @@ import {
   type InspectorSlots,
   InspectorSlotsProvider,
   InstanceFocusProvider,
+  resetGraphState,
   useFocusWithin,
 } from "./store.js";
 
@@ -152,27 +152,8 @@ export const ArgueMapper = forwardRef<ArgueMapperHandle, ArgueMapperProps>(funct
         const { wrapper, analyst } = sliceGraph(store);
         return convert.exportGraph(wrapper, format, analyst);
       },
-      importGraph: (graph) => {
-        const { nodes, edges, graph: g } = convert.importGraph(graph);
-        store.setState({
-          nodes,
-          edges,
-          graph: g,
-          shouldLayout: model.needsLayout(nodes),
-          shouldFitView: true,
-          assistantMessages: [],
-          graphResetToken: store.getState().graphResetToken + 1,
-        });
-      },
-      clear: () => {
-        store.setState({
-          nodes: [],
-          edges: [],
-          shouldFitView: true,
-          assistantMessages: [],
-          graphResetToken: store.getState().graphResetToken + 1,
-        });
-      },
+      importGraph: (graph) => resetGraphState(store, convert.importGraph(graph)),
+      clear: () => resetGraphState(store),
       fitView: () => {
         store.setState({ shouldFitView: true });
       },

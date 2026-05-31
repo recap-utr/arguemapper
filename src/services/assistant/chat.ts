@@ -34,6 +34,9 @@ export interface AssistantOptions {
 }
 
 function buildAgent(store: ArgueStore, options: AssistantOptions) {
+  // Cache the provider across the turn's up-to-32 `prepareCall` steps; only baseURL/apiKey affect it,
+  // so it's rebuilt only when those change rather than on every step.
+  let cached: { baseURL: string; apiKey: string; provider: ReturnType<typeof createOpenAICompatible> } | undefined;
   const resolveModel = (apiKey: string) => {
     const config = store.getState().assistantConfig;
     const baseURL = options.baseURL ?? config.baseURL;
@@ -43,9 +46,14 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
     // model, this provider parses the `reasoning_content` delta that reasoning models stream, surfacing
     // it as reasoning UI parts. The key is optional — the Authorization header is omitted when it is
     // empty, which is what local servers expect.
-    return createOpenAICompatible({ name: "openai", baseURL, apiKey: apiKey || undefined }).chatModel(
-      model,
-    );
+    if (cached?.baseURL !== baseURL || cached.apiKey !== apiKey) {
+      cached = {
+        baseURL,
+        apiKey,
+        provider: createOpenAICompatible({ name: "openai", baseURL, apiKey: apiKey || undefined }),
+      };
+    }
+    return cached.provider.chatModel(model);
   };
 
   return new Agent({

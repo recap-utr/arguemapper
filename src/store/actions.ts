@@ -41,6 +41,25 @@ const selectNodeAtIndex = (draft: State, index: number) => {
 };
 
 /**
+ * Replace the graph wholesale (load/import/new). Doubles as the single place that resets the
+ * assistant conversation on a graph swap, so every entry point (the `resetState` action and the
+ * host `importGraph`/`clear` handles) stays in sync. Defaults to an empty graph.
+ */
+export function resetGraphState(store: ArgueStore, preset?: model.Wrapper) {
+  const s = preset ?? model.initWrapper({});
+  store.setState({
+    nodes: s.nodes,
+    edges: s.edges,
+    graph: s.graph,
+    shouldLayout: model.needsLayout(s.nodes),
+    shouldFitView: true,
+    // A wholesale graph swap starts a fresh assistant conversation.
+    assistantMessages: [],
+    graphResetToken: store.getState().graphResetToken + 1,
+  });
+}
+
+/**
  * Build the action helpers bound to a specific store instance (consumed via the `useArgueActions`
  * hook). `screenToFlow` converts client coordinates to flow coordinates (typically
  * `useReactFlow().screenToFlowPosition`); `getWrapperEl` yields the instance's ReactFlow wrapper
@@ -78,19 +97,7 @@ export function createActions(
     if (wasTracking) resumeTemporal();
   };
 
-  const resetState = (preset?: model.Wrapper) => {
-    const s = preset ?? model.initWrapper({});
-    setState({
-      nodes: s.nodes,
-      edges: s.edges,
-      graph: s.graph,
-      shouldLayout: model.needsLayout(s.nodes),
-      shouldFitView: true,
-      // A wholesale graph swap starts a fresh assistant conversation.
-      assistantMessages: [],
-      graphResetToken: getState().graphResetToken + 1,
-    });
-  };
+  const resetState = (preset?: model.Wrapper) => resetGraphState(store, preset);
 
   const canvasCenter = (): XYPosition => {
     const el = getWrapperEl();

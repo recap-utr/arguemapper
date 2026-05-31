@@ -50,9 +50,9 @@ const Sidebar: React.FC<Props> = ({ assistant }) => {
   // A pane counts as open only if it's available in this instance (assistant may be disabled).
   const isOpen = (key: SidebarSection) =>
     openSections.includes(key) && (key !== "assistant" || assistant != null);
-  const open = SECTION_ORDER.some(isOpen);
+  const firstOpen = SECTION_ORDER.find(isOpen);
+  const open = firstOpen !== undefined;
 
-  let firstOpenSeen = false;
   const panel = (
     <Box
       sx={{
@@ -65,8 +65,6 @@ const Sidebar: React.FC<Props> = ({ assistant }) => {
       {SECTION_ORDER.map((key) => {
         if (key === "assistant" && assistant == null) return null;
         const paneOpen = isOpen(key);
-        const showDivider = paneOpen && firstOpenSeen;
-        if (paneOpen) firstOpenSeen = true;
         return (
           <Box
             key={key}
@@ -75,7 +73,8 @@ const Sidebar: React.FC<Props> = ({ assistant }) => {
               flex: "1 1 0",
               minHeight: 0,
               flexDirection: "column",
-              ...(showDivider && { borderTop: 1, borderColor: "divider" }),
+              // Divider between stacked panes: every open pane except the topmost gets a top border.
+              ...(paneOpen && key !== firstOpen && { borderTop: 1, borderColor: "divider" }),
             }}
           >
             {renderSection(key)}

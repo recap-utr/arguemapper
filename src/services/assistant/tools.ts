@@ -80,22 +80,27 @@ function textOccursIn(text: string, resource: arguebuf.Resource | undefined): bo
   return resource !== undefined && resource.text.toLowerCase().includes(text.toLowerCase());
 }
 
-function buildReference(text: string, resourceId?: string): arguebuf.Reference | undefined {
+const VERBATIM_MISS =
+  "text does not appear verbatim in the source resource, so no reference was added; extract ADUs verbatim.";
+
+/**
+ * Resolve an atom's source reference. A reference is recorded only when the text appears verbatim in
+ * a resource, so it never dangles; otherwise none is recorded and a `warning` explains why. Single
+ * source of truth for the verbatim-extraction rule shared by the write tools.
+ */
+function referenceFor(
+  text: string,
+  resourceId?: string,
+): { reference?: arguebuf.Reference; warning?: string } {
   const resource = resolveResource(resourceId);
   if (resource === undefined) {
-    return undefined;
+    return {};
   }
   const offset = resource.text.toLowerCase().indexOf(text.toLowerCase());
-  // A reference must point at real source text: only record one when the text appears verbatim,
-  // otherwise the atom carries no reference rather than a dangling one.
   if (offset === -1) {
-    return undefined;
+    return { warning: VERBATIM_MISS };
   }
-  return new arguebuf.Reference({
-    text,
-    resource: resource.id,
-    offset,
-  });
+  return { reference: new arguebuf.Reference({ text, resource: resource.id, offset }) };
 }
 
 const atomData = (node: model.Node | undefined): model.AtomNodeData | undefined =>
@@ -182,16 +187,24 @@ function pruneDanglingSchemes(draft: State) {
   }
 }
 
+/** Merge a patch into a node's assistant provenance, dropping the undefined values protobuf rejects. */
+function mergeAssistant(userdata: model.Userdata, patch: Record<string, unknown>) {
+  userdata.assistant = pruned({ ...userdata.assistant, ...patch });
+}
+
 function setAssistantExplanation(userdata: model.Userdata, explanation?: string) {
-  userdata.assistant = pruned({ ...userdata.assistant, config: assistantConfig(), explanation });
+  mergeAssistant(userdata, { config: assistantConfig(), explanation });
 }
 
 function setMajorClaimExplanation(userdata: model.Userdata, explanation?: string) {
-  userdata.assistant = pruned({
-    ...userdata.assistant,
-    mcConfig: assistantConfig(),
-    mcExplanation: explanation,
-  });
+  mergeAssistant(userdata, { mcConfig: assistantConfig(), mcExplanation: explanation });
+}
+
+/** Copy only the defined entries of `patch` onto `target`; omitted (undefined) fields stay unchanged. */
+function assignDefined<T extends object>(target: T, patch: Partial<T>) {
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) (target as Record<string, unknown>)[key] = value;
+  }
 }
 
 function validateRoles(
@@ -212,6 +225,13 @@ function validateRoles(
     return err("A scheme cannot use its conclusion as a premise.");
   }
   return undefined;
+}
+
+/** Append `value` to the list at `key`, creating it on first use. */
+function pushTo(map: Map<string, string[]>, key: string, value: string) {
+  const list = map.get(key);
+  if (list) list.push(value);
+  else map.set(key, [value]);
 }
 
 /** Number of connected components in an undirected graph given as an adjacency map. */
@@ -247,8 +267,8 @@ function graphWarnings(
   // Undirected adjacency over atoms and scheme nodes, used to detect disconnected subgraphs.
   const adjacency = new Map<string, string[]>();
   const link = (a: string, b: string) => {
-    adjacency.set(a, [...(adjacency.get(a) ?? []), b]);
-    adjacency.set(b, [...(adjacency.get(b) ?? []), a]);
+    pushTo(adjacency, a, b);
+    pushTo(adjacency, b, a);
   };
   for (const scheme of nodes.filter((node) => node.data.type === "scheme")) {
     const { premises, conclusion } = roles.get(scheme.id) ?? noRoles;
@@ -258,7 +278,7 @@ function graphWarnings(
       connected.add(premise);
       link(scheme.id, premise);
       if (conclusion !== undefined) {
-        parents.set(premise, [...(parents.get(premise) ?? []), conclusion]);
+        pushTo(parents, premise, conclusion);
       }
     }
     if (conclusion !== undefined) {
@@ -363,11 +383,10 @@ function graphWarnings(
     }),
     execute: async ({ text, title, source }) => {
       const resource = new arguebuf.Resource({ text, title, source });
-      setState(
-        produce((draft: State) => {
-          draft.graph.addResource(resource);
-        }),
-      );
+      const failure = commit((draft: State) => {
+        draft.graph.addResource(resource);
+      });
+      if (failure) return failure;
       return { ok: true, id: resource.id };
     },
   }),
@@ -381,18 +400,14 @@ function graphWarnings(
       title: z.string().optional(),
       source: z.string().optional(),
     }),
-    execute: async ({ id, text, title, source }) => {
+    execute: async ({ id, ...fields }) => {
       if (!resourceExists(id)) {
         return err(`No resource with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          const resource = draft.graph.resources[id];
-          if (text !== undefined) resource.text = text;
-          if (title !== undefined) resource.title = title;
-          if (source !== undefined) resource.source = source;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        assignDefined(draft.graph.resources[id], fields);
+      });
+      if (failure) return failure;
       return { ok: true, id };
     },
   }),
@@ -405,17 +420,16 @@ function graphWarnings(
       if (!resourceExists(id)) {
         return err(`No resource with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          delete draft.graph.resources[id];
-          for (const node of draft.nodes) {
-            const data = atomData(node);
-            if (data?.reference?.resource === id) {
-              data.reference = undefined;
-            }
+      const failure = commit((draft: State) => {
+        delete draft.graph.resources[id];
+        for (const node of draft.nodes) {
+          const data = atomData(node);
+          if (data?.reference?.resource === id) {
+            data.reference = undefined;
           }
-        }),
-      );
+        }
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
@@ -517,21 +531,17 @@ function graphWarnings(
           const resolve = (id: string): string | undefined =>
             idMap[id] ?? (existingIds.has(id) ? id : undefined);
 
-          const resource = resolveResource();
           for (const adu of atoms) {
             const text = adu.text.trim().replace(/[.,]$/, "");
             if (adu.participantId !== undefined && !participantExists(adu.participantId)) {
               warnings.push(`Atom ${adu.id}: unknown participant ${adu.participantId}.`);
             }
-            if (resource !== undefined && !textOccursIn(text, resource)) {
-              warnings.push(
-                `Atom ${adu.id}: text does not appear in the source resource, so no reference was added; extract ADUs verbatim.`,
-              );
-            }
+            const { reference, warning } = referenceFor(text);
+            if (warning) warnings.push(`Atom ${adu.id}: ${warning}`);
             const atom = model.initAtom({
               data: {
                 text,
-                reference: buildReference(text),
+                reference,
                 participant:
                   adu.participantId !== undefined && participantExists(adu.participantId)
                     ? adu.participantId
@@ -610,10 +620,11 @@ function graphWarnings(
         return err(`No participant with id "${participantId}".`);
       }
       const trimmed = text.trim();
+      const { reference, warning } = referenceFor(trimmed, resourceId);
       const atom = model.initAtom({
         data: {
           text: trimmed,
-          reference: buildReference(trimmed, resourceId),
+          reference,
           participant: participantId,
           userdata: assistantUserdata({ explanation }),
         },
@@ -623,12 +634,7 @@ function graphWarnings(
         draft.shouldLayout = true;
       });
       if (failure) return failure;
-      const resource = resolveResource(resourceId);
-      const warnings =
-        resource !== undefined && !textOccursIn(trimmed, resource)
-          ? ["Text does not appear in the source resource, so no reference was added; extract ADUs verbatim."]
-          : [];
-      return { ok: true, id: atom.id, warnings };
+      return { ok: true, id: atom.id, warnings: warning ? [warning] : [] };
     },
   }),
 
@@ -768,11 +774,10 @@ function graphWarnings(
     description: "Unset the graph's major claim, leaving the argument without a designated root atom.",
     inputSchema: z.object({}),
     execute: async () => {
-      setState(
-        produce((draft: State) => {
-          draft.graph.majorClaim = undefined;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        draft.graph.majorClaim = undefined;
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
@@ -801,11 +806,10 @@ function graphWarnings(
     inputSchema: z.object(participantFields),
     execute: async (fields) => {
       const participant = new arguebuf.Participant(fields);
-      setState(
-        produce((draft: State) => {
-          draft.graph.addParticipant(participant);
-        }),
-      );
+      const failure = commit((draft: State) => {
+        draft.graph.addParticipant(participant);
+      });
+      if (failure) return failure;
       return { ok: true, id: participant.id };
     },
   }),
@@ -813,21 +817,14 @@ function graphWarnings(
   editParticipant: tool({
     description: "Update the profile fields of an existing participant. Omitted fields are left unchanged.",
     inputSchema: z.object({ id: z.string(), ...participantFields }),
-    execute: async ({ id, name, username, email, url, location, description }) => {
+    execute: async ({ id, ...fields }) => {
       if (!participantExists(id)) {
         return err(`No participant with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          const p = draft.graph.participants[id];
-          if (name !== undefined) p.name = name;
-          if (username !== undefined) p.username = username;
-          if (email !== undefined) p.email = email;
-          if (url !== undefined) p.url = url;
-          if (location !== undefined) p.location = location;
-          if (description !== undefined) p.description = description;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        assignDefined(draft.graph.participants[id], fields);
+      });
+      if (failure) return failure;
       return { ok: true, id };
     },
   }),
@@ -840,17 +837,16 @@ function graphWarnings(
       if (!participantExists(id)) {
         return err(`No participant with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          delete draft.graph.participants[id];
-          for (const node of draft.nodes) {
-            const data = atomData(node);
-            if (data?.participant === id) {
-              data.participant = undefined;
-            }
+      const failure = commit((draft: State) => {
+        delete draft.graph.participants[id];
+        for (const node of draft.nodes) {
+          const data = atomData(node);
+          if (data?.participant === id) {
+            data.participant = undefined;
           }
-        }),
-      );
+        }
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
@@ -863,13 +859,12 @@ function graphWarnings(
       if (atomData(nodeById(id)) === undefined) {
         return err(`No atom with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          removeNodes(draft, new Set([id]));
-          pruneDanglingSchemes(draft);
-          draft.shouldLayout = true;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        removeNodes(draft, new Set([id]));
+        pruneDanglingSchemes(draft);
+        draft.shouldLayout = true;
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
@@ -881,12 +876,11 @@ function graphWarnings(
       if (schemeData(nodeById(id)) === undefined) {
         return err(`No scheme with id "${id}".`);
       }
-      setState(
-        produce((draft: State) => {
-          removeNodes(draft, new Set([id]));
-          draft.shouldLayout = true;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        removeNodes(draft, new Set([id]));
+        draft.shouldLayout = true;
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
@@ -896,13 +890,12 @@ function graphWarnings(
       "Remove all atoms and scheme nodes, leaving an empty graph. Use this only when the analyst explicitly asks to start over with nothing. writeGraph is additive by default, so you never need to empty the graph before adding to it; to rebuild from scratch in a single call, use writeGraph with replace: true instead.",
     inputSchema: z.object({}),
     execute: async () => {
-      setState(
-        produce((draft: State) => {
-          draft.nodes = [];
-          draft.edges = [];
-          draft.graph.majorClaim = undefined;
-        }),
-      );
+      const failure = commit((draft: State) => {
+        draft.nodes = [];
+        draft.edges = [];
+        draft.graph.majorClaim = undefined;
+      });
+      if (failure) return failure;
       return { ok: true };
     },
   }),
