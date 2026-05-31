@@ -29,6 +29,79 @@ export function exportGraph(
   return arguebuf.dump.json(graph, format) as GraphJson;
 }
 
+const schemeCase = (node: model.Node): model.SchemeCase | undefined =>
+  node.data.type === "scheme" ? (node.data as model.SchemeNodeData).scheme?.case : undefined;
+
+/** Ids that occur more than once in `ids` (each reported once). */
+function duplicates(ids: string[]): string[] {
+  const seen = new Set<string>();
+  const repeated = new Set<string>();
+  for (const id of ids) {
+    if (seen.has(id)) repeated.add(id);
+    seen.add(id);
+  }
+  return [...repeated];
+}
+
+/**
+ * Structural defects that make a graph non-compliant with the AIF / arguebuf data model, each phrased
+ * for the assistant to act on. An empty list means the graph is compliant. These are the format-level
+ * defects that {@link exportGraph} would otherwise serialize into a file that violates AIF's node/edge
+ * typing or cannot be re-imported (a dangling edge or a typeless scheme node serializes silently, then
+ * throws on load). Quality issues that are still valid AIF (orphaned atoms, incomplete arguments) are
+ * surfaced as warnings elsewhere, not here. This is the single source of truth shared by every graph
+ * mutation, so validation stays complete and consistent across both export formats.
+ */
+export function validateGraph({ nodes, edges, graph }: model.Wrapper): string[] {
+  const defects: string[] = [];
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+
+  const duplicateNodes = duplicates(nodes.map((node) => node.id));
+  if (duplicateNodes.length > 0) {
+    defects.push(`Duplicate node ids: ${duplicateNodes.join(", ")}.`);
+  }
+  const duplicateEdges = duplicates(edges.map((edge) => edge.id));
+  if (duplicateEdges.length > 0) {
+    defects.push(`Duplicate edge ids: ${duplicateEdges.join(", ")}.`);
+  }
+
+  for (const node of nodes) {
+    if (node.data.type === "scheme" && schemeCase(node) === undefined) {
+      defects.push(
+        `Scheme node ${node.id} has no type; set it to support, attack, rephrase or preference.`,
+      );
+    }
+  }
+
+  for (const edge of edges) {
+    const source = nodeById.get(edge.source);
+    const target = nodeById.get(edge.target);
+    if (source === undefined || target === undefined) {
+      const missing = [source ? undefined : edge.source, target ? undefined : edge.target].filter(
+        (id) => id !== undefined,
+      );
+      defects.push(`Edge ${edge.id} references unknown node(s): ${missing.join(", ")}.`);
+    } else if (edge.source === edge.target) {
+      defects.push(`Edge ${edge.id} connects node ${edge.source} to itself.`);
+    } else if (source.data.type === "atom" && target.data.type === "atom") {
+      defects.push(
+        `Edge ${edge.id} directly connects two atoms (${edge.source} → ${edge.target}); atoms must be joined through a scheme node.`,
+      );
+    }
+  }
+
+  if (graph.majorClaim !== undefined) {
+    const majorClaim = nodeById.get(graph.majorClaim);
+    if (majorClaim === undefined) {
+      defects.push(`The major claim ${graph.majorClaim} is not an existing node.`);
+    } else if (majorClaim.data.type !== "atom") {
+      defects.push(`The major claim ${graph.majorClaim} is not an atom.`);
+    }
+  }
+
+  return defects;
+}
+
 export function generateFilename() {
   const timestamp = arguebuf.date.format(arguebuf.date.now(), "YYYY-MM-DD[T]HH-mm-ss");
 

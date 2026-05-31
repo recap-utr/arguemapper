@@ -16,7 +16,6 @@ export {
   type ArgueConfig,
   type ArgueStore,
   type AssistantConfig,
-  assistantModels,
   type CreateArgueStoreOptions,
   createArgueStore,
   type InspectorSlots,

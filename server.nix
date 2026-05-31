@@ -19,7 +19,7 @@ let
       encode gzip
 
       # CORS proxy for aifdb.org
-      handle /api/aifdb/* {
+      handle_path /api/aifdb/* {
         reverse_proxy https://aifdb.org {
           header_up Host aifdb.org
           header_up -X-Forwarded-For
@@ -28,7 +28,18 @@ let
           header_down +Access-Control-Allow-Methods "GET, POST, OPTIONS"
           header_down +Access-Control-Allow-Headers "Content-Type"
         }
-        uri strip_prefix /api/aifdb
+      }
+
+      # CORS proxy for Wikimedia Core REST API
+      handle_path /api/wikipedia/* {
+        reverse_proxy https://api.wikimedia.org {
+          header_up Host api.wikimedia.org
+          header_up -X-Forwarded-For
+          header_up -X-Forwarded-Proto
+          header_down +Access-Control-Allow-Origin "*"
+          header_down +Access-Control-Allow-Methods "GET, OPTIONS"
+          header_down +Access-Control-Allow-Headers "Content-Type"
+        }
       }
 
       # Serve static files with SPA fallback

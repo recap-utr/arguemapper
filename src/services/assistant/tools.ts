@@ -1,4 +1,4 @@
-import { tool, type ToolSet } from "ai";
+import { tool, type ToolCallOptions, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { z } from "zod";
@@ -7,6 +7,62 @@ import * as convert from "@/services/convert.js";
 import type { ArgueStore, AssistantConfig, State } from "@/store.js";
 
 const schemeType = z.enum(model.schemeCases);
+const wikipediaLanguage = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(
+    /^[a-z][a-z0-9-]{0,31}$/,
+    "Use a Wikipedia language code such as en, de, simple or be-tarask.",
+  );
+
+type WikipediaSearchPage = {
+  id?: number;
+  key?: string;
+  title?: string;
+  excerpt?: string;
+  description?: string;
+  thumbnail?: {
+    mimetype?: string;
+    width?: number;
+    height?: number;
+    url?: string;
+  };
+};
+
+type WikipediaPageSource = {
+  id?: number;
+  key?: string;
+  title?: string;
+  latest?: {
+    id?: number;
+    timestamp?: string;
+  };
+  content_model?: string;
+  license?: {
+    url?: string;
+    title?: string;
+  };
+  source?: string;
+};
+
+function wikipediaApiPath(language: string, path: string, params?: Record<string, string>): string {
+  const query = params === undefined ? "" : `?${new URLSearchParams(params).toString()}`;
+  return `/api/wikipedia/core/v1/wikipedia/${language}/${path}${query}`;
+}
+
+function wikipediaArticleUrl(language: string, title: string): string {
+  return `https://${language}.wikipedia.org/wiki/${encodeWikipediaTitle(title)}`;
+}
+
+function encodeWikipediaTitle(title: string): string {
+  return encodeURIComponent(title.trim().replace(/ /g, "_"));
+}
+
+function absoluteUrl(url: string | undefined): string | undefined {
+  if (url === undefined) return undefined;
+  return url.startsWith("//") ? `https:${url}` : url;
+}
 
 /** Editable profile fields of a participant, shared by the write and edit tools. */
 const participantFields = {
@@ -27,6 +83,35 @@ export function createTools(store: ArgueStore): ToolSet {
   type Err = { ok: false; error: string };
   const err = (error: string): Err => ({ ok: false, error });
 
+  /**
+   * Wrap every tool so an unexpected exception becomes the shared `{ ok: false }` envelope rather than
+   * propagating. The AI SDK would otherwise surface a raw throw as an opaque tool error, and a failed
+   * generation step must hand the model a clear, recoverable message it can act on next step, just as
+   * the graph tools already do on validation failure. Aborts (the user pressing stop) are re-thrown so
+   * the stream still tears down instead of being reported back as a retryable failure.
+   */
+  function guard(toolSet: ToolSet): ToolSet {
+    const wrapped: ToolSet = {};
+    for (const [name, definition] of Object.entries(toolSet)) {
+      const { execute } = definition;
+      wrapped[name] =
+        execute === undefined
+          ? definition
+          : {
+              ...definition,
+              execute: async (input: unknown, options: ToolCallOptions) => {
+                try {
+                  return await execute(input as never, options);
+                } catch (error) {
+                  if (error instanceof Error && error.name === "AbortError") throw error;
+                  return err(error instanceof Error ? error.message : String(error));
+                }
+              },
+            };
+    }
+    return wrapped;
+  }
+
   function assistantConfig(): AssistantConfig {
     return getState().assistantConfig;
   }
@@ -44,24 +129,31 @@ export function createTools(store: ArgueStore): ToolSet {
   }
 
   /**
-   * Apply a graph mutation only if the result can be serialized. Persistence and the host export path
-   * serialize the graph to protobuf, which throws on data it cannot represent (e.g. a malformed value);
-   * committing such a graph would crash the app. On failure nothing is applied and an error is returned
-   * so the agent can correct its input and try again.
+   * Apply a graph mutation only if the result is a compliant graph. The graph is exported to both AIF
+   * and arguebuf for persistence and by the host, so a non-compliant graph would either be silently
+   * corrupted (a dangling edge or typeless scheme breaks re-import) or crash serialization. Validation
+   * therefore runs in two layers: `validateGraph` reports every structural AIF/arguebuf defect at once,
+   * and serializing to both target formats is the catch-all for any remaining data-level error. On
+   * failure nothing is applied and all defects are returned together so the agent can fix them and
+   * retry in a single step.
    */
   function commit(recipe: (draft: State) => void): Err | undefined {
     const next = produce(getState(), recipe);
-    try {
-      convert.exportGraph(
-        { nodes: next.nodes, edges: next.edges, graph: next.graph },
-        "arguebuf",
-        next.analyst,
-      );
-    } catch (error) {
+    const wrapper = { nodes: next.nodes, edges: next.edges, graph: next.graph };
+    const defects = convert.validateGraph(wrapper);
+    if (defects.length === 0) {
+      try {
+        convert.exportGraph(wrapper, "arguebuf", next.analyst);
+        convert.exportGraph(wrapper, "aif", next.analyst);
+      } catch (error) {
+        defects.push(error instanceof Error ? error.message : String(error));
+      }
+    }
+    if (defects.length > 0) {
       return err(
-        `The change was not applied because it produces an invalid graph: ${
-          error instanceof Error ? error.message : String(error)
-        }. Adjust the data and try again.`,
+        `The change was not applied because it would produce a non-compliant graph:\n${defects
+          .map((defect) => `- ${defect}`)
+          .join("\n")}\nFix these issues and try again.`,
       );
     }
     setState(next);
@@ -339,6 +431,132 @@ export function createTools(store: ArgueStore): ToolSet {
   }
 
   const tools = {
+    searchWikipedia: tool({
+      description:
+        "Search Wikipedia articles by query. Defaults to English, but any Wikipedia language code can be supplied, such as en, de, simple or be-tarask. Use the returned key with fetchWikipedia.",
+      inputSchema: z.object({
+        query: z.string().trim().min(1).describe("Search phrase"),
+        language: wikipediaLanguage
+          .optional()
+          .describe("Wikipedia language code. Defaults to en."),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .optional()
+          .describe("Maximum number of results. Defaults to 5."),
+      }),
+      execute: async ({ query, language, limit }, { abortSignal }) => {
+        const wikiLanguage = language ?? "en";
+        const response = await fetch(
+          wikipediaApiPath(wikiLanguage, "search/page", {
+            q: query,
+            limit: String(limit ?? 5),
+          }),
+          { headers: { Accept: "application/json" }, signal: abortSignal },
+        );
+        if (!response.ok) {
+          return err(
+            `Wikipedia search failed for language "${wikiLanguage}": ${response.statusText} (${response.status}).`,
+          );
+        }
+
+        const data = (await response.json()) as { pages?: WikipediaSearchPage[] };
+        return {
+          ok: true,
+          language: wikiLanguage,
+          results: (data.pages ?? []).map((page) => {
+            const key = page.key ?? page.title ?? "";
+            return {
+              id: page.id,
+              key,
+              title: page.title ?? key,
+              description: page.description ?? "",
+              excerptHtml: page.excerpt ?? "",
+              url: key.length === 0 ? undefined : wikipediaArticleUrl(wikiLanguage, key),
+              thumbnail:
+                page.thumbnail === undefined
+                  ? undefined
+                  : {
+                      ...page.thumbnail,
+                      url: absoluteUrl(page.thumbnail.url),
+                    },
+            };
+          }),
+        } satisfies Ok<{
+          language: string;
+          results: {
+            id: number | undefined;
+            key: string;
+            title: string;
+            description: string;
+            excerptHtml: string;
+            url: string | undefined;
+            thumbnail:
+              | {
+                  mimetype?: string;
+                  width?: number;
+                  height?: number;
+                  url?: string;
+                }
+              | undefined;
+          }[];
+        }>;
+      },
+    }),
+
+    fetchWikipedia: tool({
+      description:
+        "Fetch a Wikipedia article by title or search result key as JSON. Returns article metadata and source wikitext as provided by Wikimedia.",
+      inputSchema: z.object({
+        title: z
+          .string()
+          .trim()
+          .min(1)
+          .describe("Article title or key, preferably from searchWikipedia"),
+        language: wikipediaLanguage
+          .optional()
+          .describe("Wikipedia language code. Defaults to en."),
+      }),
+      execute: async ({ title, language }, { abortSignal }) => {
+        const wikiLanguage = language ?? "en";
+        const response = await fetch(
+          wikipediaApiPath(wikiLanguage, `page/${encodeWikipediaTitle(title)}`),
+          { headers: { Accept: "application/json" }, signal: abortSignal },
+        );
+        if (!response.ok) {
+          return err(
+            `Wikipedia fetch failed for "${title}" in language "${wikiLanguage}": ${response.statusText} (${response.status}).`,
+          );
+        }
+
+        const data = (await response.json()) as WikipediaPageSource;
+        return {
+          ok: true,
+          language: wikiLanguage,
+          id: data.id,
+          key: data.key ?? title.trim().replace(/ /g, "_"),
+          title: data.title ?? title,
+          url: wikipediaArticleUrl(wikiLanguage, data.key ?? title),
+          latest: data.latest,
+          license: data.license,
+          contentModel: data.content_model,
+          source: data.source ?? "",
+        } satisfies Ok<{
+          language: string;
+          id: number | undefined;
+          key: string;
+          title: string;
+          url: string;
+          latest: { id?: number; timestamp?: string } | undefined;
+          license: { url?: string; title?: string } | undefined;
+          contentModel: string | undefined;
+          source: string;
+        }>;
+      },
+    }),
+
     listResources: tool({
       description:
         "List the source resources (documents) in the project. Returns their ids, titles and sources.",
@@ -920,5 +1138,5 @@ export function createTools(store: ArgueStore): ToolSet {
     }),
   } satisfies ToolSet;
 
-  return tools;
+  return guard(tools);
 }

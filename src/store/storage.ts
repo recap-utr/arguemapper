@@ -2,7 +2,7 @@ import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
 import { type PersistStorage, type StorageValue } from "zustand/middleware";
 import * as convert from "@/services/convert.js";
-import type { State } from "@/store/types.js";
+import { resolveAssistantConfig, type State } from "@/store/types.js";
 
 export type PersistState = Pick<
   State,
@@ -51,6 +51,7 @@ export const localStorageBacked: PersistStorage<PersistState> = {
         edges,
         graph,
         analyst,
+        assistantConfig: resolveAssistantConfig(state.assistantConfig),
       },
     };
   },

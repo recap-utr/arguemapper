@@ -3,8 +3,6 @@ import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
 import type * as model from "@/model.js";
 
-export const assistantModels = ["gpt-5.5-nano", "gpt-5.5-mini", "gpt-5.5"];
-
 // `undefined` lets the server pick its default effort; explicit values are sent as `reasoning_effort`.
 export const reasoningEfforts = [
   undefined,
@@ -21,6 +19,20 @@ export interface AssistantConfig {
   model: string;
   baseURL: string;
   reasoningEffort: ReasoningEffort;
+}
+
+export const defaultAssistantConfig: AssistantConfig = {
+  model: "chatgpt-latest",
+  baseURL: "https://api.openai.com/v1",
+  reasoningEffort: undefined,
+};
+
+export function resolveAssistantConfig(config?: Partial<AssistantConfig>): AssistantConfig {
+  return {
+    model: config?.model ?? defaultAssistantConfig.model,
+    baseURL: config?.baseURL ?? defaultAssistantConfig.baseURL,
+    reasoningEffort: config?.reasoningEffort ?? defaultAssistantConfig.reasoningEffort,
+  };
 }
 
 /** A pane in the unified sidebar; any number can be open at once, stacked in canonical order. */

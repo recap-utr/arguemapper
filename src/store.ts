@@ -25,7 +25,7 @@ export { useArgueActions, useStore, useTemporalStore } from "@/store/hooks.js";
 export {
   type ArgueStore,
   type AssistantConfig,
-  assistantModels,
+  defaultAssistantConfig,
   type ReasoningEffort,
   reasoningEfforts,
   type SidebarSection,

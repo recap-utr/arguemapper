@@ -34,6 +34,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/aifdb/, ""),
       },
+      "/api/wikipedia": {
+        target: "https://api.wikimedia.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/wikipedia/, ""),
+      },
     },
   },
   build: {

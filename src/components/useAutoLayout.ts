@@ -39,6 +39,11 @@ export function useAutoLayout({
     if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
       void layout(nodes, edges, layoutAlgorithm)
         .then(setNodes)
+        .catch((error) => {
+          // A layout failure must not become an unhandled rejection; keep the current positions and
+          // clear the request (in `finally`) so the app stays usable instead of getting stuck.
+          console.error("Graph layout failed:", error);
+        })
         .finally(() => setShouldLayout(false));
     }
   }, [shouldLayout, nodes, edges, layoutAlgorithm, setNodes, setShouldLayout]);

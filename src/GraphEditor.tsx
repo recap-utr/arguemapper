@@ -96,9 +96,8 @@ export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(funct
       initialGraph,
       persistKey,
       side,
-      assistantConfig: assistant
-        ? { model: assistant.model, baseURL: assistant.baseURL }
-        : undefined,
+      assistantConfig: assistant,
+      assistantApiKey: assistant?.apiKey,
     });
   }
   const store = storeRef.current;

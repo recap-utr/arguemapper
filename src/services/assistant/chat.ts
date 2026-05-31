@@ -52,10 +52,20 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
       cached = {
         baseURL,
         apiKey,
-        provider: createOpenAICompatible({ name: "openai", baseURL, apiKey: apiKey || undefined }),
+        provider: createOpenAICompatible({
+          name: "openai",
+          baseURL,
+          apiKey: apiKey || undefined,
+          // Anthropic gates browser CORS behind this opt-in header; other providers don't need it,
+          // so it's omitted to avoid an unnecessary preflight.
+          headers: baseURL.includes("api.anthropic.com")
+            ? { "anthropic-dangerous-direct-browser-access": "true" }
+            : undefined,
+        }),
       };
     }
-    return cached.provider.chatModel(model);
+    const { provider } = cached;
+    return provider.chatModel(model);
   };
 
   return new Agent({

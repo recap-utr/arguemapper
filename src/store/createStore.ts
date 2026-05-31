@@ -9,9 +9,9 @@ import * as convert from "@/services/convert.js";
 import * as model from "@/model.js";
 import { localStorageBacked, partialize, persistVersion, type PersistState } from "@/store/storage.js";
 import {
-  assistantModels,
   type AssistantConfig,
   type ArgueStore,
+  resolveAssistantConfig,
   type State,
   type ZundoState,
 } from "@/store/types.js";
@@ -30,12 +30,6 @@ export interface CreateArgueStoreOptions {
   /** Side the sidebar docks to. Defaults to `"right"`; persisted state takes precedence. */
   side?: "left" | "right";
 }
-
-const defaultAssistantConfig: AssistantConfig = {
-  model: assistantModels[0],
-  baseURL: "https://api.openai.com/v1",
-  reasoningEffort: undefined,
-};
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
   const wrapper = options.initialGraph
@@ -60,7 +54,7 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     sidebarSections: ["inspector"],
     sidebarWidth: 480,
     headerHeight: 64,
-    assistantConfig: { ...defaultAssistantConfig, ...options.assistantConfig },
+    assistantConfig: resolveAssistantConfig(options.assistantConfig),
     assistantBusy: false,
     assistantApiKey: options.assistantApiKey ?? "",
     assistantMessages: [],

@@ -1,5 +1,4 @@
 import {
-  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -11,13 +10,7 @@ import {
 } from "@mui/material";
 import { startCase } from "lodash";
 import type React from "react";
-import {
-  assistantModels,
-  type ReasoningEffort,
-  reasoningEfforts,
-  useArgueActions,
-  useStore,
-} from "@/store.js";
+import { type ReasoningEffort, reasoningEfforts, useArgueActions, useStore } from "@/store.js";
 
 interface Props {
   open: boolean;
@@ -45,14 +38,14 @@ export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
               setState({ assistantApiKey: event.target.value });
             }}
           />
-          <Autocomplete
-            freeSolo
-            options={assistantModels}
-            renderInput={(params) => <TextField {...params} label="Model" />}
-            inputValue={assistantConfig.model}
-            onInputChange={(_event, value) => {
+          <TextField
+            fullWidth
+            type="text"
+            label="Model"
+            value={assistantConfig.model}
+            onChange={(event) => {
               mutate((draft) => {
-                draft.assistantConfig.model = value;
+                draft.assistantConfig.model = event.target.value;
               });
             }}
           />

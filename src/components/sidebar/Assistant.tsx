@@ -1,12 +1,13 @@
 import { faGear, faPaperPlane, faStop, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useChat } from "@ai-sdk/react";
-import { Box, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type AssistantOptions, createAssistantChat } from "@/services/assistant/chat.js";
 import { useArgueActions, useStore, useStoreApi } from "@/store.js";
 import { MessagePart } from "@/components/assistant/MessagePart.js";
+import ErrorBoundary from "@/components/ErrorBoundary.js";
 import { AssistantSettingsDialog } from "@/components/sidebar/AssistantSettingsDialog.js";
 import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
@@ -38,11 +39,11 @@ const QUICK_ACTIONS: { label: string; prompt: string }[] = [
 ];
 
 interface Props {
-  options: AssistantOptions;
+  options?: AssistantOptions;
   onClose: () => void;
 }
 
-export const Assistant: React.FC<Props> = ({ options, onClose }) => {
+export const Assistant: React.FC<Props> = ({ options = {}, onClose }) => {
   const { setState } = useArgueActions();
   const store = useStoreApi();
   // Depend on the individual settings (which fully determine the chat) rather than the `options`
@@ -122,36 +123,59 @@ export const Assistant: React.FC<Props> = ({ options, onClose }) => {
       <AssistantSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Box ref={scrollRef} sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
-        <Stack spacing={2}>
-          {messages.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
-              Ask the assistant to build or refine your argument graph, or use a quick action below.
-            </Typography>
-          )}
-          {messages.map((message) => (
-            <Stack
-              key={message.id}
-              spacing={1}
-              sx={{
-                alignSelf: message.role === "user" ? "flex-end" : "stretch",
-                maxWidth: message.role === "user" ? "85%" : "100%",
-                bgcolor: message.role === "user" ? "action.selected" : "transparent",
-                borderRadius: 2,
-                px: message.role === "user" ? 1.5 : 0,
-                py: message.role === "user" ? 1 : 0,
-              }}
-            >
-              {message.parts.map((part, index) => (
-                <MessagePart key={`${message.id}-${index}`} part={part} />
-              ))}
+        {/* Contain a render error in the (model-generated) transcript to the panel: streamed markdown
+            or tool output could otherwise throw and trip the app-wide boundary, crashing everything. */}
+        <ErrorBoundary
+          resetKeys={[messages.length]}
+          fallback={(boundaryError, reset) => (
+            <Stack spacing={1}>
+              <Typography variant="body2" color="error">
+                The conversation couldn't be displayed: {boundaryError.message}
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  setMessages([]);
+                  reset();
+                }}
+              >
+                Clear conversation
+              </Button>
             </Stack>
-          ))}
-          {error && (
-            <Typography variant="body2" color="error">
-              {error.message}
-            </Typography>
           )}
-        </Stack>
+        >
+          <Stack spacing={2}>
+            {messages.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Ask the assistant to build or refine your argument graph, or use a quick action below.
+              </Typography>
+            )}
+            {messages.map((message) => (
+              <Stack
+                key={message.id}
+                spacing={1}
+                sx={{
+                  alignSelf: message.role === "user" ? "flex-end" : "stretch",
+                  maxWidth: message.role === "user" ? "85%" : "100%",
+                  bgcolor: message.role === "user" ? "action.selected" : "transparent",
+                  borderRadius: 2,
+                  px: message.role === "user" ? 1.5 : 0,
+                  py: message.role === "user" ? 1 : 0,
+                }}
+              >
+                {message.parts.map((part, index) => (
+                  <MessagePart key={`${message.id}-${index}`} part={part} />
+                ))}
+              </Stack>
+            ))}
+            {error && (
+              <Typography variant="body2" color="error">
+                {error.message}
+              </Typography>
+            )}
+          </Stack>
+        </ErrorBoundary>
       </Box>
 
       <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider", flexShrink: 0 }}>
