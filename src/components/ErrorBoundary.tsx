@@ -100,7 +100,7 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 
   reset = () => {
-    this.setState({ error: null, errorInfo: null, state: null, aif: null, arguebuf: null });
+    this.setState({ error: null, errorInfo: null });
   };
 
   render() {

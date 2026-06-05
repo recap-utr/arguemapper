@@ -29,9 +29,6 @@ export function exportGraph(
   return arguebuf.dump.json(graph, format) as GraphJson;
 }
 
-const schemeCase = (node: model.Node): model.SchemeCase | undefined =>
-  node.data.type === "scheme" ? (node.data as model.SchemeNodeData).scheme?.case : undefined;
-
 /** Ids that occur more than once in `ids` (each reported once). */
 function duplicates(ids: string[]): string[] {
   const seen = new Set<string>();
@@ -66,7 +63,8 @@ export function validateGraph({ nodes, edges, graph }: model.Wrapper): string[] 
   }
 
   for (const node of nodes) {
-    if (node.data.type === "scheme" && schemeCase(node) === undefined) {
+    const scheme = model.schemeData(node);
+    if (scheme !== undefined && scheme.scheme?.case === undefined) {
       defects.push(
         `Scheme node ${node.id} has no type; set it to support, attack, rephrase or preference.`,
       );

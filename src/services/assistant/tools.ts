@@ -82,6 +82,7 @@ export function createTools(store: ArgueStore): ToolSet {
   type Ok<T> = { ok: true } & T;
   type Err = { ok: false; error: string };
   const err = (error: string): Err => ({ ok: false, error });
+  const message = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
   /**
    * Wrap every tool so an unexpected exception becomes the shared `{ ok: false }` envelope rather than
@@ -104,7 +105,7 @@ export function createTools(store: ArgueStore): ToolSet {
                   return await execute(input as never, options);
                 } catch (error) {
                   if (error instanceof Error && error.name === "AbortError") throw error;
-                  return err(error instanceof Error ? error.message : String(error));
+                  return err(message(error));
                 }
               },
             };
@@ -146,7 +147,7 @@ export function createTools(store: ArgueStore): ToolSet {
         convert.exportGraph(wrapper, "arguebuf", next.analyst);
         convert.exportGraph(wrapper, "aif", next.analyst);
       } catch (error) {
-        defects.push(error instanceof Error ? error.message : String(error));
+        defects.push(message(error));
       }
     }
     if (defects.length > 0) {
@@ -196,12 +197,6 @@ export function createTools(store: ArgueStore): ToolSet {
     }
     return { reference: new arguebuf.Reference({ text, resource: resource.id, offset }) };
   }
-
-  const atomData = (node: model.Node | undefined): model.AtomNodeData | undefined =>
-    node?.data.type === "atom" ? (node.data as model.AtomNodeData) : undefined;
-
-  const schemeData = (node: model.Node | undefined): model.SchemeNodeData | undefined =>
-    node?.data.type === "scheme" ? (node.data as model.SchemeNodeData) : undefined;
 
   const nodeById = (id: string): model.Node | undefined =>
     getState().nodes.find((node) => node.id === id);
@@ -384,7 +379,7 @@ export function createTools(store: ArgueStore): ToolSet {
       if (!connected.has(atom.id)) {
         warnings.push(`Atom ${atom.id} is orphaned (no relations).`);
       }
-      const reference = atomData(atom)?.reference;
+      const reference = model.atomData(atom)?.reference;
       if (reference?.resource !== undefined) {
         const resource = graph.resources[reference.resource];
         if (resource !== undefined && !textOccursIn(reference.text, resource)) {
@@ -642,7 +637,7 @@ export function createTools(store: ArgueStore): ToolSet {
         const failure = commit((draft: State) => {
           delete draft.graph.resources[id];
           for (const node of draft.nodes) {
-            const data = atomData(node);
+            const data = model.atomData(node);
             if (data?.reference?.resource === id) {
               data.reference = undefined;
             }
@@ -664,15 +659,15 @@ export function createTools(store: ArgueStore): ToolSet {
           .filter((node) => node.data.type === "atom")
           .map((node) => ({
             id: node.id,
-            text: atomData(node)?.text ?? "",
+            text: model.atomData(node)?.text ?? "",
             isMajorClaim: graph.majorClaim === node.id,
-            participant: atomData(node)?.participant,
+            participant: model.atomData(node)?.participant,
           }));
         const schemes = nodes
           .filter((node) => node.data.type === "scheme")
           .map((node) => ({
             id: node.id,
-            type: schemeData(node)?.scheme?.case,
+            type: model.schemeData(node)?.scheme?.case,
             ...(roles.get(node.id) ?? noRoles),
           }));
         return {
@@ -909,7 +904,7 @@ export function createTools(store: ArgueStore): ToolSet {
         explanation: z.string().optional(),
       }),
       execute: async ({ id, text, participantId, explanation }) => {
-        if (atomData(nodeById(id)) === undefined) {
+        if (model.atomData(nodeById(id)) === undefined) {
           return err(`No atom with id "${id}".`);
         }
         if (
@@ -921,7 +916,7 @@ export function createTools(store: ArgueStore): ToolSet {
         }
         const failure = commit((draft: State) => {
           const node = draft.nodes.find((n) => n.id === id);
-          const data = atomData(node);
+          const data = model.atomData(node);
           if (data === undefined || node === undefined) return;
           if (text !== undefined) data.text = text.trim();
           if (participantId !== undefined) {
@@ -947,7 +942,7 @@ export function createTools(store: ArgueStore): ToolSet {
         explanation: z.string().optional(),
       }),
       execute: async ({ id, type, premises, conclusion, explanation }) => {
-        if (schemeData(nodeById(id)) === undefined) {
+        if (model.schemeData(nodeById(id)) === undefined) {
           return err(`No scheme with id "${id}".`);
         }
         const current = schemeRoles(id, getState().edges);
@@ -965,7 +960,7 @@ export function createTools(store: ArgueStore): ToolSet {
 
         const failure = commit((draft: State) => {
           const node = draft.nodes.find((n) => n.id === id);
-          const data = schemeData(node);
+          const data = model.schemeData(node);
           if (data === undefined || node === undefined) return;
           if (type !== undefined) data.scheme = model.defaultSchemes[type];
           if (explanation !== undefined) {
@@ -991,7 +986,7 @@ export function createTools(store: ArgueStore): ToolSet {
         explanation: z.string().optional(),
       }),
       execute: async ({ id, explanation }) => {
-        if (atomData(nodeById(id)) === undefined) {
+        if (model.atomData(nodeById(id)) === undefined) {
           return err(`Major claim ${id} is not an existing atom.`);
         }
         const failure = commit((draft: State) => {
@@ -1077,7 +1072,7 @@ export function createTools(store: ArgueStore): ToolSet {
         const failure = commit((draft: State) => {
           delete draft.graph.participants[id];
           for (const node of draft.nodes) {
-            const data = atomData(node);
+            const data = model.atomData(node);
             if (data?.participant === id) {
               data.participant = undefined;
             }
@@ -1093,7 +1088,7 @@ export function createTools(store: ArgueStore): ToolSet {
         "Delete an atom. It is detached from any scheme node that used it as a premise or conclusion, and any scheme node left without a premise or conclusion is removed as well.",
       inputSchema: z.object({ id: z.string() }),
       execute: async ({ id }) => {
-        if (atomData(nodeById(id)) === undefined) {
+        if (model.atomData(nodeById(id)) === undefined) {
           return err(`No atom with id "${id}".`);
         }
         const failure = commit((draft: State) => {
@@ -1110,7 +1105,7 @@ export function createTools(store: ArgueStore): ToolSet {
       description: "Delete a scheme node, detaching its premises and conclusion.",
       inputSchema: z.object({ id: z.string() }),
       execute: async ({ id }) => {
-        if (schemeData(nodeById(id)) === undefined) {
+        if (model.schemeData(nodeById(id)) === undefined) {
           return err(`No scheme with id "${id}".`);
         }
         const failure = commit((draft: State) => {

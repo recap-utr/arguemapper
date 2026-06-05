@@ -10,6 +10,12 @@ export type SchemeNode = FlowNode<SchemeNodeData, "scheme">;
 export type Edge = FlowEdge<Omit<arguebuf.Edge, "source" | "target">>;
 export type Graph = Omit<arguebuf.Graph, "nodes" | "edges">;
 
+export const atomData = (node: Node | undefined): AtomNodeData | undefined =>
+  node?.data.type === "atom" ? (node.data as AtomNodeData) : undefined;
+
+export const schemeData = (node: Node | undefined): SchemeNodeData | undefined =>
+  node?.data.type === "scheme" ? (node.data as SchemeNodeData) : undefined;
+
 export interface Userdata {
   notes?: string;
   clickConnect?: boolean;
