@@ -25,7 +25,6 @@ Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistan
 
 ```tsx
 import { GraphEditor, GraphProviders, GraphViewer, type GraphJson } from "arguemapper";
-import "arguemapper/style.css";
 import { useRef } from "react";
 
 function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {

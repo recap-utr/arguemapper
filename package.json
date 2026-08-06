@@ -7,15 +7,14 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/lib.js",
-  "module": "./dist/lib.js",
-  "types": "./dist/src/lib.d.ts",
+  "main": "./dist/lib/lib.js",
+  "module": "./dist/lib/lib.js",
+  "types": "./dist/lib/lib.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/src/lib.d.ts",
-      "import": "./dist/lib.js"
-    },
-    "./style.css": "./dist/lib.css"
+      "types": "./dist/lib/lib.d.ts",
+      "import": "./dist/lib/lib.js"
+    }
   },
   "scripts": {
     "start": "vite --open",

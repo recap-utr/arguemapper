@@ -4,9 +4,10 @@ import { esmExternalRequirePlugin } from "rolldown/plugins";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
-// Two build targets:
-//   - default: the standalone single-page app (vite build)
-//   - LIB=1:   the embeddable library (ESM + .d.ts) for other React projects
+// Two build targets, each with its own output directory so that building one does not wipe the
+// other (vite empties `outDir` on every build):
+//   - default: the standalone single-page app (vite build)      -> dist/app
+//   - LIB=1:   the embeddable library (ESM + .d.ts)             -> dist/lib
 const isLib = process.env.LIB === "1";
 
 // Dependencies the host app must provide, so multiple instances share one React/MUI/emotion.
@@ -31,7 +32,8 @@ export default defineConfig({
     react(),
     ...(isLib
       ? [
-          dts({ tsconfigPath: "./tsconfig.json", include: ["src"] }),
+          // `entryRoot` keeps the declarations next to lib.js instead of under an extra src/.
+          dts({ tsconfigPath: "./tsconfig.json", include: ["src"], entryRoot: "src" }),
           // Marks the peers external and, unlike build.rollupOptions.external, rewrites the
           // `require` calls that bundled CommonJS deps make for them (the use-sync-external-store
           // shim behind zustand requires react) into ESM imports. Browsers have no `require`,
@@ -56,12 +58,16 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: isLib ? "dist/lib" : "dist/app",
     chunkSizeWarningLimit: 5000,
     commonjsOptions: {
       transformMixedEsModules: true,
     },
     ...(isLib
       ? {
+          // public/ holds the standalone app's favicon, manifest and robots.txt, none of which
+          // belong in a library bundle.
+          copyPublicDir: false,
           lib: {
             entry: resolve(__dirname, "src/lib.ts"),
             formats: ["es"] as const,

@@ -14,7 +14,7 @@ buildNpmPackage (finalAttrs: {
     runHook preInstall
 
     mkdir -p "$out"
-    cp -r "dist/." "$out"
+    cp -r "dist/app/." "$out"
 
     runHook postInstall
   '';
