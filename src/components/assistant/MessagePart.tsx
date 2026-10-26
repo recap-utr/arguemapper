@@ -14,12 +14,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import {
-  getToolOrDynamicToolName,
-  isReasoningUIPart,
-  isTextUIPart,
-  isToolOrDynamicToolUIPart,
-} from "ai";
+import { getToolName, isReasoningUIPart, isTextUIPart, isToolUIPart } from "ai";
 import type React from "react";
 import type { AssistantUIMessage } from "@/services/assistant/chat.js";
 import { Markdown } from "@/components/assistant/Markdown.js";
@@ -56,8 +51,8 @@ export const MessagePart: React.FC<{ part: Part }> = ({ part }) => {
     );
   }
 
-  if (isToolOrDynamicToolUIPart(part)) {
-    const name = getToolOrDynamicToolName(part);
+  if (isToolUIPart(part)) {
+    const name = getToolName(part);
     const running = part.state === "input-streaming" || part.state === "input-available";
     const output =
       part.state === "output-available" ? (part.output as { ok?: boolean } | null) : null;

@@ -2,9 +2,10 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { Chat } from "@ai-sdk/react";
 import {
   DirectChatTransport,
-  Experimental_Agent as Agent,
+  isStepCount,
   type InferAgentUIMessage,
-  stepCountIs,
+  ToolLoopAgent,
+  type ToolSet,
 } from "ai";
 import type { ArgueStore, ReasoningEffort } from "@/store.js";
 import { createTools } from "@/services/assistant/tools.js";
@@ -33,7 +34,7 @@ export interface AssistantOptions {
   reasoningEffort?: ReasoningEffort;
 }
 
-function buildAgent(store: ArgueStore, options: AssistantOptions) {
+function buildAgent(store: ArgueStore, options: AssistantOptions): ToolLoopAgent<never, ToolSet> {
   // Cache the provider across the turn's up-to-32 `prepareCall` steps; only baseURL/apiKey affect it,
   // so it's rebuilt only when those change rather than on every step.
   let cached:
@@ -58,9 +59,10 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
           apiKey: apiKey || undefined,
           // Anthropic gates browser CORS behind this opt-in header; other providers don't need it,
           // so it's omitted to avoid an unnecessary preflight.
-          headers: baseURL.includes("api.anthropic.com")
-            ? { "anthropic-dangerous-direct-browser-access": "true" }
-            : undefined,
+          headers:
+            URL.parse(baseURL)?.hostname === "api.anthropic.com"
+              ? { "anthropic-dangerous-direct-browser-access": "true" }
+              : undefined,
         }),
       };
     }
@@ -68,13 +70,13 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
     return provider.chatModel(model);
   };
 
-  return new Agent({
+  return new ToolLoopAgent({
     // The model is a required setting; prepareCall overrides it per call with the current
     // runtime config, so an empty key here is fine (it only throws when actually sending).
     model: resolveModel(""),
     instructions: SYSTEM_PROMPT, // STATIC — keeps the cached prompt prefix stable across turns
     tools: createTools(store),
-    stopWhen: stepCountIs(32),
+    stopWhen: isStepCount(32),
     prepareCall: (call) => {
       // The SDK uses the returned object as the full call args, so spread the incoming `call`
       // (messages, static instructions, tools, …) and override only the runtime settings resolved
@@ -85,10 +87,10 @@ function buildAgent(store: ArgueStore, options: AssistantOptions) {
       return {
         ...call,
         model: resolveModel(apiKey),
-        ...(reasoningEffort ? { providerOptions: { openai: { reasoningEffort } } } : {}),
+        reasoning: reasoningEffort,
       };
     },
-    onFinish: () => {
+    onEnd: () => {
       store.setState({ shouldFitView: true });
     },
   });

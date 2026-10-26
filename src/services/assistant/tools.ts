@@ -1,4 +1,4 @@
-import { tool, type ToolCallOptions, type ToolSet } from "ai";
+import { tool, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { produce } from "immer";
 import { z } from "zod";
@@ -55,13 +55,18 @@ function wikipediaArticleUrl(language: string, title: string): string {
   return `https://${language}.wikipedia.org/wiki/${encodeWikipediaTitle(title)}`;
 }
 
+function wikipediaKey(title: string): string {
+  return title.trim().replaceAll(" ", "_");
+}
+
 function encodeWikipediaTitle(title: string): string {
-  return encodeURIComponent(title.trim().replace(/ /g, "_"));
+  return encodeURIComponent(wikipediaKey(title));
 }
 
 function absoluteUrl(url: string | undefined): string | undefined {
   if (url === undefined) return undefined;
-  return url.startsWith("//") ? `https:${url}` : url;
+  // Resolves protocol-relative URLs such as //upload.wikimedia.org/… to https.
+  return URL.parse(url, "https://wikipedia.org")?.href;
 }
 
 /** Editable profile fields of a participant, shared by the write and edit tools. */
@@ -82,7 +87,8 @@ export function createTools(store: ArgueStore): ToolSet {
   type Ok<T> = { ok: true } & T;
   type Err = { ok: false; error: string };
   const err = (error: string): Err => ({ ok: false, error });
-  const message = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+  const message = (error: unknown): string =>
+    error instanceof Error ? error.message : String(error);
 
   /**
    * Wrap every tool so an unexpected exception becomes the shared `{ ok: false }` envelope rather than
@@ -100,9 +106,9 @@ export function createTools(store: ArgueStore): ToolSet {
           ? definition
           : {
               ...definition,
-              execute: async (input: unknown, options: ToolCallOptions) => {
+              execute: async (...args: Parameters<typeof execute>) => {
                 try {
-                  return await execute(input as never, options);
+                  return await execute(...args);
                 } catch (error) {
                   if (error instanceof Error && error.name === "AbortError") throw error;
                   return err(message(error));
@@ -431,9 +437,7 @@ export function createTools(store: ArgueStore): ToolSet {
         "Search Wikipedia articles by query. Defaults to English, but any Wikipedia language code can be supplied, such as en, de, simple or be-tarask. Use the returned key with fetchWikipedia.",
       inputSchema: z.object({
         query: z.string().trim().min(1).describe("Search phrase"),
-        language: wikipediaLanguage
-          .optional()
-          .describe("Wikipedia language code. Defaults to en."),
+        language: wikipediaLanguage.optional().describe("Wikipedia language code. Defaults to en."),
         limit: z
           .number()
           .int()
@@ -510,9 +514,7 @@ export function createTools(store: ArgueStore): ToolSet {
           .trim()
           .min(1)
           .describe("Article title or key, preferably from searchWikipedia"),
-        language: wikipediaLanguage
-          .optional()
-          .describe("Wikipedia language code. Defaults to en."),
+        language: wikipediaLanguage.optional().describe("Wikipedia language code. Defaults to en."),
       }),
       execute: async ({ title, language }, { abortSignal }) => {
         const wikiLanguage = language ?? "en";
@@ -531,7 +533,7 @@ export function createTools(store: ArgueStore): ToolSet {
           ok: true,
           language: wikiLanguage,
           id: data.id,
-          key: data.key ?? title.trim().replace(/ /g, "_"),
+          key: data.key ?? wikipediaKey(title),
           title: data.title ?? title,
           url: wikipediaArticleUrl(wikiLanguage, data.key ?? title),
           latest: data.latest,
