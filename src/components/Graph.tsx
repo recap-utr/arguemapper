@@ -29,7 +29,7 @@ import { SectionSwitcher } from "@/components/SectionSwitcher.js";
 import { Toolbar } from "@/components/Toolbar.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 
-export default function Graph() {
+export default function Graph(): React.JSX.Element {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
   const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } =
     useArgueActions();

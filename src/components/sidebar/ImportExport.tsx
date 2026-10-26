@@ -1,9 +1,9 @@
-import { faFileImage } from "@fortawesome/free-regular-svg-icons";
 import {
   faDownload,
   faFileArrowUp,
   faFileCirclePlus,
   faFileCode,
+  faFileImage,
   faFilePen,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
@@ -188,7 +188,7 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
               variant="contained"
               onClick={() => {
                 void flow.fitView();
-                downloadGraphImage(convert.ImgFormat.PNG);
+                downloadGraphImage("png");
               }}
             >
               PNG
@@ -198,7 +198,7 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
               variant="contained"
               onClick={() => {
                 void flow.fitView();
-                downloadGraphImage(convert.ImgFormat.JPG);
+                downloadGraphImage("jpg");
               }}
             >
               JPG

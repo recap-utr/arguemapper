@@ -8,7 +8,7 @@ import {
   Position,
   useConnection,
 } from "@xyflow/react";
-import { startCase } from "lodash";
+import { startCase } from "es-toolkit";
 import type React from "react";
 import { type ComponentType, useMemo } from "react";
 import type * as model from "@/model.js";

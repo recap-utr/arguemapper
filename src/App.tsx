@@ -6,7 +6,7 @@ import { WelcomeSnackbar } from "@/standalone/WelcomeSnackbar.js";
 
 // ArgueMapper, the standalone app: the full-feature configuration of the embeddable <GraphEditor>,
 // with the app-specific inspector widgets injected as slots.
-export default function App() {
+export default function App(): React.JSX.Element {
   return (
     <GraphEditor
       persistKey="state"

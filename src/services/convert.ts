@@ -107,13 +107,13 @@ export function generateFilename() {
 }
 
 // https://stackoverflow.com/a/55613750/7626878
-export function downloadJson(data: unknown, prettify: boolean) {
+export function downloadJson(data: unknown, prettify: boolean): void {
   const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
   const blob = new Blob([json], { type: "application/json" });
   downloadBlob(blob, ".json");
 }
 
-export function downloadBlob(data: Blob, suffix: string) {
+export function downloadBlob(data: Blob, suffix: string): void {
   const href = URL.createObjectURL(data);
   const filename = generateFilename() + suffix;
   downloadFile(href, filename);
@@ -122,7 +122,7 @@ export function downloadBlob(data: Blob, suffix: string) {
 export const downloadImage = async (
   format: ImgFormat,
   options: { element: HTMLElement; pixelRatio: number },
-) => {
+): Promise<void> => {
   const excludedClasses = ["react-flow__handle", "arguemapper-hidden", "react-flow__attribution"];
   const func = imgFormatMap[format];
 
@@ -141,10 +141,7 @@ export const downloadImage = async (
   downloadFile(href, filename);
 };
 
-export enum ImgFormat {
-  PNG = "png",
-  JPG = "jpg",
-}
+export type ImgFormat = "png" | "jpg";
 
 const imgFormatMap: Record<
   ImgFormat,

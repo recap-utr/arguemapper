@@ -52,7 +52,7 @@ const MarkerSymbol: React.FC<MarkerSymbolProps> = ({ color, strokeWidth = 1 }) =
 
 type MarkerDefinitionsProps = React.PropsWithChildren;
 
-export function MarkerDefinition({ children }: MarkerDefinitionsProps) {
+export function MarkerDefinition({ children }: MarkerDefinitionsProps): React.JSX.Element {
   return (
     <svg aria-hidden="true">
       <defs>{children}</defs>

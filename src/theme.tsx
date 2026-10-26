@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, type Theme } from "@mui/material/styles";
 
 // A custom theme for this app
 const buildTheme = (mode: "dark" | "light") =>
@@ -28,6 +28,6 @@ const buildTheme = (mode: "dark" | "light") =>
 
 const themes = { dark: buildTheme("dark"), light: buildTheme("light") };
 
-const theme = (prefersDarkMode: boolean) => themes[prefersDarkMode ? "dark" : "light"];
+const theme = (prefersDarkMode: boolean): Theme => themes[prefersDarkMode ? "dark" : "light"];
 
 export default theme;

@@ -1,6 +1,6 @@
 import { Box, Link } from "@mui/material";
 import MarkdownToJsx from "markdown-to-jsx";
-import { memo } from "react";
+import { memo, type NamedExoticComponent } from "react";
 
 const overrides = {
   a: { component: Link, props: { target: "_blank", rel: "noopener noreferrer" } },
@@ -14,7 +14,7 @@ const overrides = {
  * Memoized on `children`: during streaming only the growing part's text changes, so already-settled
  * message parts skip re-parsing on every token.
  */
-export const Markdown = memo(({ children }: { children: string }) => (
+export const Markdown: NamedExoticComponent<{ children: string }> = memo(({ children }) => (
   <Box
     sx={{
       typography: "body2",

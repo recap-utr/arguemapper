@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // A contained subtree (with its own fallback) recovers in place; the graph-state backup below is
     // only meaningful for a whole-app crash, so record the error and stop here.
     if (this.props.fallback) {
@@ -85,7 +85,7 @@ class ErrorBoundary extends React.Component<Props, State> {
     });
   }
 
-  componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps: Props): void {
     if (this.state.error === null) return;
     const { resetKeys } = this.props;
     const previous = prevProps.resetKeys;
@@ -99,11 +99,11 @@ class ErrorBoundary extends React.Component<Props, State> {
     }
   }
 
-  reset = () => {
+  reset = (): void => {
     this.setState({ error: null, errorInfo: null });
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.error && this.state.errorInfo) {
       const { fallback } = this.props;
       if (fallback) {

@@ -1,13 +1,17 @@
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
-import { dequal } from "dequal";
-import { throttle } from "lodash";
+import { isEqual, throttle } from "es-toolkit";
 import { type TemporalState, temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import * as convert from "@/services/convert.js";
 import * as model from "@/model.js";
-import { localStorageBacked, partialize, persistVersion, type PersistState } from "@/store/storage.js";
+import {
+  localStorageBacked,
+  partialize,
+  persistVersion,
+  type PersistState,
+} from "@/store/storage.js";
 import {
   type AssistantConfig,
   type ArgueStore,
@@ -42,8 +46,8 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     graph: wrapper.graph,
     analyst: new arguebuf.Analyst({}),
     firstVisit: true,
-    layoutAlgorithm: model.LayoutAlgorithm.LAYERED,
-    edgeStyle: model.EdgeStyle.STEP,
+    layoutAlgorithm: "layered",
+    edgeStyle: "step",
     shouldLayout: model.needsLayout(wrapper.nodes),
     shouldFitView: true,
     selection: model.initSelection(),
@@ -82,16 +86,12 @@ function createTemporalOptions(): ZundoOptions<State, ZundoState> {
       if (lastComparedStates && lastComparedStates[0] === a && lastComparedStates[1] === b) {
         return lastEqualityResult;
       }
-      const isEqual = dequal(a, b);
-      lastEqualityResult = isEqual;
+      lastEqualityResult = isEqual(a, b);
       lastComparedStates = [a, b];
-      return isEqual;
+      return lastEqualityResult;
     },
     limit: 100,
-    handleSet: (callback) =>
-      throttle<typeof callback>((state) => {
-        callback(state);
-      }, 1000),
+    handleSet: (callback) => throttle(callback, 1000),
   };
 }
 

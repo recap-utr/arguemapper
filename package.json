@@ -4,66 +4,57 @@
   "private": true,
   "repository": "github:recap-utr/arguemapper",
   "files": [
-    "dist"
+    "dist/lib"
   ],
   "type": "module",
-  "main": "./dist/lib/lib.js",
-  "module": "./dist/lib/lib.js",
-  "types": "./dist/lib/lib.d.ts",
   "exports": {
     ".": {
       "types": "./dist/lib/lib.d.ts",
-      "import": "./dist/lib/lib.js"
+      "default": "./dist/lib/lib.js"
     }
   },
   "scripts": {
     "start": "vite --open",
     "preview": "vite preview",
-    "build": "tsc && vite build",
-    "build:lib": "tsc && LIB=1 vite build",
-    "tsc": "tsc --noEmit",
+    "build": "tsc -b && vite build",
+    "build:lib": "tsc -b && vite build --mode lib",
+    "tsc": "tsc -b",
     "lint": "oxlint"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3",
     "@ai-sdk/react": "^4",
-    "@fontsource/roboto": "^5",
     "@fortawesome/fontawesome-svg-core": "^7",
     "@fortawesome/free-brands-svg-icons": "^7",
-    "@fortawesome/free-regular-svg-icons": "^7",
     "@fortawesome/free-solid-svg-icons": "^7",
     "@fortawesome/react-fontawesome": "^3",
     "ai": "^7",
-    "arguebuf": "^2",
-    "dequal": "^2",
     "elkjs": "^0.12",
+    "es-toolkit": "^1",
     "html-to-image": "^1",
     "immer": "^11",
-    "lodash": "^4",
-    "markdown-to-jsx": "^9.8.1",
+    "markdown-to-jsx": "^9",
     "react-hotkeys-hook": "^5",
-    "use-immer": "^0.11",
-    "web-worker": "^1",
     "zod": "^4",
     "zundo": "^2",
     "zustand": "^5"
   },
   "devDependencies": {
-    "@types/lodash": "^4",
+    "@fontsource/roboto": "^5",
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
+    "rolldown-plugin-dts": "^0.28",
     "typescript": "^7",
-    "vite": "^8",
-    "vite-plugin-dts": "^5.0.1"
+    "vite": "^8"
   },
   "peerDependencies": {
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
-    "@mui/lab": "^9.0.0-beta.3",
     "@mui/material": "^9",
     "@xyflow/react": "^12",
+    "arguebuf": "^2",
     "material-ui-confirm": "^4",
     "notistack": "^3",
     "react": "^19",

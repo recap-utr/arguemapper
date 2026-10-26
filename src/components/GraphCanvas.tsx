@@ -100,16 +100,16 @@ export function GraphCanvas({
   minimap = false,
   controls = false,
   children,
-}: GraphCanvasProps) {
+}: GraphCanvasProps): React.JSX.Element {
   const theme = useTheme();
 
   const connectionLineType = useMemo(() => {
     switch (edgeStyle) {
-      case model.EdgeStyle.BEZIER:
+      case "bezier":
         return ConnectionLineType.Bezier;
-      case model.EdgeStyle.STRAIGHT:
+      case "straight":
         return ConnectionLineType.Straight;
-      case model.EdgeStyle.STEP:
+      case "step":
         return ConnectionLineType.SmoothStep;
     }
   }, [edgeStyle]);

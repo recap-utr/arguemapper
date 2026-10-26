@@ -8,7 +8,6 @@ import {
   StraightEdge,
 } from "@xyflow/react";
 import { type ComponentType, useMemo } from "react";
-import * as model from "@/model.js";
 import { markerId } from "@/store.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 
@@ -30,11 +29,11 @@ const EdgeComponent: ComponentType<EdgeProps> = (props) => {
   };
 
   switch (edgeStyle) {
-    case model.EdgeStyle.BEZIER:
+    case "bezier":
       return <BezierEdge {...extendedProps} />;
-    case model.EdgeStyle.STEP:
+    case "step":
       return <SmoothStepEdge {...extendedProps} />;
-    case model.EdgeStyle.STRAIGHT:
+    case "straight":
       return <StraightEdge {...extendedProps} />;
   }
 };

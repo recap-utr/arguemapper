@@ -17,7 +17,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { startCase } from "lodash";
+import { startCase } from "es-toolkit";
 import type React from "react";
 import { useState } from "react";
 import { version as npmVersion } from "@root/package.json";
@@ -72,8 +72,8 @@ export const Configuration: React.FC<Props> = ({ onClose }) => {
                 });
               }}
             >
-              {Object.values(model.LayoutAlgorithm)
-                .sort((alg1, alg2) => alg1.localeCompare(alg2))
+              {model.layoutAlgorithms
+                .toSorted((alg1, alg2) => alg1.localeCompare(alg2))
                 .map((alg) => (
                   <MenuItem key={alg} value={alg}>
                     {startCase(alg)}
@@ -90,8 +90,8 @@ export const Configuration: React.FC<Props> = ({ onClose }) => {
                 setState({ edgeStyle: event.target.value as model.EdgeStyle });
               }}
             >
-              {Object.values(model.EdgeStyle)
-                .sort((x1, x2) => x1.localeCompare(x2))
+              {model.edgeStyles
+                .toSorted((x1, x2) => x1.localeCompare(x2))
                 .map((x) => (
                   <MenuItem key={x} value={x}>
                     {startCase(x)}

@@ -1,11 +1,15 @@
 import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
-import { dequal } from "dequal";
+import { isEqual } from "es-toolkit";
 import type React from "react";
 import { useCallback } from "react";
 import * as model from "@/model.js";
 import { useArgueActions, useStore } from "@/store.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
-import { NULL_VALUE, schemeTypeItems, schemeValueItems } from "@/components/inspector/schemeSelect.js";
+import {
+  NULL_VALUE,
+  schemeTypeItems,
+  schemeValueItems,
+} from "@/components/inspector/schemeSelect.js";
 
 export interface Props extends React.PropsWithChildren {
   idx?: number;
@@ -15,7 +19,7 @@ type OptionalSchemeType = model.SchemeCase | typeof NULL_VALUE;
 
 const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
-  const element = useStore((state) => state.nodes[selectedIndex] as model.SchemeNode, dequal);
+  const element = useStore((state) => state.nodes[selectedIndex] as model.SchemeNode, isEqual);
   const userdata = element.data.userdata as model.Userdata;
   const schemeType = element.data.scheme?.case ?? NULL_VALUE;
   const { mutate } = useArgueActions();

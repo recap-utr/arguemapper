@@ -58,7 +58,7 @@ function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
 
 `<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick`/`onSelectionChange`, and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
 `<GraphEditor>` owns its graph internally — pass `initialGraph` to seed it, listen via `onChange`, and use its imperative `ref` (`exportGraph`, `importGraph`, `fitView`, `undo`/`redo`, …) for explicit actions.
-`react`, `react-dom`, `@mui/material`, `@emotion/*`, `@xyflow/react`, `notistack`, and `material-ui-confirm` are peer dependencies, so the host's copies are reused.
+The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf, …) must be provided by the host, so its copies are reused.
 
 ## Tutorial
 

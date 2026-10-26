@@ -2,7 +2,7 @@ import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, TextField } from "@mui/material";
 import * as arguebuf from "arguebuf";
-import { dequal } from "dequal";
+import { isEqual } from "es-toolkit";
 import type React from "react";
 import { useCallback } from "react";
 import type * as model from "@/model.js";
@@ -15,7 +15,7 @@ export interface Props extends React.PropsWithChildren {
 
 export const AtomFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.nodes[idx]);
-  const element = useStore((state) => state.nodes[selectedIndex] as model.AtomNode, dequal);
+  const element = useStore((state) => state.nodes[selectedIndex] as model.AtomNode, isEqual);
   const userdata = element.data.userdata as model.Userdata;
   const majorClaim = useStore((state) => state.graph.majorClaim);
   const { mutate } = useArgueActions();

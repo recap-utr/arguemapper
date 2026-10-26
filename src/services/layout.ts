@@ -1,4 +1,8 @@
-import Elk, { type ElkExtendedEdge, type ElkNode, type LayoutOptions } from "elkjs";
+import Elk, {
+  type ElkExtendedEdge,
+  type ElkNode,
+  type LayoutOptions,
+} from "elkjs/lib/elk.bundled.js";
 import { produce } from "immer";
 import type * as model from "@/model.js";
 

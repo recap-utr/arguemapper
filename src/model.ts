@@ -125,29 +125,27 @@ export const elemType = (elem?: OptionalElement): ElementType => {
   return elem.data.type;
 };
 
-export enum LayoutAlgorithm {
-  LAYERED = "layered",
-  TREE = "tree",
-  FORCE = "force",
-  RADIAL = "radial",
-}
+export const layoutAlgorithms = ["layered", "tree", "force", "radial"] as const;
+export type LayoutAlgorithm = (typeof layoutAlgorithms)[number];
 
-export enum EdgeStyle {
-  BEZIER = "bezier",
-  STRAIGHT = "straight",
-  STEP = "step",
-}
+export const edgeStyles = ["bezier", "straight", "step"] as const;
+export type EdgeStyle = (typeof edgeStyles)[number];
 
 export const schemeCases = ["support", "attack", "rephrase", "preference"] as const;
 export type SchemeCase = (typeof schemeCases)[number];
 
 /** Enum of concrete scheme values for each scheme case (e.g. the `arguebuf.Support` members). */
-export const schemeEnums = {
+export const schemeEnums: {
+  readonly support: typeof arguebuf.Support;
+  readonly attack: typeof arguebuf.Attack;
+  readonly rephrase: typeof arguebuf.Rephrase;
+  readonly preference: typeof arguebuf.Preference;
+} = {
   support: arguebuf.Support,
   attack: arguebuf.Attack,
   rephrase: arguebuf.Rephrase,
   preference: arguebuf.Preference,
-} as const;
+};
 
 /** The default `arguebuf.Scheme` for each case, used when (re)assigning a scheme node's type. */
 export const defaultSchemes: Record<SchemeCase, arguebuf.Scheme> = {

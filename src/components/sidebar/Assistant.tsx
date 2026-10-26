@@ -1,7 +1,16 @@
 import { faGear, faPaperPlane, faStop, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useChat } from "@ai-sdk/react";
-import { Box, Button, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type AssistantOptions, createAssistantChat } from "@/services/assistant/chat.js";
@@ -148,7 +157,8 @@ export const Assistant: React.FC<Props> = ({ options = {}, onClose }) => {
           <Stack spacing={2}>
             {messages.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ask the assistant to build or refine your argument graph, or use a quick action below.
+                Ask the assistant to build or refine your argument graph, or use a quick action
+                below.
               </Typography>
             )}
             {messages.map((message) => (

@@ -8,7 +8,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { startCase } from "lodash";
+import { startCase } from "es-toolkit";
 import type React from "react";
 import { type ReasoningEffort, reasoningEfforts, useArgueActions, useStore } from "@/store.js";
 

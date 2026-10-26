@@ -6,15 +6,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import {
-  forwardRef,
-  type Ref,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from "react";
+import { type Ref, useId, useImperativeHandle, useMemo, useState } from "react";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
@@ -39,6 +31,7 @@ export interface GraphViewerProps {
   onSelectionChange?: OnSelectionChangeFunc;
   style?: React.CSSProperties;
   className?: string;
+  ref?: Ref<GraphViewerHandle>;
 }
 
 export interface GraphViewerHandle {
@@ -49,22 +42,18 @@ export interface GraphViewerHandle {
   layout: () => void;
 }
 
-interface InnerProps extends GraphViewerProps {
-  viewerRef: Ref<GraphViewerHandle>;
-}
-
 function GraphViewerInner({
   graph,
   id: idProp,
-  edgeStyle = model.EdgeStyle.STEP,
-  layoutAlgorithm = model.LayoutAlgorithm.LAYERED,
+  edgeStyle = "step",
+  layoutAlgorithm = "layered",
   minimap = false,
   controls = false,
   onNodeClick,
   onEdgeClick,
   onSelectionChange,
-  viewerRef,
-}: InnerProps) {
+  ref,
+}: GraphViewerProps): React.JSX.Element {
   const generatedId = useId();
   const id = idProp ?? generatedId;
   const flow = useReactFlow<model.Node, model.Edge>();
@@ -76,14 +65,15 @@ function GraphViewerInner({
   const [shouldLayout, setShouldLayout] = useState(() => model.needsLayout(wrapper.nodes));
   const [shouldFitView, setShouldFitView] = useState(true);
 
-  // Re-seed the canvas whenever the controlled `graph` prop changes. On mount this re-applies the
-  // same values the state initializers already used, so React bails out without an extra render.
-  useEffect(() => {
+  // Re-seed the canvas during render whenever the controlled `graph` prop changes.
+  const [seededWrapper, setSeededWrapper] = useState(wrapper);
+  if (wrapper !== seededWrapper) {
+    setSeededWrapper(wrapper);
     setNodes(wrapper.nodes);
     setEdges(wrapper.edges);
     setShouldLayout(model.needsLayout(wrapper.nodes));
     setShouldFitView(true);
-  }, [wrapper, setNodes, setEdges]);
+  }
 
   useAutoLayout({
     nodes,
@@ -97,7 +87,7 @@ function GraphViewerInner({
   });
 
   useImperativeHandle(
-    viewerRef,
+    ref,
     (): GraphViewerHandle => ({
       fitView: () => setShouldFitView(true),
       zoomIn: () => void flow.zoomIn(),
@@ -139,15 +129,13 @@ function GraphViewerInner({
  * Render it under an MUI `ThemeProvider` (e.g. the bundled `<GraphProviders>`); the editing-only
  * providers (notistack, material-ui-confirm) are not required.
  */
-export const GraphViewer = forwardRef<GraphViewerHandle, GraphViewerProps>(
-  function GraphViewer(props, ref) {
-    const { style, className } = props;
-    return (
-      <div className={className} style={{ width: "100%", height: "100%", ...style }}>
-        <ReactFlowProvider>
-          <GraphViewerInner {...props} viewerRef={ref} />
-        </ReactFlowProvider>
-      </div>
-    );
-  },
-);
+export function GraphViewer(props: GraphViewerProps): React.JSX.Element {
+  const { style, className } = props;
+  return (
+    <div className={className} style={{ width: "100%", height: "100%", ...style }}>
+      <ReactFlowProvider>
+        <GraphViewerInner {...props} />
+      </ReactFlowProvider>
+    </div>
+  );
+}

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AppBar, IconButton, Toolbar, Tooltip, Typography } from "@mui/material";
 import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 
-export default function Header() {
+export default function Header(): React.JSX.Element {
   const height = useStore((state) => state.headerHeight);
   const side = useStore((state) => state.sidebarSide);
   const anyOpen = useStore((state) => state.sidebarSections.length > 0);

@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import { dequal } from "dequal";
+import { isEqual } from "es-toolkit";
 import type React from "react";
 import { useCallback } from "react";
 import type * as model from "@/model.js";
@@ -12,7 +12,7 @@ export interface Props extends React.PropsWithChildren {
 
 export const EdgeFields: React.FC<Props> = ({ idx = 0, children }) => {
   const selectedIndex = useStore((state) => state.selection.edges[idx]);
-  const element = useStore((state) => state.edges[selectedIndex] as model.Edge, dequal);
+  const element = useStore((state) => state.edges[selectedIndex] as model.Edge, isEqual);
   const { mutate } = useArgueActions();
 
   const updateNotes = useCallback(

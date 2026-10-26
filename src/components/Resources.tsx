@@ -1,10 +1,9 @@
 import { faPlusCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { TabContext, TabList, TabPanel } from "@mui/lab";
-import { Box, Button, Stack, Tab, TextField, Typography } from "@mui/material";
+import { Box, Button, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
-import { dequal } from "dequal";
+import { isEqual } from "es-toolkit";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as model from "@/model.js";
@@ -79,18 +78,14 @@ const Resources: React.FC<Props> = ({ onClose }) => {
           .filter((node) => node.data.type === "atom" && node.data.reference !== undefined)
           .map((node) => [node.id, (node as model.AtomNode).data.reference as arguebuf.Reference]),
       ),
-    dequal,
+    isEqual,
   );
-  const resourceIds = useStore((state) => Object.keys(state.graph.resources), dequal);
-  const selectedAtom = useStore(selectSelectedAtom, dequal);
-  const activeTab = useStore((state) => (state.selectedResourceTab + 1).toString());
+  const resourceIds = useStore((state) => Object.keys(state.graph.resources), isEqual);
+  const selectedAtom = useStore(selectSelectedAtom, isEqual);
+  const selectedTab = useStore((state) => state.selectedResourceTab);
+  // Clamped so that a stale index (e.g. after deleting the last resource) selects the add tab.
+  const activeTab = Math.min(selectedTab, resourceIds.length);
   const { setState, setStateWithoutHistory, mutate } = useArgueActions();
-  const setActiveTab = useCallback(
-    (value: number) => {
-      setState({ selectedResourceTab: value - 1 });
-    },
-    [setState],
-  );
 
   // Reveal the resource a selected atom references so its highlight is visible.
   useEffect(() => {
@@ -101,10 +96,10 @@ const Resources: React.FC<Props> = ({ onClose }) => {
   }, [selectedAtom, resourceIds, setStateWithoutHistory]);
 
   const handleTabChange = useCallback(
-    (_event: React.SyntheticEvent, newValue: string) => {
-      setActiveTab(Number.parseInt(newValue));
+    (_event: React.SyntheticEvent, value: number) => {
+      setState({ selectedResourceTab: value });
     },
-    [setActiveTab],
+    [setState],
   );
 
   const addResource = useCallback(() => {
@@ -117,31 +112,32 @@ const Resources: React.FC<Props> = ({ onClose }) => {
     });
   }, [mutate]);
 
-  const lastResourceIndex = (resourceIds.length + 1).toString();
-
   return (
     <>
       <SectionHeader title="Resources" onClose={onClose} />
       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-        <TabContext value={activeTab}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <TabList onChange={handleTabChange} variant="scrollable" scrollButtons={true}>
-              {resourceIds.map((key, index) => {
-                const value = (index + 1).toString();
-                return <Tab key={key} label={value} value={value} sx={{ minWidth: 50 }} />;
-              })}
-              <Tab label={lastResourceIndex} value={lastResourceIndex} sx={{ minWidth: 50 }} />
-            </TabList>
-          </Box>
-          {resourceIds.map((id, index) => {
-            const tabIndex = index + 1;
-            return (
-              <TabPanel key={id} value={tabIndex.toString()}>
-                <Resource id={id} index={tabIndex} references={references} />
-              </TabPanel>
-            );
-          })}
-          <TabPanel value={lastResourceIndex}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons={true}
+          >
+            {resourceIds.map((key, index) => (
+              <Tab key={key} label={index + 1} value={index} sx={{ minWidth: 50 }} />
+            ))}
+            <Tab label={resourceIds.length + 1} value={resourceIds.length} sx={{ minWidth: 50 }} />
+          </Tabs>
+        </Box>
+        <Box role="tabpanel" sx={{ p: 3 }}>
+          {activeTab < resourceIds.length ? (
+            <Resource
+              key={resourceIds[activeTab]}
+              id={resourceIds[activeTab]}
+              index={activeTab + 1}
+              references={references}
+            />
+          ) : (
             <Button
               fullWidth
               variant="contained"
@@ -150,8 +146,8 @@ const Resources: React.FC<Props> = ({ onClose }) => {
             >
               Add Resource
             </Button>
-          </TabPanel>
-        </TabContext>
+          )}
+        </Box>
       </Box>
     </>
   );
@@ -165,7 +161,7 @@ interface ResourceProps {
 
 const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
-  const selectedAtom = useStore(selectSelectedAtom, dequal);
+  const selectedAtom = useStore(selectSelectedAtom, isEqual);
   const flow = useReactFlow();
   const { mutate, addNodeWithSelection, canvasCenter } = useArgueActions();
 
