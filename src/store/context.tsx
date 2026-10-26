@@ -1,9 +1,9 @@
-import { createContext, useContext } from "react";
+import { type Context, createContext, useContext } from "react";
 import type { ArgueStore } from "@/store/types.js";
 
 const ArgueStoreContext = createContext<ArgueStore | null>(null);
 
-export const ArgueStoreProvider = ArgueStoreContext.Provider;
+export const ArgueStoreProvider: Context<ArgueStore | null> = ArgueStoreContext;
 
 /** Access the current instance's store API (getState/setState/subscribe + temporal). */
 export function useStoreApi(): ArgueStore {

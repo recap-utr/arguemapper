@@ -2,8 +2,7 @@ import { Box } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
 import {
   type ChangeEvent,
-  type ComponentPropsWithoutRef,
-  forwardRef,
+  type ComponentProps,
   type UIEvent,
   useCallback,
   useEffect,
@@ -14,8 +13,8 @@ import {
 export type HighlightRange = readonly [start: number, end: number];
 
 export interface HighlightTextareaProps extends Omit<
-  ComponentPropsWithoutRef<"textarea">,
-  "onChange" | "value" | "ref"
+  ComponentProps<"textarea">,
+  "onChange" | "value"
 > {
   value: string;
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
@@ -80,118 +79,114 @@ const sharedSx = {
  * classic backdrop-overlay technique (no rich-text dependency). Designed to be
  * used as the `htmlInput` slot of a MUI `TextField`.
  */
-export const HighlightTextarea = forwardRef<HTMLTextAreaElement, HighlightTextareaProps>(
-  function HighlightTextarea(
-    {
-      value,
-      onChange,
-      ranges,
-      onSelectionChange,
-      revealRange,
-      className,
-      ownerState: _ownerState,
-      ...rest
+export function HighlightTextarea({
+  value,
+  onChange,
+  ranges,
+  onSelectionChange,
+  revealRange,
+  className,
+  ownerState: _ownerState,
+  ref,
+  ...rest
+}: HighlightTextareaProps): React.JSX.Element {
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const setTextareaRef = useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      textareaRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
     },
-    ref,
-  ) {
-    const backdropRef = useRef<HTMLDivElement>(null);
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    [ref],
+  );
 
-    const setTextareaRef = useCallback(
-      (node: HTMLTextAreaElement | null) => {
-        textareaRef.current = node;
-        if (typeof ref === "function") ref(node);
-        else if (ref) ref.current = node;
-      },
-      [ref],
+  const segments = useMemo(() => buildSegments(value, ranges), [value, ranges]);
+
+  const syncScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
+    if (!backdropRef.current) return;
+    backdropRef.current.scrollTop = event.currentTarget.scrollTop;
+    backdropRef.current.scrollLeft = event.currentTarget.scrollLeft;
+  }, []);
+
+  // Reports selection only while this textarea is focused, so changes in
+  // other inputs never feed it stale offsets.
+  const reportSelection = useCallback(() => {
+    const node = textareaRef.current;
+    if (node && document.activeElement === node)
+      onSelectionChange?.(node.selectionStart, node.selectionEnd);
+  }, [onSelectionChange]);
+
+  // `selectionchange` fires for every selection update — including caret
+  // moves and collapses that the element-level `select` event drops, which
+  // is what made the reported selection (and the consuming button) flaky.
+  useEffect(() => {
+    document.addEventListener("selectionchange", reportSelection);
+    return () => document.removeEventListener("selectionchange", reportSelection);
+  }, [reportSelection]);
+
+  // Scroll the revealed range (the first backdrop mark) into view.
+  const revealStart = revealRange?.[0];
+  const revealEnd = revealRange?.[1];
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    const backdrop = backdropRef.current;
+    if (revealStart === undefined || revealEnd === undefined || !textarea || !backdrop) return;
+    const mark = backdrop.querySelector<HTMLElement>("mark");
+    if (!mark) return;
+    textarea.scrollTop = Math.max(
+      0,
+      mark.offsetTop - (textarea.clientHeight - mark.offsetHeight) / 2,
     );
+    backdrop.scrollTop = textarea.scrollTop;
+  }, [revealStart, revealEnd]);
 
-    const segments = useMemo(() => buildSegments(value, ranges), [value, ranges]);
-
-    const syncScroll = useCallback((event: UIEvent<HTMLTextAreaElement>) => {
-      if (!backdropRef.current) return;
-      backdropRef.current.scrollTop = event.currentTarget.scrollTop;
-      backdropRef.current.scrollLeft = event.currentTarget.scrollLeft;
-    }, []);
-
-    // Reports selection only while this textarea is focused, so changes in
-    // other inputs never feed it stale offsets.
-    const reportSelection = useCallback(() => {
-      const node = textareaRef.current;
-      if (node && document.activeElement === node)
-        onSelectionChange?.(node.selectionStart, node.selectionEnd);
-    }, [onSelectionChange]);
-
-    // `selectionchange` fires for every selection update — including caret
-    // moves and collapses that the element-level `select` event drops, which
-    // is what made the reported selection (and the consuming button) flaky.
-    useEffect(() => {
-      document.addEventListener("selectionchange", reportSelection);
-      return () => document.removeEventListener("selectionchange", reportSelection);
-    }, [reportSelection]);
-
-    // Scroll the revealed range (the first backdrop mark) into view.
-    const revealStart = revealRange?.[0];
-    const revealEnd = revealRange?.[1];
-    useEffect(() => {
-      const textarea = textareaRef.current;
-      const backdrop = backdropRef.current;
-      if (revealStart === undefined || revealEnd === undefined || !textarea || !backdrop) return;
-      const mark = backdrop.querySelector<HTMLElement>("mark");
-      if (!mark) return;
-      textarea.scrollTop = Math.max(
-        0,
-        mark.offsetTop - (textarea.clientHeight - mark.offsetHeight) / 2,
-      );
-      backdrop.scrollTop = textarea.scrollTop;
-    }, [revealStart, revealEnd]);
-
-    return (
-      <Box className={className} sx={{ position: "relative", width: "100%" }}>
-        <Box
-          ref={backdropRef}
-          aria-hidden
-          sx={{
-            ...sharedSx,
-            position: "absolute",
-            inset: 0,
-            overflow: "hidden",
-            color: "transparent",
-            pointerEvents: "none",
-          }}
-        >
-          {segments.map((segment) =>
-            segment.highlight ? (
-              <Highlight key={segment.offset}>{segment.text}</Highlight>
-            ) : (
-              <span key={segment.offset}>{segment.text}</span>
-            ),
-          )}
-          {/* Keep the backdrop tall enough when the text ends with a newline. */}
-          {value.endsWith("\n") ? " " : ""}
-        </Box>
-        <Box
-          component="textarea"
-          ref={setTextareaRef}
-          value={value}
-          onChange={onChange}
-          onScroll={syncScroll}
-          onFocus={reportSelection}
-          sx={{
-            ...sharedSx,
-            position: "relative",
-            display: "block",
-            width: "100%",
-            boxSizing: "border-box",
-            resize: "none",
-            outline: "none",
-            color: "text.primary",
-            backgroundColor: "transparent",
-            overflow: "auto",
-          }}
-          {...rest}
-        />
+  return (
+    <Box className={className} sx={{ position: "relative", width: "100%" }}>
+      <Box
+        ref={backdropRef}
+        aria-hidden
+        sx={{
+          ...sharedSx,
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          color: "transparent",
+          pointerEvents: "none",
+        }}
+      >
+        {segments.map((segment) =>
+          segment.highlight ? (
+            <Highlight key={segment.offset}>{segment.text}</Highlight>
+          ) : (
+            <span key={segment.offset}>{segment.text}</span>
+          ),
+        )}
+        {/* Keep the backdrop tall enough when the text ends with a newline. */}
+        {value.endsWith("\n") ? " " : ""}
       </Box>
-    );
-  },
-);
+      <Box
+        component="textarea"
+        ref={setTextareaRef}
+        value={value}
+        onChange={onChange}
+        onScroll={syncScroll}
+        onFocus={reportSelection}
+        sx={{
+          ...sharedSx,
+          position: "relative",
+          display: "block",
+          width: "100%",
+          boxSizing: "border-box",
+          resize: "none",
+          outline: "none",
+          color: "text.primary",
+          backgroundColor: "transparent",
+          overflow: "auto",
+        }}
+        {...rest}
+      />
+    </Box>
+  );
+}

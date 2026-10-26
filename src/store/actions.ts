@@ -1,5 +1,6 @@
 import type { XYPosition } from "@xyflow/react";
 import { produce } from "immer";
+import type { RefObject } from "react";
 import * as model from "@/model.js";
 import type { ArgueStore, SidebarSection, State } from "@/store/types.js";
 
@@ -45,7 +46,7 @@ const selectNodeAtIndex = (draft: State, index: number) => {
  * assistant conversation on a graph swap, so every entry point (the `resetState` action and the
  * host `importGraph`/`clear` handles) stays in sync. Defaults to an empty graph.
  */
-export function resetGraphState(store: ArgueStore, preset?: model.Wrapper) {
+export function resetGraphState(store: ArgueStore, preset?: model.Wrapper): void {
   const s = preset ?? model.initWrapper({});
   store.setState({
     nodes: s.nodes,
@@ -62,13 +63,13 @@ export function resetGraphState(store: ArgueStore, preset?: model.Wrapper) {
 /**
  * Build the action helpers bound to a specific store instance (consumed via the `useArgueActions`
  * hook). `screenToFlow` converts client coordinates to flow coordinates (typically
- * `useReactFlow().screenToFlowPosition`); `getWrapperEl` yields the instance's ReactFlow wrapper
+ * `useReactFlow().screenToFlowPosition`); `wrapperRef` holds the instance's ReactFlow wrapper
  * element for geometry.
  */
 export function createActions(
   store: ArgueStore,
   screenToFlow: (pos: XYPosition) => XYPosition,
-  getWrapperEl: () => HTMLElement | null,
+  wrapperRef: RefObject<HTMLElement | null> | null,
 ): ArgueActions {
   const { getState, setState, temporal } = store;
 
@@ -98,8 +99,8 @@ export function createActions(
   const resetState = (preset?: model.Wrapper) => resetGraphState(store, preset);
 
   const canvasCenter = (): XYPosition => {
-    const el = getWrapperEl();
-    if (el !== null) {
+    const el = wrapperRef?.current;
+    if (el) {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };

@@ -1,6 +1,15 @@
 import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import { ReactFlowProvider } from "@xyflow/react";
-import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef } from "react";
+import {
+  type Ref,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
 import * as convert from "@/services/convert.js";
 import type { AssistantOptions } from "@/services/assistant/chat.js";
@@ -46,6 +55,7 @@ export interface GraphEditorProps extends React.PropsWithChildren {
   inspectorSlots?: InspectorSlots;
   style?: React.CSSProperties;
   className?: string;
+  ref?: Ref<GraphEditorHandle>;
 }
 
 export interface GraphEditorHandle {
@@ -67,40 +77,36 @@ const sliceGraph = (store: ArgueStore) => {
   return { wrapper: { nodes, edges, graph }, analyst };
 };
 
-export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(function GraphEditor(
-  {
-    initialGraph,
-    onChange,
-    readOnly = false,
-    toolbar = false,
-    sidebar = false,
-    side = "right",
-    header = false,
-    assistant,
-    persistKey,
-    id: idProp,
-    inspectorSlots,
-    style,
-    className,
-    children,
-  },
+export function GraphEditor({
+  initialGraph,
+  onChange,
+  readOnly = false,
+  toolbar = false,
+  sidebar = false,
+  side = "right",
+  header = false,
+  assistant,
+  persistKey,
+  id: idProp,
+  inspectorSlots,
+  style,
+  className,
+  children,
   ref,
-) {
+}: GraphEditorProps): React.JSX.Element {
   const generatedId = useId();
   const id = idProp ?? generatedId;
 
-  // Create the store exactly once per instance (StrictMode-safe via ref init).
-  const storeRef = useRef<ArgueStore | null>(null);
-  if (storeRef.current === null) {
-    storeRef.current = createArgueStore({
+  // Create the store exactly once per instance.
+  const [store] = useState(() =>
+    createArgueStore({
       initialGraph,
       persistKey,
       side,
       assistantConfig: assistant,
       assistantApiKey: assistant?.apiKey,
-    });
-  }
-  const store = storeRef.current;
+    }),
+  );
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -112,17 +118,18 @@ export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(funct
     [id, readOnly, toolbar, assistantEnabled, sidebar],
   );
 
-  // Keep the latest onChange in a ref so the subscription below never re-subscribes when the host
+  // Reads the latest onChange, so the subscription below never re-subscribes when the host
   // passes an inline callback.
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+  const emitChange = useEffectEvent(() => {
+    if (!onChange) return;
+    const { wrapper, analyst } = sliceGraph(store);
+    onChange(convert.exportGraph(wrapper, "arguebuf", analyst));
+  });
 
   // Emit onChange when the graph slice (not selection/panel state) changes.
   useEffect(() => {
     let prev: { nodes: unknown; edges: unknown; graph: unknown } | null = null;
     return store.subscribe((state) => {
-      const callback = onChangeRef.current;
-      if (!callback) return;
       if (
         prev &&
         prev.nodes === state.nodes &&
@@ -132,8 +139,7 @@ export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(funct
         return;
       }
       prev = { nodes: state.nodes, edges: state.edges, graph: state.graph };
-      const { wrapper, analyst } = sliceGraph(store);
-      callback(convert.exportGraph(wrapper, "arguebuf", analyst));
+      emitChange();
     });
   }, [store]);
 
@@ -179,4 +185,4 @@ export const GraphEditor = forwardRef<GraphEditorHandle, GraphEditorProps>(funct
       </ReactFlowProvider>
     </div>
   );
-});
+}

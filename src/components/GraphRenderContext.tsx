@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { type Context, createContext, useContext } from "react";
 import * as model from "@/model.js";
 
 /**
@@ -16,7 +16,7 @@ export interface GraphRender {
 
 const GraphRenderContext = createContext<GraphRender | null>(null);
 
-export const GraphRenderProvider = GraphRenderContext.Provider;
+export const GraphRenderProvider: Context<GraphRender | null> = GraphRenderContext;
 
 export function useGraphRender(): GraphRender {
   const value = useContext(GraphRenderContext);

@@ -1,10 +1,17 @@
-import { createContext, type RefObject, useContext, useEffect, useState } from "react";
+import {
+  type Context,
+  createContext,
+  type RefObject,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 // True when this instance should receive global keyboard shortcuts. Defaults to true so a single
 // instance (or a consumer that doesn't wrap with the provider) keeps working.
 const InstanceFocusContext = createContext<boolean>(true);
 
-export const InstanceFocusProvider = InstanceFocusContext.Provider;
+export const InstanceFocusProvider: Context<boolean> = InstanceFocusContext;
 
 export function useInstanceFocused(): boolean {
   return useContext(InstanceFocusContext);

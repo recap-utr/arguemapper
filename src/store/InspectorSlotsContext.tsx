@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext } from "react";
+import { type Context, createContext, type ReactNode, useContext } from "react";
 
 /**
  * Host-provided content injected into the inspector. Lets an embedding app (or the standalone app)
@@ -13,7 +13,7 @@ export interface InspectorSlots {
 
 const InspectorSlotsContext = createContext<InspectorSlots>({});
 
-export const InspectorSlotsProvider = InspectorSlotsContext.Provider;
+export const InspectorSlotsProvider: Context<InspectorSlots> = InspectorSlotsContext;
 
 export function useInspectorSlots(): InspectorSlots {
   return useContext(InspectorSlotsContext);

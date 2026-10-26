@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { type Context, createContext, useContext } from "react";
 
 export interface ArgueConfig {
   /** Instance id; namespaces ReactFlow and the SVG arrow markers so instances don't collide. */
@@ -21,7 +21,7 @@ const ArgueConfigContext = createContext<ArgueConfig>({
   sidebar: false,
 });
 
-export const ArgueConfigProvider = ArgueConfigContext.Provider;
+export const ArgueConfigProvider: Context<ArgueConfig> = ArgueConfigContext;
 
 export function useArgueConfig(): ArgueConfig {
   return useContext(ArgueConfigContext);

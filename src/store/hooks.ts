@@ -31,12 +31,7 @@ export function useArgueActions(): ArgueActions {
   const flow = useReactFlow();
   const wrapperRef = useFlowWrapperRef();
   return useMemo(
-    () =>
-      createActions(
-        store,
-        (pos) => flow.screenToFlowPosition(pos),
-        () => wrapperRef?.current ?? null,
-      ),
+    () => createActions(store, (pos) => flow.screenToFlowPosition(pos), wrapperRef),
     [store, flow, wrapperRef],
   );
 }
