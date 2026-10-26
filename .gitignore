@@ -224,3 +224,5 @@ sketch
 .scannerwork/
 /public/*.ai
 /.pre-commit-config.yaml
+/data/
+
