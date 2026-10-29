@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3",
-    "@ai-sdk/react": "^4",
     "@fortawesome/fontawesome-svg-core": "^7",
     "@fortawesome/free-brands-svg-icons": "^7",
     "@fortawesome/free-solid-svg-icons": "^7",
@@ -33,7 +32,6 @@
     "elkjs": "^0.12",
     "es-toolkit": "^1",
     "html-to-image": "^1",
-    "markdown-to-jsx": "^9",
     "react-hotkeys-hook": "^5",
     "zod": "^4",
     "zundo": "^2",

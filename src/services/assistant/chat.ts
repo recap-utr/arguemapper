@@ -1,13 +1,13 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { Chat } from "@ai-sdk/react";
+import { type ChatAdapter, type ChatMessage, createAiSdkAdapter } from "@mui/x-chat/headless";
 import {
-  DirectChatTransport,
-  isStepCount,
+  createAgentUIStream,
+  generateId,
   type InferAgentUIMessage,
+  isStepCount,
   ToolLoopAgent,
-  type ToolSet,
 } from "ai";
-import type { ArgueStore, ReasoningEffort } from "@/store.js";
+import type { ArgueStore, AssistantConfig } from "@/store.js";
 import { createTools } from "@/services/assistant/tools.js";
 
 const SYSTEM_PROMPT = `
@@ -15,98 +15,100 @@ You are an assistant that helps an analyst build and refine argument graphs.
 
 An argument graph consists of:
 - Atoms: argumentative discourse units (ADUs), i.e. the individual claims and premises.
-- Scheme nodes: the inferences that connect arguments. Each scheme node has one or more premise nodes and a single conclusion node, and a type of support, attack, rephrase or preference. A scheme with several premises is a linked argument. Premises and conclusions are usually atoms, but they may also be other scheme nodes (e.g. an attack whose conclusion is another scheme node represents an undercutting attack on that inference).
+- Schemes: inferences of type support, attack, rephrase or preference from one or more premise atoms to a single conclusion. A scheme with several premises is a linked argument. The conclusion is usually an atom, but it may be another scheme, e.g. an attack on a scheme undercuts that inference.
 - A major claim: the single root atom of the argument. It only appears as a conclusion, never as a premise.
 - Participants: the people behind the argument (e.g. the speakers in a debate). Each atom may be attributed to one participant.
 
-Build a single connected, hierarchical graph rooted at the major claim. Avoid flat graphs where every atom links directly to the major claim, cycles, orphaned atoms, and disconnected subgraphs (clusters of atoms not joined to the rest of the argument).
+Build a single connected, hierarchical graph rooted at the major claim. Avoid flat graphs where every atom links directly to the major claim, cycles, orphaned atoms, and disconnected parts.
 
-Quote atom text verbatim from the source resources so each atom links back to its original span; do not rewrite the wording unless explicitly asked. An atom's original-text reference is recorded only when its text is found verbatim in a resource — if you must paraphrase, the atom simply carries no reference rather than a wrong one.
+Read the graph with readGraph and change it with editGraph, which accepts all changes of a step at once. Use short ids of your own such as a1 or s1 for new elements. Quote atom texts verbatim from the resources, so that they are linked to their source. If editGraph fails, nothing was changed: fix the items its errors name and call it again. Act on the returned warnings and issues until the graph is sound.
 
 Briefly explain what you are doing and summarise the result for the analyst.
 `.trim();
 
-export interface AssistantOptions {
-  /** API key. If omitted, the live `assistantApiKey` from the store is used (standalone). */
-  apiKey?: string;
-  model?: string;
-  baseURL?: string;
-  reasoningEffort?: ReasoningEffort;
+/** Connection and model settings of the assistant. */
+export interface AssistantSettings extends AssistantConfig {
+  /** Optional, local servers usually need none. */
+  apiKey: string;
 }
 
-function buildAgent(store: ArgueStore, options: AssistantOptions): ToolLoopAgent<never, ToolSet> {
-  // Cache the provider across the turn's up-to-32 `prepareCall` steps; only baseURL/apiKey affect it,
-  // so it's rebuilt only when those change rather than on every step.
-  let cached:
-    | { baseURL: string; apiKey: string; provider: ReturnType<typeof createOpenAICompatible> }
-    | undefined;
-  const resolveModel = (apiKey: string) => {
-    const config = store.getState().assistantConfig;
-    const baseURL = options.baseURL ?? config.baseURL;
-    const model = options.model ?? config.model;
-    // Target the Chat Completions endpoint (`/chat/completions`), the universal standard implemented by
-    // OpenAI and every compatible server (llama.cpp, Ollama, vLLM, …). Unlike `@ai-sdk/openai`'s chat
-    // model, this provider parses the `reasoning_content` delta that reasoning models stream, surfacing
-    // it as reasoning UI parts. The key is optional — the Authorization header is omitted when it is
-    // empty, which is what local servers expect.
-    if (cached?.baseURL !== baseURL || cached.apiKey !== apiKey) {
-      cached = {
-        baseURL,
-        apiKey,
-        provider: createOpenAICompatible({
-          name: "openai",
-          baseURL,
-          apiKey: apiKey || undefined,
-          // Anthropic gates browser CORS behind this opt-in header; other providers don't need it,
-          // so it's omitted to avoid an unnecessary preflight.
-          headers:
-            URL.parse(baseURL)?.hostname === "api.anthropic.com"
-              ? { "anthropic-dangerous-direct-browser-access": "true" }
-              : undefined,
-        }),
-      };
-    }
-    const { provider } = cached;
-    return provider.chatModel(model);
-  };
+/** Settings of the host, they take precedence over the ones of the store. */
+export type AssistantOptions = Partial<AssistantSettings>;
+
+function createAgent(store: ArgueStore, { apiKey, model, baseURL, reasoning }: AssistantSettings) {
+  // The Chat Completions API is implemented by OpenAI and every compatible server (llama.cpp, Ollama, vLLM, …),
+  // and this provider surfaces the `reasoning_content` that reasoning models stream.
+  const provider = createOpenAICompatible({
+    name: "openai",
+    baseURL,
+    apiKey: apiKey || undefined,
+    // Anthropic only allows browser requests with this opt-in header
+    headers:
+      URL.parse(baseURL)?.hostname === "api.anthropic.com"
+        ? { "anthropic-dangerous-direct-browser-access": "true" }
+        : undefined,
+  });
 
   return new ToolLoopAgent({
-    // The model is a required setting; prepareCall overrides it per call with the current
-    // runtime config, so an empty key here is fine (it only throws when actually sending).
-    model: resolveModel(""),
-    instructions: SYSTEM_PROMPT, // STATIC — keeps the cached prompt prefix stable across turns
+    model: provider.chatModel(model),
+    instructions: SYSTEM_PROMPT,
     tools: createTools(store),
+    reasoning,
     stopWhen: isStepCount(32),
-    prepareCall: (call) => {
-      // The SDK uses the returned object as the full call args, so spread the incoming `call`
-      // (messages, static instructions, tools, …) and override only the runtime settings resolved
-      // from the live config. The prompt prefix is passed through untouched for KV-cache reuse.
-      const apiKey = options.apiKey ?? store.getState().assistantApiKey;
-      const reasoningEffort =
-        options.reasoningEffort ?? store.getState().assistantConfig.reasoningEffort;
-      return {
-        ...call,
-        model: resolveModel(apiKey),
-        reasoning: reasoningEffort,
-      };
-    },
-    onEnd: () => {
-      store.setState({ shouldFitView: true });
-    },
+    onEnd: () => store.setState({ shouldFitView: true }),
   });
 }
 
-type AssistantAgent = ReturnType<typeof buildAgent>;
-export type AssistantUIMessage = InferAgentUIMessage<AssistantAgent>;
+type AssistantUIMessage = InferAgentUIMessage<ReturnType<typeof createAgent>>;
+type AssistantUIPart = AssistantUIMessage["parts"][number];
 
-/** Create a chat bound to a specific instance's store and assistant configuration. */
-export function createAssistantChat(
-  store: ArgueStore,
-  options: AssistantOptions,
-): Chat<AssistantUIMessage> {
-  return new Chat<AssistantUIMessage>({
-    // Seed from the persisted transcript so reloads — and chat rebuilds on config changes — restore it.
-    messages: store.getState().assistantMessages as AssistantUIMessage[],
-    transport: new DirectChatTransport({ agent: buildAgent(store, options) }),
+/**
+ * The AI SDK message of a MUI X Chat message.
+ * MUI X Chat mirrors the parts of the AI SDK, except that tool invocations are nested,
+ * so the parts are only regrouped and the casts mark this structural boundary.
+ * Tool calls without a result, e.g. of an aborted reply, are dropped as providers reject them,
+ * like `ignoreIncompleteToolCalls` of `convertToModelMessages` does.
+ */
+function toUIMessage({ id, role, parts, metadata }: ChatMessage): AssistantUIMessage {
+  return {
+    id,
+    role,
+    metadata,
+    parts: parts.flatMap((part): AssistantUIPart[] => {
+      switch (part.type) {
+        case "tool":
+        case "dynamic-tool": {
+          const { toolName, ...invocation } = part.toolInvocation;
+
+          if (!invocation.state.startsWith("output-")) {
+            return [];
+          }
+
+          const type = part.type === "tool" ? `tool-${toolName}` : "dynamic-tool";
+          return [{ type, toolName, ...invocation } as AssistantUIPart];
+        }
+        default:
+          return [part as AssistantUIPart];
+      }
+    }),
+  };
+}
+
+/** MUI X Chat adapter that runs the assistant agent in the browser. */
+export function createAssistantAdapter(store: ArgueStore, settings: AssistantSettings): ChatAdapter {
+  const agent = createAgent(store, settings);
+
+  return createAiSdkAdapter({
+    stream: ({ messages, signal }) =>
+      createAgentUIStream({
+        agent,
+        uiMessages: messages.map(toUIMessage),
+        abortSignal: signal,
+        // MUI X Chat numbers replies without an id per adapter,
+        // so a reply after a reload would be merged into a persisted one
+        generateMessageId: generateId,
+        // show the actual cause, e.g. a wrong API key, instead of a generic message
+        onError: (error) => (error instanceof Error ? error.message : String(error)),
+      }),
   });
 }

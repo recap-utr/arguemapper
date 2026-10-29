@@ -8,9 +8,14 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { startCase } from "es-toolkit";
 import type React from "react";
-import { type ReasoningEffort, reasoningEfforts, useArgueActions, useStore } from "@/store.js";
+import { type AssistantConfig, useArgueActions, useStore } from "@/store.js";
+
+const reasoningLevels: readonly (readonly [AssistantConfig["reasoning"], string])[] = [
+  ["low", "Low"],
+  ["medium", "Medium"],
+  ["high", "High"],
+];
 
 interface Props {
   open: boolean;
@@ -21,7 +26,9 @@ interface Props {
 export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
   const assistantApiKey = useStore((state) => state.assistantApiKey);
   const assistantConfig = useStore((state) => state.assistantConfig);
-  const { setState, mutate } = useArgueActions();
+  const { setState } = useArgueActions();
+  const setConfig = (changes: Partial<AssistantConfig>) =>
+    setState({ assistantConfig: { ...assistantConfig, ...changes } });
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
@@ -44,9 +51,7 @@ export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
             label="Model"
             value={assistantConfig.model}
             onChange={(event) => {
-              mutate((draft) => {
-                draft.assistantConfig.model = event.target.value;
-              });
+              setConfig({ model: event.target.value });
             }}
           />
           <TextField
@@ -55,27 +60,25 @@ export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
             label="Base URL"
             value={assistantConfig.baseURL}
             onChange={(event) => {
-              mutate((draft) => {
-                draft.assistantConfig.baseURL = event.target.value;
-              });
+              setConfig({ baseURL: event.target.value });
             }}
           />
           <TextField
             fullWidth
             select
-            label="Reasoning Effort"
-            value={assistantConfig.reasoningEffort ?? "auto"}
+            label="Reasoning"
+            value={assistantConfig.reasoning}
             onChange={(event) => {
-              mutate((draft) => {
-                const { value } = event.target;
-                draft.assistantConfig.reasoningEffort =
-                  value === "auto" ? undefined : (value as ReasoningEffort);
-              });
+              const level = reasoningLevels.find(([value]) => value === event.target.value);
+
+              if (level !== undefined) {
+                setConfig({ reasoning: level[0] });
+              }
             }}
           >
-            {reasoningEfforts.map((effort) => (
-              <MenuItem key={effort ?? "auto"} value={effort ?? "auto"}>
-                {startCase(effort ?? "auto")}
+            {reasoningLevels.map(([value, label]) => (
+              <MenuItem key={value} value={value}>
+                {label}
               </MenuItem>
             ))}
           </TextField>
