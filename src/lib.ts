@@ -16,8 +16,6 @@ export {
   type CreateArgueStoreOptions,
   createArgueStore,
   type InspectorSlots,
-  type ReasoningEffort,
-  reasoningEfforts,
   type SidebarSection,
   type State,
   useArgueActions,
@@ -30,4 +28,4 @@ export {
 export * as model from "@/model.js";
 export { exportGraph, importGraph } from "@/services/convert.js";
 export type { AssistantOptions } from "@/services/assistant/chat.js";
-export type { GraphJson } from "arg-services/graph/v1/graph_pb";
+export type { GraphJson } from "arguebuf";

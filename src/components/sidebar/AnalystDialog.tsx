@@ -21,7 +21,7 @@ interface Props {
 /** Collects the analyst's name/email, gating exports until both are provided. */
 export const AnalystDialog: React.FC<Props> = ({ callback, disableCallback }) => {
   const analyst = useStore((state) => state.analyst);
-  const { setState, mutate } = useArgueActions();
+  const { setState } = useArgueActions();
 
   const callbackIsFunction = useMemo(() => typeof callback === "function", [callback]);
   const onConfirm = () => {
@@ -46,9 +46,8 @@ export const AnalystDialog: React.FC<Props> = ({ callback, disableCallback }) =>
           margin="dense"
           value={analyst.name ?? ""}
           onChange={(event) => {
-            mutate((draft) => {
-              draft.analyst.name = event.target.value;
-            });
+            const { value } = event.target;
+            setState((state) => ({ analyst: state.analyst.with({ name: value }) }));
           }}
         />
         <TextField
@@ -58,9 +57,8 @@ export const AnalystDialog: React.FC<Props> = ({ callback, disableCallback }) =>
           margin="dense"
           value={analyst.email ?? ""}
           onChange={(event) => {
-            mutate((draft) => {
-              draft.analyst.email = event.target.value;
-            });
+            const { value } = event.target;
+            setState((state) => ({ analyst: state.analyst.with({ email: value }) }));
           }}
         />
       </DialogContent>

@@ -9,10 +9,8 @@ import {
   type OnConnectEnd,
   type OnConnectStart,
   type OnEdgesChange,
-  type OnEdgesDelete,
   type OnInit,
   type OnNodesChange,
-  type OnNodesDelete,
   type OnSelectionChangeFunc,
   ReactFlow,
 } from "@xyflow/react";
@@ -28,34 +26,30 @@ import { NodeTypes } from "@/components/NodeTypes.js";
 export interface GraphCanvasProps extends React.PropsWithChildren {
   /** Instance id; namespaces the ReactFlow instance and its SVG markers. */
   id: string;
-  nodes: model.Node[];
-  edges: model.Edge[];
+  nodes: model.CanvasNode[];
+  edges: model.CanvasEdge[];
   edgeStyle: model.EdgeStyle;
-  majorClaim: string | undefined;
 
   /** Ref forwarded to the ReactFlow wrapper element (for coordinate transforms / image export). */
   wrapperRef?: RefObject<HTMLDivElement | null> | null;
 
-  onNodesChange?: OnNodesChange<model.Node>;
-  onEdgesChange?: OnEdgesChange<model.Edge>;
+  onNodesChange?: OnNodesChange<model.CanvasNode>;
+  onEdgesChange?: OnEdgesChange<model.CanvasEdge>;
   onConnect?: OnConnect;
-  onInit?: OnInit<model.Node, model.Edge>;
+  onInit?: OnInit<model.CanvasNode, model.CanvasEdge>;
   onSelectionChange?: OnSelectionChangeFunc;
-  onNodeClick?: NodeMouseHandler<model.Node>;
-  onEdgeClick?: EdgeMouseHandler<model.Edge>;
-  onNodeContextMenu?: NodeMouseHandler<model.Node>;
-  onEdgeContextMenu?: EdgeMouseHandler<model.Edge>;
+  onNodeClick?: NodeMouseHandler<model.CanvasNode>;
+  onEdgeClick?: EdgeMouseHandler<model.CanvasEdge>;
+  onNodeContextMenu?: NodeMouseHandler<model.CanvasNode>;
+  onEdgeContextMenu?: EdgeMouseHandler<model.CanvasEdge>;
   onPaneContextMenu?: (event: React.MouseEvent | MouseEvent) => void;
-  onNodeDoubleClick?: NodeMouseHandler<model.Node>;
-  onEdgeDoubleClick?: EdgeMouseHandler<model.Edge>;
-  onNodesDelete?: OnNodesDelete<model.Node>;
-  onEdgesDelete?: OnEdgesDelete<model.Edge>;
+  onNodeDoubleClick?: NodeMouseHandler<model.CanvasNode>;
+  onEdgeDoubleClick?: EdgeMouseHandler<model.CanvasEdge>;
   onClickConnectStart?: OnConnectStart;
   onClickConnectEnd?: OnConnectEnd;
 
   nodesDraggable?: boolean;
   nodesConnectable?: boolean;
-  edgesReconnectable?: boolean;
   /** ReactFlow `deleteKeyCode`; pass `null` to disable deletion. */
   deleteKeyCode?: string | string[] | null;
 
@@ -75,7 +69,6 @@ export function GraphCanvas({
   nodes,
   edges,
   edgeStyle,
-  majorClaim,
   wrapperRef,
   onNodesChange,
   onEdgesChange,
@@ -89,13 +82,10 @@ export function GraphCanvas({
   onPaneContextMenu,
   onNodeDoubleClick,
   onEdgeDoubleClick,
-  onNodesDelete,
-  onEdgesDelete,
   onClickConnectStart,
   onClickConnectEnd,
   nodesDraggable,
   nodesConnectable,
-  edgesReconnectable,
   deleteKeyCode,
   minimap = false,
   controls = false,
@@ -115,13 +105,13 @@ export function GraphCanvas({
   }, [edgeStyle]);
 
   const renderValue = useMemo(
-    () => ({ instanceId: id, edgeStyle, majorClaim }),
-    [id, edgeStyle, majorClaim],
+    () => ({ instanceId: id, edgeStyle }),
+    [id, edgeStyle],
   );
 
   return (
     <GraphRenderProvider value={renderValue}>
-      <ReactFlow<model.Node, model.Edge>
+      <ReactFlow<model.CanvasNode, model.CanvasEdge>
         id={id}
         ref={wrapperRef}
         nodes={nodes}
@@ -138,13 +128,10 @@ export function GraphCanvas({
         onPaneContextMenu={onPaneContextMenu}
         onNodeDoubleClick={onNodeDoubleClick}
         onEdgeDoubleClick={onEdgeDoubleClick}
-        onNodesDelete={onNodesDelete}
-        onEdgesDelete={onEdgesDelete}
         onClickConnectStart={onClickConnectStart}
         onClickConnectEnd={onClickConnectEnd}
         nodesDraggable={nodesDraggable}
         nodesConnectable={nodesConnectable}
-        edgesReconnectable={edgesReconnectable}
         deleteKeyCode={deleteKeyCode}
         selectNodesOnDrag
         nodeTypes={NodeTypes}

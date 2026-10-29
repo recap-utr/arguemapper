@@ -10,8 +10,6 @@ export interface GraphRender {
   /** Instance id; namespaces the SVG arrow markers so multiple graphs on a page don't collide. */
   instanceId: string;
   edgeStyle: model.EdgeStyle;
-  /** Id of the node marked as the major claim, highlighted darker. */
-  majorClaim: string | undefined;
 }
 
 const GraphRenderContext = createContext<GraphRender | null>(null);

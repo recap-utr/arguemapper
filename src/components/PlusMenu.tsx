@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, Menu, useTheme } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
+import * as model from "@/model.js";
 import { useArgueActions, useArgueConfig } from "@/store.js";
 import { canvasButtonSx } from "@/components/canvasControls.js";
 import { IconMenuItem } from "@/components/IconMenuItem.js";
@@ -10,7 +11,7 @@ import { IconMenuItem } from "@/components/IconMenuItem.js";
 /** The add-node button (bottom-right of the canvas) and its atom/scheme menu. */
 export const PlusMenu: React.FC = () => {
   const theme = useTheme();
-  const { addAtomAt, addSchemeAt } = useArgueActions();
+  const { addNodeAt } = useArgueActions();
   const { readOnly } = useArgueConfig();
   const [plusButton, setPlusButton] = useState<HTMLElement | null>(null);
   const isOpen = Boolean(plusButton);
@@ -51,7 +52,7 @@ export const PlusMenu: React.FC = () => {
           icon={faPlus}
           text="Add Atom"
           onClick={() => {
-            addAtomAt();
+            addNodeAt(model.newAtom());
             close();
           }}
         />
@@ -59,7 +60,7 @@ export const PlusMenu: React.FC = () => {
           icon={faPlus}
           text="Add Scheme"
           onClick={() => {
-            addSchemeAt();
+            addNodeAt(model.newScheme());
             close();
           }}
         />

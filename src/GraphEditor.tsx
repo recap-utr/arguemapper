@@ -1,4 +1,4 @@
-import type { GraphJson } from "arg-services/graph/v1/graph_pb";
+import type * as arguebuf from "arguebuf";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
   type Ref,
@@ -32,9 +32,9 @@ const EMPTY_SLOTS: InspectorSlots = {};
 
 export interface GraphEditorProps extends React.PropsWithChildren {
   /** Seed graph (arguebuf JSON). Used unless persisted state exists for `persistKey`. */
-  initialGraph?: GraphJson;
-  /** Called with the arguebuf JSON whenever the graph (nodes/edges/graph) changes. */
-  onChange?: (graph: GraphJson) => void;
+  initialGraph?: arguebuf.GraphJson;
+  /** Called with the arguebuf JSON whenever the graph changes. */
+  onChange?: (graph: arguebuf.GraphJson) => void;
   /** Disable all editing — pure viewer. */
   readOnly?: boolean;
   /** Show the on-canvas toolbar (undo/redo/zoom/fit/layout). */
@@ -59,8 +59,8 @@ export interface GraphEditorProps extends React.PropsWithChildren {
 }
 
 export interface GraphEditorHandle {
-  exportGraph: (format?: "aif" | "arguebuf") => GraphJson;
-  importGraph: (graph: GraphJson) => void;
+  exportGraph: <F extends convert.ExportFormat>(format: F) => arguebuf.dump.Formats[F];
+  importGraph: (graph: arguebuf.GraphJson) => void;
   clear: () => void;
   fitView: () => void;
   layout: () => void;
@@ -71,11 +71,6 @@ export interface GraphEditorHandle {
   /** Escape hatch: the underlying zustand store for advanced integrations. */
   getStore: () => ArgueStore;
 }
-
-const sliceGraph = (store: ArgueStore) => {
-  const { nodes, edges, graph, analyst } = store.getState();
-  return { wrapper: { nodes, edges, graph }, analyst };
-};
 
 export function GraphEditor({
   initialGraph,
@@ -122,33 +117,27 @@ export function GraphEditor({
   // passes an inline callback.
   const emitChange = useEffectEvent(() => {
     if (!onChange) return;
-    const { wrapper, analyst } = sliceGraph(store);
-    onChange(convert.exportGraph(wrapper, "arguebuf", analyst));
+    const { graph, analyst } = store.getState();
+    onChange(convert.exportGraph(graph, "arguebuf", analyst));
   });
 
-  // Emit onChange when the graph slice (not selection/panel state) changes.
-  useEffect(() => {
-    let prev: { nodes: unknown; edges: unknown; graph: unknown } | null = null;
-    return store.subscribe((state) => {
-      if (
-        prev &&
-        prev.nodes === state.nodes &&
-        prev.edges === state.edges &&
-        prev.graph === state.graph
-      ) {
-        return;
-      }
-      prev = { nodes: state.nodes, edges: state.edges, graph: state.graph };
-      emitChange();
-    });
-  }, [store]);
+  // Emit onChange when the graph (not selection/panel state) changes.
+  useEffect(
+    () =>
+      store.subscribe((state, previous) => {
+        if (state.graph !== previous.graph) {
+          emitChange();
+        }
+      }),
+    [store],
+  );
 
   useImperativeHandle(
     ref,
     (): GraphEditorHandle => ({
-      exportGraph: (format = "arguebuf") => {
-        const { wrapper, analyst } = sliceGraph(store);
-        return convert.exportGraph(wrapper, format, analyst);
+      exportGraph: (format) => {
+        const { graph, analyst } = store.getState();
+        return convert.exportGraph(graph, format, analyst);
       },
       importGraph: (graph) => resetGraphState(store, convert.importGraph(graph)),
       clear: () => resetGraphState(store),

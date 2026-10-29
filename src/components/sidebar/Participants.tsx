@@ -12,7 +12,7 @@ interface Props {
 
 export const Participants: React.FC<Props> = ({ onClose }) => {
   const participants = useStore((state) => state.graph.participants);
-  const { mutate } = useArgueActions();
+  const { editGraph } = useArgueActions();
 
   return (
     <>
@@ -31,8 +31,8 @@ export const Participants: React.FC<Props> = ({ onClose }) => {
             startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
             variant="contained"
             onClick={() => {
-              mutate((draft) => {
-                draft.graph.addParticipant(new arguebuf.Participant({ name: "Unknown" }));
+              editGraph((graph) => {
+                graph.addParticipant(new arguebuf.Participant({ name: "Unknown" }));
               });
             }}
           >
@@ -50,7 +50,7 @@ interface CardProps {
 }
 
 const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
-  const { mutate } = useArgueActions();
+  const { editGraph } = useArgueActions();
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
@@ -60,8 +60,9 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           label="Name"
           value={participant.name}
           onChange={(event) => {
-            mutate((draft) => {
-              draft.graph.participants[id].name = event.target.value;
+            const { value } = event.target;
+            editGraph((graph) => {
+              graph.updateParticipant(id, { name: value });
             });
           }}
         />
@@ -71,8 +72,9 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           label="Email"
           value={participant.email}
           onChange={(event) => {
-            mutate((draft) => {
-              draft.graph.participants[id].email = event.target.value;
+            const { value } = event.target;
+            editGraph((graph) => {
+              graph.updateParticipant(id, { email: value });
             });
           }}
         />
@@ -81,8 +83,9 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           label="Username"
           value={participant.username}
           onChange={(event) => {
-            mutate((draft) => {
-              draft.graph.participants[id].username = event.target.value;
+            const { value } = event.target;
+            editGraph((graph) => {
+              graph.updateParticipant(id, { username: value });
             });
           }}
         />
@@ -91,8 +94,8 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           color="error"
           variant="contained"
           onClick={() => {
-            mutate((draft) => {
-              delete draft.graph.participants[id];
+            editGraph((graph) => {
+              graph.removeParticipant(id);
             });
           }}
         >

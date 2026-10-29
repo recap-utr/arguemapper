@@ -1,8 +1,8 @@
-import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as arguebuf from "arguebuf";
-import { isEqual, throttle } from "es-toolkit";
+import { throttle } from "es-toolkit";
 import { type TemporalState, temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
 import * as convert from "@/services/convert.js";
 import * as model from "@/model.js";
@@ -22,7 +22,7 @@ import {
 
 export interface CreateArgueStoreOptions {
   /** Seed graph (arguebuf JSON). Ignored for fields restored from persistence. */
-  initialGraph?: GraphJson;
+  initialGraph?: arguebuf.GraphJson;
   /** When set, the store is persisted to localStorage under this key. Absent => no persistence. */
   persistKey?: string;
   /** Override the persistence backend (defaults to localStorage). */
@@ -36,60 +36,41 @@ export interface CreateArgueStoreOptions {
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
-  const wrapper = options.initialGraph
+  const graph = options.initialGraph
     ? convert.importGraph(options.initialGraph)
-    : model.initWrapper({});
+    : model.newGraph();
 
   return {
-    nodes: wrapper.nodes,
-    edges: wrapper.edges,
-    graph: wrapper.graph,
+    graph,
     analyst: new arguebuf.Analyst({}),
     firstVisit: true,
     layoutAlgorithm: "layered",
     edgeStyle: "step",
-    shouldLayout: model.needsLayout(wrapper.nodes),
+    shouldLayout: false,
     shouldFitView: true,
-    selection: model.initSelection(),
+    selection: model.emptySelection,
     prettifyJson: true,
     imageScale: 3,
-    selectedResourceTab: 0,
     sidebarSide: options.side ?? "right",
     sidebarSections: ["inspector"],
     sidebarWidth: 480,
     headerHeight: 64,
     assistantConfig: resolveAssistantConfig(options.assistantConfig),
-    assistantBusy: false,
     assistantApiKey: options.assistantApiKey ?? "",
     assistantMessages: [],
-    graphResetToken: 0,
+    assistantConversation: 0,
   };
 }
 
 function createTemporalOptions(): ZundoOptions<State, ZundoState> {
-  // Per-instance cache so concurrent editors don't poison each other's equality checks.
-  let lastEqualityResult = true;
-  let lastComparedStates: [ZundoState, ZundoState] | null = null;
-
   return {
-    partialize: (state) => {
-      const { nodes, edges, graph, selectedResourceTab, selection } = state;
-      const partialNodes = nodes.map((node) => {
-        // State should not update if dragged, width, etc. are changed
-        const { data, id, position, selected, type } = node;
-        return { data, id, position, selected, type };
-      });
-      return { nodes: partialNodes, edges, graph, selectedResourceTab, selection };
-    },
-    equality: (a, b) => {
-      if (a === b) return true;
-      if (lastComparedStates && lastComparedStates[0] === a && lastComparedStates[1] === b) {
-        return lastEqualityResult;
-      }
-      lastEqualityResult = isEqual(a, b);
-      lastComparedStates = [a, b];
-      return lastEqualityResult;
-    },
+    partialize: ({ graph, selectedResource, selection }) => ({
+      graph,
+      selectedResource,
+      selection,
+    }),
+    // edits replace the changed parts only, so references suffice
+    equality: shallow,
     limit: 100,
     handleSet: (callback) => throttle(callback, 1000),
   };

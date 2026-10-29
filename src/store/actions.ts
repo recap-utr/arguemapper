@@ -1,5 +1,6 @@
 import type { XYPosition } from "@xyflow/react";
-import { produce } from "immer";
+import * as arguebuf from "arguebuf";
+import { enqueueSnackbar } from "notistack";
 import type { RefObject } from "react";
 import * as model from "@/model.js";
 import type { ArgueStore, SidebarSection, State } from "@/store/types.js";
@@ -7,8 +8,13 @@ import type { ArgueStore, SidebarSection, State } from "@/store/types.js";
 export interface ArgueActions {
   setState: ArgueStore["setState"];
   getState: ArgueStore["getState"];
-  mutate: (recipe: (draft: State) => void) => void;
-  resetState: (preset?: model.Wrapper) => void;
+  /**
+   * Edit a copy of the graph with its validated methods and store it, together with the returned state.
+   * The selection is pruned to the remaining elements.
+   * Violations of the strict graph model are shown to the user and leave the state unchanged.
+   */
+  editGraph: (edit: (graph: model.Graph, state: State) => Partial<State> | void) => void;
+  resetState: (graph?: model.Graph) => void;
   setStateWithoutHistory: (updater: Partial<State> | ((state: State) => Partial<State>)) => void;
   pauseTemporal: () => void;
   resumeTemporal: () => void;
@@ -18,46 +24,40 @@ export interface ArgueActions {
   openSidebarSection: (section: SidebarSection) => void;
   /** Collapse the sidebar by hiding every pane. */
   closeSidebar: () => void;
-  clearAllSelections: () => void;
-  selectSingleNode: (nodeIndex: number) => void;
-  addNodeWithSelection: (node: model.Node) => void;
-  addAtomAt: (screenPos?: XYPosition, text?: string) => void;
-  addSchemeAt: (screenPos?: XYPosition) => void;
+  /** Add the node at the given screen position (the canvas center by default) and select it. */
+  addNodeAt: (node: model.Node, screenPos?: XYPosition) => void;
   canvasCenter: () => XYPosition;
 }
 
-const deselectAll = (draft: State) => {
-  for (const node of draft.nodes) {
-    node.selected = false;
-  }
-  for (const edge of draft.edges) {
-    edge.selected = false;
-  }
-};
+/** Start a fresh assistant conversation, which also aborts a running reply. */
+export function resetConversation(store: ArgueStore): void {
+  store.setState((state) => ({
+    assistantMessages: [],
+    assistantConversation: state.assistantConversation + 1,
+  }));
+}
 
-const selectNodeAtIndex = (draft: State, index: number) => {
-  const node = draft.nodes[index];
-  node.selected = true;
-  draft.selection = { nodes: [index], edges: [], type: node.type };
-};
+/** Store an edited graph together with further state, pruning the selection to its elements. */
+export function commitGraph(store: ArgueStore, graph: model.Graph, changes?: Partial<State>): void {
+  store.setState((state) => ({
+    ...changes,
+    graph,
+    selection: model.pruneSelection(graph, changes?.selection ?? state.selection),
+  }));
+}
 
 /**
- * Replace the graph wholesale (load/import/new). Doubles as the single place that resets the
- * assistant conversation on a graph swap, so every entry point (the `resetState` action and the
- * host `importGraph`/`clear` handles) stays in sync. Defaults to an empty graph.
+ * Replace the graph wholesale (load/import/new), which starts a fresh assistant conversation.
+ * Defaults to an empty graph.
  */
-export function resetGraphState(store: ArgueStore, preset?: model.Wrapper): void {
-  const s = preset ?? model.initWrapper({});
+export function resetGraphState(store: ArgueStore, graph: model.Graph = model.newGraph()): void {
   store.setState({
-    nodes: s.nodes,
-    edges: s.edges,
-    graph: s.graph,
-    shouldLayout: model.needsLayout(s.nodes),
+    graph,
+    selection: model.emptySelection,
+    shouldLayout: false,
     shouldFitView: true,
-    // A wholesale graph swap starts a fresh assistant conversation.
-    assistantMessages: [],
-    graphResetToken: store.getState().graphResetToken + 1,
   });
+  resetConversation(store);
 }
 
 /**
@@ -73,8 +73,25 @@ export function createActions(
 ): ArgueActions {
   const { getState, setState, temporal } = store;
 
-  const mutate = (recipe: (draft: State) => void) => {
-    setState(produce(recipe));
+  const editGraph: ArgueActions["editGraph"] = (edit) => {
+    const state = getState();
+    const graph = state.graph.copy();
+    let changes: Partial<State> | void;
+
+    try {
+      changes = edit(graph, state);
+    } catch (error) {
+      if (!(error instanceof arguebuf.GraphError)) {
+        throw error;
+      }
+
+      const { message, hint } = error.issue;
+      enqueueSnackbar(hint === undefined ? message : `${message} ${hint}`, { variant: "warning" });
+
+      return;
+    }
+
+    commitGraph(store, graph, changes ?? undefined);
   };
 
   const pauseTemporal = () => {
@@ -96,7 +113,7 @@ export function createActions(
     if (wasTracking) resumeTemporal();
   };
 
-  const resetState = (preset?: model.Wrapper) => resetGraphState(store, preset);
+  const resetState = (graph?: model.Graph) => resetGraphState(store, graph);
 
   const canvasCenter = (): XYPosition => {
     const el = wrapperRef?.current;
@@ -110,39 +127,13 @@ export function createActions(
     return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   };
 
-  const clearAllSelections = () => {
-    mutate((draft) => {
-      deselectAll(draft);
-      draft.selection = model.initSelection();
+  const addNodeAt = (node: model.Node, screenPos?: XYPosition) => {
+    const userdata = model.positioned(node, screenToFlow(screenPos ?? canvasCenter()));
+    editGraph((graph) => {
+      graph.addNode(node.with({ userdata }));
+
+      return { selection: { nodes: [node.id], edges: [] } };
     });
-  };
-
-  const selectSingleNode = (nodeIndex: number) => {
-    mutate((draft) => {
-      deselectAll(draft);
-      if (draft.nodes[nodeIndex]) {
-        selectNodeAtIndex(draft, nodeIndex);
-      }
-    });
-  };
-
-  const addNodeWithSelection = (node: model.Node) => {
-    mutate((draft) => {
-      deselectAll(draft);
-      node.selected = true;
-      draft.nodes.push(node);
-      selectNodeAtIndex(draft, draft.nodes.length - 1);
-    });
-  };
-
-  const addAtomAt = (screenPos?: XYPosition, text = "") => {
-    const { x, y } = screenToFlow(screenPos ?? canvasCenter());
-    addNodeWithSelection(model.initAtom({ data: { text }, position: { x, y } }));
-  };
-
-  const addSchemeAt = (screenPos?: XYPosition) => {
-    const { x, y } = screenToFlow(screenPos ?? canvasCenter());
-    addNodeWithSelection(model.initScheme({ data: {}, position: { x, y } }));
   };
 
   const toggleSidebarSection = (section: SidebarSection) => {
@@ -168,7 +159,7 @@ export function createActions(
   return {
     setState,
     getState,
-    mutate,
+    editGraph,
     resetState,
     setStateWithoutHistory,
     pauseTemporal,
@@ -176,11 +167,7 @@ export function createActions(
     toggleSidebarSection,
     openSidebarSection,
     closeSidebar,
-    clearAllSelections,
-    selectSingleNode,
-    addNodeWithSelection,
-    addAtomAt,
-    addSchemeAt,
+    addNodeAt,
     canvasCenter,
   };
 }

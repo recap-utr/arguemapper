@@ -1,6 +1,5 @@
 import { faCommentDots, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Menu } from "@mui/material";
-import { produce } from "immer";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import * as model from "@/model.js";
@@ -9,7 +8,7 @@ import { IconMenuItem } from "@/components/IconMenuItem.js";
 
 export interface Click {
   event?: MouseEvent | React.MouseEvent<Element, MouseEvent>;
-  target?: model.Element;
+  target?: model.CanvasElement;
   open: boolean;
 }
 
@@ -19,16 +18,15 @@ export interface ContextMenuProps {
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => {
-  const { addAtomAt, addSchemeAt, mutate } = useArgueActions();
-  const clickedType = useMemo(() => model.elemType(click.target), [click]);
+  const { addNodeAt, editGraph } = useArgueActions();
+  const clickedType = useMemo(() => model.elementType(click.target), [click]);
+  const targetId = click.target?.id;
+  const screenPos =
+    click.event === undefined ? undefined : { x: click.event.clientX, y: click.event.clientY };
   const majorClaim = useStore((state) => state.graph.majorClaim);
 
   const close = useCallback(() => {
-    setClick(
-      produce((draft) => {
-        draft.open = false;
-      }),
-    );
+    setClick((current) => ({ ...current, open: false }));
   }, [setClick]);
 
   const showFor = useCallback(
@@ -58,28 +56,16 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
       open={click.open}
       onClose={close}
       anchorReference="anchorPosition"
-      anchorPosition={
-        click.event
-          ? {
-              top: click.event.clientY,
-              left: click.event.clientX,
-            }
-          : undefined
-      }
+      anchorPosition={screenPos && { top: screenPos.y, left: screenPos.x }}
     >
       <IconMenuItem
         visible={showFor("atom")}
         icon={faCommentDots}
-        text={
-          showFor("atom") && majorClaim !== (click.target as model.AtomNode).id
-            ? "Set as Major Claim"
-            : "Unset Major Claim"
-        }
+        text={majorClaim === targetId ? "Unset Major Claim" : "Set as Major Claim"}
         onClick={withClose(() => {
-          const target = click.target as model.AtomNode;
-          mutate((draft) => {
-            draft.graph.majorClaim = majorClaim !== target.id ? target.id : undefined;
-          });
+          if (targetId !== undefined) {
+            editGraph((graph) => model.toggleMajorClaim(graph, targetId));
+          }
         })}
       />
       <IconMenuItem
@@ -87,19 +73,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
         icon={faTrash}
         text="Delete"
         onClick={withClose(() => {
-          const target = click.target as model.Edge | model.AtomNode | model.SchemeNode;
+          const ids = targetId === undefined ? [] : [targetId];
 
-          if ("source" in target && "target" in target) {
-            mutate((draft) => {
-              draft.edges = draft.edges.filter((edge) => target.id !== edge.id);
-              draft.selection = model.initSelection();
-            });
-          } else {
-            mutate((draft) => {
-              draft.nodes = draft.nodes.filter((node) => target.id !== node.id);
-              draft.selection = model.initSelection();
-            });
-          }
+          editGraph((graph) => {
+            model.removeElements(
+              graph,
+              clickedType === "edge" ? { nodes: [], edges: ids } : { nodes: ids, edges: [] },
+            );
+          });
         })}
       />
       <IconMenuItem
@@ -107,11 +88,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
         icon={faPlus}
         text="Add Atom"
         onClick={withClose(() => {
-          const screenPos =
-            click.event !== undefined
-              ? { x: click.event.clientX, y: click.event.clientY }
-              : undefined;
-          addAtomAt(screenPos);
+          addNodeAt(model.newAtom(), screenPos);
         })}
       />
       <IconMenuItem
@@ -119,7 +96,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ click, setClick }) => 
         icon={faPlus}
         text="Add Scheme"
         onClick={withClose(() => {
-          addSchemeAt();
+          addNodeAt(model.newScheme(), screenPos);
         })}
       />
     </Menu>

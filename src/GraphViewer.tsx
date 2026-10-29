@@ -6,16 +6,16 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import { type Ref, useId, useImperativeHandle, useMemo, useState } from "react";
+import { type Ref, useCallback, useId, useImperativeHandle, useMemo, useState } from "react";
+import type * as arguebuf from "arguebuf";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
-import type { GraphJson } from "arg-services/graph/v1/graph_pb";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 
 export interface GraphViewerProps {
   /** The graph to display (arguebuf JSON). Controlled: updating it re-renders the view. */
-  graph: GraphJson;
+  graph: arguebuf.GraphJson;
   /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
   id?: string;
   /** Edge rendering style. Defaults to `"step"`. */
@@ -26,8 +26,8 @@ export interface GraphViewerProps {
   minimap?: boolean;
   /** Show the zoom/fit controls overlay. */
   controls?: boolean;
-  onNodeClick?: NodeMouseHandler<model.Node>;
-  onEdgeClick?: (event: React.MouseEvent, edge: model.Edge) => void;
+  onNodeClick?: NodeMouseHandler<model.CanvasNode>;
+  onEdgeClick?: (event: React.MouseEvent, edge: model.CanvasEdge) => void;
   onSelectionChange?: OnSelectionChangeFunc;
   style?: React.CSSProperties;
   className?: string;
@@ -56,22 +56,35 @@ function GraphViewerInner({
 }: GraphViewerProps): React.JSX.Element {
   const generatedId = useId();
   const id = idProp ?? generatedId;
-  const flow = useReactFlow<model.Node, model.Edge>();
+  const flow = useReactFlow<model.CanvasNode, model.CanvasEdge>();
 
-  const wrapper = useMemo(() => convert.importGraph(graph), [graph]);
+  const imported = useMemo(() => {
+    const loaded = convert.importGraph(graph);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(wrapper.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(wrapper.edges);
-  const [shouldLayout, setShouldLayout] = useState(() => model.needsLayout(wrapper.nodes));
+    return {
+      graph: loaded,
+      nodes: model.canvasNodes(
+        loaded,
+        { selection: model.emptySelection, measured: {}, dragged: {} },
+        new Map(),
+      ),
+      edges: model.canvasEdges(loaded.edges, [], new Map()),
+    };
+  }, [graph]);
+
+  // view interactions such as dragging only change the local canvas
+  const [nodes, setNodes, onNodesChange] = useNodesState(imported.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(imported.edges);
+  const [shouldLayout, setShouldLayout] = useState(() => model.needsLayout(imported.graph));
   const [shouldFitView, setShouldFitView] = useState(true);
 
   // Re-seed the canvas during render whenever the controlled `graph` prop changes.
-  const [seededWrapper, setSeededWrapper] = useState(wrapper);
-  if (wrapper !== seededWrapper) {
-    setSeededWrapper(wrapper);
-    setNodes(wrapper.nodes);
-    setEdges(wrapper.edges);
-    setShouldLayout(model.needsLayout(wrapper.nodes));
+  const [seeded, setSeeded] = useState(imported);
+  if (imported !== seeded) {
+    setSeeded(imported);
+    setNodes(imported.nodes);
+    setEdges(imported.edges);
+    setShouldLayout(model.needsLayout(imported.graph));
     setShouldFitView(true);
   }
 
@@ -81,7 +94,16 @@ function GraphViewerInner({
     layoutAlgorithm,
     shouldLayout,
     shouldFitView,
-    setNodes,
+    setPositions: useCallback(
+      (positions) =>
+        setNodes((current) =>
+          current.map((node) => {
+            const position = positions.get(node.id);
+            return position === undefined ? node : { ...node, position };
+          }),
+        ),
+      [setNodes],
+    ),
     setShouldLayout,
     setShouldFitView,
   });
@@ -106,7 +128,6 @@ function GraphViewerInner({
       nodes={nodes}
       edges={edges}
       edgeStyle={edgeStyle}
-      majorClaim={wrapper.graph.majorClaim}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onInit={() => void flow.fitView()}
@@ -115,7 +136,6 @@ function GraphViewerInner({
       onEdgeClick={onEdgeClick}
       nodesDraggable
       nodesConnectable={false}
-      edgesReconnectable={false}
       deleteKeyCode={null}
       minimap={minimap}
       controls={controls}

@@ -1,22 +1,7 @@
 import { Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
-import * as arguebuf from "arguebuf";
 import React, { type ErrorInfo, type ReactNode } from "react";
 import * as convert from "@/services/convert.js";
-
-interface Props extends React.PropsWithChildren {
-  /**
-   * Render a compact, self-contained fallback for a contained subtree (e.g. the assistant panel) so a
-   * render error there does not replace the whole app with the recovery screen. Receives the caught
-   * error and a `reset` that clears the error and re-renders the children. When omitted, the default
-   * full-page recovery UI with graph-state backup is shown (used at the app root).
-   */
-  fallback?: (error: Error, reset: () => void) => ReactNode;
-  /**
-   * Reset the boundary automatically whenever any value in this list changes, so a contained subtree
-   * recovers once the inputs that produced the error change (e.g. the chat messages).
-   */
-  resetKeys?: readonly unknown[];
-}
+import { readState } from "@/store/storage.js";
 
 interface State {
   error: Error | null;
@@ -26,8 +11,9 @@ interface State {
   arguebuf: string | null;
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
-  constructor(props: Props) {
+/** Recovery screen of the app that offers the persisted graph for download. */
+class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
+  constructor(props: React.PropsWithChildren) {
     super(props);
     this.state = {
       error: null,
@@ -39,13 +25,6 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // A contained subtree (with its own fallback) recovers in place; the graph-state backup below is
-    // only meaningful for a whole-app crash, so record the error and stop here.
-    if (this.props.fallback) {
-      this.setState({ error, errorInfo });
-      return;
-    }
-
     let stateString = null;
     let aif = null;
     let arguebufJson = null;
@@ -54,20 +33,19 @@ class ErrorBoundary extends React.Component<Props, State> {
     // itself crash (e.g. on a corrupt persisted state) and leave the user with a blank page.
     try {
       stateString = localStorage.getItem("state");
-      if (stateString) {
-        const state = JSON.parse(stateString).state;
-        const { nodes, edges, graph } = convert.importGraph(state.graph);
-        const wrapper = { nodes, edges, graph };
-        const analyst = new arguebuf.Analyst(state.analyst);
+      const persisted = readState("state");
+
+      if (persisted !== null) {
+        const { graph, analyst } = persisted.state;
 
         try {
-          aif = JSON.stringify(convert.exportGraph(wrapper, "aif", analyst));
+          aif = JSON.stringify(convert.exportGraph(graph, "aif", analyst));
         } catch {
           /* empty */
         }
 
         try {
-          arguebufJson = JSON.stringify(convert.exportGraph(wrapper, "arguebuf", analyst));
+          arguebufJson = JSON.stringify(convert.exportGraph(graph, "arguebuf", analyst));
         } catch {
           /* empty */
         }
@@ -85,30 +63,8 @@ class ErrorBoundary extends React.Component<Props, State> {
     });
   }
 
-  componentDidUpdate(prevProps: Props): void {
-    if (this.state.error === null) return;
-    const { resetKeys } = this.props;
-    const previous = prevProps.resetKeys;
-    if (
-      resetKeys !== undefined &&
-      previous !== undefined &&
-      (resetKeys.length !== previous.length ||
-        resetKeys.some((key, index) => !Object.is(key, previous[index])))
-    ) {
-      this.reset();
-    }
-  }
-
-  reset = (): void => {
-    this.setState({ error: null, errorInfo: null });
-  };
-
   render(): ReactNode {
     if (this.state.error && this.state.errorInfo) {
-      const { fallback } = this.props;
-      if (fallback) {
-        return fallback(this.state.error, this.reset);
-      }
       return (
         <Container sx={{ paddingBottom: 10, paddingTop: 5 }}>
           <Stack spacing={5}>

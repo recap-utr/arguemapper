@@ -1,37 +1,33 @@
+import type { ChatMessage } from "@mui/x-chat/headless";
+import type { LanguageModelCallOptions } from "ai";
 import type * as arguebuf from "arguebuf";
 import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
 import type * as model from "@/model.js";
 
-// `undefined` lets the server pick its default effort; explicit values are sent as `reasoning_effort`.
-export const reasoningEfforts = [
-  undefined,
-  "none",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-] as const;
-export type ReasoningEffort = (typeof reasoningEfforts)[number];
-
 export interface AssistantConfig {
   model: string;
   baseURL: string;
-  reasoningEffort: ReasoningEffort;
+  /** Reasoning effort, the `reasoning` call setting of the AI SDK. */
+  reasoning: NonNullable<LanguageModelCallOptions["reasoning"]>;
 }
 
 export const defaultAssistantConfig: AssistantConfig = {
   model: "chatgpt-latest",
   baseURL: "https://api.openai.com/v1",
-  reasoningEffort: undefined,
+  reasoning: "medium",
 };
 
-export function resolveAssistantConfig(config?: Partial<AssistantConfig>): AssistantConfig {
+/** The given settings completed with the defaults, other fields (e.g. of older versions) are dropped. */
+export function resolveAssistantConfig({
+  model,
+  baseURL,
+  reasoning,
+}: Partial<AssistantConfig> = {}): AssistantConfig {
   return {
-    model: config?.model ?? defaultAssistantConfig.model,
-    baseURL: config?.baseURL ?? defaultAssistantConfig.baseURL,
-    reasoningEffort: config?.reasoningEffort ?? defaultAssistantConfig.reasoningEffort,
+    model: model ?? defaultAssistantConfig.model,
+    baseURL: baseURL ?? defaultAssistantConfig.baseURL,
+    reasoning: reasoning ?? defaultAssistantConfig.reasoning,
   };
 }
 
@@ -46,16 +42,16 @@ export type SidebarSection =
 
 export interface State {
   analyst: arguebuf.Analyst;
-  edges: model.Edge[];
   edgeStyle: model.EdgeStyle;
   firstVisit: boolean;
+  /** The argument graph, the single source of truth of the canvas. */
   graph: model.Graph;
   headerHeight: number;
   imageScale: number;
   layoutAlgorithm: model.LayoutAlgorithm;
-  nodes: model.Node[];
   prettifyJson: boolean;
-  selectedResourceTab: number;
+  /** Id of the resource shown in the resources pane, the first one if it is missing. */
+  selectedResource?: string;
   selection: model.Selection;
   shouldLayout: boolean;
   shouldFitView: boolean;
@@ -65,27 +61,18 @@ export interface State {
   sidebarSections: SidebarSection[];
   sidebarWidth: number;
   assistantConfig: AssistantConfig;
-  assistantBusy: boolean;
   /** API key for the assistant; held in memory only (never persisted). */
   assistantApiKey: string;
+  /** Transcript of the assistant (MUI X Chat messages), persisted but not part of the undo history. */
+  assistantMessages: ChatMessage[];
   /**
-   * Assistant transcript; persisted across reloads but excluded from the undo history. Typed as an
-   * opaque blob rather than `UIMessage[]` because the AI SDK message union is too deep for immer's
-   * `Draft<>` to instantiate (TS2589); the Assistant component owns the real `AssistantUIMessage[]`.
+   * Counter of the assistant conversation, bumped to start a fresh one, e.g. when the graph is
+   * replaced wholesale or the transcript is cleared. A new value also aborts a running reply. Transient.
    */
-  assistantMessages: unknown[];
-  /**
-   * Monotonic counter bumped whenever the graph is replaced wholesale (load/import/new). The
-   * assistant watches it to rebuild its chat from the (cleared) transcript, so a fresh graph starts
-   * a fresh conversation. Transient — not persisted, not tracked by undo.
-   */
-  graphResetToken: number;
+  assistantConversation: number;
 }
 
-export type ZundoState = Pick<
-  State,
-  "edges" | "graph" | "nodes" | "selectedResourceTab" | "selection"
->;
+export type ZundoState = Pick<State, "graph" | "selectedResource" | "selection">;
 
 /** A per-instance store: the zustand vanilla store plus the zundo temporal (undo/redo) handle. */
 export type ArgueStore = StoreApi<State> & {

@@ -2,21 +2,21 @@ import { Box, Divider, Stack } from "@mui/material";
 import {
   applyEdgeChanges,
   applyNodeChanges,
+  type EdgeChange,
+  type NodeChange,
+  type NodePositionChange,
   type OnConnect,
   type OnConnectEnd,
   type OnConnectStart,
   type OnEdgesChange,
-  type OnEdgesDelete,
   type OnInit,
   type OnNodesChange,
-  type OnNodesDelete,
-  type OnSelectionChangeFunc,
+  type XYPosition,
 } from "@xyflow/react";
-import { produce } from "immer";
-import React, { useCallback, useState } from "react";
+import { omit } from "es-toolkit";
+import React, { useCallback, useMemo, useState } from "react";
 import * as model from "@/model.js";
 import {
-  type State,
   useArgueActions,
   useArgueConfig,
   useFlowWrapperRef,
@@ -29,20 +29,44 @@ import { SectionSwitcher } from "@/components/SectionSwitcher.js";
 import { Toolbar } from "@/components/Toolbar.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 
+type CanvasChange = NodeChange<model.CanvasNode> | EdgeChange<model.CanvasEdge>;
+type Move = NodePositionChange & { position: XYPosition };
+
+const selectedIds = (elements: readonly { id: string; selected?: boolean }[]): string[] =>
+  elements.filter((element) => element.selected).map((element) => element.id);
+
+const isMove = (change: CanvasChange): change is Move =>
+  change.type === "position" && change.position !== undefined;
+
 export default function Graph(): React.JSX.Element {
   const [ctxMenu, setCtxMenu] = useState<ContextMenuClick>({ open: false });
-  const { setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } =
+  const { editGraph, setState, setStateWithoutHistory, resumeTemporal, openSidebarSection } =
     useArgueActions();
   const { id, readOnly, toolbar, sidebar } = useArgueConfig();
   const wrapperRef = useFlowWrapperRef();
 
-  const nodes = useStore((state) => state.nodes);
-  const edges = useStore((state) => state.edges);
+  const graph = useStore((state) => state.graph);
+  const selection = useStore((state) => state.selection);
   const edgeStyle = useStore((state) => state.edgeStyle);
-  const majorClaim = useStore((state) => state.graph.majorClaim);
-  const shouldLayout = useStore((state) => state.shouldLayout);
+  // Graphs without coordinates (initial, restored, imported) lay themselves out.
+  const shouldLayout = useStore((state) => state.shouldLayout || model.needsLayout(state.graph));
   const shouldFitView = useStore((state) => state.shouldFitView);
   const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+
+  // view state of the canvas, neither undoable nor persisted
+  const [measured, setMeasured] = useState<Record<string, model.Dimensions>>({});
+  const [dragged, setDragged] = useState<Record<string, XYPosition>>({});
+  const [connecting, setConnecting] = useState<string>();
+  const [nodeCache] = useState<model.CanvasCache<model.CanvasNode>>(() => new Map());
+  const [edgeCache] = useState<model.CanvasCache<model.CanvasEdge>>(() => new Map());
+  const nodes = useMemo(
+    () => model.canvasNodes(graph, { selection, measured, dragged, connecting }, nodeCache),
+    [graph, selection, measured, dragged, connecting, nodeCache],
+  );
+  const edges = useMemo(
+    () => model.canvasEdges(graph.edges, selection.edges, edgeCache),
+    [graph.edges, selection.edges, edgeCache],
+  );
 
   // Layout/fit results bypass the undo history, so they go through `setStateWithoutHistory`.
   useAutoLayout({
@@ -51,8 +75,14 @@ export default function Graph(): React.JSX.Element {
     layoutAlgorithm,
     shouldLayout,
     shouldFitView,
-    setNodes: useCallback(
-      (n: model.Node[]) => setStateWithoutHistory({ nodes: n }),
+    setPositions: useCallback(
+      (positions) =>
+        setStateWithoutHistory((state) => {
+          const graph = state.graph.copy();
+          model.moveNodes(graph, positions);
+
+          return { graph };
+        }),
       [setStateWithoutHistory],
     ),
     setShouldLayout: useCallback(
@@ -65,83 +95,90 @@ export default function Graph(): React.JSX.Element {
     ),
   });
 
-  const onNodesChange: OnNodesChange<model.Node> = useCallback(
-    (changes) => {
-      setState((state) => ({
-        nodes: applyNodeChanges(changes, state.nodes),
-      }));
+  /**
+   * Selecting only changes the selection, finished moves and removals edit the graph.
+   * `selected` are the ids selected after the changes if they select anything.
+   */
+  const commit = useCallback(
+    (changes: readonly CanvasChange[], kind: keyof model.Selection, selected?: string[]) => {
+      const moves = changes.filter(isMove).filter((change) => !change.dragging);
+      const removed = changes.flatMap((change) => (change.type === "remove" ? [change.id] : []));
+
+      if (moves.length + removed.length > 0) {
+        editGraph((graph, state) => {
+          model.moveNodes(graph, moves.map((change) => [change.id, change.position] as const));
+          model.removeElements(graph, { ...model.emptySelection, [kind]: removed });
+
+          return selected && { selection: { ...state.selection, [kind]: selected } };
+        });
+      } else if (selected !== undefined) {
+        setState((state) => ({ selection: { ...state.selection, [kind]: selected } }));
+      }
+
+      if (moves.length > 0) {
+        setDragged((current) => omit(current, moves.map((change) => change.id)));
+      }
     },
-    [setState],
+    [editGraph, setState],
   );
 
-  const onEdgesChange: OnEdgesChange<model.Edge> = useCallback(
+  const onNodesChange: OnNodesChange<model.CanvasNode> = useCallback(
     (changes) => {
-      setState((state) => ({
-        edges: applyEdgeChanges(changes, state.edges),
-      }));
+      const next = applyNodeChanges(changes, nodes);
+      const dragging = changes.filter(isMove).filter((change) => change.dragging);
+
+      if (changes.some((change) => change.type === "dimensions")) {
+        setMeasured(
+          Object.fromEntries(
+            next.flatMap((node) => (node.measured ? [[node.id, node.measured]] : [])),
+          ),
+        );
+      }
+
+      if (dragging.length > 0) {
+        setDragged((current) => ({
+          ...current,
+          ...Object.fromEntries(dragging.map((change) => [change.id, change.position])),
+        }));
+      }
+
+      commit(
+        changes,
+        "nodes",
+        changes.some((change) => change.type === "select") ? selectedIds(next) : undefined,
+      );
     },
-    [setState],
+    [commit, nodes],
+  );
+
+  const onEdgesChange: OnEdgesChange<model.CanvasEdge> = useCallback(
+    (changes) =>
+      commit(
+        changes,
+        "edges",
+        changes.some((change) => change.type === "select")
+          ? selectedIds(applyEdgeChanges(changes, edges))
+          : undefined,
+      ),
+    [commit, edges],
   );
 
   const onConnect: OnConnect = useCallback(
-    (connection) => {
-      setState(
-        produce((draft: State) => {
-          const source = draft.nodes.find((node) => node.id === connection.source);
-          const target = draft.nodes.find((node) => node.id === connection.target);
+    ({ source, target }) => {
+      editGraph((graph) => {
+        const scheme = graph.link(source, target);
 
-          if (source && target && source.data.type === "atom" && target.data.type === "atom") {
-            const schemePos = {
-              x: (source.position.x + target.position.x) / 2,
-              y: (source.position.y + target.position.y) / 2,
-            };
-            const scheme = model.initScheme({ data: {}, position: schemePos });
-
-            draft.nodes.push(scheme);
-            draft.edges.push(model.initEdge({ data: {}, source: source.id, target: scheme.id }));
-            draft.edges.push(model.initEdge({ data: {}, source: scheme.id, target: target.id }));
-          } else if (connection.source !== null && connection.target !== null) {
-            draft.edges.push(
-              model.initEdge({
-                data: {},
-                source: connection.source,
-                target: connection.target,
-              }),
-            );
-          }
-        }),
-      );
+        if (scheme !== undefined) {
+          const from = model.position(graph.nodes[source]);
+          const to = model.position(graph.nodes[target]);
+          model.moveNodes(graph, [[scheme.id, { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 }]]);
+        }
+      });
     },
-    [setState],
+    [editGraph],
   );
 
-  const onNodesDelete: OnNodesDelete<model.Node> = useCallback(
-    (deletedNodes) => {
-      const deletedNodeIds = deletedNodes.map((node) => node.id);
-      setState((state) => ({
-        nodes: state.nodes.filter((node) => !deletedNodeIds.includes(node.id)),
-        // one could also use getConnectedEdges from reactflow:
-        // https://github.com/wbkd/react-flow/blob/769261fead0dbfd11f2c327787b18ffb925fc71f/packages/core/src/utils/graph.ts#L251
-        edges: state.edges.filter(
-          (edge) => !deletedNodeIds.includes(edge.source) && !deletedNodeIds.includes(edge.target),
-        ),
-        selection: model.initSelection(),
-      }));
-    },
-    [setState],
-  );
-  const onEdgesDelete: OnEdgesDelete = useCallback(
-    (deletedEdges) => {
-      const deletedEdgeIds = deletedEdges.map((edge) => edge.id);
-      setState((state) => ({
-        edges: state.edges.filter((edge) => !deletedEdgeIds.includes(edge.id)),
-        selection: model.initSelection(),
-      }));
-    },
-    [setState],
-  );
-
-  const onInit: OnInit<model.Node, model.Edge> = useCallback(
+  const onInit: OnInit<model.CanvasNode, model.CanvasEdge> = useCallback(
     (instance) => {
       void instance.fitView();
       resumeTemporal();
@@ -151,7 +188,7 @@ export default function Graph(): React.JSX.Element {
 
   const onContextMenu = (
     event: MouseEvent | React.MouseEvent<Element, MouseEvent>,
-    target?: model.Node | model.Edge,
+    target?: model.CanvasElement,
   ) => {
     setCtxMenu({
       event,
@@ -160,30 +197,6 @@ export default function Graph(): React.JSX.Element {
     });
   };
 
-  const onSelectionChange: OnSelectionChangeFunc = useCallback(
-    (elems) =>
-      setState((state) => {
-        const partialSelection = {
-          nodes: elems.nodes.map((selectedNode) =>
-            state.nodes.findIndex((node) => node.id === selectedNode.id),
-          ),
-          edges: elems.edges.map((selectedEdge) =>
-            state.edges.findIndex((edge) => edge.id === selectedEdge.id),
-          ),
-        };
-
-        const nodeTypes = elems.nodes.map((node) => node.type as "scheme" | "atom");
-
-        return {
-          selection: {
-            ...partialSelection,
-            type: model.selectionType(partialSelection, nodeTypes),
-          },
-        };
-      }),
-    [setState],
-  );
-
   // Double-clicking an element reveals it in the Inspector for quick edits, without single-clicks
   // hijacking the sidebar.
   const onElementDoubleClick = useCallback(() => {
@@ -191,33 +204,11 @@ export default function Graph(): React.JSX.Element {
   }, [openSidebarSection]);
 
   const onClickConnectStart: OnConnectStart = useCallback(
-    (_event, params) => {
-      const { nodeId } = params;
-      setState(
-        produce((draft: State) => {
-          const node = draft.nodes.find((node) => node.id === nodeId);
-
-          if (node !== undefined) {
-            (node.data.userdata as model.Userdata).clickConnect = true;
-          }
-        }),
-      );
-    },
-    [setState],
+    (_event, { nodeId }) => setConnecting(nodeId ?? undefined),
+    [],
   );
 
-  const onClickConnectEnd: OnConnectEnd = useCallback(() => {
-    setState(
-      produce((draft: State) => {
-        const nodesToUpdate = draft.nodes.filter(
-          (node) => (node.data.userdata as model.Userdata).clickConnect,
-        );
-        for (const node of nodesToUpdate) {
-          (node.data.userdata as model.Userdata).clickConnect = undefined;
-        }
-      }),
-    );
-  }, [setState]);
+  const onClickConnectEnd: OnConnectEnd = useCallback(() => setConnecting(undefined), []);
 
   return (
     <GraphCanvas
@@ -226,7 +217,6 @@ export default function Graph(): React.JSX.Element {
       nodes={nodes}
       edges={edges}
       edgeStyle={edgeStyle}
-      majorClaim={majorClaim}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={readOnly ? undefined : onConnect}
@@ -236,14 +226,10 @@ export default function Graph(): React.JSX.Element {
       onPaneContextMenu={readOnly ? undefined : onContextMenu}
       onNodeDoubleClick={onElementDoubleClick}
       onEdgeDoubleClick={onElementDoubleClick}
-      onNodesDelete={readOnly ? undefined : onNodesDelete}
-      onEdgesDelete={readOnly ? undefined : onEdgesDelete}
-      onSelectionChange={onSelectionChange}
       onClickConnectStart={readOnly ? undefined : onClickConnectStart}
       onClickConnectEnd={readOnly ? undefined : onClickConnectEnd}
       nodesDraggable={!readOnly}
       nodesConnectable={!readOnly}
-      edgesReconnectable={!readOnly}
       deleteKeyCode={readOnly ? null : undefined}
     >
       <Box

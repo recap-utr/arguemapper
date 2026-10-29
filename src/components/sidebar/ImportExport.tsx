@@ -13,7 +13,8 @@ import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { useCallback, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import type * as model from "@/model.js";
+import type * as arguebuf from "arguebuf";
+import { enqueueSnackbar } from "notistack";
 import * as convert from "@/services/convert.js";
 import { generateDemo } from "@/services/demo.js";
 import {
@@ -47,18 +48,21 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
     setAnalystCallback(undefined);
   };
 
-  const getWrapper = useCallback((): model.Wrapper => {
-    const state = getState();
-    return { nodes: state.nodes, edges: state.edges, graph: state.graph };
-  }, [getState]);
-
   const upload: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (event) => {
       if (event.target.files && event.target.files.length > 0) {
         const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target && typeof e.target.result === "string") {
-            resetState(convert.importGraph(JSON.parse(e.target.result)));
+            const issues: arguebuf.Issue[] = [];
+            resetState(convert.importGraph(JSON.parse(e.target.result), (issue) => issues.push(issue)));
+
+            if (issues.length > 0) {
+              enqueueSnackbar(
+                `The graph was repaired while importing: ${issues.map((issue) => issue.message).join(" ")}`,
+                { variant: "warning" },
+              );
+            }
           }
         };
         reader.readAsText(event.target.files[0]);
@@ -80,9 +84,9 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
 
   const downloadGraph = useCallback(
     (format: "aif" | "arguebuf") => {
-      convert.downloadJson(convert.exportGraph(getWrapper(), format, analyst), prettifyJson);
+      convert.downloadJson(convert.exportGraph(getState().graph, format, analyst), prettifyJson);
     },
-    [getWrapper, analyst, prettifyJson],
+    [getState, analyst, prettifyJson],
   );
 
   const downloadGraphImage = useCallback(

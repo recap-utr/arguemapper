@@ -1,84 +1,39 @@
 import * as arguebuf from "arguebuf";
-import { uuid } from "arguebuf";
 import * as model from "@/model.js";
 
-export function generateDemo(): model.Wrapper {
-  const resourceId = uuid();
-  const resources = {
-    [resourceId]: new arguebuf.Resource({
-      text: "The major claim typically appears at the beginning, followed by multiple claims or premises.",
-    }),
-  };
-  const participantId = uuid();
-  const participants = {
-    [participantId]: new arguebuf.Participant({ name: "John Doe" }),
-  };
+const TEXT =
+  "The major claim typically appears at the beginning, followed by multiple claims or premises.";
 
-  const analysts = {
-    [uuid()]: new arguebuf.Analyst({ name: "Michael Web" }),
-  };
-
-  const nodes = [
-    model.initAtom({
-      data: {
-        text: "This node represents the major claim of the argument.",
-        reference: new arguebuf.Reference({
-          text: "The major claim typically appears at the beginning",
-          resource: resourceId,
-          offset: 0,
-        }),
-      },
-    }),
-    model.initAtom({
-      data: {
-        text: "Here we have a premise that supports the claim.",
-        reference: new arguebuf.Reference({
-          text: "followed by multiple claims or premises",
-          resource: resourceId,
-          offset: 52,
-        }),
-      },
-    }),
-    model.initAtom({
-      data: {
-        text: "And another one that attacks it.",
-      },
-    }),
-    model.initScheme({ data: { scheme: model.defaultSchemes.support } }),
-    model.initScheme({ data: { scheme: model.defaultSchemes.attack } }),
-  ];
-
-  const edges = [
-    model.initEdge({
-      data: {},
-      source: nodes[1].id,
-      target: nodes[3].id,
-    }),
-    model.initEdge({
-      data: {},
-      source: nodes[3].id,
-      target: nodes[0].id,
-    }),
-    model.initEdge({
-      data: {},
-      source: nodes[2].id,
-      target: nodes[4].id,
-    }),
-    model.initEdge({
-      data: {},
-      source: nodes[4].id,
-      target: nodes[0].id,
-    }),
-  ];
-
-  return model.initWrapper({
-    nodes,
-    edges,
-    graph: new arguebuf.Graph({
-      majorClaim: nodes[0].id,
-      resources,
-      participants,
-      analysts,
-    }),
+export function generateDemo(): model.Graph {
+  const graph = model.newGraph();
+  const resource = new arguebuf.Resource({ text: TEXT });
+  const participant = new arguebuf.Participant({ name: "John Doe" });
+  const reference = (text: string) =>
+    new arguebuf.Reference({ text, resource: resource.id, offset: TEXT.indexOf(text) });
+  const claim = new arguebuf.AtomNode({
+    text: "This node represents the major claim of the argument.",
+    reference: reference("The major claim typically appears at the beginning"),
+    participant: participant.id,
   });
+  const premise = new arguebuf.AtomNode({
+    text: "Here we have a premise that supports the claim.",
+    reference: reference("followed by multiple claims or premises"),
+  });
+  const attack = new arguebuf.AtomNode({ text: "And another one that attacks it." });
+  const support = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("support") });
+  const conflict = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("attack") });
+
+  graph.addResource(resource);
+  graph.addParticipant(participant);
+  graph.addAnalyst(new arguebuf.Analyst({ name: "Michael Web" }));
+
+  for (const node of [claim, premise, attack, support, conflict]) {
+    graph.addNode(node);
+  }
+
+  graph.connect([premise], support, claim);
+  graph.connect([attack], conflict, claim);
+  graph.majorClaim = claim.id;
+
+  return graph;
 }

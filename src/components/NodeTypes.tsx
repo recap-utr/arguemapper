@@ -8,11 +8,9 @@ import {
   Position,
   useConnection,
 } from "@xyflow/react";
-import { startCase } from "es-toolkit";
 import type React from "react";
-import { type ComponentType, useMemo } from "react";
+import { useMemo } from "react";
 import type * as model from "@/model.js";
-import { useGraphRender } from "@/components/GraphRenderContext.js";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
@@ -64,21 +62,12 @@ const NodeHandle: React.FC<NodeHandleProps> = (props) => {
   return <Handle {...handleProps} style={style} />;
 };
 
-interface NodeComponentProps extends React.PropsWithChildren {
-  node: NodeProps<model.Node>;
-  bg: string;
-}
-
-const NodeComponent: React.FC<NodeComponentProps> = ({ node, bg, children }) => {
+/** Node of the canvas, colored like arguebuf renders it. */
+const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ id, data, selected }) => {
   const theme = useTheme();
-  const background = useMemo(
-    () => ((node.data.userdata as model.Userdata).clickConnect ? color.orange[500] : bg),
-    [node.data.userdata, bg],
-  );
-  const borderColor = useMemo(
-    () => (node.selected ? theme.palette.text.primary : background),
-    [background, node.selected, theme.palette.text.primary],
-  );
+  const { node, isMajorClaim, connecting } = data;
+  const background = connecting ? color.orange[500] : node.color(isMajorClaim, false).bg;
+  const borderColor = selected ? theme.palette.text.primary : background;
 
   return (
     <Stack
@@ -98,64 +87,14 @@ const NodeComponent: React.FC<NodeComponentProps> = ({ node, bg, children }) => 
         textAlign: "center",
       }}
     >
-      <NodeHandle
-        type="source"
-        position={Position.Top}
-        isSelected={node.selected}
-        nodeId={node.id}
-      />
-      {children}
-      <NodeHandle
-        type="target"
-        position={Position.Bottom}
-        isSelected={node.selected}
-        nodeId={node.id}
-      />
+      <NodeHandle type="source" position={Position.Top} isSelected={selected} nodeId={id} />
+      <div>{node.label}</div>
+      <NodeHandle type="target" position={Position.Bottom} isSelected={selected} nodeId={id} />
     </Stack>
   );
 };
 
-const AtomComponent: ComponentType<NodeProps<model.AtomNode>> = (node) => {
-  const body = <div>{node.data.label()}</div>;
-  const { majorClaim } = useGraphRender();
-
-  const bg = useMemo(() => {
-    if (majorClaim === node.id) {
-      return color.blue[900];
-    }
-
-    return color.blue[500];
-  }, [majorClaim, node.id]);
-
-  return (
-    <NodeComponent node={node} bg={bg}>
-      {body}
-    </NodeComponent>
-  );
-};
-
-const SchemeComponent: ComponentType<NodeProps<model.SchemeNode>> = (node) => {
-  const body = <div>{startCase(node.data.label())}</div>;
-
-  const bg = useMemo(() => {
-    if (node.data.scheme.case === "support") {
-      return color.green[500];
-    }
-    if (node.data.scheme.case === "attack") {
-      return color.red[500];
-    }
-
-    return color.teal[500];
-  }, [node.data.scheme]);
-
-  return (
-    <NodeComponent node={node} bg={bg}>
-      {body}
-    </NodeComponent>
-  );
-};
-
 export const NodeTypes: FlowNodeTypes = {
-  atom: AtomComponent,
-  scheme: SchemeComponent,
+  atom: NodeComponent,
+  scheme: NodeComponent,
 };

@@ -3,7 +3,7 @@ import Elk, {
   type ElkNode,
   type LayoutOptions,
 } from "elkjs/lib/elk.bundled.js";
-import { produce } from "immer";
+import type { Edge, Node, XYPosition } from "@xyflow/react";
 import type * as model from "@/model.js";
 
 const DEFAULT_WIDTH = 300;
@@ -36,35 +36,28 @@ const layoutOptions: Record<model.LayoutAlgorithm, LayoutOptions> = {
   },
 };
 
+/** Positions of the nodes computed by ELK, keyed by node id. */
 // https://github.com/wbkd/react-flow/issues/5#issuecomment-1026515350
 export const layout = async (
-  nodes: model.Node[],
-  edges: model.Edge[],
+  nodes: readonly Node[],
+  edges: readonly Edge[],
   algorithm: model.LayoutAlgorithm,
-): Promise<model.Node[]> => {
+): Promise<Map<string, XYPosition>> => {
   if (nodes.length === 0) {
-    return [];
+    return new Map();
   }
 
-  const nodeIds = nodes
-    .filter((node) => node.type === "atom" || node.type === "scheme")
-    .map((node) => node.data.id);
+  const elkNodes: ElkNode[] = nodes.map((node) => ({
+    id: node.id,
+    width: node.measured?.width ?? DEFAULT_WIDTH,
+    height: node.measured?.height ?? DEFAULT_HEIGHT,
+  }));
 
-  const elkNodes: ElkNode[] = nodes
-    .filter((node) => nodeIds.includes(node.id))
-    .map((node) => ({
-      id: node.id,
-      width: node.measured?.width ?? DEFAULT_WIDTH,
-      height: node.measured?.height ?? DEFAULT_HEIGHT,
-    }));
-
-  const elkEdges: ElkExtendedEdge[] = edges
-    .filter((edge) => nodeIds.includes(edge.source) && nodeIds.includes(edge.target))
-    .map((edge) => ({
-      id: edge.id,
-      targets: [edge.target],
-      sources: [edge.source],
-    }));
+  const elkEdges: ElkExtendedEdge[] = edges.map((edge) => ({
+    id: edge.id,
+    targets: [edge.target],
+    sources: [edge.source],
+  }));
 
   const elk = new Elk({ defaultLayoutOptions: layoutOptions[algorithm] });
   const elkGraph = await elk.layout({
@@ -73,16 +66,9 @@ export const layout = async (
     edges: elkEdges,
   });
 
-  return nodes.map((node) =>
-    produce(node, (draft) => {
-      const elkNode = elkGraph?.children?.find((n) => n.id === node.id);
-
-      if (elkNode?.x && elkNode?.y && elkNode?.width && elkNode?.height) {
-        draft.position = {
-          x: elkNode.x + Math.random() / 1000,
-          y: elkNode.y,
-        };
-      }
-    }),
+  return new Map(
+    (elkGraph.children ?? []).flatMap(({ id, x, y }) =>
+      x === undefined || y === undefined ? [] : [[id, { x: x + Math.random() / 1000, y }]],
+    ),
   );
 };

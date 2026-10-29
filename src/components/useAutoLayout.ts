@@ -1,18 +1,18 @@
-import { useReactFlow } from "@xyflow/react";
+import { type Edge, type Node, useReactFlow, type XYPosition } from "@xyflow/react";
 import { useEffect } from "react";
 import type * as model from "@/model.js";
 import { layout } from "@/services/layout.js";
 
 export interface AutoLayoutOptions {
-  nodes: model.Node[];
-  edges: model.Edge[];
+  nodes: readonly Node[];
+  edges: readonly Edge[];
   layoutAlgorithm: model.LayoutAlgorithm;
   /** When `true`, re-run ELK layout as soon as every node has been measured. */
   shouldLayout: boolean;
   /** When `true`, fit the graph into view once any pending layout has settled. */
   shouldFitView: boolean;
-  /** Write the layout result and clear the request flags. Must be referentially stable. */
-  setNodes: (nodes: model.Node[]) => void;
+  /** Write the computed positions. Must be referentially stable. */
+  setPositions: (positions: ReadonlyMap<string, XYPosition>) => void;
   setShouldLayout: (value: boolean) => void;
   setShouldFitView: (value: boolean) => void;
 }
@@ -29,16 +29,16 @@ export function useAutoLayout({
   layoutAlgorithm,
   shouldLayout,
   shouldFitView,
-  setNodes,
+  setPositions,
   setShouldLayout,
   setShouldFitView,
 }: AutoLayoutOptions): void {
-  const flow = useReactFlow<model.Node, model.Edge>();
+  const flow = useReactFlow();
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
       void layout(nodes, edges, layoutAlgorithm)
-        .then(setNodes)
+        .then(setPositions)
         .catch((error) => {
           // A layout failure must not become an unhandled rejection; keep the current positions and
           // clear the request (in `finally`) so the app stays usable instead of getting stuck.
@@ -46,7 +46,7 @@ export function useAutoLayout({
         })
         .finally(() => setShouldLayout(false));
     }
-  }, [shouldLayout, nodes, edges, layoutAlgorithm, setNodes, setShouldLayout]);
+  }, [shouldLayout, nodes, edges, layoutAlgorithm, setPositions, setShouldLayout]);
 
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {

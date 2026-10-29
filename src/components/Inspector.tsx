@@ -6,7 +6,6 @@ import { useCallback } from "react";
 import * as model from "@/model.js";
 import { useArgueActions, useStore } from "@/store.js";
 import AtomFields from "@/components/inspector/AtomFields.js";
-import BulkSchemeFields from "@/components/inspector/BulkSchemeFields.js";
 import EdgeFields from "@/components/inspector/EdgeFields.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import SchemeFields from "@/components/inspector/SchemeFields.js";
@@ -17,26 +16,22 @@ interface Props {
 }
 
 const Inspector: React.FC<Props> = ({ onClose }) => {
-  const selectionType = useStore((state) => state.selection.type);
-  const selectedNodes = useStore((state) => state.selection.nodes);
-  const nodes = useStore((state) => state.nodes);
-  const graphNotes = useStore((state) => (state.graph.userdata as model.Userdata).notes);
-  const { setState, mutate } = useArgueActions();
-
-  // Check if all selected nodes are scheme nodes
-  const selectedSchemeNodes = selectedNodes
-    .map((idx) => nodes[idx])
-    .filter((node) => node?.type === "scheme");
-  const allSelectedAreSchemes =
-    selectedNodes.length > 0 && selectedSchemeNodes.length === selectedNodes.length;
+  const selectionType = useStore((state) => model.selectionType(state.graph, state.selection));
+  const allSelectedAreSchemes = useStore(
+    ({ graph, selection }) =>
+      selection.nodes.length > 0 &&
+      selection.nodes.every((id) => graph.nodes[id]?.type === "scheme"),
+  );
+  const graphNotes = useStore((state) => state.graph.userdata.notes);
+  const { editGraph } = useArgueActions();
 
   const onDelete = useCallback(() => {
-    setState((state) => ({
-      nodes: state.nodes.filter((_node, idx) => !state.selection.nodes.includes(idx)),
-      edges: state.edges.filter((_edge, idx) => !state.selection.edges.includes(idx)),
-      selection: model.initSelection(),
-    }));
-  }, [setState]);
+    editGraph((graph, { selection }) => {
+      model.removeElements(graph, selection);
+
+      return { selection: model.emptySelection };
+    });
+  }, [editGraph]);
 
   return (
     <>
@@ -51,8 +46,8 @@ const Inspector: React.FC<Props> = ({ onClose }) => {
               label="Graph Notes"
               value={graphNotes ?? ""}
               onChange={(value) => {
-                mutate((draft) => {
-                  (draft.graph.userdata as model.Userdata).notes = value;
+                editGraph((graph) => {
+                  graph.userdata = { ...graph.userdata, notes: value };
                 });
               }}
             />
@@ -60,9 +55,8 @@ const Inspector: React.FC<Props> = ({ onClose }) => {
         ) : (
           <Stack spacing={2} sx={{ p: 2 }}>
             {selectionType === "atom" && <AtomFields />}
-            {selectionType === "scheme" && <SchemeFields />}
+            {(selectionType === "scheme" || allSelectedAreSchemes) && <SchemeFields />}
             {selectionType === "edge" && <EdgeFields />}
-            {selectionType === "multiple" && allSelectedAreSchemes && <BulkSchemeFields />}
             {selectionType === "multiple" && !allSelectedAreSchemes && (
               <>
                 <Typography variant="h6">Multiple elements selected</Typography>

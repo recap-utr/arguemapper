@@ -1,90 +1,118 @@
-import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
-import { isEqual } from "es-toolkit";
+import { FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import type * as arguebuf from "arguebuf";
 import type React from "react";
-import { useCallback } from "react";
+import { shallow } from "zustand/shallow";
 import * as model from "@/model.js";
 import { useArgueActions, useStore } from "@/store.js";
+import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import {
+  MIXED_VALUE,
   NULL_VALUE,
+  schemeOf,
   schemeTypeItems,
   schemeValueItems,
+  schemeWithValue,
 } from "@/components/inspector/schemeSelect.js";
 
-export interface Props extends React.PropsWithChildren {
-  idx?: number;
+type OptionalSchemeType = arguebuf.SchemeType | typeof NULL_VALUE | typeof MIXED_VALUE;
+
+/** The value shared by all items, otherwise `MIXED_VALUE`. */
+function shared<T>(values: readonly T[]): T | typeof MIXED_VALUE {
+  const unique = new Set(values);
+
+  return unique.size === 1 ? values[0] : MIXED_VALUE;
 }
 
-type OptionalSchemeType = model.SchemeCase | typeof NULL_VALUE;
-
-const SchemeFields: React.FC<Props> = ({ idx = 0 }) => {
-  const selectedIndex = useStore((state) => state.selection.nodes[idx]);
-  const element = useStore((state) => state.nodes[selectedIndex] as model.SchemeNode, isEqual);
-  const userdata = element.data.userdata as model.Userdata;
-  const schemeType = element.data.scheme?.case ?? NULL_VALUE;
-  const { mutate } = useArgueActions();
-
-  const updateNotes = useCallback(
-    (value: string) => {
-      mutate((draft) => {
-        (draft.nodes[selectedIndex].data.userdata as model.Userdata).notes = value;
-      });
-    },
-    [selectedIndex, mutate],
+/** Fields of the selected scheme nodes, edited together if several are selected. */
+const SchemeFields: React.FC = () => {
+  const ids = useStore((state) => state.selection.nodes);
+  // only the selected nodes, so that changes elsewhere do not re-render
+  const schemeNodes = useStore(
+    ({ graph }) =>
+      ids
+        .map((id) => graph.nodes[id])
+        .filter((node): node is model.SchemeNode => node?.type === "scheme"),
+    shallow,
   );
+  const { editGraph } = useArgueActions();
+  const [single] = schemeNodes.length === 1 ? schemeNodes : [];
+
+  if (schemeNodes.length === 0) {
+    return null;
+  }
+
+  const currentType: OptionalSchemeType = shared(
+    schemeNodes.map((node) => node.scheme.case ?? NULL_VALUE),
+  );
+  const currentValue =
+    currentType === MIXED_VALUE || currentType === NULL_VALUE
+      ? MIXED_VALUE
+      : shared(schemeNodes.map((node) => node.scheme.value));
+
+  const update = (
+    changes: (node: model.SchemeNode) => arguebuf.SchemeChanges<model.NodeUserdata>,
+  ) => editGraph((graph) => model.updateSchemes(graph, ids, changes));
 
   return (
     <>
+      {single === undefined && (
+        <Typography variant="h6">Scheme Nodes ({schemeNodes.length} selected)</Typography>
+      )}
+
       <FormControl fullWidth>
         <InputLabel>Scheme Type</InputLabel>
-        <Select
-          value={schemeType}
+        <Select<OptionalSchemeType>
+          value={currentType}
           label="Scheme Type"
           onChange={(event) => {
-            const newSchemeType = event.target.value as OptionalSchemeType;
-            const newScheme =
-              newSchemeType === NULL_VALUE
-                ? { case: undefined }
-                : model.defaultSchemes[newSchemeType];
+            const { value } = event.target;
 
-            mutate((draft) => {
-              const i = draft.nodes.findIndex((node) => node.id === element.id);
-              (draft.nodes[i] as model.SchemeNode).data.scheme = newScheme;
-            });
+            if (value !== MIXED_VALUE) {
+              update(() => ({ scheme: schemeOf(value) }));
+            }
           }}
         >
           <MenuItem value={NULL_VALUE}>Unknown</MenuItem>
+          {currentType === MIXED_VALUE && (
+            <MenuItem value={MIXED_VALUE} disabled>
+              Mixed Types
+            </MenuItem>
+          )}
           {schemeTypeItems()}
         </Select>
       </FormControl>
-      {element.data.scheme.case !== undefined && (
+
+      {currentType !== NULL_VALUE && currentType !== MIXED_VALUE && (
         <FormControl fullWidth>
           <InputLabel>Argumentation Scheme</InputLabel>
           <Select
-            value={element.data.scheme.value}
+            value={currentValue === MIXED_VALUE ? "" : currentValue}
             label="Argumentation Scheme"
             onChange={(event) => {
-              mutate((draft) => {
-                const i = draft.nodes.findIndex((node) => node.id === element.id);
-                (draft.nodes[i] as model.SchemeNode).data.scheme.value = Number(event.target.value);
-              });
+              const value = Number(event.target.value);
+              update(() => ({ scheme: schemeWithValue(currentType, value) }));
             }}
-            defaultValue={0}
+            displayEmpty
           >
-            {schemeValueItems(element.data.scheme.case)}
+            {currentValue === MIXED_VALUE && (
+              <MenuItem value="" disabled>
+                Mixed Values
+              </MenuItem>
+            )}
+            {schemeValueItems(currentType)}
           </Select>
         </FormControl>
       )}
-      {userdata.assistant && (
-        <TextField
-          fullWidth
-          multiline
-          label="Assistant Explanation"
-          slotProps={{ input: { readOnly: true } }}
-          value={userdata.assistant.explanation ?? ""}
-        />
-      )}
-      <NotesField value={userdata.notes ?? ""} onChange={updateNotes} />
+
+      {single !== undefined && <ExplanationField node={single} />}
+      <NotesField
+        value={single === undefined ? undefined : (single.userdata.notes ?? "")}
+        label={single === undefined ? "Notes (replace the notes of all selected nodes)" : "Notes"}
+        onChange={(notes) => {
+          update((node) => ({ userdata: { ...node.userdata, notes } }));
+        }}
+      />
     </>
   );
 };
