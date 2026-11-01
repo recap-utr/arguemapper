@@ -4,7 +4,7 @@ import { Button, TextField } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
 import * as model from "@/model.js";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 
@@ -12,6 +12,7 @@ export const AtomFields: React.FC<React.PropsWithChildren> = ({ children }) => {
   const id = useStore((state) => state.selection.nodes[0]);
   const atom = useStore((state) => state.graph.nodes[id]);
   const majorClaim = useStore((state) => state.graph.majorClaim);
+  const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
 
   if (atom?.type !== "atom") {
@@ -31,6 +32,7 @@ export const AtomFields: React.FC<React.PropsWithChildren> = ({ children }) => {
     <>
       <TextField fullWidth label="ID" value={atom.id} disabled />
       <TextField
+        slotProps={{ input: { readOnly } }}
         fullWidth
         multiline
         minRows={3}
@@ -42,6 +44,7 @@ export const AtomFields: React.FC<React.PropsWithChildren> = ({ children }) => {
         }}
       />
       <TextField
+        slotProps={{ input: { readOnly } }}
         fullWidth
         multiline
         minRows={3}
@@ -66,6 +69,7 @@ export const AtomFields: React.FC<React.PropsWithChildren> = ({ children }) => {
       />
       <ExplanationField node={atom} />
       <Button
+        disabled={readOnly}
         startIcon={<FontAwesomeIcon icon={faCommentDots} />}
         variant="contained"
         onClick={() => {

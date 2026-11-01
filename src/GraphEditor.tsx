@@ -107,7 +107,9 @@ export function GraphEditor({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const focused = useFocusWithin(rootRef);
 
-  const assistantEnabled = assistant != null;
+  // The assistant edits the graph, so read-only instances hide it.
+  const activeAssistant = readOnly ? undefined : assistant;
+  const assistantEnabled = activeAssistant != null;
   const config = useMemo(
     () => ({ id, readOnly, toolbar, assistant: assistantEnabled, sidebar }),
     [id, readOnly, toolbar, assistantEnabled, sidebar],
@@ -164,7 +166,11 @@ export function GraphEditor({
             <ArgueConfigProvider value={config}>
               <InstanceFocusProvider value={focused}>
                 <InspectorSlotsProvider value={inspectorSlots ?? EMPTY_SLOTS}>
-                  <GraphEditorLayout header={header} sidebar={sidebar} assistant={assistant} />
+                  <GraphEditorLayout
+                    header={header}
+                    sidebar={sidebar}
+                    assistant={activeAssistant}
+                  />
                   {children}
                 </InspectorSlotsProvider>
               </InstanceFocusProvider>

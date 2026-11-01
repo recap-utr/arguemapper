@@ -4,7 +4,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import type React from "react";
 import { useCallback } from "react";
 import * as model from "@/model.js";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 import AtomFields from "@/components/inspector/AtomFields.js";
 import EdgeFields from "@/components/inspector/EdgeFields.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
@@ -23,6 +23,7 @@ const Inspector: React.FC<Props> = ({ onClose }) => {
       selection.nodes.every((id) => graph.nodes[id]?.type === "scheme"),
   );
   const graphNotes = useStore((state) => state.graph.userdata.notes);
+  const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
 
   const onDelete = useCallback(() => {
@@ -67,6 +68,7 @@ const Inspector: React.FC<Props> = ({ onClose }) => {
               </>
             )}
             <Button
+              disabled={readOnly}
               color="error"
               startIcon={<FontAwesomeIcon icon={faTrash} />}
               variant="contained"

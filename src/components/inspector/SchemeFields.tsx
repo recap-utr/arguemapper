@@ -3,7 +3,7 @@ import type * as arguebuf from "arguebuf";
 import type React from "react";
 import { shallow } from "zustand/shallow";
 import * as model from "@/model.js";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import {
@@ -35,6 +35,7 @@ const SchemeFields: React.FC = () => {
         .filter((node): node is model.SchemeNode => node?.type === "scheme"),
     shallow,
   );
+  const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
   const [single] = schemeNodes.length === 1 ? schemeNodes : [];
 
@@ -60,7 +61,7 @@ const SchemeFields: React.FC = () => {
         <Typography variant="h6">Scheme Nodes ({schemeNodes.length} selected)</Typography>
       )}
 
-      <FormControl fullWidth>
+      <FormControl fullWidth disabled={readOnly}>
         <InputLabel>Scheme Type</InputLabel>
         <Select<OptionalSchemeType>
           value={currentType}
@@ -84,7 +85,7 @@ const SchemeFields: React.FC = () => {
       </FormControl>
 
       {currentType !== NULL_VALUE && currentType !== MIXED_VALUE && (
-        <FormControl fullWidth>
+        <FormControl fullWidth disabled={readOnly}>
           <InputLabel>Argumentation Scheme</InputLabel>
           <Select
             value={currentValue === MIXED_VALUE ? "" : currentValue}

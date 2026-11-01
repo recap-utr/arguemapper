@@ -6,7 +6,7 @@ import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { shallow } from "zustand/shallow";
 import * as model from "@/model.js";
-import { type State, useArgueActions, useStore } from "@/store.js";
+import { type State, useArgueActions, useArgueConfig, useStore } from "@/store.js";
 import { HighlightTextarea, type HighlightRange } from "@/components/HighlightTextarea.js";
 import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
@@ -80,6 +80,7 @@ const Resources: React.FC<Props> = ({ onClose }) => {
   const resourceIds = useStore((state) => Object.keys(state.graph.resources), shallow);
   const selectedReference = useStore(selectSelectedReference);
   const shown = useStore((state) => model.shownResource(state.graph, state.selectedResource));
+  const { readOnly } = useArgueConfig();
   const { setState, setStateWithoutHistory, editGraph } = useArgueActions();
 
   // Reveal the resource a selected atom references so its highlight is visible.
@@ -124,6 +125,7 @@ const Resources: React.FC<Props> = ({ onClose }) => {
             ))}
             <Tab
               icon={<FontAwesomeIcon icon={faPlusCircle} />}
+              disabled={readOnly}
               aria-label="Add Resource"
               value={NEW_RESOURCE}
               sx={{ minWidth: 50 }}
@@ -140,6 +142,7 @@ const Resources: React.FC<Props> = ({ onClose }) => {
             />
           ) : (
             <Button
+              disabled={readOnly}
               fullWidth
               variant="contained"
               startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
@@ -164,6 +167,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   const resource = useStore((state) => state.graph.resources[id]);
   const atomSelected = useStore(selectAtomSelected);
   const selectedReference = useStore(selectSelectedReference);
+  const { readOnly } = useArgueConfig();
   const { editGraph, addNodeAt } = useArgueActions();
 
   const [textSelection, setTextSelection] = useState({ start: 0, end: 0 });
@@ -210,7 +214,13 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
   return (
     <Stack spacing={2}>
       <Typography variant="h5">Resource {index}</Typography>
-      <TextField fullWidth label="Title" value={resource.title} onChange={updateField("title")} />
+      <TextField
+        fullWidth
+        slotProps={{ input: { readOnly } }}
+        label="Title"
+        value={resource.title}
+        onChange={updateField("title")}
+      />
       <TextField
         label="Text"
         fullWidth
@@ -220,6 +230,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         onChange={updateField("text")}
         slots={{ htmlInput: HighlightTextarea }}
         slotProps={{
+          input: { readOnly },
           htmlInput: {
             ranges,
             revealRange,
@@ -229,6 +240,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
       />
       <TextField
         fullWidth
+        slotProps={{ input: { readOnly } }}
         label="Source"
         value={resource.source}
         onChange={updateField("source")}
@@ -238,6 +250,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
         variant="contained"
         color="error"
         startIcon={<FontAwesomeIcon icon={faTrash} />}
+        disabled={readOnly}
         onClick={deleteResource}
       >
         Delete Resource
@@ -245,7 +258,7 @@ const Resource: React.FC<ResourceProps> = ({ id, index, references }) => {
       <Button
         fullWidth
         variant="contained"
-        disabled={textSelection.start === textSelection.end}
+        disabled={readOnly || textSelection.start === textSelection.end}
         startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
         onClick={addAtom}
       >

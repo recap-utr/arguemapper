@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button, Stack, styled, Typography } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import type * as arguebuf from "arguebuf";
 import { enqueueSnackbar } from "notistack";
@@ -19,6 +19,7 @@ import * as convert from "@/services/convert.js";
 import { generateDemo } from "@/services/demo.js";
 import {
   useArgueActions,
+  useArgueConfig,
   useFlowWrapperRef,
   useInspectorSlots,
   useInstanceFocused,
@@ -41,6 +42,8 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
   const wrapperRef = useFlowWrapperRef();
   const slots = useInspectorSlots();
   const focused = useInstanceFocused();
+  const { readOnly } = useArgueConfig();
+  const uploadId = useId();
   const { getState, resetState } = useArgueActions();
 
   const [analystCallback, setAnalystCallback] = useState<(() => void) | undefined>(undefined);
@@ -114,51 +117,53 @@ export const ImportExport: React.FC<Props> = ({ onClose }) => {
       <SectionHeader title="Import / Export" onClose={onClose} />
       <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2 }}>
         <Stack spacing={3}>
-          <Stack spacing={1}>
-            <Typography variant="overline" color="text.secondary">
-              <FontAwesomeIcon icon={faUpload} />
-              &nbsp;Import
-            </Typography>
-            <label htmlFor="upload-file-button">
-              <Input
-                accept="application/json"
-                id="upload-file-button"
-                type="file"
-                // Reset the value after every upload so the same file can be uploaded twice.
-                onClick={(event) => {
-                  (event.target as HTMLInputElement).value = "";
-                }}
-                onChange={upload}
-              />
+          {!readOnly && (
+            <Stack spacing={1}>
+              <Typography variant="overline" color="text.secondary">
+                <FontAwesomeIcon icon={faUpload} />
+                &nbsp;Import
+              </Typography>
+              <label htmlFor={uploadId}>
+                <Input
+                  accept="application/json"
+                  id={uploadId}
+                  type="file"
+                  // Reset the value after every upload so the same file can be uploaded twice.
+                  onClick={(event) => {
+                    event.currentTarget.value = "";
+                  }}
+                  onChange={upload}
+                />
+                <Button
+                  startIcon={<FontAwesomeIcon icon={faFileArrowUp} />}
+                  variant="contained"
+                  component="span"
+                  fullWidth
+                >
+                  Upload
+                </Button>
+              </label>
               <Button
-                startIcon={<FontAwesomeIcon icon={faFileArrowUp} />}
+                startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
                 variant="contained"
-                component="span"
-                fullWidth
+                onClick={() => {
+                  resetState();
+                }}
               >
-                Upload
+                Load Empty
               </Button>
-            </label>
-            <Button
-              startIcon={<FontAwesomeIcon icon={faFileCirclePlus} />}
-              variant="contained"
-              onClick={() => {
-                resetState();
-              }}
-            >
-              Load Empty
-            </Button>
-            <Button
-              startIcon={<FontAwesomeIcon icon={faFilePen} />}
-              variant="contained"
-              onClick={() => {
-                resetState(generateDemo());
-              }}
-            >
-              Load Demo
-            </Button>
-            {slots.import}
-          </Stack>
+              <Button
+                startIcon={<FontAwesomeIcon icon={faFilePen} />}
+                variant="contained"
+                onClick={() => {
+                  resetState(generateDemo());
+                }}
+              >
+                Load Demo
+              </Button>
+              {slots.import}
+            </Stack>
+          )}
 
           <Stack spacing={1}>
             <Typography variant="overline" color="text.secondary">

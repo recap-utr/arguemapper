@@ -22,7 +22,7 @@ import type React from "react";
 import { useState } from "react";
 import { version as npmVersion } from "@root/package.json";
 import * as model from "@/model.js";
-import { useArgueActions, useInspectorSlots, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useInspectorSlots, useStore } from "@/store.js";
 import { AnalystDialog } from "@/components/sidebar/AnalystDialog.js";
 import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
@@ -36,6 +36,7 @@ export const Configuration: React.FC<Props> = ({ onClose }) => {
   const prettifyJson = useStore((state) => state.prettifyJson);
   const imageScale = useStore((state) => state.imageScale);
   const slots = useInspectorSlots();
+  const { readOnly } = useArgueConfig();
   const { setState } = useArgueActions();
 
   const [analystCallback, setAnalystCallback] = useState<(() => void) | undefined>(undefined);
@@ -60,7 +61,7 @@ export const Configuration: React.FC<Props> = ({ onClose }) => {
             callback={analystCallback}
             disableCallback={() => setAnalystCallback(undefined)}
           />
-          <FormControl fullWidth>
+          <FormControl fullWidth disabled={readOnly}>
             <InputLabel>Layout</InputLabel>
             <Select
               value={layoutAlgorithm}
@@ -120,7 +121,7 @@ export const Configuration: React.FC<Props> = ({ onClose }) => {
             }
             label="Prettify JSON"
           />
-          {slots.configuration}
+          {!readOnly && slots.configuration}
         </Stack>
 
         <Stack sx={{ alignItems: "center", mt: 3 }}>

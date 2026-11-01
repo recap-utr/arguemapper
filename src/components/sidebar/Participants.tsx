@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 import { SectionHeader } from "@/components/sidebar/SectionHeader.js";
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
 
 export const Participants: React.FC<Props> = ({ onClose }) => {
   const participants = useStore((state) => state.graph.participants);
+  const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
 
   return (
@@ -28,6 +29,7 @@ export const Participants: React.FC<Props> = ({ onClose }) => {
             </Typography>
           )}
           <Button
+            disabled={readOnly}
             startIcon={<FontAwesomeIcon icon={faPlusCircle} />}
             variant="contained"
             onClick={() => {
@@ -50,12 +52,14 @@ interface CardProps {
 }
 
 const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
+  const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
 
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Stack spacing={1}>
         <TextField
+          slotProps={{ input: { readOnly } }}
           fullWidth
           label="Name"
           value={participant.name}
@@ -67,6 +71,7 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           }}
         />
         <TextField
+          slotProps={{ input: { readOnly } }}
           fullWidth
           type="email"
           label="Email"
@@ -79,6 +84,7 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           }}
         />
         <TextField
+          slotProps={{ input: { readOnly } }}
           fullWidth
           label="Username"
           value={participant.username}
@@ -90,6 +96,7 @@ const ParticipantCard: React.FC<CardProps> = ({ id, participant }) => {
           }}
         />
         <Button
+          disabled={readOnly}
           startIcon={<FontAwesomeIcon icon={faMinusCircle} />}
           color="error"
           variant="contained"
