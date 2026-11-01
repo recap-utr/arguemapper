@@ -3,7 +3,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Tooltip } from "@mui/material";
 import { useConfirm } from "material-ui-confirm";
 
-/** Standalone-only recovery action: wipes localStorage and reloads, for when persisted state breaks. */
+/** Remove everything the app stored and reload it, for when the stored state breaks it. */
+export function resetApp(): void {
+  localStorage.clear();
+  window.location.reload();
+}
+
+/** Standalone-only recovery action, see `resetApp`. */
 export const ClearCacheButton: React.FC = () => {
   const confirm = useConfirm();
 
@@ -17,12 +23,7 @@ export const ClearCacheButton: React.FC = () => {
         startIcon={<FontAwesomeIcon icon={faTrash} />}
         variant="outlined"
         onClick={() => {
-          void confirm().then(({ confirmed }) => {
-            if (confirmed) {
-              localStorage.clear();
-              window.location.reload();
-            }
-          });
+          void confirm().then(({ confirmed }) => confirmed && resetApp());
         }}
       >
         Reset the app

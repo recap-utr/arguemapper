@@ -32,6 +32,7 @@
     "elkjs": "^0.12",
     "es-toolkit": "^1",
     "html-to-image": "^1",
+    "react-error-boundary": "^6",
     "react-hotkeys-hook": "^5",
     "zod": "^4",
     "zundo": "^2",

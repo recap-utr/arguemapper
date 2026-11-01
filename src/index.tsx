@@ -6,14 +6,15 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "@/App.js";
 import { GraphProviders } from "@/GraphProviders.js";
-import ErrorBoundary from "@/components/ErrorBoundary.js";
+import { ErrorBoundary } from "react-error-boundary";
+import { Recovery } from "@/standalone/Recovery.js";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <GraphProviders>
-      <ErrorBoundary>
+      <ErrorBoundary FallbackComponent={Recovery}>
         <App />
       </ErrorBoundary>
     </GraphProviders>
