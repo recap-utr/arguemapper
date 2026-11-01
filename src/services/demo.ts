@@ -5,7 +5,7 @@ const TEXT =
   "The major claim typically appears at the beginning, followed by multiple claims or premises.";
 
 export function generateDemo(): model.Graph {
-  const graph = model.newGraph();
+  const graph = model.newGraph().draft();
   const resource = new arguebuf.Resource({ text: TEXT });
   const participant = new arguebuf.Participant({ name: "John Doe" });
   const reference = (text: string) =>
@@ -35,5 +35,5 @@ export function generateDemo(): model.Graph {
   graph.connect([attack], conflict, claim);
   graph.majorClaim = claim.id;
 
-  return graph;
+  return graph.freeze();
 }

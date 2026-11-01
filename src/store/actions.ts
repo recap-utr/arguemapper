@@ -17,11 +17,11 @@ export interface ArgueActions {
   setState: ArgueStore["setState"];
   getState: ArgueStore["getState"];
   /**
-   * Edit a copy of the graph with its validated methods and store it, together with the returned state.
+   * Edit a draft of the graph with its validated methods and store it, together with the returned state.
    * The selection is pruned to the remaining elements.
    * Violations of the strict graph model are shown to the user and leave the state unchanged.
    */
-  editGraph: (edit: (graph: model.Graph, state: State) => Partial<State> | void) => void;
+  editGraph: (edit: (graph: model.GraphDraft, state: State) => Partial<State> | void) => void;
   resetState: (graph?: model.Graph) => void;
   /** Move the nodes without an undo step, e.g. to apply an automatic layout. */
   arrange: (positions: Iterable<readonly [string, XYPosition]>) => void;
@@ -72,8 +72,11 @@ export function createActions(
 
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     const state = getState();
-    const graph = state.graph.copy();
-    const issue = arguebuf.catchGraphError(() => setState({ ...edit(graph, state), graph }));
+    const issue = arguebuf.catchGraphError(() => {
+      const draft = state.graph.draft();
+      const changes = edit(draft, state);
+      setState({ ...changes, graph: draft.freeze() });
+    });
 
     if (issue !== undefined) {
       enqueueSnackbar(model.describeIssue(issue), { variant: "warning" });
@@ -84,10 +87,10 @@ export function createActions(
     const { isTracking, pause, resume } = temporal.getState();
     if (isTracking) pause();
     setState((state) => {
-      const graph = state.graph.copy();
-      model.moveNodes(graph, positions);
+      const draft = state.graph.draft();
+      model.moveNodes(draft, positions);
 
-      return { graph };
+      return { graph: draft.freeze() };
     });
     if (isTracking) resume();
   };

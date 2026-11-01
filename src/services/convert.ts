@@ -28,17 +28,20 @@ export function exportGraph(
   const known = Object.values(graph.analysts).some(
     (x) => x.name === analyst.name && x.email === analyst.email,
   );
-  const result = known ? graph : graph.copy();
 
-  if (!known) {
-    if (Object.hasOwn(result.analysts, analyst.id)) {
-      result.removeAnalyst(analyst.id);
-    }
-
-    result.addAnalyst(analyst);
+  if (known) {
+    return arguebuf.dump.json(graph, { codecs: model.codecs });
   }
 
-  return arguebuf.dump.json(result, { codecs: model.codecs });
+  const draft = graph.draft();
+
+  if (Object.hasOwn(draft.analysts, analyst.id)) {
+    draft.removeAnalyst(analyst.id);
+  }
+
+  draft.addAnalyst(analyst);
+
+  return arguebuf.dump.json(draft, { codecs: model.codecs });
 }
 
 function generateFilename(): string {

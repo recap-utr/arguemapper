@@ -237,13 +237,12 @@ export function createTools(store: ArgueStore): ToolSet {
           throw failure(result.issues);
         }
 
-        // the patched graph is a copy owned by this call, so provenance is added in place
-        const next = result.graph;
+        const draft = result.graph.draft();
 
         for (const id of [...result.created, ...result.updated]) {
-          if (Object.hasOwn(next.nodes, id)) {
-            const { userdata } = next.nodes[id];
-            model.updateUserdata(next, id, {
+          if (Object.hasOwn(draft.nodes, id)) {
+            const { userdata } = draft.nodes[id];
+            model.updateUserdata(draft, id, {
               ...userdata,
               assistant: {
                 ...userdata.assistant,
@@ -254,6 +253,7 @@ export function createTools(store: ArgueStore): ToolSet {
           }
         }
 
+        const next = draft.freeze();
         store.setState({
           graph: next,
           shouldLayout:

@@ -69,6 +69,7 @@ export const codecs: arguebuf.Codecs<Schema> = {
 };
 
 export type Graph = arguebuf.Graph<Schema>;
+export type GraphDraft = arguebuf.GraphDraft<Schema>;
 export type Node = arguebuf.Node<Schema>;
 export type AtomNode = arguebuf.AtomNode<NodeUserdata>;
 export type SchemeNode = arguebuf.SchemeNode<NodeUserdata>;
@@ -99,7 +100,7 @@ export const positioned = ({ userdata }: Node, value: XYPosition): NodeUserdata 
 
 /** Update the scheme nodes with the given ids, other ids are skipped. */
 export function updateSchemes(
-  graph: Graph,
+  graph: GraphDraft,
   ids: readonly string[],
   changes: (node: SchemeNode) => arguebuf.SchemeChanges<NodeUserdata>,
 ): void {
@@ -113,7 +114,7 @@ export function updateSchemes(
 }
 
 /** Replace the userdata of an atom or scheme node. */
-export function updateUserdata(graph: Graph, id: string, userdata: NodeUserdata): void {
+export function updateUserdata(graph: GraphDraft, id: string, userdata: NodeUserdata): void {
   if (graph.nodes[id].type === "atom") {
     graph.updateAtom(id, { userdata });
   } else {
@@ -122,7 +123,7 @@ export function updateUserdata(graph: Graph, id: string, userdata: NodeUserdata)
 }
 
 /** Set the notes of the node or edge with the id, or of the graph without an id. */
-export function setNotes(graph: Graph, id: string | undefined, notes: string): void {
+export function setNotes(graph: GraphDraft, id: string | undefined, notes: string): void {
   if (id === undefined) {
     graph.userdata = { ...graph.userdata, notes };
   } else if (Object.hasOwn(graph.edges, id)) {
@@ -133,7 +134,7 @@ export function setNotes(graph: Graph, id: string | undefined, notes: string): v
 }
 
 /** Move the nodes of the graph to the positions, unknown ids are skipped. */
-export function moveNodes(graph: Graph, positions: Iterable<readonly [string, XYPosition]>): void {
+export function moveNodes(graph: GraphDraft, positions: Iterable<readonly [string, XYPosition]>): void {
   for (const [id, value] of positions) {
     if (Object.hasOwn(graph.nodes, id)) {
       updateUserdata(graph, id, positioned(graph.nodes[id], value));
@@ -146,7 +147,7 @@ export function moveNodes(graph: Graph, positions: Iterable<readonly [string, XY
  * which is placed between them and returned.
  */
 export function link(
-  graph: Graph,
+  graph: GraphDraft,
   source: string,
   target: string,
   scheme: arguebuf.Scheme = arguebuf.defaultScheme("support"),
@@ -163,7 +164,7 @@ export function link(
 }
 
 /** Make the atom the major claim, or unset it if it already is. */
-export function toggleMajorClaim(graph: Graph, id: string): void {
+export function toggleMajorClaim(graph: GraphDraft, id: string): void {
   graph.majorClaim = graph.majorClaim === id ? undefined : id;
 }
 
