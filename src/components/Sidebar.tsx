@@ -47,10 +47,10 @@ const Sidebar: React.FC<Props> = ({ assistant }) => {
     }
   };
 
-  // A pane counts as open only if it's available in this instance (assistant may be disabled).
-  const isOpen = (key: SidebarSection) =>
-    openSections.includes(key) && (key !== "assistant" || assistant != null);
-  const firstOpen = SECTION_ORDER.find(isOpen);
+  // Panes available in this instance, the assistant may be disabled.
+  const sections = SECTION_ORDER.filter((key) => key !== "assistant" || assistant != null);
+  const isOpen = (key: SidebarSection) => openSections.includes(key);
+  const firstOpen = sections.find(isOpen);
   const open = firstOpen !== undefined;
 
   const panel = (
@@ -62,8 +62,7 @@ const Sidebar: React.FC<Props> = ({ assistant }) => {
         flexDirection: "column",
       }}
     >
-      {SECTION_ORDER.map((key) => {
-        if (key === "assistant" && assistant == null) return null;
+      {sections.map((key) => {
         const paneOpen = isOpen(key);
         return (
           <Box
