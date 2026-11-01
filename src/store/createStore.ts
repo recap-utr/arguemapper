@@ -91,4 +91,3 @@ export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueSt
 
   return store;
 }
-

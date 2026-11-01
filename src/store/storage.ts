@@ -132,7 +132,10 @@ export const localStorageBacked: PersistStorage<PersistState> = {
     }
 
     written.set(name, value.state);
-    pending.set(name, { value, fields: new Set([...(pending.get(name)?.fields ?? []), ...changed]) });
+    pending.set(name, {
+      value,
+      fields: new Set([...(pending.get(name)?.fields ?? []), ...changed]),
+    });
     writePending();
 
     // pending writes would be lost when the page is closed
