@@ -173,8 +173,8 @@ export const needsLayout = (graph: Graph): boolean =>
   Object.values(graph.nodes).every((node) => node.userdata.arguemapper === undefined);
 
 export interface Selection {
-  nodes: string[];
-  edges: string[];
+  readonly nodes: readonly string[];
+  readonly edges: readonly string[];
 }
 
 export const emptySelection: Selection = { nodes: [], edges: [] };

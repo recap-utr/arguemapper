@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton, Paper, Tooltip } from "@mui/material";
 import { NodeToolbar } from "@xyflow/react";
 import type React from "react";
+import { useMemo } from "react";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { SchemeTypeToggle } from "@/components/inspector/SchemeTypeToggle.js";
 import * as model from "@/model.js";
@@ -47,13 +48,15 @@ export const SelectionToolbar: React.FC = () => {
   const { readOnly, panels } = useArgueConfig();
   const { coarse } = useGraphRender();
   const { editGraph, deleteSelection, openPanel } = useArgueActions();
+  // xyflow takes a mutable array
+  const toolbarIds = useMemo(() => [...ids], [ids]);
 
   if (ids.length === 0) {
     return null;
   }
 
   return (
-    <NodeToolbar nodeId={ids} isVisible>
+    <NodeToolbar nodeId={toolbarIds} isVisible>
       <ToolbarPaper>
         {schemes && !readOnly && (
           <SchemeTypeToggle ids={ids} types={["support", "attack"]} size={coarse ? "medium" : "small"} />

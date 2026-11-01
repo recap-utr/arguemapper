@@ -86,6 +86,8 @@ export const Assistant: React.FC<Props> = ({ options = {} }) => {
   const store = useStoreApi();
   const { setState } = useArgueActions();
   const messages = useStore((state) => state.assistantMessages);
+  // MUI X Chat takes a mutable array
+  const chatMessages = useMemo(() => [...messages], [messages]);
   const conversation = useStore((state) => state.assistantConversation);
   const config = useStore((state) => state.assistantConfig);
   const storedApiKey = useStore((state) => state.assistantApiKey);
@@ -106,7 +108,7 @@ export const Assistant: React.FC<Props> = ({ options = {} }) => {
       // remounting starts the conversation afresh and aborts a running reply
       key={conversation}
       adapter={adapter}
-      messages={messages}
+      messages={chatMessages}
       onMessagesChange={(next) => setState({ assistantMessages: next })}
       suggestions={SUGGESTIONS}
       suggestionsAutoSubmit

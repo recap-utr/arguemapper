@@ -6,10 +6,10 @@ import type { StoreApi } from "zustand/vanilla";
 import type * as model from "@/model.js";
 
 export interface AssistantConfig {
-  model: string;
-  baseURL: string;
+  readonly model: string;
+  readonly baseURL: string;
   /** Reasoning effort, the `reasoning` call setting of the AI SDK. */
-  reasoning: NonNullable<LanguageModelCallOptions["reasoning"]>;
+  readonly reasoning: NonNullable<LanguageModelCallOptions["reasoning"]>;
 }
 
 export const defaultAssistantConfig: AssistantConfig = {
@@ -39,32 +39,32 @@ export function resolveAssistantConfig({
 export type Panel = "text" | "inspector" | "assistant";
 
 export interface State {
-  analyst: arguebuf.Analyst;
-  edgeStyle: model.EdgeStyle;
+  readonly analyst: arguebuf.Analyst;
+  readonly edgeStyle: model.EdgeStyle;
   /** Whether the getting started guide is shown while its steps are not done. */
-  guide: boolean;
+  readonly guide: boolean;
   /** The argument graph, the single source of truth of the canvas. */
-  graph: model.Graph;
-  imageScale: number;
-  layoutAlgorithm: model.LayoutAlgorithm;
-  prettifyJson: boolean;
+  readonly graph: model.Graph;
+  readonly imageScale: number;
+  readonly layoutAlgorithm: model.LayoutAlgorithm;
+  readonly prettifyJson: boolean;
   /** Id of the resource shown in the text panel, the first one if it is missing. */
-  selectedResource?: string;
-  selection: model.Selection;
-  shouldLayout: boolean;
-  shouldFitView: boolean;
+  readonly selectedResource?: string;
+  readonly selection: model.Selection;
+  readonly shouldLayout: boolean;
+  readonly shouldFitView: boolean;
   /** The open panels, the last one was opened most recently. */
-  panels: Panel[];
-  assistantConfig: AssistantConfig;
+  readonly panels: readonly Panel[];
+  readonly assistantConfig: AssistantConfig;
   /** API key for the assistant; held in memory only (never persisted). */
-  assistantApiKey: string;
+  readonly assistantApiKey: string;
   /** Transcript of the assistant (MUI X Chat messages), persisted but not part of the undo history. */
-  assistantMessages: ChatMessage[];
+  readonly assistantMessages: readonly ChatMessage[];
   /**
    * Counter of the assistant conversation, bumped to start a fresh one, e.g. when the graph is
    * replaced wholesale or the transcript is cleared. A new value also aborts a running reply. Transient.
    */
-  assistantConversation: number;
+  readonly assistantConversation: number;
 }
 
 /** Undo and redo revert edits of the graph, not the selection or other view state. */
