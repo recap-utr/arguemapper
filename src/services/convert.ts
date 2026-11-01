@@ -33,15 +33,15 @@ export function exportGraph(
     return arguebuf.dump.json(graph, { codecs: model.codecs });
   }
 
-  const draft = graph.draft();
+  const result = graph.edit((draft) => {
+    if (Object.hasOwn(draft.analysts, analyst.id)) {
+      draft.removeAnalyst(analyst.id);
+    }
 
-  if (Object.hasOwn(draft.analysts, analyst.id)) {
-    draft.removeAnalyst(analyst.id);
-  }
+    draft.addAnalyst(analyst);
+  });
 
-  draft.addAnalyst(analyst);
-
-  return arguebuf.dump.json(draft, { codecs: model.codecs });
+  return arguebuf.dump.json(result, { codecs: model.codecs });
 }
 
 function generateFilename(): string {

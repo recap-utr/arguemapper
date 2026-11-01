@@ -73,9 +73,11 @@ export function createActions(
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     const state = getState();
     const issue = arguebuf.catchGraphError(() => {
-      const draft = state.graph.draft();
-      const changes = edit(draft, state);
-      setState({ ...changes, graph: draft.freeze() });
+      let changes: Partial<State> = {};
+      const graph = state.graph.edit((draft) => {
+        changes = edit(draft, state) ?? {};
+      });
+      setState({ ...changes, graph });
     });
 
     if (issue !== undefined) {
@@ -86,12 +88,9 @@ export function createActions(
   const arrange: ArgueActions["arrange"] = (positions) => {
     const { isTracking, pause, resume } = temporal.getState();
     if (isTracking) pause();
-    setState((state) => {
-      const draft = state.graph.draft();
-      model.moveNodes(draft, positions);
-
-      return { graph: draft.freeze() };
-    });
+    setState((state) => ({
+      graph: state.graph.edit((draft) => model.moveNodes(draft, positions)),
+    }));
     if (isTracking) resume();
   };
 

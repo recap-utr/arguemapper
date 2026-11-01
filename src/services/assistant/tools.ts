@@ -237,23 +237,21 @@ export function createTools(store: ArgueStore): ToolSet {
           throw failure(result.issues);
         }
 
-        const draft = result.graph.draft();
-
-        for (const id of [...result.created, ...result.updated]) {
-          if (Object.hasOwn(draft.nodes, id)) {
-            const { userdata } = draft.nodes[id];
-            model.updateUserdata(draft, id, {
-              ...userdata,
-              assistant: {
-                ...userdata.assistant,
-                config: { ...state.assistantConfig },
-                explanation: explanations[id] ?? userdata.assistant?.explanation,
-              },
-            });
+        const next = result.graph.edit((draft) => {
+          for (const id of [...result.created, ...result.updated]) {
+            if (Object.hasOwn(draft.nodes, id)) {
+              const { userdata } = draft.nodes[id];
+              model.updateUserdata(draft, id, {
+                ...userdata,
+                assistant: {
+                  ...userdata.assistant,
+                  config: { ...state.assistantConfig },
+                  explanation: explanations[id] ?? userdata.assistant?.explanation,
+                },
+              });
+            }
           }
-        }
-
-        const next = draft.freeze();
+        });
         store.setState({
           graph: next,
           shouldLayout:

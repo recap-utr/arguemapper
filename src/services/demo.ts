@@ -5,7 +5,6 @@ const TEXT =
   "The major claim typically appears at the beginning, followed by multiple claims or premises.";
 
 export function generateDemo(): model.Graph {
-  const graph = model.newGraph().draft();
   const resource = new arguebuf.Resource({ text: TEXT });
   const participant = new arguebuf.Participant({ name: "John Doe" });
   const reference = (text: string) =>
@@ -23,17 +22,17 @@ export function generateDemo(): model.Graph {
   const support = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("support") });
   const conflict = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("attack") });
 
-  graph.addResource(resource);
-  graph.addParticipant(participant);
-  graph.addAnalyst(new arguebuf.Analyst({ name: "Michael Web" }));
+  return model.newGraph().edit((graph) => {
+    graph.addResource(resource);
+    graph.addParticipant(participant);
+    graph.addAnalyst(new arguebuf.Analyst({ name: "Michael Web" }));
 
-  for (const node of [claim, premise, attack, support, conflict]) {
-    graph.addNode(node);
-  }
+    for (const node of [claim, premise, attack, support, conflict]) {
+      graph.addNode(node);
+    }
 
-  graph.connect([premise], support, claim);
-  graph.connect([attack], conflict, claim);
-  graph.majorClaim = claim.id;
-
-  return graph.freeze();
+    graph.connect([premise], support, claim);
+    graph.connect([attack], conflict, claim);
+    graph.majorClaim = claim.id;
+  });
 }
