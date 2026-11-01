@@ -1,6 +1,6 @@
 import * as arguebuf from "arguebuf";
 import { throttle } from "es-toolkit";
-import { type TemporalState, temporal, type ZundoOptions } from "zundo";
+import { temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
@@ -31,8 +31,6 @@ export interface CreateArgueStoreOptions {
   assistantConfig?: Partial<AssistantConfig>;
   /** Initial assistant API key (held in memory only). */
   assistantApiKey?: string;
-  /** Side the sidebar docks to. Defaults to `"right"`; persisted state takes precedence. */
-  side?: "left" | "right";
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
@@ -41,7 +39,7 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
   return {
     graph,
     analyst: new arguebuf.Analyst({}),
-    firstVisit: true,
+    guide: true,
     layoutAlgorithm: "layered",
     edgeStyle: "step",
     shouldLayout: false,
@@ -49,10 +47,7 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     selection: model.emptySelection,
     prettifyJson: true,
     imageScale: 3,
-    sidebarSide: options.side ?? "right",
-    sidebarSections: ["inspector"],
-    sidebarWidth: 480,
-    headerHeight: 64,
+    panels: ["text", "inspector"],
     assistantConfig: resolveAssistantConfig(options.assistantConfig),
     assistantApiKey: options.assistantApiKey ?? "",
     assistantMessages: [],
@@ -60,19 +55,13 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
   };
 }
 
-function createTemporalOptions(): ZundoOptions<State, ZundoState> {
-  return {
-    partialize: ({ graph, selectedResource, selection }) => ({
-      graph,
-      selectedResource,
-      selection,
-    }),
-    // edits replace the changed parts only, so references suffice
-    equality: shallow,
-    limit: 100,
-    handleSet: (callback) => throttle(callback, 1000),
-  };
-}
+const temporalOptions: ZundoOptions<State, ZundoState> = {
+  partialize: ({ graph }) => ({ graph }),
+  // edits replace the changed parts only, so references suffice
+  equality: shallow,
+  limit: 100,
+  handleSet: (callback) => throttle(callback, 1000),
+};
 
 /**
  * Create an independent graph store. Each `<GraphEditor>` instance owns one, so multiple graphs can
@@ -80,23 +69,29 @@ function createTemporalOptions(): ZundoOptions<State, ZundoState> {
  */
 export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueStore {
   const initialState = buildInitialState(options);
-  const temporalOptions = createTemporalOptions();
 
-  const initializer = options.persistKey
-    ? persist(() => initialState, {
-        name: options.persistKey,
-        version: persistVersion,
-        storage: options.storage ?? localStorageBacked,
-        partialize,
-      })
-    : () => initialState;
+  const tracked = temporal<State, [], [], ZundoState>(() => initialState, temporalOptions);
+  // persistence wraps the history, so that undo and redo are saved as well
+  const store: ArgueStore = options.persistKey
+    ? createStore<State>()(
+        persist(tracked, {
+          name: options.persistKey,
+          version: persistVersion,
+          storage: options.storage ?? localStorageBacked,
+          partialize,
+        }),
+      )
+    : createStore<State>()(tracked);
 
-  const store = createStore<State>()(temporal(initializer, temporalOptions)) as ArgueStore;
+  // Every change of the graph, e.g. an edit or an undo, deselects the removed elements.
+  store.subscribe((state, previous) => {
+    if (state.graph !== previous.graph) {
+      const selection = model.pruneSelection(state.graph, state.selection);
 
-  // Pause history until the flow initializes, so hydration/layout don't enter the undo stack.
-  store.temporal.getState().pause();
+      if (selection !== state.selection) store.setState({ selection });
+    }
+  });
 
   return store;
 }
 
-export type { TemporalState };

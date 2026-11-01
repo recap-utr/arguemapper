@@ -1,0 +1,494 @@
+import { faCheck, faLightbulb, faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Popper,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { alpha, styled } from "@mui/material/styles";
+import { useReactFlow } from "@xyflow/react";
+import * as arguebuf from "arguebuf";
+import type React from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useGuideStep } from "@/components/canvas/Guide.js";
+import { useReplaceGraph } from "@/components/useReplaceGraph.js";
+import * as model from "@/model.js";
+import { generateDemo } from "@/services/demo.js";
+import { type State, useArgueActions, useArgueConfig, useStore } from "@/store.js";
+
+/** The atom if it is the only selected element. */
+function selectedAtom({ graph, selection }: State): model.AtomNode | undefined {
+  const node = model.selectedNode(graph, selection);
+
+  return node?.type === "atom" ? node : undefined;
+}
+
+type Annotations = readonly arguebuf.Annotation<model.Schema>[];
+
+/** Whether the annotations cover the same passages by the same atoms, e.g. after moving nodes. */
+const sameAnnotations = (a: Annotations, b: Annotations): boolean =>
+  a.length === b.length &&
+  a.every(
+    ({ node, start, end }, index) =>
+      node.id === b[index].node.id && start === b[index].start && end === b[index].end,
+  );
+
+/** Text panel: read the texts, annotate passages as claims, and edit them. */
+export const TextPane: React.FC = () => {
+  const resources = useStore((state) => state.graph.resources);
+  const shown = useStore((state) => model.shownResource(state.graph, state.selectedResource));
+  // graph edits keep unchanged elements, so references are compared by identity
+  const selectedReference = useStore((state) => selectedAtom(state)?.reference);
+  const { readOnly } = useArgueConfig();
+  const { editGraph, setState } = useArgueActions();
+  const [editing, setEditing] = useState(false);
+  const ids = Object.keys(resources);
+
+  // Reveal the text a selected claim quotes.
+  useEffect(() => {
+    const resource = selectedReference?.resource;
+    if (resource !== undefined) setState({ selectedResource: resource });
+  }, [selectedReference, setState]);
+
+  // empty texts can only be edited
+  const empty = shown !== undefined && resources[shown].text === "";
+
+  const addText = (text = "") => {
+    const resource = new arguebuf.Resource({ text });
+    editGraph((graph) => {
+      graph.addResource(resource);
+
+      return { selectedResource: resource.id };
+    });
+  };
+
+  return (
+    <Stack sx={{ flex: "1 1 0", minHeight: 0 }}>
+      {shown !== undefined && (
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", pr: 0.5, borderBottom: 1, borderColor: "divider" }}
+        >
+          <Tabs
+            value={shown}
+            onChange={(_event, value: string) => setState({ selectedResource: value })}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{ flexGrow: 1, minHeight: 40 }}
+          >
+            {ids.map((id, index) => (
+              <Tab
+                key={id}
+                value={id}
+                label={resources[id].title || `Text ${index + 1}`}
+                sx={{ minHeight: 40, textTransform: "none" }}
+              />
+            ))}
+          </Tabs>
+          {!readOnly && (
+            <>
+              <Tooltip title="Add another text">
+                <IconButton onClick={() => addText()}>
+                  <FontAwesomeIcon icon={faPlus} fixedWidth />
+                </IconButton>
+              </Tooltip>
+              {!empty && (
+                <Tooltip title={editing ? "Done editing" : "Edit text"}>
+                  <IconButton
+                    color={editing ? "primary" : "default"}
+                    onClick={() => setEditing((current) => !current)}
+                  >
+                    <FontAwesomeIcon icon={editing ? faCheck : faPen} fixedWidth />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
+          )}
+        </Stack>
+      )}
+      <Box sx={{ flex: "1 1 0", minHeight: 0, overflowY: "auto", p: 2 }}>
+        {shown === undefined ? (
+          readOnly ? (
+            <Typography color="text.secondary">This graph has no text.</Typography>
+          ) : (
+            <TextStart onStart={addText} />
+          )
+        ) : editing || empty ? (
+          <ResourceEditor key={shown} id={shown} onDone={() => setEditing(false)} />
+        ) : (
+          <ResourceView key={shown} id={shown} />
+        )}
+      </Box>
+    </Stack>
+  );
+};
+
+/** The first text of a graph, pasted to start annotating it. */
+const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) => {
+  const [text, setText] = useState("");
+  const replaceGraph = useReplaceGraph();
+
+  return (
+    <Stack spacing={2}>
+      <Typography variant="h6">Add the text you want to analyze</Typography>
+      <Typography variant="body2" color="text.secondary">
+        For example a newspaper article or a comment. You can still edit it later.
+      </Typography>
+      <TextField
+        label="Text"
+        placeholder="Paste your text here"
+        fullWidth
+        multiline
+        minRows={8}
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+      />
+      <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+        <Button variant="contained" disabled={text.trim() === ""} onClick={() => onStart(text)}>
+          Start annotating
+        </Button>
+        <Button
+          startIcon={<FontAwesomeIcon icon={faLightbulb} />}
+          onClick={() => replaceGraph(generateDemo())}
+        >
+          See an example
+        </Button>
+      </Stack>
+    </Stack>
+  );
+};
+
+const ResourceEditor: React.FC<{ id: string; onDone: () => void }> = ({ id, onDone }) => {
+  const resource = useStore((state) => state.graph.resources[id]);
+  const { editGraph } = useArgueActions();
+
+  const update =
+    (field: "title" | "text" | "source") =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { value } = event.target;
+      editGraph((graph) => {
+        // re-anchors the references if the text changes
+        graph.updateResource(id, { [field]: value });
+      });
+    };
+
+  return (
+    <Stack spacing={2}>
+      <TextField label="Title" fullWidth value={resource.title ?? ""} onChange={update("title")} />
+      <TextField
+        label="Text"
+        placeholder="Paste the text you want to analyze"
+        fullWidth
+        multiline
+        minRows={8}
+        value={resource.text}
+        onChange={update("text")}
+      />
+      <TextField
+        label="Source"
+        helperText="Where the text comes from, e.g. a web address"
+        fullWidth
+        value={resource.source ?? ""}
+        onChange={update("source")}
+      />
+      <Stack direction="row" spacing={1} sx={{ justifyContent: "space-between" }}>
+        <Button
+          variant="contained"
+          disabled={resource.text.trim() === ""}
+          startIcon={<FontAwesomeIcon icon={faCheck} />}
+          onClick={onDone}
+        >
+          Done
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<FontAwesomeIcon icon={faTrash} />}
+          onClick={() => {
+            editGraph((graph) => {
+              graph.removeResource(id);
+            });
+            onDone();
+          }}
+        >
+          Delete text
+        </Button>
+      </Stack>
+    </Stack>
+  );
+};
+
+/** Passage of the text, covered by the atoms whose references contain it, the shortest first. */
+interface Segment {
+  start: number;
+  end: number;
+  atoms: string[];
+}
+
+function segments(text: string, annotations: Annotations): Segment[] {
+  const bounds = [
+    ...new Set([0, text.length, ...annotations.flatMap(({ start, end }) => [start, end])]),
+  ].toSorted((a, b) => a - b);
+
+  return bounds.slice(0, -1).map((start, index) => {
+    const end = bounds[index + 1];
+    const atoms = annotations
+      .filter((annotation) => annotation.start <= start && annotation.end >= end)
+      .toSorted((a, b) => a.end - a.start - (b.end - b.start))
+      .map(({ node }) => node.id);
+
+    return { start, end, atoms };
+  });
+}
+
+const Mark = styled("mark", { shouldForwardProp: (prop) => prop !== "selected" })<{
+  selected: boolean;
+}>(({ theme, selected }) => ({
+  color: "inherit",
+  cursor: "pointer",
+  borderRadius: 2,
+  backgroundColor: alpha(
+    selected ? theme.palette.primary.main : theme.palette.warning.main,
+    selected ? 0.4 : 0.25,
+  ),
+}));
+
+/** Passage selected by the user. */
+interface Span {
+  start: number;
+  end: number;
+  range: Range;
+}
+
+/** The trimmed passage of the selection inside the container, if any. */
+function selectedSpan(container: HTMLElement): Span | undefined {
+  const selection = document.getSelection();
+
+  if (selection === null || selection.isCollapsed || selection.rangeCount === 0) {
+    return undefined;
+  }
+
+  const range = selection.getRangeAt(0);
+
+  if (!container.contains(range.commonAncestorContainer)) {
+    return undefined;
+  }
+
+  // the container renders the text verbatim, so the length of the text before is the offset
+  const before = document.createRange();
+  before.selectNodeContents(container);
+  before.setEnd(range.startContainer, range.startOffset);
+  const offset = before.toString().length;
+  const text = range.toString();
+  const start = offset + text.length - text.trimStart().length;
+  const end = offset + text.trimEnd().length;
+
+  return end > start ? { start, end, range: range.cloneRange() } : undefined;
+}
+
+/** The text with its annotated passages, which select their claims. */
+const ResourceView: React.FC<{ id: string }> = ({ id }) => {
+  const resource = useStore((state) => state.graph.resources[id]);
+  // the resource may be removed before this view
+  const annotations = useStore(
+    ({ graph }) => (Object.hasOwn(graph.resources, id) ? graph.annotations(id) : []),
+    sameAnnotations,
+  );
+  const selected = useStore((state) => state.selection.nodes);
+  const selectedId = useStore((state) => selectedAtom(state)?.id);
+  const guideStep = useGuideStep();
+  const { readOnly } = useArgueConfig();
+  const { setState } = useArgueActions();
+  const flow = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const popperRef = useRef<HTMLDivElement>(null);
+  const [span, setSpan] = useState<Span>();
+
+  const parts = useMemo(() => segments(resource.text, annotations), [resource.text, annotations]);
+
+  // Scroll to the passage of a selected claim.
+  useEffect(() => {
+    if (selectedId !== undefined) {
+      containerRef.current
+        ?.querySelector(`mark[data-atoms~="${CSS.escape(selectedId)}"]`)
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [selectedId]);
+
+  // The passage stays until the user taps elsewhere, as tapping the popup collapses the selection.
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const container = containerRef.current;
+      const next = container ? selectedSpan(container) : undefined;
+      if (next !== undefined) setSpan(next);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!(event.target instanceof Node && popperRef.current?.contains(event.target))) {
+        setSpan(undefined);
+      }
+    };
+
+    document.addEventListener("selectionchange", onSelectionChange);
+    document.addEventListener("pointerdown", onPointerDown);
+
+    return () => {
+      document.removeEventListener("selectionchange", onSelectionChange);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
+
+  const reveal = (atom: string) => {
+    // dragging across a passage selects text instead
+    if (!document.getSelection()?.isCollapsed) return;
+
+    setState({ selection: model.nodeSelection(atom) });
+    void flow.fitView({ nodes: [{ id: atom }], duration: 300, maxZoom: flow.getZoom() });
+  };
+
+  return (
+    <>
+      {/* the guide gives the same hint at this step */}
+      {!readOnly && guideStep !== "claims" && parts.every(({ atoms }) => atoms.length === 0) && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Select a passage and choose “Add claim” to turn it into a claim.
+        </Alert>
+      )}
+      {resource.source && (
+        <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1 }}>
+          Source: {resource.source}
+        </Typography>
+      )}
+      <Typography
+        ref={containerRef}
+        component="div"
+        sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", lineHeight: 1.8 }}
+      >
+        {parts.map(({ start, end, atoms }) =>
+          atoms.length === 0 ? (
+            <Fragment key={start}>{resource.text.slice(start, end)}</Fragment>
+          ) : (
+            <Mark
+              key={start}
+              data-atoms={atoms.join(" ")}
+              selected={atoms.some((atom) => selected.includes(atom))}
+              onClick={() => reveal(atoms[0])}
+            >
+              {resource.text.slice(start, end)}
+            </Mark>
+          ),
+        )}
+      </Typography>
+      {!readOnly && (
+        <Popper
+          ref={popperRef}
+          open={span !== undefined}
+          anchorEl={span && { getBoundingClientRect: () => span.range.getBoundingClientRect() }}
+          // below the selection, where the menus of mobile browsers do not cover it
+          placement="bottom"
+          sx={{ zIndex: "modal" }}
+        >
+          {span && (
+            <PassageActions
+              resource={id}
+              span={span}
+              onDone={() => {
+                document.getSelection()?.removeAllRanges();
+                setSpan(undefined);
+              }}
+            />
+          )}
+        </Popper>
+      )}
+    </>
+  );
+};
+
+interface ActionsProps {
+  resource: string;
+  span: Span;
+  onDone: () => void;
+}
+
+/** Turn the selected passage into a claim, related to the selected claim if there is one. */
+const PassageActions: React.FC<ActionsProps> = ({ resource, span, onDone }) => {
+  const text = useStore((state) =>
+    state.graph.resources[resource].text.slice(span.start, span.end),
+  );
+  const target = useStore(selectedAtom);
+  const { editGraph, addNode } = useArgueActions();
+  const reference = new arguebuf.Reference({ text, resource, offset: span.start });
+  const atom = model.newAtom().with({ text, reference });
+
+  const addRelated = (target: model.AtomNode, type: arguebuf.SchemeType) => {
+    const { x, y } = model.position(target);
+    // premises are placed below their conclusion
+    addNode(atom, {
+      position: { x, y: y + 200 },
+      link: { node: target.id, scheme: arguebuf.defaultScheme(type) },
+    });
+    onDone();
+  };
+
+  return (
+    <Paper elevation={8} sx={{ mt: 1, p: 0.5, display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+      <Button
+        variant="contained"
+        size="small"
+        startIcon={<FontAwesomeIcon icon={faPlus} />}
+        onClick={() => {
+          addNode(atom);
+          onDone();
+        }}
+      >
+        Add claim
+      </Button>
+      {target && (
+        <>
+          <Tooltip title="Add a claim that supports the selected claim">
+            <Button
+              size="small"
+              sx={{ color: arguebuf.schemeColors.support.bg }}
+              onClick={() => addRelated(target, "support")}
+            >
+              Supports
+            </Button>
+          </Tooltip>
+          <Tooltip title="Add a claim that attacks the selected claim">
+            <Button
+              size="small"
+              sx={{ color: arguebuf.schemeColors.attack.bg }}
+              onClick={() => addRelated(target, "attack")}
+            >
+              Attacks
+            </Button>
+          </Tooltip>
+          <Tooltip title="Link the selected claim to this passage">
+            <Button
+              size="small"
+              onClick={() => {
+                editGraph((graph) => {
+                  graph.updateAtom(
+                    target.id,
+                    target.text === "" ? { text, reference } : { reference },
+                  );
+                });
+                onDone();
+              }}
+            >
+              Use as quote
+            </Button>
+          </Tooltip>
+        </>
+      )}
+    </Paper>
+  );
+};

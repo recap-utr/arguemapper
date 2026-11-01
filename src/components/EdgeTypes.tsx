@@ -1,41 +1,45 @@
-import { useMediaQuery, useTheme } from "@mui/material";
 import * as color from "@mui/material/colors";
+import { useTheme } from "@mui/material";
 import {
-  BezierEdge,
+  BaseEdge,
+  EdgeToolbar,
   type EdgeProps,
   type EdgeTypes as FlowEdgeTypes,
-  SmoothStepEdge,
-  StraightEdge,
+  getBezierPath,
+  getSmoothStepPath,
+  getStraightPath,
 } from "@xyflow/react";
-import { type ComponentType, useMemo } from "react";
-import { markerId } from "@/store.js";
+import type React from "react";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 
-const EdgeComponent: ComponentType<EdgeProps> = (props) => {
-  const selected = props.selected;
-  const { edgeStyle, instanceId } = useGraphRender();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const strokeColor = useMemo(
-    () => (selected ? theme.palette.text.primary : color.grey[500]),
-    [selected, theme.palette.text.primary],
-  );
-  const marker = markerId(instanceId, selected ?? false);
-  const size = isMobile ? 5 : 2.5;
-  const extendedProps: EdgeProps = {
-    ...props,
-    style: { stroke: strokeColor, strokeWidth: size },
-    markerEnd: `url(#${marker})`,
-  };
+const paths = { bezier: getBezierPath, step: getSmoothStepPath, straight: getStraightPath };
 
-  switch (edgeStyle) {
-    case "bezier":
-      return <BezierEdge {...extendedProps} />;
-    case "step":
-      return <SmoothStepEdge {...extendedProps} />;
-    case "straight":
-      return <StraightEdge {...extendedProps} />;
-  }
+const EdgeComponent: React.FC<EdgeProps> = (props) => {
+  const { id, selected = false, markerEnd } = props;
+  const { edgeStyle, coarse, edgeToolbar } = useGraphRender();
+  const theme = useTheme();
+  const [path, labelX, labelY] = paths[edgeStyle](props);
+
+  return (
+    <>
+      <BaseEdge
+        id={id}
+        path={path}
+        markerEnd={markerEnd}
+        interactionWidth={coarse ? 32 : 20}
+        style={{
+          stroke: selected ? theme.palette.text.primary : color.grey[500],
+          strokeWidth: coarse ? 4 : 2.5,
+        }}
+      />
+      {selected && edgeToolbar && (
+        // beside the edge, as the selected edge is drawn above its toolbar
+        <EdgeToolbar edgeId={id} x={labelX + 12} y={labelY} alignX="left" isVisible>
+          {edgeToolbar(id)}
+        </EdgeToolbar>
+      )}
+    </>
+  );
 };
 
 export const EdgeTypes: FlowEdgeTypes = {

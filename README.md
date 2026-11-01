@@ -6,8 +6,6 @@ ArgueMapper is the first of its kind to be optimized for mobile devices and prov
 You can try it out immediately by visiting our [hosted version](https://arguemapper.uni-trier.de).
 There are no server-side components in this app, so your data never leaves your device.
 
-![user interface](./assets/user-interface.png)
-
 ## Docker Image
 
 ```shell
@@ -19,7 +17,8 @@ docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ArgueMapper ships two embeddable components, layered on a shared rendering core, for different needs:
 
 - **`<GraphViewer>`** — a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
-- **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It owns its own state, seeded once via `initialGraph` and reported back via `onChange`. Editing, the toolbar, the sidebar, and the AI assistant are opt-in props.
+- **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It owns its own state, seeded once via `initialGraph` and reported back via `onChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
+The same components adapt to desktops, tablets, and phones: wide screens show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
 Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistant features additionally need notistack and material-ui-confirm providers. The bundled `<GraphProviders>` sets all of these up for you, or wire your own. `<GraphViewer>` needs only the theme.
 
@@ -45,8 +44,7 @@ function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
           ref={ref}
           initialGraph={graph}
           toolbar
-          sidebar
-          side="right"
+          panels
           onChange={(updated) => console.log(updated)}
           assistant={{}}
         />
@@ -62,99 +60,41 @@ The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf,
 
 ## Tutorial
 
-Short guide for sample use cases, more details to any feature further below.
-Last state the website was in will be auto saved if you reload or close the website.
+ArgueMapper saves your work in the browser, so it is still there after reloading the page.
 
-### Wording
+### Terms
 
-- Atom-Node: A Node that contains Arguments
-- Scheme-Node: A Node that describes connections between Arguments (Support, Attack, Unknown, Rephrase, Preference). Also specifies “Argumentation scheme” (eg. Bias, ad hominem, expert opinion,…)
+- A **claim** (atom node) is a statement of the text, e.g. a premise or a conclusion.
+- A **relation** (scheme node) connects claims and says whether one supports, attacks, rephrases, or is preferred to another. Support relations can also name an argumentation scheme, e.g. expert opinion.
+- The **main claim** (major claim) is the conclusion of the whole text.
 
-### Create a new Graph
+### Create a graph from a text
 
-1. Click on the +-Button at the bottom right of the working area and choose if you want to add an Atom or a Scheme Node
-2. The Node will be selected and can be dragged around inside the working area with the mouse
-3. On rhe right in the inspector
-   a) If you select an Atom Node you can assign a Text to it and/or mark it as the major claim
-   b) If you select a Scheme Node you can assign a Scheme Type or Argumentation Scheme
-4. You can move around Nodes per drag+drop or use the Auto Layout in the lower left Toolbar
-5. You can zoom in and out using scrolling or the Zoom-Tool in the lower left Toolbar
-6. If you want to connect Nodes click on the Top connection circle of the outgoing Node and drag your mouse to the Bottom connection circle of the ingoing Node
-7. A new Scheme Node will be automatically added in the new connection
+1. Paste the text you want to analyze into the **Text** panel and choose **Start annotating**.
+2. Select a passage of the text and choose **Add claim**. If a claim is selected on the canvas, you can also add the passage as a claim that **supports** or **attacks** it, or **use it as the quote** of the selected claim.
+3. Drag from the dot of one claim to another claim to connect them. A new support relation is placed between them. Dropping the connection on the empty canvas creates a new claim there.
+4. Select a relation to switch between support and attack in the toolbar above it, or open **Details** for all options.
+5. Select a claim and mark it as the main claim with the star in its toolbar.
 
-![ingoing and outgoing nodes](./assets/ingoing-outgoing.png)
+Clicking a highlighted passage selects its claim on the canvas, and **Show in text** in the toolbar of a claim scrolls to its passage.
+The **Getting started** guide on the canvas checks off these steps as you go and offers a small finished example.
+It can be hidden and shown again in the settings.
 
-### Import and change an existing Graph
+### Panels
 
-1. On the right side of in the Inspector you click on Import, there you can click on Upload to upload a .json File containing the data for the graph (eg in arguebuf-format)
-2. If successful, you should see your graph in the working area now, Participants (if provided) can be found on the right in the Inspector
-3. If you want to change the content of Node you click on a Node to select it, on the right in the Inspector you will be able to change the Text (Atom Node) or eg the Scheme Type(Scheme Node)
-4. If you want to add new Nodes follow the previously explained steps from **a)**
+The buttons at the top right of the canvas open the closed panels.
+An open panel is switched with the tabs in its header and hidden with its close button.
 
-### Inspector
+- **Text**: the texts of the graph with their annotated passages. The plus adds another text and the pen switches to editing the title, the text, and its source.
+- **Details**: the fields of the selected elements, with rarely needed ones such as notes and IDs under **More**. While nothing is selected, it shows the notes and the authors of the graph.
+- **Assistant**: an AI assistant that can extract claims and relations from the text, if enabled.
 
-![inspector button](./assets/inspector-button.png)
+### File menu and settings
 
-Open or collapse the inspector pane.
+- **File** starts a new graph, opens a file, loads the example, and downloads the graph as Arguebuf or AIF (JSON) or as an image (PNG or JPG). Exports ask once for your name and email, which are saved in the file.
+- The gear opens the settings for the arrangement of the graph, the style of connections, the image resolution, and readable JSON files.
 
-![inspector pane](./assets/inspector-graph.png)
+### Canvas controls
 
-- By clicking on one of the Menu Cards (Import, Export, Participants, Configuration) you can open up further options, clicking again or opening another menu will collapse the current one.
-- Depending on the selected element the contents of this pane will change dynamically. The screenshot shows the view when no element is selected.
-
-- Import:
-  - Upload: Upload a file in JSON Format
-  - Load Empty: Loads an empty state, the current state gets overridden by this
-  - Load Demo: Loads a small demo argument graph containing two sample arguments and their connection to a sample main argument
-- Export:
-  - Exports current graph and other informations (eg Participants) into a downloadable file in the formats Arguebuf(.json), .aif, .png and .jpg.
-- Participants:
-  - Allows to add one or multiple participants to the current file or if a file was uploaded shows all that were documented in that file
-  - Open and Collapse each Participant via Click
-- Configuration:
-  - Edit Analyst: Allows to change the Name/E-Mail of the current analyst
-  - Layout Menu: Allows to choose the style in which the graph will be shown
-  - Edge Type Menu: Allows to change the style in which the edges(connections between Nodes) will be shown
-  - Image Scaling Factor: Changes the output image if a .jpg or .png is exported (pixel density will change)
-  - Prettify JSON: An exported JSON File will have line-breaks if activated, otherwise it will be in one line
-- Notes:
-  - Note something for or about the current graph
-
-### Edit Nodes
-
-![inspector atom](./assets/inspector-atom.png)
-
-- by clicking on a node you get further options in the Inspector field
-- by right-clicking a menu opens to Delete a Node (and Set as major claim for Atom Nodes)
-- For a single selected Atom Node you can:
-  - Edit the displayed Text inside the Node
-  - Add an “Original Text” to save it during changes
-  - “Set as major claim” sets the current selected node as the major claim of the graph, there can only be one major claim, it will be highlighted in a darker blue color
-  - Add a general Note for this Node
-  - Delete this Node
-- For a single selected Scheme Node you can:
-  - Change the Scheme Type
-  - Change the Argument Scheme
-  - Add a general Note for this Node
-  - Delete this Node
-
-### Resources
-
-![resource button](./assets/resource-button.png)
-
-Open or collapse the resource pane.
-
-![resource pane](./assets/resource-pane.png)
-
-- You can create multiple text resources and switch between multiple tabs of such resources
-- Mark some text in the textfield and with “Add Resource” a node will be created that contains this text
-- “Delete Resource” deletes the current Tab and its Text Resource
-
-### Toolbar
-
-![toolbar](./assets/toolbar.png)
-
-- Auto-layout: Automatically creates a sensible Layout for the current graph
-- Forward/Backward: go forward and backward in the history of the current graph, all changes to any element will be logged, Configuration settings will not be logged
-- Zoom in/out: Allows to zoom in or out on the graph. Also possible with mouse scrolling
-- Auto-Zoom: Automatically zooms and centers the graph to the current working field size
+The controls at the bottom left zoom, fit the graph into view, arrange it automatically, undo and redo changes (Ctrl+Z and Ctrl+Y), and add a claim without text.
+Delete selected elements with the Delete key or the trash can in their toolbar.

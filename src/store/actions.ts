@@ -3,7 +3,15 @@ import * as arguebuf from "arguebuf";
 import { enqueueSnackbar } from "notistack";
 import type { RefObject } from "react";
 import * as model from "@/model.js";
-import type { ArgueStore, SidebarSection, State } from "@/store/types.js";
+import type { ArgueStore, Panel, State } from "@/store/types.js";
+
+/** Where `addNode` places the node and what it connects it to. */
+export interface NodePlacement {
+  /** Position on the canvas, the middle of the visible canvas by default. */
+  position?: XYPosition;
+  /** Connect the node to another one, as its premise unless `incoming` is set. */
+  link?: { node: string; incoming?: boolean; scheme?: arguebuf.Scheme };
+}
 
 export interface ArgueActions {
   setState: ArgueStore["setState"];
@@ -15,18 +23,16 @@ export interface ArgueActions {
    */
   editGraph: (edit: (graph: model.Graph, state: State) => Partial<State> | void) => void;
   resetState: (graph?: model.Graph) => void;
-  setStateWithoutHistory: (updater: Partial<State> | ((state: State) => Partial<State>)) => void;
-  pauseTemporal: () => void;
-  resumeTemporal: () => void;
-  /** Show/hide a single pane, leaving the others untouched. */
-  toggleSidebarSection: (section: SidebarSection) => void;
-  /** Ensure a pane is open (no-op if already open). */
-  openSidebarSection: (section: SidebarSection) => void;
-  /** Collapse the sidebar by hiding every pane. */
-  closeSidebar: () => void;
-  /** Add the node at the given screen position (the canvas center by default) and select it. */
-  addNodeAt: (node: model.Node, screenPos?: XYPosition) => void;
-  canvasCenter: () => XYPosition;
+  /** Move the nodes without an undo step, e.g. to apply an automatic layout. */
+  arrange: (positions: Iterable<readonly [string, XYPosition]>) => void;
+  /** Show the panel, which becomes the most recently opened one. */
+  openPanel: (panel: Panel) => void;
+  /** Hide the given panels. */
+  closePanels: (...panels: Panel[]) => void;
+  /** Remove the selected elements together with the elements that depend on them. */
+  deleteSelection: () => void;
+  /** Add the node, connect it as given, and select it. */
+  addNode: (node: model.Node, placement?: NodePlacement) => void;
 }
 
 /** Start a fresh assistant conversation, which also aborts a running reply. */
@@ -34,15 +40,6 @@ export function resetConversation(store: ArgueStore): void {
   store.setState((state) => ({
     assistantMessages: [],
     assistantConversation: state.assistantConversation + 1,
-  }));
-}
-
-/** Store an edited graph together with further state, pruning the selection to its elements. */
-export function commitGraph(store: ArgueStore, graph: model.Graph, changes?: Partial<State>): void {
-  store.setState((state) => ({
-    ...changes,
-    graph,
-    selection: model.pruneSelection(graph, changes?.selection ?? state.selection),
   }));
 }
 
@@ -76,41 +73,23 @@ export function createActions(
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     const state = getState();
     const graph = state.graph.copy();
-    let changes: Partial<State> | void;
+    const issue = arguebuf.catchGraphError(() => setState({ ...edit(graph, state), graph }));
 
-    try {
-      changes = edit(graph, state);
-    } catch (error) {
-      if (!(error instanceof arguebuf.GraphError)) {
-        throw error;
-      }
-
-      const { message, hint } = error.issue;
-      enqueueSnackbar(hint === undefined ? message : `${message} ${hint}`, { variant: "warning" });
-
-      return;
+    if (issue !== undefined) {
+      enqueueSnackbar(model.describeIssue(issue), { variant: "warning" });
     }
-
-    commitGraph(store, graph, changes ?? undefined);
   };
 
-  const pauseTemporal = () => {
-    temporal.getState().pause();
-  };
+  const arrange: ArgueActions["arrange"] = (positions) => {
+    const { isTracking, pause, resume } = temporal.getState();
+    if (isTracking) pause();
+    setState((state) => {
+      const graph = state.graph.copy();
+      model.moveNodes(graph, positions);
 
-  const resumeTemporal = () => {
-    temporal.getState().resume();
-  };
-
-  const setStateWithoutHistory = (updater: Partial<State> | ((state: State) => Partial<State>)) => {
-    const wasTracking = temporal.getState().isTracking;
-    if (wasTracking) pauseTemporal();
-    if (typeof updater === "function") {
-      setState((state) => updater(state));
-    } else {
-      setState(updater);
-    }
-    if (wasTracking) resumeTemporal();
+      return { graph };
+    });
+    if (isTracking) resume();
   };
 
   const resetState = (graph?: model.Graph) => resetGraphState(store, graph);
@@ -127,33 +106,36 @@ export function createActions(
     return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   };
 
-  const addNodeAt = (node: model.Node, screenPos?: XYPosition) => {
-    const userdata = model.positioned(node, screenToFlow(screenPos ?? canvasCenter()));
+  const addNode: ArgueActions["addNode"] = (node, { position, link } = {}) => {
+    const userdata = model.positioned(node, position ?? screenToFlow(canvasCenter()));
     editGraph((graph) => {
       graph.addNode(node.with({ userdata }));
 
-      return { selection: { nodes: [node.id], edges: [] } };
+      if (link) {
+        const [source, target] = link.incoming ? [link.node, node.id] : [node.id, link.node];
+        model.link(graph, source, target, link.scheme);
+      }
+
+      return { selection: model.nodeSelection(node.id) };
     });
   };
 
-  const toggleSidebarSection = (section: SidebarSection) => {
-    setState((state) => ({
-      sidebarSections: state.sidebarSections.includes(section)
-        ? state.sidebarSections.filter((s) => s !== section)
-        : [...state.sidebarSections, section],
-    }));
-  };
-
-  const openSidebarSection = (section: SidebarSection) => {
+  const openPanel = (panel: Panel) => {
     setState((state) =>
-      state.sidebarSections.includes(section)
+      state.panels.at(-1) === panel
         ? {}
-        : { sidebarSections: [...state.sidebarSections, section] },
+        : { panels: [...state.panels.filter((current) => current !== panel), panel] },
     );
   };
 
-  const closeSidebar = () => {
-    setState({ sidebarSections: [] });
+  const closePanels = (...panels: Panel[]) => {
+    setState((state) => ({ panels: state.panels.filter((panel) => !panels.includes(panel)) }));
+  };
+
+  const deleteSelection = () => {
+    editGraph((graph, { selection }) => {
+      graph.removeElements(model.selectedIds(selection));
+    });
   };
 
   return {
@@ -161,13 +143,10 @@ export function createActions(
     getState,
     editGraph,
     resetState,
-    setStateWithoutHistory,
-    pauseTemporal,
-    resumeTemporal,
-    toggleSidebarSection,
-    openSidebarSection,
-    closeSidebar,
-    addNodeAt,
-    canvasCenter,
+    arrange,
+    openPanel,
+    closePanels,
+    deleteSelection,
+    addNode,
   };
 }

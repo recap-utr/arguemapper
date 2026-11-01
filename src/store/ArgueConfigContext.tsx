@@ -5,29 +5,24 @@ export interface ArgueConfig {
   id: string;
   /** When true, all editing is disabled (pure viewer). */
   readOnly: boolean;
-  /** Show the on-canvas toolbar (undo/redo/zoom/fit/layout). */
+  /** Show the file menu, the settings, and the undo, redo, and layout controls. */
   toolbar: boolean;
-  /** Whether the assistant is enabled (shows the assistant section). */
+  /** Show the text and inspector panels. */
+  panels: boolean;
+  /** Whether the assistant is enabled, which adds its panel. */
   assistant: boolean;
-  /** Whether the unified sidebar is enabled (shows the on-canvas section switcher). */
-  sidebar: boolean;
 }
 
 const ArgueConfigContext = createContext<ArgueConfig>({
   id: "arguemapper",
   readOnly: false,
   toolbar: false,
+  panels: false,
   assistant: false,
-  sidebar: false,
 });
 
 export const ArgueConfigProvider: Context<ArgueConfig> = ArgueConfigContext;
 
 export function useArgueConfig(): ArgueConfig {
   return useContext(ArgueConfigContext);
-}
-
-/** SVG marker id for an edge end, namespaced to the instance. */
-export function markerId(instanceId: string, selected: boolean): string {
-  return `${instanceId}-marker${selected ? "-selected" : ""}`;
 }

@@ -1,84 +1,47 @@
-import { Stack, useMediaQuery, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import * as color from "@mui/material/colors";
-import {
-  type NodeTypes as FlowNodeTypes,
-  Handle,
-  type HandleProps,
-  type NodeProps,
-  Position,
-  useConnection,
-} from "@xyflow/react";
+import { Handle, type NodeProps, type NodeTypes as FlowNodeTypes, Position } from "@xyflow/react";
 import type React from "react";
-import { useMemo } from "react";
 import type * as model from "@/model.js";
+import { useGraphRender } from "@/components/GraphRenderContext.js";
 
 const MAX_WIDTH = 300;
 const MIN_WIDTH = 100;
 const MIN_HEIGHT = 50;
 
-interface NodeHandleProps extends HandleProps {
-  isSelected?: boolean;
-  nodeId: string;
-}
-
-const NodeHandle: React.FC<NodeHandleProps> = (props) => {
-  const { isSelected, nodeId, ...handleProps } = props;
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const connection = useConnection();
-
-  // Check if this handle is being targeted during a connection
-  const isTargeted = useMemo(() => {
-    if (!connection.inProgress) return false;
-
-    if (handleProps.type === "target" && connection.toNode?.id === nodeId) {
-      return true;
-    }
-
-    if (handleProps.type === "source" && connection.fromNode?.id === nodeId) {
-      return true;
-    }
-
-    return false;
-  }, [connection, handleProps.type, nodeId]);
-
-  const baseSize = isMobile ? 15 : 10;
-  const activeSize = isMobile ? 22 : 16;
-
-  const size = isTargeted || isSelected ? activeSize : baseSize;
-
-  const style = useMemo(
-    () => ({
-      width: size,
-      height: size,
-      backgroundColor: color.grey[500],
-      borderColor: theme.palette.text.primary,
-      borderWidth: size / 5,
-      transition: "width 0.2s ease, height 0.2s ease, border-width 0.2s ease",
-    }),
-    [size, theme.palette.text.primary],
-  );
-
-  return <Handle {...handleProps} style={style} />;
-};
+/** Handle that grows while it is a connection target, see the classes React Flow assigns. */
+const NodeHandle = styled(Handle, { shouldForwardProp: (prop) => prop !== "size" })<{
+  size: number;
+}>(({ theme, size }) => ({
+  width: size,
+  height: size,
+  backgroundColor: color.grey[500],
+  borderColor: theme.palette.text.primary,
+  borderWidth: size / 5,
+  transition: theme.transitions.create(["width", "height", "background-color"]),
+  "&.connectingto, &.clickconnecting": { width: size * 1.6, height: size * 1.6 },
+  "&.valid": { backgroundColor: theme.palette.success.main },
+}));
 
 /** Node of the canvas, colored like arguebuf renders it. */
-const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ id, data, selected }) => {
-  const theme = useTheme();
-  const { node, isMajorClaim, connecting } = data;
-  const background = connecting ? color.orange[500] : node.color(isMajorClaim, false).bg;
-  const borderColor = selected ? theme.palette.text.primary : background;
+const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ data, selected }) => {
+  const { coarse } = useGraphRender();
+  const { node, isMajorClaim } = data;
+  const { bg } = node.color(isMajorClaim, false);
+  const size = (coarse ? 16 : 10) * (selected ? 1.4 : 1);
 
   return (
-    <Stack
-      direction="column"
+    <Box
       sx={{
+        display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
-        background,
+        background: bg,
         color: "white",
         padding: 1,
         borderRadius: 2,
-        borderColor,
+        borderColor: selected ? "text.primary" : bg,
         borderStyle: "solid",
         borderWidth: 2,
         minWidth: MIN_WIDTH,
@@ -87,10 +50,10 @@ const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ id, data, select
         textAlign: "center",
       }}
     >
-      <NodeHandle type="source" position={Position.Top} isSelected={selected} nodeId={id} />
+      <NodeHandle type="source" position={Position.Top} size={size} />
       <div>{node.label}</div>
-      <NodeHandle type="target" position={Position.Bottom} isSelected={selected} nodeId={id} />
-    </Stack>
+      <NodeHandle type="target" position={Position.Bottom} size={size} />
+    </Box>
   );
 };
 

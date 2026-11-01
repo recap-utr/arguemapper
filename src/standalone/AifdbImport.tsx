@@ -1,52 +1,64 @@
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, TextField } from "@mui/material";
-import { useCallback, useState } from "react";
-import * as convert from "@/services/convert.js";
-import { useArgueActions } from "@/store.js";
+import { faCloudArrowDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import type React from "react";
+import { useState } from "react";
+import { IconMenuItem } from "@/components/IconMenuItem.js";
+import { useReplaceGraph } from "@/components/useReplaceGraph.js";
 
-/** Standalone-only import source: pulls an argument map from aifdb.org via the dev/server proxy. */
+/** Standalone-only file menu entry: opens an argument map of aifdb.org via the dev/server proxy. */
 export const AifdbImport: React.FC = () => {
-  const { resetState } = useArgueActions();
-  const [aifdbId, setAifdbId] = useState<number | undefined>(undefined);
+  const [open, setOpen] = useState(false);
+  const [aifdbId, setAifdbId] = useState("");
+  const replaceGraph = useReplaceGraph();
 
-  const handleImport = useCallback(async () => {
-    if (!aifdbId) return;
-
+  const handleImport = async () => {
     const response = await fetch(`/api/aifdb/json/${aifdbId}`);
+
     if (!response.ok) {
-      alert(
-        `Failed to fetch AIFdb.org data for ID ${aifdbId}, possibly due to CORS: ${response.statusText} (${response.status})`,
+      enqueueSnackbar(
+        `Failed to fetch map ${aifdbId} from AIFdb.org: ${response.statusText} (${response.status})`,
+        { variant: "error" },
       );
+
+      return;
     }
 
-    resetState(convert.importGraph(await response.json()));
-    setAifdbId(undefined);
-  }, [aifdbId, resetState]);
+    replaceGraph(await response.json());
+    setOpen(false);
+    setAifdbId("");
+  };
 
   return (
     <>
-      <TextField
-        label="AIFdb.org ID"
-        type="number"
-        fullWidth
-        variant="outlined"
-        value={aifdbId ?? ""}
-        onChange={(e) => {
-          const value = e.target.value;
-          setAifdbId(value === "" ? undefined : Number.parseInt(value, 10));
-        }}
-        helperText="Enter the numeric ID of an argument map from aifdb.org"
-      />
-      <Button
-        startIcon={<FontAwesomeIcon icon={faDownload} />}
-        variant="contained"
-        onClick={handleImport}
-        disabled={!aifdbId}
-        fullWidth
-      >
-        Import from AIFdb.org
-      </Button>
+      <IconMenuItem icon={faCloudArrowDown} text="Open from AIFdb…" onClick={() => setOpen(true)} />
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle>Open from AIFdb</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Map ID"
+            type="number"
+            fullWidth
+            margin="dense"
+            value={aifdbId}
+            onChange={(event) => setAifdbId(event.target.value)}
+            helperText="The numeric ID of an argument map on aifdb.org"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" disabled={aifdbId === ""} onClick={() => void handleImport()}>
+            Open
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

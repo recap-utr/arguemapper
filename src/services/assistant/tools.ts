@@ -2,7 +2,7 @@ import { jsonSchema, tool, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { z } from "zod";
 import * as model from "@/model.js";
-import { type ArgueStore, commitGraph } from "@/store.js";
+import type { ArgueStore } from "@/store.js";
 
 const wikipediaLanguage = z
   .string()
@@ -254,7 +254,8 @@ export function createTools(store: ArgueStore): ToolSet {
           }
         }
 
-        commitGraph(store, next, {
+        store.setState({
+          graph: next,
           shouldLayout:
             state.shouldLayout || result.created.length > 0 || result.removed.length > 0,
         });

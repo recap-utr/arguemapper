@@ -1,6 +1,6 @@
 import { type Edge, type Node, useReactFlow, type XYPosition } from "@xyflow/react";
 import { useEffect } from "react";
-import type * as model from "@/model.js";
+import * as model from "@/model.js";
 import { layout } from "@/services/layout.js";
 
 export interface AutoLayoutOptions {
@@ -50,7 +50,7 @@ export function useAutoLayout({
 
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {
-      void flow.fitView();
+      void flow.fitView(model.fitViewOptions);
       setShouldFitView(false);
     }
   }, [shouldLayout, shouldFitView, flow, setShouldFitView]);

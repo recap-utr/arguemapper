@@ -10,12 +10,6 @@ export function importGraph(obj: arguebuf.load.JsonGraph, onIssue?: arguebuf.Rep
   return arguebuf.load.json(obj, { codecs: model.codecs, onIssue });
 }
 
-// persistence and `onChange` serialize the same graph after every change
-const arguebufExports = new WeakMap<
-  model.Graph,
-  { analyst: arguebuf.Analyst; json: arguebuf.dump.Formats["arguebuf"] }
->();
-
 /** Serialize the graph, the arguebuf format also records the analyst. */
 export function exportGraph<F extends ExportFormat>(
   graph: model.Graph,
@@ -31,12 +25,6 @@ export function exportGraph(
     return arguebuf.dump.json(graph, "aif");
   }
 
-  const cached = arguebufExports.get(graph);
-
-  if (cached?.analyst === analyst) {
-    return cached.json;
-  }
-
   const known = Object.values(graph.analysts).some(
     (x) => x.name === analyst.name && x.email === analyst.email,
   );
@@ -50,10 +38,7 @@ export function exportGraph(
     result.addAnalyst(analyst);
   }
 
-  const json = arguebuf.dump.json(result, { codecs: model.codecs });
-  arguebufExports.set(graph, { analyst, json });
-
-  return json;
+  return arguebuf.dump.json(result, { codecs: model.codecs });
 }
 
 function generateFilename(): string {
@@ -81,7 +66,14 @@ export const downloadImage = async (
   format: ImgFormat,
   options: { element: HTMLElement; pixelRatio: number },
 ): Promise<void> => {
-  const excludedClasses = ["react-flow__handle", "arguemapper-hidden", "react-flow__attribution"];
+  // overlays such as controls and toolbars are not part of the graph
+  const excludedClasses = [
+    "react-flow__handle",
+    "react-flow__attribution",
+    "react-flow__panel",
+    "react-flow__node-toolbar",
+    "react-flow__edge-toolbar",
+  ];
   const func = imgFormatMap[format];
 
   const href = await func(options.element, {

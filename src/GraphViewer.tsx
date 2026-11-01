@@ -1,4 +1,5 @@
 import {
+  type EdgeMouseHandler,
   type NodeMouseHandler,
   type OnSelectionChangeFunc,
   ReactFlowProvider,
@@ -27,7 +28,7 @@ export interface GraphViewerProps {
   /** Show the zoom/fit controls overlay. */
   controls?: boolean;
   onNodeClick?: NodeMouseHandler<model.CanvasNode>;
-  onEdgeClick?: (event: React.MouseEvent, edge: model.CanvasEdge) => void;
+  onEdgeClick?: EdgeMouseHandler<model.CanvasEdge>;
   onSelectionChange?: OnSelectionChangeFunc;
   style?: React.CSSProperties;
   className?: string;
@@ -130,13 +131,11 @@ function GraphViewerInner({
       edgeStyle={edgeStyle}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onInit={() => void flow.fitView()}
       onSelectionChange={onSelectionChange}
       onNodeClick={onNodeClick}
       onEdgeClick={onEdgeClick}
       nodesDraggable
       nodesConnectable={false}
-      deleteKeyCode={null}
       minimap={minimap}
       controls={controls}
     />

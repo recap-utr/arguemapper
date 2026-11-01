@@ -18,17 +18,17 @@ import {
   ArgueConfigProvider,
   ArgueStoreProvider,
   createArgueStore,
+  type EditorSlots,
   FlowWrapperProvider,
-  type InspectorSlots,
-  InspectorSlotsProvider,
   InstanceFocusProvider,
   resetGraphState,
+  SlotsProvider,
   useFocusWithin,
 } from "@/store.js";
 
 export type GraphEditorAssistantConfig = AssistantOptions;
 
-const EMPTY_SLOTS: InspectorSlots = {};
+const EMPTY_SLOTS: EditorSlots = {};
 
 export interface GraphEditorProps extends React.PropsWithChildren {
   /** Seed graph (arguebuf JSON). Used unless persisted state exists for `persistKey`. */
@@ -37,22 +37,21 @@ export interface GraphEditorProps extends React.PropsWithChildren {
   onChange?: (graph: arguebuf.GraphJson) => void;
   /** Disable all editing — pure viewer. */
   readOnly?: boolean;
-  /** Show the on-canvas toolbar (undo/redo/zoom/fit/layout). */
+  /** Show the file menu, the settings, and the undo, redo, and layout controls. */
   toolbar?: boolean;
-  /** Show the unified sidebar (activity rail + collapsible panel). */
-  sidebar?: boolean;
-  /** Which side the sidebar docks to. Defaults to `"right"`. */
-  side?: "left" | "right";
-  /** Show the standalone header bar. */
-  header?: boolean;
+  /**
+   * Show the panels for the text and the details of the selection, and the assistant if enabled.
+   * Wide screens show them beside the canvas, narrow ones below it.
+   */
+  panels?: boolean;
   /** Enable the AI assistant (absent => disabled). */
   assistant?: GraphEditorAssistantConfig;
   /** Persist to localStorage under this key (absent => no persistence). */
   persistKey?: string;
   /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
   id?: string;
-  /** Host-provided content injected into the inspector accordions (e.g. extra import sources). */
-  inspectorSlots?: InspectorSlots;
+  /** Host content added to the file menu and the settings. */
+  slots?: EditorSlots;
   style?: React.CSSProperties;
   className?: string;
   ref?: Ref<GraphEditorHandle>;
@@ -77,13 +76,11 @@ export function GraphEditor({
   onChange,
   readOnly = false,
   toolbar = false,
-  sidebar = false,
-  side = "right",
-  header = false,
+  panels = false,
   assistant,
   persistKey,
   id: idProp,
-  inspectorSlots,
+  slots,
   style,
   className,
   children,
@@ -97,7 +94,6 @@ export function GraphEditor({
     createArgueStore({
       initialGraph,
       persistKey,
-      side,
       assistantConfig: assistant,
       assistantApiKey: assistant?.apiKey,
     }),
@@ -111,8 +107,8 @@ export function GraphEditor({
   const activeAssistant = readOnly ? undefined : assistant;
   const assistantEnabled = activeAssistant != null;
   const config = useMemo(
-    () => ({ id, readOnly, toolbar, assistant: assistantEnabled, sidebar }),
-    [id, readOnly, toolbar, assistantEnabled, sidebar],
+    () => ({ id, readOnly, toolbar, panels, assistant: assistantEnabled }),
+    [id, readOnly, toolbar, panels, assistantEnabled],
   );
 
   // Reads the latest onChange, so the subscription below never re-subscribes when the host
@@ -165,14 +161,10 @@ export function GraphEditor({
           <FlowWrapperProvider value={wrapperRef}>
             <ArgueConfigProvider value={config}>
               <InstanceFocusProvider value={focused}>
-                <InspectorSlotsProvider value={inspectorSlots ?? EMPTY_SLOTS}>
-                  <GraphEditorLayout
-                    header={header}
-                    sidebar={sidebar}
-                    assistant={activeAssistant}
-                  />
+                <SlotsProvider value={slots ?? EMPTY_SLOTS}>
+                  <GraphEditorLayout assistant={activeAssistant} />
                   {children}
-                </InspectorSlotsProvider>
+                </SlotsProvider>
               </InstanceFocusProvider>
             </ArgueConfigProvider>
           </FlowWrapperProvider>

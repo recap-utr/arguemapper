@@ -24,6 +24,14 @@ const buildTheme = (mode: "dark" | "light") =>
       //   main: color.yellow[500],
       // },
     },
+    components: {
+      MuiListSubheader: {
+        styleOverrides: {
+          // sticky headers take on the elevation tint of the surface they are on, e.g. a menu
+          sticky: { backgroundImage: "var(--Paper-overlay)" },
+        },
+      },
+    },
   });
 
 const themes = { dark: buildTheme("dark"), light: buildTheme("light") };

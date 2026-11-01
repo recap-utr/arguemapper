@@ -1,4 +1,10 @@
-import type { Edge as FlowEdge, Node as FlowNode, XYPosition } from "@xyflow/react";
+import {
+  type Edge as FlowEdge,
+  type FitViewOptions,
+  MarkerType,
+  type Node as FlowNode,
+  type XYPosition,
+} from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import { z } from "zod";
 
@@ -19,12 +25,11 @@ export interface NodeUserdata extends ElementUserdata {
   };
 }
 
-const elementUserdata: z.ZodType<ElementUserdata> = z.looseObject({
-  notes: z.string().optional(),
-});
+// the interfaces document the userdata, so the schemas are checked against them
+const elementSchema = z.looseObject({ notes: z.string().optional() });
+const elementUserdata: z.ZodType<ElementUserdata> = elementSchema;
 
-const nodeUserdata: z.ZodType<NodeUserdata> = z.looseObject({
-  notes: z.string().optional(),
+const nodeUserdata: z.ZodType<NodeUserdata> = elementSchema.extend({
   arguemapper: z.looseObject({ position: z.object({ x: z.number(), y: z.number() }) }).optional(),
   assistant: z
     .looseObject({
@@ -72,20 +77,17 @@ export const newGraph = (): Graph => new arguebuf.Graph<Schema>({ userdata: {} }
 
 export const newAtom = (): AtomNode => new arguebuf.AtomNode({ text: "" });
 
-export const newScheme = (): SchemeNode => new arguebuf.SchemeNode();
-
 /** Canvas element of a graph node, which is part of its data together with its highlights. */
-export type CanvasNode = FlowNode<
-  { node: Node; isMajorClaim: boolean; connecting: boolean },
-  Node["type"]
->;
+export type CanvasNode = FlowNode<{ node: Node; isMajorClaim: boolean }, Node["type"]>;
 export type CanvasEdge = FlowEdge;
-export type CanvasElement = CanvasNode | CanvasEdge;
 
 /** Size of a node as measured by the canvas. */
 export type Dimensions = NonNullable<FlowNode["measured"]>;
 
 const ORIGIN: XYPosition = { x: 0, y: 0 };
+
+/** Small graphs are fitted into view without enlarging them. */
+export const fitViewOptions: FitViewOptions = { maxZoom: 1 };
 
 export const position = (node: Node): XYPosition => node.userdata.arguemapper?.position ?? ORIGIN;
 
@@ -119,6 +121,17 @@ export function updateUserdata(graph: Graph, id: string, userdata: NodeUserdata)
   }
 }
 
+/** Set the notes of the node or edge with the id, or of the graph without an id. */
+export function setNotes(graph: Graph, id: string | undefined, notes: string): void {
+  if (id === undefined) {
+    graph.userdata = { ...graph.userdata, notes };
+  } else if (Object.hasOwn(graph.edges, id)) {
+    graph.updateEdge(id, { userdata: { ...graph.edges[id].userdata, notes } });
+  } else {
+    updateUserdata(graph, id, { ...graph.nodes[id].userdata, notes });
+  }
+}
+
 /** Move the nodes of the graph to the positions, unknown ids are skipped. */
 export function moveNodes(graph: Graph, positions: Iterable<readonly [string, XYPosition]>): void {
   for (const [id, value] of positions) {
@@ -126,6 +139,27 @@ export function moveNodes(graph: Graph, positions: Iterable<readonly [string, XY
       updateUserdata(graph, id, positioned(graph.nodes[id], value));
     }
   }
+}
+
+/**
+ * Connect the nodes, atoms through a new scheme node with the given scheme (support by default),
+ * which is placed between them and returned.
+ */
+export function link(
+  graph: Graph,
+  source: string,
+  target: string,
+  scheme: arguebuf.Scheme = arguebuf.defaultScheme("support"),
+): SchemeNode | undefined {
+  const node = graph.link(source, target, { scheme });
+
+  if (node !== undefined) {
+    const from = position(graph.nodes[source]);
+    const to = position(graph.nodes[target]);
+    moveNodes(graph, [[node.id, { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 }]]);
+  }
+
+  return node;
 }
 
 /** Make the atom the major claim, or unset it if it already is. */
@@ -144,6 +178,9 @@ export interface Selection {
 
 export const emptySelection: Selection = { nodes: [], edges: [] };
 
+/** Selection of the given nodes only. */
+export const nodeSelection = (...nodes: string[]): Selection => ({ nodes, edges: [] });
+
 /** The resource to show, the selected one if it exists and the first one otherwise. */
 export const shownResource = (graph: Graph, selected: string | undefined): string | undefined =>
   selected !== undefined && Object.hasOwn(graph.resources, selected)
@@ -160,35 +197,38 @@ export function pruneSelection(graph: Graph, selection: Selection): Selection {
     : { nodes, edges };
 }
 
-export type ElementType = "atom" | "scheme" | "edge" | "graph";
-export type SelectionType = ElementType | "multiple";
+/** What is selected, "schemes" are one or more scheme nodes that are edited together. */
+export type SelectionType = "graph" | "atom" | "schemes" | "edge" | "multiple";
 
 export function selectionType(graph: Graph, { nodes, edges }: Selection): SelectionType {
-  if (nodes.length === 0 && edges.length === 0) {
-    return "graph";
+  if (nodes.length === 0) {
+    return edges.length === 0 ? "graph" : edges.length === 1 ? "edge" : "multiple";
   }
 
-  if (nodes.length === 0 && edges.length === 1) {
-    return "edge";
+  if (edges.length === 0 && nodes.every((id) => graph.nodes[id]?.type === "scheme")) {
+    return "schemes";
   }
 
-  if (nodes.length === 1 && edges.length === 0) {
-    return graph.nodes[nodes[0]]?.type ?? "graph";
-  }
-
-  return "multiple";
+  return nodes.length === 1 && edges.length === 0 ? "atom" : "multiple";
 }
 
-export const elementType = (element?: CanvasElement): ElementType =>
-  element === undefined ? "graph" : "source" in element ? "edge" : element.data.node.type;
+/** The node if it is the only selected element. */
+export const selectedNode = (graph: Graph, { nodes, edges }: Selection): Node | undefined =>
+  nodes.length === 1 && edges.length === 0 ? graph.nodes[nodes[0]] : undefined;
 
-/** Remove the selected elements, ids that are no longer part of the graph are skipped. */
-export function removeElements(graph: Graph, { nodes, edges }: Selection): void {
-  graph.removeElements([
-    ...edges.filter((id) => Object.hasOwn(graph.edges, id)),
-    ...nodes.filter((id) => Object.hasOwn(graph.nodes, id)),
-  ]);
+/** The value shared by all items, otherwise undefined. */
+export function shared<T>(values: readonly T[]): T | undefined {
+  const [first] = values;
+
+  return values.every((value) => value === first) ? first : undefined;
 }
+
+/** Message of the issue for the user, followed by its hint. */
+export const describeIssue = ({ message, hint }: arguebuf.Issue): string =>
+  hint === undefined ? message : `${message} ${hint}`;
+
+/** Ids of all selected elements. */
+export const selectedIds = ({ nodes, edges }: Selection): string[] => [...nodes, ...edges];
 
 /** Canvas elements by id together with the inputs they were created from. */
 export type CanvasCache<T> = Map<
@@ -229,13 +269,11 @@ export interface CanvasView {
   measured: Readonly<Record<string, Dimensions>>;
   /** Positions of the nodes being dragged, which the graph receives when the drag ends. */
   dragged: Readonly<Record<string, XYPosition>>;
-  /** Node whose handle started a click connection. */
-  connecting?: string;
 }
 
 export function canvasNodes(
   graph: Graph,
-  { selection, measured, dragged, connecting }: CanvasView,
+  { selection, measured, dragged }: CanvasView,
   cache: CanvasCache<CanvasNode>,
 ): CanvasNode[] {
   const selected = new Set(selection.nodes);
@@ -249,22 +287,20 @@ export function canvasNodes(
       measured[node.id],
       dragged[node.id],
       graph.majorClaim === node.id,
-      connecting === node.id,
     ],
     (node) => ({
       id: node.id,
       type: node.type,
       position: dragged[node.id] ?? position(node),
-      data: {
-        node,
-        isMajorClaim: graph.majorClaim === node.id,
-        connecting: connecting === node.id,
-      },
+      data: { node, isMajorClaim: graph.majorClaim === node.id },
       selected: selected.has(node.id),
       measured: measured[node.id],
     }),
   );
 }
+
+/** Arrowhead of the edges, colored like their line. */
+const ARROW = { type: MarkerType.ArrowClosed, color: "context-stroke", width: 15, height: 15 };
 
 export function canvasEdges(
   edges: Graph["edges"],
@@ -277,7 +313,13 @@ export function canvasEdges(
     edges,
     cache,
     (edge) => [edge, selected.has(edge.id)],
-    ({ id, source, target }) => ({ id, source, target, selected: selected.has(id) }),
+    ({ id, source, target }) => ({
+      id,
+      source,
+      target,
+      selected: selected.has(id),
+      markerEnd: ARROW,
+    }),
   );
 }
 

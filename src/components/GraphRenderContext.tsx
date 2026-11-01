@@ -1,5 +1,5 @@
-import { type Context, createContext, useContext } from "react";
-import * as model from "@/model.js";
+import { type Context, createContext, type ReactNode, useContext } from "react";
+import type * as model from "@/model.js";
 
 /**
  * The minimal slice the node/edge renderers need to draw a graph. Supplying it via context (rather
@@ -7,9 +7,11 @@ import * as model from "@/model.js";
  * store-backed editor and in the store-less `GraphViewer`.
  */
 export interface GraphRender {
-  /** Instance id; namespaces the SVG arrow markers so multiple graphs on a page don't collide. */
-  instanceId: string;
   edgeStyle: model.EdgeStyle;
+  /** Whether the primary pointer is coarse (touch), which enlarges handles and edges. */
+  coarse: boolean;
+  /** Content of the toolbar of a selected edge, none if absent. */
+  edgeToolbar?: (edgeId: string) => ReactNode;
 }
 
 const GraphRenderContext = createContext<GraphRender | null>(null);

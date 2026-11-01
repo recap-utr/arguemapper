@@ -31,35 +31,30 @@ export function resolveAssistantConfig({
   };
 }
 
-/** A pane in the unified sidebar; any number can be open at once, stacked in canonical order. */
-export type SidebarSection =
-  | "inspector"
-  | "resources"
-  | "assistant"
-  | "importExport"
-  | "participants"
-  | "configuration";
+/**
+ * A panel beside the canvas.
+ * Wide screens show the text on the left and the inspector or assistant on the right,
+ * narrow screens show the last opened panel below the canvas.
+ */
+export type Panel = "text" | "inspector" | "assistant";
 
 export interface State {
   analyst: arguebuf.Analyst;
   edgeStyle: model.EdgeStyle;
-  firstVisit: boolean;
+  /** Whether the getting started guide is shown while its steps are not done. */
+  guide: boolean;
   /** The argument graph, the single source of truth of the canvas. */
   graph: model.Graph;
-  headerHeight: number;
   imageScale: number;
   layoutAlgorithm: model.LayoutAlgorithm;
   prettifyJson: boolean;
-  /** Id of the resource shown in the resources pane, the first one if it is missing. */
+  /** Id of the resource shown in the text panel, the first one if it is missing. */
   selectedResource?: string;
   selection: model.Selection;
   shouldLayout: boolean;
   shouldFitView: boolean;
-  /** Which side of the canvas the sidebar is docked to. */
-  sidebarSide: "left" | "right";
-  /** The set of open panes; rendered top-to-bottom in canonical section order. Empty => collapsed. */
-  sidebarSections: SidebarSection[];
-  sidebarWidth: number;
+  /** The open panels, the last one was opened most recently. */
+  panels: Panel[];
   assistantConfig: AssistantConfig;
   /** API key for the assistant; held in memory only (never persisted). */
   assistantApiKey: string;
@@ -72,7 +67,8 @@ export interface State {
   assistantConversation: number;
 }
 
-export type ZundoState = Pick<State, "graph" | "selectedResource" | "selection">;
+/** Undo and redo revert edits of the graph, not the selection or other view state. */
+export type ZundoState = Pick<State, "graph">;
 
 /** A per-instance store: the zustand vanilla store plus the zundo temporal (undo/redo) handle. */
 export type ArgueStore = StoreApi<State> & {

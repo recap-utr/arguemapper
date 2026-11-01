@@ -15,7 +15,7 @@ export const ClearCacheButton: React.FC = () => {
       <Button
         color="error"
         startIcon={<FontAwesomeIcon icon={faTrash} />}
-        variant="contained"
+        variant="outlined"
         onClick={() => {
           void confirm().then(({ confirmed }) => {
             if (confirmed) {
@@ -25,7 +25,7 @@ export const ClearCacheButton: React.FC = () => {
           });
         }}
       >
-        Clear cache
+        Reset the app
       </Button>
     </Tooltip>
   );

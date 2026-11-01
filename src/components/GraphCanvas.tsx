@@ -1,30 +1,33 @@
-import { useTheme } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import {
   ConnectionLineType,
   Controls,
   type EdgeMouseHandler,
+  type IsValidConnection,
   MiniMap,
   type NodeMouseHandler,
   type OnConnect,
   type OnConnectEnd,
-  type OnConnectStart,
   type OnEdgesChange,
-  type OnInit,
   type OnNodesChange,
   type OnSelectionChangeFunc,
   ReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { type RefObject, useMemo } from "react";
+import { type ReactNode, type RefObject, useMemo } from "react";
 import * as model from "@/model.js";
-import { markerId } from "@/store.js";
 import { EdgeTypes } from "@/components/EdgeTypes.js";
 import { GraphRenderProvider } from "@/components/GraphRenderContext.js";
-import { Marker, MarkerDefinition } from "@/components/Marker.js";
 import { NodeTypes } from "@/components/NodeTypes.js";
 
+const connectionLineTypes: Record<model.EdgeStyle, ConnectionLineType> = {
+  bezier: ConnectionLineType.Bezier,
+  straight: ConnectionLineType.Straight,
+  step: ConnectionLineType.SmoothStep,
+};
+
 export interface GraphCanvasProps extends React.PropsWithChildren {
-  /** Instance id; namespaces the ReactFlow instance and its SVG markers. */
+  /** Instance id; namespaces the ReactFlow instance. */
   id: string;
   nodes: model.CanvasNode[];
   edges: model.CanvasEdge[];
@@ -36,22 +39,18 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
   onNodesChange?: OnNodesChange<model.CanvasNode>;
   onEdgesChange?: OnEdgesChange<model.CanvasEdge>;
   onConnect?: OnConnect;
-  onInit?: OnInit<model.CanvasNode, model.CanvasEdge>;
+  onConnectEnd?: OnConnectEnd;
+  isValidConnection?: IsValidConnection;
   onSelectionChange?: OnSelectionChangeFunc;
   onNodeClick?: NodeMouseHandler<model.CanvasNode>;
   onEdgeClick?: EdgeMouseHandler<model.CanvasEdge>;
-  onNodeContextMenu?: NodeMouseHandler<model.CanvasNode>;
-  onEdgeContextMenu?: EdgeMouseHandler<model.CanvasEdge>;
-  onPaneContextMenu?: (event: React.MouseEvent | MouseEvent) => void;
   onNodeDoubleClick?: NodeMouseHandler<model.CanvasNode>;
   onEdgeDoubleClick?: EdgeMouseHandler<model.CanvasEdge>;
-  onClickConnectStart?: OnConnectStart;
-  onClickConnectEnd?: OnConnectEnd;
+  /** Content of the toolbar of a selected edge. */
+  edgeToolbar?: (edgeId: string) => ReactNode;
 
   nodesDraggable?: boolean;
   nodesConnectable?: boolean;
-  /** ReactFlow `deleteKeyCode`; pass `null` to disable deletion. */
-  deleteKeyCode?: string | string[] | null;
 
   /** Show the ReactFlow minimap overlay. */
   minimap?: boolean;
@@ -62,7 +61,8 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
 /**
  * Presentational ReactFlow canvas shared by the editor (`Graph`) and the read-only `GraphViewer`.
  * It owns nothing: data and behaviour come in as props, and it provides the {@link GraphRenderProvider}
- * the node/edge renderers depend on. Overlays (toolbar, menus, …) are passed as children.
+ * the node/edge renderers depend on. Overlays (panels, toolbars, …) are passed as children.
+ * Touch input enlarges the interactive elements and tolerates small movements of taps.
  */
 export function GraphCanvas({
   id,
@@ -70,88 +70,66 @@ export function GraphCanvas({
   edges,
   edgeStyle,
   wrapperRef,
-  onNodesChange,
-  onEdgesChange,
-  onConnect,
-  onInit,
-  onSelectionChange,
-  onNodeClick,
-  onEdgeClick,
-  onNodeContextMenu,
-  onEdgeContextMenu,
-  onPaneContextMenu,
-  onNodeDoubleClick,
-  onEdgeDoubleClick,
-  onClickConnectStart,
-  onClickConnectEnd,
-  nodesDraggable,
-  nodesConnectable,
-  deleteKeyCode,
+  edgeToolbar,
   minimap = false,
   controls = false,
   children,
+  ...props
 }: GraphCanvasProps): React.JSX.Element {
   const theme = useTheme();
-
-  const connectionLineType = useMemo(() => {
-    switch (edgeStyle) {
-      case "bezier":
-        return ConnectionLineType.Bezier;
-      case "straight":
-        return ConnectionLineType.Straight;
-      case "step":
-        return ConnectionLineType.SmoothStep;
-    }
-  }, [edgeStyle]);
+  const coarse = useMediaQuery("(pointer: coarse)");
+  const buttonSize = coarse ? 44 : 32;
 
   const renderValue = useMemo(
-    () => ({ instanceId: id, edgeStyle }),
-    [id, edgeStyle],
+    () => ({ edgeStyle, coarse, edgeToolbar }),
+    [edgeStyle, coarse, edgeToolbar],
   );
 
   return (
     <GraphRenderProvider value={renderValue}>
-      <ReactFlow<model.CanvasNode, model.CanvasEdge>
-        id={id}
-        ref={wrapperRef}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onInit={onInit}
-        onSelectionChange={onSelectionChange}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        onNodeContextMenu={onNodeContextMenu}
-        onEdgeContextMenu={onEdgeContextMenu}
-        onPaneContextMenu={onPaneContextMenu}
-        onNodeDoubleClick={onNodeDoubleClick}
-        onEdgeDoubleClick={onEdgeDoubleClick}
-        onClickConnectStart={onClickConnectStart}
-        onClickConnectEnd={onClickConnectEnd}
-        nodesDraggable={nodesDraggable}
-        nodesConnectable={nodesConnectable}
-        deleteKeyCode={deleteKeyCode}
-        selectNodesOnDrag
-        nodeTypes={NodeTypes}
-        edgeTypes={EdgeTypes}
-        minZoom={0.01}
-        maxZoom={3}
-        elevateEdgesOnSelect
-        onlyRenderVisibleElements={nodes.length > 100}
-        connectionLineType={connectionLineType}
-        attributionPosition="bottom-center"
-        colorMode={theme.palette.mode}
+      <Box
+        sx={{
+          width: 1,
+          height: 1,
+          "--xy-controls-button-background-color": theme.palette.background.paper,
+          "--xy-controls-button-background-color-hover": theme.palette.action.hover,
+          "--xy-controls-button-color": theme.palette.text.primary,
+          "--xy-controls-button-border-color": theme.palette.divider,
+          "& .react-flow__controls-button": {
+            width: buttonSize,
+            height: buttonSize,
+            "& svg": { maxWidth: buttonSize / 2.5, maxHeight: buttonSize / 2.5 },
+          },
+        }}
       >
-        <MarkerDefinition>
-          <Marker id={markerId(id, false)} />
-          <Marker id={markerId(id, true)} color={theme.palette.text.primary} />
-        </MarkerDefinition>
-        {minimap && <MiniMap pannable zoomable />}
-        {controls && <Controls showInteractive={false} />}
-        {children}
-      </ReactFlow>
+        <ReactFlow<model.CanvasNode, model.CanvasEdge>
+          id={id}
+          ref={wrapperRef}
+          nodes={nodes}
+          edges={edges}
+          {...props}
+          deleteKeyCode={null}
+          fitView
+          fitViewOptions={model.fitViewOptions}
+          selectNodesOnDrag
+          nodeTypes={NodeTypes}
+          edgeTypes={EdgeTypes}
+          minZoom={0.01}
+          maxZoom={3}
+          elevateEdgesOnSelect
+          onlyRenderVisibleElements={nodes.length > 100}
+          connectionLineType={connectionLineTypes[edgeStyle]}
+          connectionRadius={coarse ? 40 : 20}
+          nodeClickDistance={coarse ? 10 : 2}
+          paneClickDistance={coarse ? 10 : 2}
+          attributionPosition="bottom-center"
+          colorMode={theme.palette.mode}
+        >
+          {minimap && <MiniMap pannable zoomable />}
+          {controls && <Controls showInteractive={false} fitViewOptions={model.fitViewOptions} />}
+          {children}
+        </ReactFlow>
+      </Box>
     </GraphRenderProvider>
   );
 }
