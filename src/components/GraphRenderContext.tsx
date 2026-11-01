@@ -12,6 +12,8 @@ export interface GraphRender {
   coarse: boolean;
   /** Content of the toolbar of a selected edge, none if absent. */
   edgeToolbar?: (edgeId: string) => ReactNode;
+  /** Save the text of an atom edited on the canvas and stop editing it, absent in viewers. */
+  finishEditing?: (id: string, text: string) => void;
 }
 
 const GraphRenderContext = createContext<GraphRender | null>(null);

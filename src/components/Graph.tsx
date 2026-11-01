@@ -5,11 +5,13 @@ import {
   type EdgeChange,
   type IsValidConnection,
   type NodeChange,
+  type NodeMouseHandler,
   type NodePositionChange,
   type OnConnect,
   type OnConnectEnd,
   type OnEdgesChange,
   type OnNodesChange,
+  type OnReconnect,
   Panel,
   useReactFlow,
   type XYPosition,
@@ -24,12 +26,14 @@ import { PanelToggles } from "@/components/canvas/PanelToggles.js";
 import { SelectionToolbar, ToolbarButton, ToolbarPaper } from "@/components/canvas/SelectionToolbar.js";
 import { SettingsButton } from "@/components/canvas/SettingsDialog.js";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
+import type { NodePlacement } from "@/store/actions.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import * as model from "@/model.js";
 import {
   useArgueActions,
   useArgueConfig,
   useFlowWrapperRef,
+  type State,
   useInstanceFocused,
   useStore,
 } from "@/store.js";
@@ -55,6 +59,17 @@ const EdgeActions: React.FC = () => {
 };
 
 const renderEdgeActions = () => <EdgeActions />;
+
+/** Connect the nodes and select the scheme node inserted between atoms. */
+function linkAndSelect(
+  graph: model.GraphDraft,
+  source: string,
+  target: string,
+): Pick<State, "selection"> | undefined {
+  const scheme = model.link(graph, source, target);
+
+  return scheme && { selection: model.nodeSelection(scheme.id) };
+}
 
 export default function Graph(): React.JSX.Element {
   const {
@@ -83,11 +98,13 @@ export default function Graph(): React.JSX.Element {
   // view state of the canvas, neither undoable nor persisted
   const [measured, setMeasured] = useState<Record<string, model.Dimensions>>({});
   const [dragged, setDragged] = useState<Record<string, XYPosition>>({});
+  // id of the atom whose text is edited on the canvas
+  const [editingId, setEditingId] = useState<string>();
   const [nodeCache] = useState<model.CanvasCache<model.CanvasNode>>(() => new Map());
   const [edgeCache] = useState<model.CanvasCache<model.CanvasEdge>>(() => new Map());
   const nodes = useMemo(
-    () => model.canvasNodes(graph, { selection, measured, dragged }, nodeCache),
-    [graph, selection, measured, dragged, nodeCache],
+    () => model.canvasNodes(graph, { selection, measured, dragged, editing: editingId }, nodeCache),
+    [graph, selection, measured, dragged, editingId, nodeCache],
   );
   const edges = useMemo(
     () => model.canvasEdges(graph.edges, selection.edges, edgeCache),
@@ -109,6 +126,45 @@ export default function Graph(): React.JSX.Element {
     enabled: focused && !readOnly,
     preventDefault: true,
   });
+
+  const finishEditing = useCallback(
+    (id: string, text: string) => {
+      const node = getState().graph.nodes[id];
+
+      // unchanged texts add no undo step
+      if (node?.type === "atom" && node.text !== text) {
+        editGraph((graph) => graph.updateAtom(id, { text }));
+      }
+
+      setEditingId(undefined);
+    },
+    [editGraph, getState],
+  );
+
+  useHotkeys(
+    "f2",
+    () => {
+      const { graph, selection } = getState();
+      const node = model.selectedNode(graph, selection);
+
+      if (node?.type === "atom") {
+        setEditingId(node.id);
+      }
+    },
+    { enabled: focused && !readOnly, preventDefault: true },
+  );
+
+  /**
+   * Add a claim at the position on the screen and show its details.
+   * New nodes are hidden until they are measured, so their text cannot be edited in place right away.
+   */
+  const addClaimAt = useCallback(
+    (x: number, y: number, link?: NodePlacement["link"]) => {
+      addNode(model.newAtom(), { position: screenToFlowPosition({ x, y }), link });
+      openPanel("inspector");
+    },
+    [addNode, openPanel, screenToFlowPosition],
+  );
 
   /**
    * Selecting only changes the selection, finished moves edit the graph.
@@ -186,13 +242,7 @@ export default function Graph(): React.JSX.Element {
   );
 
   const onConnect: OnConnect = useCallback(
-    ({ source, target }) => {
-      editGraph((graph) => {
-        const scheme = model.link(graph, source, target);
-
-        return scheme && { selection: model.nodeSelection(scheme.id) };
-      });
-    },
+    ({ source, target }) => editGraph((graph) => linkAndSelect(graph, source, target)),
     [editGraph],
   );
 
@@ -204,16 +254,46 @@ export default function Graph(): React.JSX.Element {
       }
 
       const { clientX, clientY } = "changedTouches" in event ? event.changedTouches[0] : event;
-      addNode(model.newAtom(), {
-        position: screenToFlowPosition({ x: clientX, y: clientY }),
-        link: { node: fromNode.id, incoming: fromHandle.type === "source" },
-      });
-      openPanel("inspector");
+      addClaimAt(clientX, clientY, { node: fromNode.id, incoming: fromHandle.type === "source" });
     },
-    [addNode, openPanel, screenToFlowPosition],
+    [addClaimAt],
   );
 
-  const onElementDoubleClick = useCallback(() => openPanel("inspector"), [openPanel]);
+  // moving an end of an edge replaces it, atoms are connected through a new scheme node
+  const onReconnect: OnReconnect<model.CanvasEdge> = useCallback(
+    (edge, { source, target }) => {
+      editGraph((graph) => {
+        graph.removeEdge(edge.id);
+
+        return linkAndSelect(graph, source, target);
+      });
+    },
+    [editGraph],
+  );
+
+  // a double click on the empty canvas adds a claim there
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (event.detail === 2) {
+        addClaimAt(event.clientX, event.clientY);
+      }
+    },
+    [addClaimAt],
+  );
+
+  // atoms are edited in place, other elements in the details
+  const onNodeDoubleClick: NodeMouseHandler<model.CanvasNode> = useCallback(
+    (_event, { data }) => {
+      if (data.node.type === "atom" && !readOnly) {
+        setEditingId(data.node.id);
+      } else {
+        openPanel("inspector");
+      }
+    },
+    [openPanel, readOnly],
+  );
+
+  const onEdgeDoubleClick = useCallback(() => openPanel("inspector"), [openPanel]);
 
   // overlays do not depend on the canvas, so dragging does not render them again
   const overlays = useMemo(
@@ -255,10 +335,14 @@ export default function Graph(): React.JSX.Element {
       onEdgesChange={onEdgesChange}
       onConnect={readOnly ? undefined : onConnect}
       onConnectEnd={readOnly ? undefined : onConnectEnd}
+      onReconnect={readOnly ? undefined : onReconnect}
       isValidConnection={isValidConnection}
-      onNodeDoubleClick={onElementDoubleClick}
-      onEdgeDoubleClick={onElementDoubleClick}
+      onPaneClick={readOnly ? undefined : onPaneClick}
+      zoomOnDoubleClick={readOnly}
+      onNodeDoubleClick={onNodeDoubleClick}
+      onEdgeDoubleClick={onEdgeDoubleClick}
       edgeToolbar={readOnly ? undefined : renderEdgeActions}
+      finishEditing={readOnly ? undefined : finishEditing}
       nodesDraggable={!readOnly}
       nodesConnectable={!readOnly}
     >

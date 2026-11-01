@@ -10,6 +10,7 @@ import {
   type OnConnectEnd,
   type OnEdgesChange,
   type OnNodesChange,
+  type OnReconnect,
   type OnSelectionChangeFunc,
   ReactFlow,
 } from "@xyflow/react";
@@ -40,7 +41,12 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
   onEdgesChange?: OnEdgesChange<model.CanvasEdge>;
   onConnect?: OnConnect;
   onConnectEnd?: OnConnectEnd;
+  /** Move an end of an edge to another node. */
+  onReconnect?: OnReconnect<model.CanvasEdge>;
   isValidConnection?: IsValidConnection;
+  onPaneClick?: (event: React.MouseEvent) => void;
+  /** Zoom in on double clicks on the empty canvas. */
+  zoomOnDoubleClick?: boolean;
   onSelectionChange?: OnSelectionChangeFunc;
   onNodeClick?: NodeMouseHandler<model.CanvasNode>;
   onEdgeClick?: EdgeMouseHandler<model.CanvasEdge>;
@@ -48,6 +54,8 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
   onEdgeDoubleClick?: EdgeMouseHandler<model.CanvasEdge>;
   /** Content of the toolbar of a selected edge. */
   edgeToolbar?: (edgeId: string) => ReactNode;
+  /** Save the text of an atom edited on the canvas and stop editing it. */
+  finishEditing?: (id: string, text: string) => void;
 
   nodesDraggable?: boolean;
   nodesConnectable?: boolean;
@@ -71,6 +79,7 @@ export function GraphCanvas({
   edgeStyle,
   wrapperRef,
   edgeToolbar,
+  finishEditing,
   minimap = false,
   controls = false,
   children,
@@ -81,8 +90,8 @@ export function GraphCanvas({
   const buttonSize = coarse ? 44 : 32;
 
   const renderValue = useMemo(
-    () => ({ edgeStyle, coarse, edgeToolbar }),
-    [edgeStyle, coarse, edgeToolbar],
+    () => ({ edgeStyle, coarse, edgeToolbar, finishEditing }),
+    [edgeStyle, coarse, edgeToolbar, finishEditing],
   );
 
   return (

@@ -75,7 +75,7 @@ ArgueMapper saves your work in the browser, so it is still there after reloading
 
 1. Paste the text you want to analyze into the **Text** panel and choose **Start annotating**.
 2. Select a passage of the text and choose **Add claim**. If a claim is selected on the canvas, you can also add the passage as a claim that **supports** or **attacks** it, or **use it as the quote** of the selected claim.
-3. Drag from the dot of one claim to another claim to connect them. A new support relation is placed between them. Dropping the connection on the empty canvas creates a new claim there.
+3. Drag from the dot of one claim to another claim to connect them. A new support relation is placed between them. Dropping the connection on the empty canvas creates a new claim there. While dragging, the elements that cannot be connected are dimmed.
 4. Select a relation to switch between support and attack in the toolbar above it, or open **Details** for all options.
 5. Select a claim and mark it as the main claim with the star in its toolbar.
 
@@ -101,3 +101,6 @@ An open panel is switched with the tabs in its header and hidden with its close 
 
 The controls at the bottom left zoom, fit the graph into view, arrange it automatically, undo and redo changes (Ctrl+Z and Ctrl+Y), and add a claim without text.
 Delete selected elements with the Delete key or the trash can in their toolbar.
+Double-click a claim or press F2 to edit its text right on the canvas, Enter saves and Escape cancels, Shift+Enter starts a new line.
+Double-click the empty canvas to add a claim there.
+Drag an end of a connection to another element to reconnect it.

@@ -79,7 +79,10 @@ export const newGraph = (): Graph => new arguebuf.Graph<Schema>({ userdata: {} }
 export const newAtom = (): AtomNode => new arguebuf.AtomNode({ text: "" });
 
 /** Canvas element of a graph node, which is part of its data together with its highlights. */
-export type CanvasNode = FlowNode<{ node: Node; isMajorClaim: boolean }, Node["type"]>;
+export type CanvasNode = FlowNode<
+  { node: Node; isMajorClaim: boolean; isEditing: boolean },
+  Node["type"]
+>;
 export type CanvasEdge = FlowEdge;
 
 /** Size of a node as measured by the canvas. */
@@ -270,11 +273,13 @@ export interface CanvasView {
   measured: Readonly<Record<string, Dimensions>>;
   /** Positions of the nodes being dragged, which the graph receives when the drag ends. */
   dragged: Readonly<Record<string, XYPosition>>;
+  /** Id of the atom whose text is edited on the canvas. */
+  editing?: string;
 }
 
 export function canvasNodes(
   graph: Graph,
-  { selection, measured, dragged }: CanvasView,
+  { selection, measured, dragged, editing }: CanvasView,
   cache: CanvasCache<CanvasNode>,
 ): CanvasNode[] {
   const selected = new Set(selection.nodes);
@@ -288,12 +293,13 @@ export function canvasNodes(
       measured[node.id],
       dragged[node.id],
       graph.majorClaim === node.id,
+      editing === node.id,
     ],
     (node) => ({
       id: node.id,
       type: node.type,
       position: dragged[node.id] ?? position(node),
-      data: { node, isMajorClaim: graph.majorClaim === node.id },
+      data: { node, isMajorClaim: graph.majorClaim === node.id, isEditing: editing === node.id },
       selected: selected.has(node.id),
       measured: measured[node.id],
     }),
