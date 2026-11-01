@@ -1,6 +1,5 @@
 import type { ChatMessage } from "@mui/x-chat/headless";
 import type { LanguageModelCallOptions } from "ai";
-import type * as arguebuf from "arguebuf";
 import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
 import type * as model from "@/model.js";
@@ -38,8 +37,11 @@ export function resolveAssistantConfig({
  */
 export type Panel = "text" | "inspector" | "assistant";
 
+/** Person using the editor, exported graphs record them as analyst. */
+export type AnalystIdentity = Readonly<{ id: string; name?: string; email?: string }>;
+
 export interface State {
-  readonly analyst: arguebuf.Analyst;
+  readonly analyst: AnalystIdentity;
   readonly edgeStyle: model.EdgeStyle;
   /** Whether the getting started guide is shown while its steps are not done. */
   readonly guide: boolean;

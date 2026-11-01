@@ -1,4 +1,3 @@
-import * as arguebuf from "arguebuf";
 import { throttle } from "es-toolkit";
 import { temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
@@ -35,7 +34,7 @@ export interface CreateArgueStoreOptions {
 function buildInitialState(options: CreateArgueStoreOptions): State {
   return {
     graph: options.graph ?? model.newGraph(),
-    analyst: new arguebuf.Analyst({}),
+    analyst: { id: crypto.randomUUID() },
     guide: true,
     layoutAlgorithm: "layered",
     edgeStyle: "step",

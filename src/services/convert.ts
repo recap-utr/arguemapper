@@ -2,11 +2,15 @@ import * as arguebuf from "arguebuf";
 import { toJpeg, toPng } from "html-to-image";
 import type { Options as ImgOptions } from "html-to-image/lib/types.js";
 import * as model from "@/model.js";
+import type { AnalystIdentity } from "@/store/types.js";
 
 export type ExportFormat = "aif" | "arguebuf";
 
 /** Load a graph in any format supported by arguebuf, repairs are reported to `onIssue`. */
-export function importGraph(obj: arguebuf.load.JsonGraph, onIssue?: arguebuf.Reporter): model.Graph {
+export function importGraph(
+  obj: arguebuf.load.JsonGraph,
+  onIssue?: arguebuf.Reporter,
+): model.Graph {
   return arguebuf.load.json(obj, { codecs: model.codecs, onIssue });
 }
 
@@ -14,12 +18,12 @@ export function importGraph(obj: arguebuf.load.JsonGraph, onIssue?: arguebuf.Rep
 export function exportGraph<F extends ExportFormat>(
   graph: model.Graph,
   format: F,
-  analyst: arguebuf.Analyst,
+  analyst: AnalystIdentity,
 ): arguebuf.dump.Formats[F];
 export function exportGraph(
   graph: model.Graph,
   format: ExportFormat,
-  analyst: arguebuf.Analyst,
+  analyst: AnalystIdentity,
 ): arguebuf.dump.Formats[ExportFormat] {
   if (format === "aif") {
     return arguebuf.dump.json(graph, "aif");
@@ -34,11 +38,13 @@ export function exportGraph(
   }
 
   const result = graph.edit((draft) => {
-    if (Object.hasOwn(draft.analysts, analyst.id)) {
-      draft.removeAnalyst(analyst.id);
-    }
+    const { id, name, email } = analyst;
 
-    draft.addAnalyst(analyst);
+    if (Object.hasOwn(draft.analysts, id)) {
+      draft.updateAnalyst(id, { name, email });
+    } else {
+      draft.addAnalyst(new arguebuf.Analyst(analyst));
+    }
   });
 
   return arguebuf.dump.json(result, { codecs: model.codecs });

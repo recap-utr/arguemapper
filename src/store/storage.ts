@@ -20,8 +20,7 @@ export type PersistState = Pick<
 >;
 
 // On disk the graph is arguebuf JSON.
-type SerializedState = Omit<PersistState, "analyst" | "graph"> & {
-  analyst: arguebuf.AnalystInit;
+type SerializedState = Omit<PersistState, "graph"> & {
   graph: arguebuf.GraphJson;
 };
 
@@ -48,11 +47,6 @@ function serialize(state: PersistState, field: Field): unknown {
   switch (field) {
     case "graph":
       return convert.exportGraph(state.graph, "arguebuf", state.analyst);
-    case "analyst": {
-      const { id, name, email } = state.analyst;
-
-      return { id, name, email };
-    }
     default:
       return state[field];
   }
@@ -108,7 +102,6 @@ export function readState(name: string): StorageValue<PersistState> | null {
     state: {
       ...state,
       graph: convert.importGraph(state.graph),
-      analyst: new arguebuf.Analyst(state.analyst),
       assistantConfig: resolveAssistantConfig(state.assistantConfig),
     },
   };

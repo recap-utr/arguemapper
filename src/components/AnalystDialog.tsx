@@ -25,7 +25,7 @@ export const AnalystFields: React.FC = () => {
         value={analyst.name ?? ""}
         onChange={(event) => {
           const name = event.target.value;
-          setState((state) => ({ analyst: state.analyst.with({ name }) }));
+          setState((state) => ({ analyst: { ...state.analyst, name } }));
         }}
       />
       <TextField
@@ -35,7 +35,7 @@ export const AnalystFields: React.FC = () => {
         value={analyst.email ?? ""}
         onChange={(event) => {
           const email = event.target.value;
-          setState((state) => ({ analyst: state.analyst.with({ email }) }));
+          setState((state) => ({ analyst: { ...state.analyst, email } }));
         }}
       />
     </Stack>
