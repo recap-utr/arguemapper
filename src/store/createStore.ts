@@ -36,9 +36,7 @@ export interface CreateArgueStoreOptions {
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
-  const graph = options.initialGraph
-    ? convert.importGraph(options.initialGraph)
-    : model.newGraph();
+  const graph = options.initialGraph ? convert.importGraph(options.initialGraph) : model.newGraph();
 
   return {
     graph,

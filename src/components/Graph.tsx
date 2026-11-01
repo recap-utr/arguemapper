@@ -16,12 +16,7 @@ import {
 import { omit } from "es-toolkit";
 import React, { useCallback, useMemo, useState } from "react";
 import * as model from "@/model.js";
-import {
-  useArgueActions,
-  useArgueConfig,
-  useFlowWrapperRef,
-  useStore,
-} from "@/store.js";
+import { useArgueActions, useArgueConfig, useFlowWrapperRef, useStore } from "@/store.js";
 import { ContextMenu, type Click as ContextMenuClick } from "@/components/ContextMenu.js";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { PlusMenu } from "@/components/PlusMenu.js";
@@ -106,7 +101,10 @@ export default function Graph(): React.JSX.Element {
 
       if (moves.length + removed.length > 0) {
         editGraph((graph, state) => {
-          model.moveNodes(graph, moves.map((change) => [change.id, change.position] as const));
+          model.moveNodes(
+            graph,
+            moves.map((change) => [change.id, change.position] as const),
+          );
           model.removeElements(graph, { ...model.emptySelection, [kind]: removed });
 
           return selected && { selection: { ...state.selection, [kind]: selected } };
@@ -116,7 +114,12 @@ export default function Graph(): React.JSX.Element {
       }
 
       if (moves.length > 0) {
-        setDragged((current) => omit(current, moves.map((change) => change.id)));
+        setDragged((current) =>
+          omit(
+            current,
+            moves.map((change) => change.id),
+          ),
+        );
       }
     },
     [editGraph, setState],
