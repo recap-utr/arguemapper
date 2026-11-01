@@ -17,17 +17,18 @@ docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ArgueMapper ships two embeddable components, layered on a shared rendering core, for different needs:
 
 - **`<GraphViewer>`** — a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
-- **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It owns its own state, seeded once via `initialGraph` and reported back via `onChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
+- **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
 The same components adapt to desktops, tablets, and phones: wide screens show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
 Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistant features additionally need notistack and material-ui-confirm providers. The bundled `<GraphProviders>` sets all of these up for you, or wire your own. `<GraphViewer>` needs only the theme.
 
 ```tsx
-import { GraphEditor, GraphProviders, GraphViewer, type GraphJson } from "arguemapper";
-import { useRef } from "react";
+import { type GraphEditorHandle, type GraphJson, GraphEditor, GraphProviders, GraphViewer, importGraph, type model } from "arguemapper";
+import { useRef, useState } from "react";
 
-function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
+function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
   const ref = useRef<GraphEditorHandle>(null);
+  const [graph, setGraph] = useState(() => importGraph(json));
 
   return (
     <GraphProviders>
@@ -42,10 +43,10 @@ function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
       <div style={{ height: 600 }}>
         <GraphEditor
           ref={ref}
-          initialGraph={graph}
+          graph={graph}
+          onGraphChange={setGraph}
           toolbar
           panels
-          onChange={(updated) => console.log(updated)}
           assistant={{}}
         />
       </div>
@@ -55,7 +56,9 @@ function Example({ graphs, graph }: { graphs: GraphJson[]; graph: GraphJson }) {
 ```
 
 `<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick`/`onSelectionChange`, and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
-`<GraphEditor>` owns its graph internally — pass `initialGraph` to seed it, listen via `onChange`, and use its imperative `ref` (`exportGraph`, `importGraph`, `fitView`, `undo`/`redo`, …) for explicit actions.
+`<GraphEditor>` edits the `graph` prop: a new graph from the host replaces the current one as an edit that can be undone, and `onGraphChange` receives the graph after each change, so it can be passed back.
+Graphs are immutable arguebuf graphs, so sharing them between the host and the editor is safe, `importGraph` and `exportGraph` convert them from and to JSON.
+The imperative `ref` (`exportGraph`, `clear`, `fitView`, `undo`/`redo`, …) offers explicit actions.
 The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf, …) must be provided by the host, so its copies are reused.
 
 ## Tutorial

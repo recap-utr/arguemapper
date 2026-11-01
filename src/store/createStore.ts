@@ -4,7 +4,6 @@ import { temporal, type ZundoOptions } from "zundo";
 import { persist, type PersistStorage } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
-import * as convert from "@/services/convert.js";
 import * as model from "@/model.js";
 import {
   localStorageBacked,
@@ -21,8 +20,8 @@ import {
 } from "@/store/types.js";
 
 export interface CreateArgueStoreOptions {
-  /** Seed graph (arguebuf JSON). Ignored for fields restored from persistence. */
-  initialGraph?: arguebuf.GraphJson;
+  /** Initial graph, replaced by a persisted one. */
+  graph?: model.Graph;
   /** When set, the store is persisted to localStorage under this key. Absent => no persistence. */
   persistKey?: string;
   /** Override the persistence backend (defaults to localStorage). */
@@ -34,10 +33,8 @@ export interface CreateArgueStoreOptions {
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
-  const graph = options.initialGraph ? convert.importGraph(options.initialGraph) : model.newGraph();
-
   return {
-    graph,
+    graph: options.graph ?? model.newGraph(),
     analyst: new arguebuf.Analyst({}),
     guide: true,
     layoutAlgorithm: "layered",

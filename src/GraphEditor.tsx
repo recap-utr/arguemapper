@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
+import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import type { AssistantOptions } from "@/services/assistant/chat.js";
 import {
@@ -31,10 +32,13 @@ export type GraphEditorAssistantConfig = AssistantOptions;
 const EMPTY_SLOTS: EditorSlots = {};
 
 export interface GraphEditorProps extends React.PropsWithChildren {
-  /** Seed graph (arguebuf JSON). Used unless persisted state exists for `persistKey`. */
-  initialGraph?: arguebuf.GraphJson;
-  /** Called with the arguebuf JSON whenever the graph changes. */
-  onChange?: (graph: arguebuf.GraphJson) => void;
+  /**
+   * The graph to edit, it replaces the current one (including a persisted one) whenever it changes.
+   * Graphs are immutable, so the editor and the host can share them safely.
+   */
+  graph?: model.Graph;
+  /** Called with the new graph after each change, e.g. an edit, an undo, or an import. */
+  onGraphChange?: (graph: model.Graph) => void;
   /** Disable all editing — pure viewer. */
   readOnly?: boolean;
   /** Show the file menu, the settings, and the undo, redo, and layout controls. */
@@ -59,7 +63,6 @@ export interface GraphEditorProps extends React.PropsWithChildren {
 
 export interface GraphEditorHandle {
   exportGraph: <F extends convert.ExportFormat>(format: F) => arguebuf.dump.Formats[F];
-  importGraph: (graph: arguebuf.GraphJson) => void;
   clear: () => void;
   fitView: () => void;
   layout: () => void;
@@ -72,8 +75,8 @@ export interface GraphEditorHandle {
 }
 
 export function GraphEditor({
-  initialGraph,
-  onChange,
+  graph,
+  onGraphChange,
   readOnly = false,
   toolbar = false,
   panels = false,
@@ -92,7 +95,7 @@ export function GraphEditor({
   // Create the store exactly once per instance.
   const [store] = useState(() =>
     createArgueStore({
-      initialGraph,
+      graph,
       persistKey,
       assistantConfig: assistant,
       assistantApiKey: assistant?.apiKey,
@@ -111,20 +114,21 @@ export function GraphEditor({
     [id, readOnly, toolbar, panels, assistantEnabled],
   );
 
-  // Reads the latest onChange, so the subscription below never re-subscribes when the host
-  // passes an inline callback.
-  const emitChange = useEffectEvent(() => {
-    if (!onChange) return;
-    const { graph, analyst } = store.getState();
-    onChange(convert.exportGraph(graph, "arguebuf", analyst));
-  });
+  // a new graph of the host replaces the current one as an edit that can be undone
+  useEffect(() => {
+    if (graph !== undefined && graph !== store.getState().graph) {
+      store.setState({ graph });
+    }
+  }, [store, graph]);
 
-  // Emit onChange when the graph (not selection/panel state) changes.
+  // reads the latest callback, so the subscription is kept when the host passes an inline one
+  const emitChange = useEffectEvent((next: model.Graph) => onGraphChange?.(next));
+
   useEffect(
     () =>
       store.subscribe((state, previous) => {
         if (state.graph !== previous.graph) {
-          emitChange();
+          emitChange(state.graph);
         }
       }),
     [store],
@@ -137,7 +141,6 @@ export function GraphEditor({
         const { graph, analyst } = store.getState();
         return convert.exportGraph(graph, format, analyst);
       },
-      importGraph: (graph) => resetGraphState(store, convert.importGraph(graph)),
       clear: () => resetGraphState(store),
       fitView: () => {
         store.setState({ shouldFitView: true });

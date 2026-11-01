@@ -8,15 +8,13 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { type Ref, useCallback, useId, useImperativeHandle, useMemo, useState } from "react";
-import type * as arguebuf from "arguebuf";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import * as model from "@/model.js";
-import * as convert from "@/services/convert.js";
 
 export interface GraphViewerProps {
-  /** The graph to display (arguebuf JSON). Controlled: updating it re-renders the view. */
-  graph: arguebuf.GraphJson;
+  /** The graph to display. Controlled: updating it re-renders the view. */
+  graph: model.Graph;
   /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
   id?: string;
   /** Edge rendering style. Defaults to `"step"`. */
@@ -59,19 +57,18 @@ function GraphViewerInner({
   const id = idProp ?? generatedId;
   const flow = useReactFlow<model.CanvasNode, model.CanvasEdge>();
 
-  const imported = useMemo(() => {
-    const loaded = convert.importGraph(graph);
-
-    return {
-      graph: loaded,
+  const imported = useMemo(
+    () => ({
+      graph,
       nodes: model.canvasNodes(
-        loaded,
+        graph,
         { selection: model.emptySelection, measured: {}, dragged: {} },
         new Map(),
       ),
-      edges: model.canvasEdges(loaded.edges, [], new Map()),
-    };
-  }, [graph]);
+      edges: model.canvasEdges(graph.edges, [], new Map()),
+    }),
+    [graph],
+  );
 
   // view interactions such as dragging only change the local canvas
   const [nodes, setNodes, onNodesChange] = useNodesState(imported.nodes);
