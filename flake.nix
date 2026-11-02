@@ -38,6 +38,7 @@
       perSystem =
         {
           pkgs,
+          lib,
           system,
           config,
           ...
@@ -54,6 +55,14 @@
             programs = {
               nixfmt.enable = true;
               oxfmt.enable = true;
+            };
+            settings.formatter.caddy = {
+              command = lib.getExe pkgs.caddy;
+              options = [
+                "fmt"
+                "--overwrite"
+              ];
+              includes = [ "Caddyfile" ];
             };
           };
           packages = {
