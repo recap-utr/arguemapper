@@ -1,32 +1,29 @@
+# https://github.com/caddyserver/caddy-docker/blob/master/Dockerfile.tmpl
 {
   dockerTools,
-  cacert,
-  tzdata,
+  mailcap,
   lib,
-  arguemapper-server,
+  server,
 }:
 dockerTools.streamLayeredImage {
   name = "arguemapper";
-  tag = "latest";
-  created = "now";
   contents = [
-    cacert
-    tzdata
+    dockerTools.caCertificates
     dockerTools.fakeNss
+    mailcap
   ];
   extraCommands = ''
-    mkdir -m 1777 tmp
+    mkdir -m 1777 tmp config data
   '';
   config = {
-    Entrypoint = [ (lib.getExe arguemapper-server) ];
-    ExposedPorts = {
-      "${toString arguemapper-server.passthru.port}/tcp" = { };
-    };
+    Entrypoint = [ (lib.getExe server) ];
+    ExposedPorts."${toString server.port}/tcp" = { };
     User = "nobody:nobody";
+    # https://caddyserver.com/docs/conventions#file-locations
     Env = [
+      "HOME=/tmp"
       "XDG_CONFIG_HOME=/config"
       "XDG_DATA_HOME=/data"
-      "HOME=/root"
     ];
     WorkingDir = "/srv";
   };

@@ -47,9 +47,7 @@
           devShells.default = pkgs.callPackage ./shell.nix {
             treefmt = config.treefmt.build.wrapper;
           };
-          checks = {
-            inherit (config.packages) arguemapper server docker;
-          };
+          checks = config.packages;
           treefmt = {
             projectRootFile = "flake.nix";
             programs = {
@@ -67,13 +65,14 @@
           };
           packages = {
             default = config.packages.arguemapper;
-            server = config.packages.arguemapper-server;
             arguemapper = pkgs.callPackage ./default.nix { };
-            arguemapper-server = pkgs.callPackage ./server.nix {
+            server = pkgs.callPackage ./server.nix {
               inherit (config.packages) arguemapper;
             };
+          }
+          // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
             docker = pkgs.callPackage ./docker.nix {
-              inherit (config.packages) arguemapper-server;
+              inherit (config.packages) server;
             };
           };
           legacyPackages.docker-manifest = flocken.legacyPackages.${system}.mkDockerManifest {
