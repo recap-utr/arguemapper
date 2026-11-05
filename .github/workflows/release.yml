@@ -19,8 +19,8 @@ jobs:
       name: release
       url: https://github.com/wi2trier/cbrkit/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: cihelper/action-semanticrelease-npm@5119ab27646fc13f949b459232db96292100e129 # v1
+      - uses: actions/checkout@v7
+      - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
   deploy-docker:
     runs-on: ubuntu-latest
@@ -33,10 +33,10 @@ jobs:
       name: release
       url: https://ghcr.io/recap-utr/arguemapper
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.release.outputs.git-head }}
-      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - uses: DeterminateSystems/nix-installer-action@v23
         with:
           extra-conf: |
             accept-flake-config = true
