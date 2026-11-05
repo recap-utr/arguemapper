@@ -17,7 +17,7 @@ jobs:
       git-head: ${{ steps.semanticrelease.outputs.git-head }}
     environment:
       name: release
-      url: https://github.com/wi2trier/cbrkit/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
+      url: https://github.com/recap-utr/arguemapper/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
     steps:
       - uses: actions/checkout@v7
       - uses: cihelper/action-semanticrelease-npm@v1
