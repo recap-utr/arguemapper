@@ -3,6 +3,7 @@ on:
   pull_request:
   push:
     branches: [main, beta]
+permissions: {}
 jobs:
   autofix:
     if: ${{ github.repository_owner == 'recap-utr' }}
@@ -11,12 +12,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: DeterminateSystems/nix-installer-action@v23
         with:
           extra-conf: |
             accept-flake-config = true
             log-lines = 1000
-      - uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+      - uses: cachix/cachix-action@v17
         with:
           name: recap
           authToken: ${{ secrets.CACHIX_TOKEN }}

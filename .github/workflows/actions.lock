@@ -6,15 +6,15 @@ workflows:
     '.github/workflows/autofix.yml':
         - 'actions/checkout@v7'
         - 'autofix-ci/action@v1'
-        - 'cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71'
+        - 'cachix/cachix-action@v17'
         - 'determinatesystems/nix-installer-action@v23'
     '.github/workflows/check.yml':
         - 'actions/checkout@v7'
-        - 'cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71'
+        - 'cachix/cachix-action@v17'
         - 'determinatesystems/nix-installer-action@v23'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7'
-        - 'cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71'
+        - 'cachix/cachix-action@v17'
         - 'cihelper/action-semanticrelease-npm@v1'
         - 'determinatesystems/nix-installer-action@v23'
         - 'docker/setup-qemu-action@v4'
@@ -34,9 +34,9 @@ dependencies:
         commit: 'sha1-c5b2d67aa2274e7b5a18224e8171550871fc7e4a'
         owner_id: 114818642
         repo_id: 544055925
-    'cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71':
-        ref: 'master'
-        commit: 'sha1-5f2d7c5294214f71b873db4b969586b980625e71'
+    'cachix/cachix-action@v17':
+        ref: 'v17'
+        commit: 'sha1-38b082610b782e7e93e209c35fd730d399dee866'
         owner_id: 36824654
         repo_id: 211717886
     'cihelper/action-semanticrelease-npm@v1':

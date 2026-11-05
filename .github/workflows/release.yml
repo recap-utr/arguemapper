@@ -2,9 +2,14 @@ name: release
 on:
   push:
     branches: [main, beta]
+permissions: {}
 jobs:
   check:
-    uses: ./.github/workflows/check.yml
+    uses: $/.github/workflows/check.yml
+    permissions:
+      contents: read
+    secrets:
+      CACHIX_TOKEN: ${{ secrets.CACHIX_TOKEN }}
   release:
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'recap-utr' }}
@@ -20,6 +25,8 @@ jobs:
       url: https://github.com/recap-utr/arguemapper/releases/tag/${{ steps.semanticrelease.outputs.git-tag }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: cihelper/action-semanticrelease-npm@v1
         id: semanticrelease
   deploy-docker:
@@ -35,6 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          persist-credentials: false
           ref: ${{ needs.release.outputs.git-head }}
       - uses: docker/setup-qemu-action@v4
         with:
@@ -45,7 +53,7 @@ jobs:
             accept-flake-config = true
             log-lines = 1000
             extra-platforms = aarch64-linux
-      - uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+      - uses: cachix/cachix-action@v17
         with:
           name: recap
           authToken: ${{ secrets.CACHIX_TOKEN }}
