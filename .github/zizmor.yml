@@ -1,0 +1,6 @@
+# Ref pins are resolved to commit hashes by `gh actions-lock` in `.github/workflows/actions.lock`.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": ref-pin
