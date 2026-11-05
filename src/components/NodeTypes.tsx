@@ -61,7 +61,7 @@ const TextEditor: React.FC<{ text: string; onDone: (text: string) => void }> = (
 const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ id, data, selected }) => {
   const { coarse, finishEditing } = useGraphRender();
   const { node, isMajorClaim, isEditing } = data;
-  const { bg } = node.color(isMajorClaim, false);
+  const { bg } = node.color({ majorClaim: isMajorClaim });
   const size = (coarse ? 16 : 10) * (selected ? 1.4 : 1);
   // primitive selections, so nodes only render again when a connection starts or ends
   const from = useStore((s) => (s.connection.inProgress ? s.connection.fromNode.id : undefined));

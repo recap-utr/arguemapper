@@ -51,7 +51,7 @@ export function exportGraph(
 }
 
 function generateFilename(): string {
-  const timestamp = arguebuf.Temporal.Now.plainDateTimeISO()
+  const timestamp = Temporal.Now.plainDateTimeISO()
     .toString({ smallestUnit: "second" })
     .replaceAll(":", "-");
 
