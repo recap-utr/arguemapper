@@ -41,7 +41,13 @@ export const SettingsButton: React.FC = () => {
   return (
     <>
       <ToolbarButton title="Settings" icon={faGear} onClick={() => setOpen(true)} />
-      <Dialog open={open} onClose={() => setOpen(false)} fullScreen={fullScreen} fullWidth maxWidth="xs">
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullScreen={fullScreen}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Settings</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>

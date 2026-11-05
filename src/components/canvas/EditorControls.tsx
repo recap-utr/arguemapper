@@ -5,12 +5,7 @@ import type React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { usePanelLayout } from "@/components/panels/layout.js";
 import * as model from "@/model.js";
-import {
-  useArgueActions,
-  useArgueConfig,
-  useInstanceFocused,
-  useTemporalStore,
-} from "@/store.js";
+import { useArgueActions, useArgueConfig, useInstanceFocused, useTemporalStore } from "@/store.js";
 
 /** React Flow's zoom and fit controls, extended by undo, redo, layout, and adding a claim. */
 export const EditorControls: React.FC = () => {

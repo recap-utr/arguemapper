@@ -27,8 +27,9 @@ export const SchemeFields: React.FC = () => {
   const options = type === undefined ? [] : arguebuf.schemeValues(type);
   const value = model.shared(schemeNodes.map(({ scheme }) => scheme.value));
 
-  const update = (changes: (node: model.SchemeNode) => arguebuf.SchemeChanges<model.NodeUserdata>) =>
-    editGraph((graph) => model.updateSchemes(graph, ids, changes));
+  const update = (
+    changes: (node: model.SchemeNode) => arguebuf.SchemeChanges<model.NodeUserdata>,
+  ) => editGraph((graph) => model.updateSchemes(graph, ids, changes));
 
   return (
     <>
@@ -70,4 +71,3 @@ export const SchemeFields: React.FC = () => {
     </>
   );
 };
-

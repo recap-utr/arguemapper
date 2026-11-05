@@ -23,4 +23,3 @@ export const EdgeFields: React.FC = () => {
     </>
   );
 };
-

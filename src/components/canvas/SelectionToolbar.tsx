@@ -23,7 +23,12 @@ export const ToolbarButton: React.FC<ButtonProps> = ({ title, icon, onClick, col
 
   return (
     <Tooltip title={title}>
-      <IconButton aria-label={title} color={color} size={coarse ? "large" : "medium"} onClick={onClick}>
+      <IconButton
+        aria-label={title}
+        color={color}
+        size={coarse ? "large" : "medium"}
+        onClick={onClick}
+      >
         <FontAwesomeIcon icon={icon} fixedWidth />
       </IconButton>
     </Tooltip>
@@ -44,7 +49,9 @@ export const SelectionToolbar: React.FC = () => {
   const schemes = useStore(
     ({ graph, selection }) => model.selectionType(graph, selection) === "schemes",
   );
-  const isMajorClaim = useStore((state) => node !== undefined && state.graph.majorClaim === node.id);
+  const isMajorClaim = useStore(
+    (state) => node !== undefined && state.graph.majorClaim === node.id,
+  );
   const { readOnly, panels } = useArgueConfig();
   const { coarse } = useGraphRender();
   const { editGraph, deleteSelection, openPanel } = useArgueActions();
@@ -59,7 +66,11 @@ export const SelectionToolbar: React.FC = () => {
     <NodeToolbar nodeId={toolbarIds} isVisible>
       <ToolbarPaper>
         {schemes && !readOnly && (
-          <SchemeTypeToggle ids={ids} types={["support", "attack"]} size={coarse ? "medium" : "small"} />
+          <SchemeTypeToggle
+            ids={ids}
+            types={["support", "attack"]}
+            size={coarse ? "medium" : "small"}
+          />
         )}
         {node?.type === "atom" && !readOnly && (
           <ToolbarButton
@@ -70,13 +81,22 @@ export const SelectionToolbar: React.FC = () => {
           />
         )}
         {node?.type === "atom" && node.reference !== undefined && panels && (
-          <ToolbarButton title="Show in text" icon={faQuoteLeft} onClick={() => openPanel("text")} />
+          <ToolbarButton
+            title="Show in text"
+            icon={faQuoteLeft}
+            onClick={() => openPanel("text")}
+          />
         )}
         {panels && (
           <ToolbarButton title="Edit details" icon={faPen} onClick={() => openPanel("inspector")} />
         )}
         {!readOnly && (
-          <ToolbarButton title="Delete (Del)" icon={faTrash} color="error" onClick={deleteSelection} />
+          <ToolbarButton
+            title="Delete (Del)"
+            icon={faTrash}
+            color="error"
+            onClick={deleteSelection}
+          />
         )}
       </ToolbarPaper>
     </NodeToolbar>

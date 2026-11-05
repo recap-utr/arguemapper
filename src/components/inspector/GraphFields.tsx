@@ -93,4 +93,3 @@ const ParticipantFields: React.FC<{ participant: arguebuf.Participant }> = ({ pa
     </Paper>
   );
 };
-

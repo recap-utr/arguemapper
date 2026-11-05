@@ -23,7 +23,11 @@ import { EditorControls } from "@/components/canvas/EditorControls.js";
 import { FileMenu } from "@/components/canvas/FileMenu.js";
 import { Guide } from "@/components/canvas/Guide.js";
 import { PanelToggles } from "@/components/canvas/PanelToggles.js";
-import { SelectionToolbar, ToolbarButton, ToolbarPaper } from "@/components/canvas/SelectionToolbar.js";
+import {
+  SelectionToolbar,
+  ToolbarButton,
+  ToolbarPaper,
+} from "@/components/canvas/SelectionToolbar.js";
 import { SettingsButton } from "@/components/canvas/SettingsDialog.js";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import type { NodePlacement } from "@/store/actions.js";
@@ -72,15 +76,8 @@ function linkAndSelect(
 }
 
 export default function Graph(): React.JSX.Element {
-  const {
-    editGraph,
-    setState,
-    arrange,
-    openPanel,
-    deleteSelection,
-    getState,
-    addNode,
-  } = useArgueActions();
+  const { editGraph, setState, arrange, openPanel, deleteSelection, getState, addNode } =
+    useArgueActions();
   const { screenToFlowPosition } = useReactFlow();
   const { id, readOnly, toolbar, panels } = useArgueConfig();
   const wrapperRef = useFlowWrapperRef();

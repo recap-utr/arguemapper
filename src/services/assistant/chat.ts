@@ -95,7 +95,10 @@ function toUIMessage({ id, role, parts, metadata }: ChatMessage): AssistantUIMes
 }
 
 /** MUI X Chat adapter that runs the assistant agent in the browser. */
-export function createAssistantAdapter(store: ArgueStore, settings: AssistantSettings): ChatAdapter {
+export function createAssistantAdapter(
+  store: ArgueStore,
+  settings: AssistantSettings,
+): ChatAdapter {
   const agent = createAgent(store, settings);
 
   return createAiSdkAdapter({

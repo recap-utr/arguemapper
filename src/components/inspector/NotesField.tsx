@@ -9,11 +9,7 @@ interface Props {
 }
 
 /** Shared multiline notes input used across the inspector field panels. */
-export const NotesField: React.FC<Props> = ({
-  onChange,
-  value,
-  label = "Notes",
-}) => {
+export const NotesField: React.FC<Props> = ({ onChange, value, label = "Notes" }) => {
   const { readOnly } = useArgueConfig();
 
   return (

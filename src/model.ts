@@ -137,7 +137,10 @@ export function setNotes(graph: GraphDraft, id: string | undefined, notes: strin
 }
 
 /** Move the nodes of the graph to the positions, unknown ids are skipped. */
-export function moveNodes(graph: GraphDraft, positions: Iterable<readonly [string, XYPosition]>): void {
+export function moveNodes(
+  graph: GraphDraft,
+  positions: Iterable<readonly [string, XYPosition]>,
+): void {
   for (const [id, value] of positions) {
     if (Object.hasOwn(graph.nodes, id)) {
       updateUserdata(graph, id, positioned(graph.nodes[id], value));
