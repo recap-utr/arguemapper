@@ -6,12 +6,33 @@ import type { AnalystIdentity } from "@/store/types.js";
 
 export type ExportFormat = "aif" | "arguebuf";
 
-/** Load a graph in any format supported by arguebuf, repairs are reported to `onIssue`. */
+/** Load a graph from a JSON object in any format supported by arguebuf, repairs are reported to `onIssue`. */
 export function importGraph(
   obj: arguebuf.load.JsonGraph,
   onIssue?: arguebuf.Reporter,
 ): model.Graph {
   return arguebuf.load.json(obj, { codecs: model.codecs, onIssue });
+}
+
+/** File suffixes that `importFile` reads, e.g. for the `accept` attribute of file inputs. */
+export const importSuffixes: readonly string[] = Object.values(arguebuf.load.suffixes).flat();
+
+/**
+ * Load a graph from a file in any format supported by arguebuf, derived from its suffix.
+ * Throws if the file cannot be parsed, repairs are reported to `onIssue`.
+ */
+export async function importFile(file: File, onIssue?: arguebuf.Reporter): Promise<model.Graph> {
+  const options = { codecs: model.codecs, onIssue };
+
+  if (arguebuf.load.fileFormat(file.name) !== "argdown") {
+    return arguebuf.load.file(file, options);
+  }
+
+  // loaded on demand, since the Argdown parser is large
+  const { loadArgdown } = await import("arguebuf/argdown");
+  const name = file.name.slice(0, file.name.lastIndexOf("."));
+
+  return loadArgdown(await file.text(), { ...options, name });
 }
 
 /** Serialize the graph, the arguebuf format also records the analyst. */

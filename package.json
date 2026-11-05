@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3",
+    "@argdown/core": "^2",
     "@fortawesome/fontawesome-svg-core": "^7",
     "@fortawesome/free-brands-svg-icons": "^7",
     "@fortawesome/free-solid-svg-icons": "^7",

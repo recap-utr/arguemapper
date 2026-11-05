@@ -56,7 +56,6 @@ export const FileMenu: React.FC = () => {
     }
   };
 
-
   useHotkeys("mod+s", () => downloadGraph("arguebuf"), {
     preventDefault: true,
     useKey: true,
@@ -76,18 +75,24 @@ export const FileMenu: React.FC = () => {
         ref={inputRef}
         hidden
         type="file"
-        accept="application/json,.json"
+        accept={convert.importSuffixes.join(",")}
         // the same file can be opened again
         onClick={(event) => {
           event.currentTarget.value = "";
         }}
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) void file.text().then((text) => replaceGraph(JSON.parse(text)));
+          if (file) replaceGraph(file);
         }}
       />
       {/* clicks on items bubble up and close the menu, it stays mounted for dialogs of the slots */}
-      <Menu keepMounted anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)} onClick={() => setAnchor(null)}>
+      <Menu
+        keepMounted
+        anchorEl={anchor}
+        open={anchor !== null}
+        onClose={() => setAnchor(null)}
+        onClick={() => setAnchor(null)}
+      >
         {!readOnly && [
           <IconMenuItem key="new" icon={faFile} text="New graph" onClick={() => replaceGraph()} />,
           <IconMenuItem
@@ -106,7 +111,11 @@ export const FileMenu: React.FC = () => {
           <Divider key="divider" />,
         ]}
         <ListSubheader>Download as</ListSubheader>
-        <IconMenuItem icon={faFileCode} text="Arguebuf (JSON, Ctrl+S)" onClick={() => downloadGraph("arguebuf")} />
+        <IconMenuItem
+          icon={faFileCode}
+          text="Arguebuf (JSON, Ctrl+S)"
+          onClick={() => downloadGraph("arguebuf")}
+        />
         <IconMenuItem icon={faFileCode} text="AIF (JSON)" onClick={() => downloadGraph("aif")} />
         <IconMenuItem icon={faFileImage} text="PNG image" onClick={() => downloadImage("png")} />
         <IconMenuItem icon={faFileImage} text="JPG image" onClick={() => downloadImage("jpg")} />

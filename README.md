@@ -94,7 +94,7 @@ An open panel is switched with the tabs in its header and hidden with its close 
 
 ### File menu and settings
 
-- **File** starts a new graph, opens a file, loads the example, and downloads the graph as Arguebuf or AIF (JSON) or as an image (PNG or JPG). Exports ask once for your name and email, which are saved in the file.
+- **File** starts a new graph, opens a file (Arguebuf, AIF, xAIF, OVA, SADFace, or Argdown as JSON, Argdown source, brat standoff, or a Kialo export), loads the example, and downloads the graph as Arguebuf or AIF (JSON) or as an image (PNG or JPG). Exports ask once for your name and email, which are saved in the file.
 - The gear opens the settings for the arrangement of the graph, the style of connections, the image resolution, and readable JSON files.
 
 ### Canvas controls
