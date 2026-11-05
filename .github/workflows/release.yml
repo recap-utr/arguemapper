@@ -45,7 +45,7 @@ jobs:
         with:
           name: recap
           authToken: ${{ secrets.CACHIX_TOKEN }}
-      - run: nix run .#docker-manifest --impure
+      - run: nix run .#docker-manifest
         env:
           VERSION: ${{ needs.release.outputs.version }}
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}

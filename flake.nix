@@ -76,12 +76,8 @@
             };
           };
           legacyPackages.docker-manifest = flocken.legacyPackages.${system}.mkDockerManifest {
-            github = {
-              enable = true;
-              token = "$GH_TOKEN";
-            };
-            version = builtins.getEnv "VERSION";
-            imageStreams = with self.packages; [ x86_64-linux.docker ];
+            github.enable = true;
+            images = with self.packages; [ x86_64-linux.docker ];
           };
         };
     };
