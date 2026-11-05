@@ -17,6 +17,7 @@ workflows:
         - 'cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71'
         - 'cihelper/action-semanticrelease-npm@v1'
         - 'determinatesystems/nix-installer-action@v23'
+        - 'docker/setup-qemu-action@v4'
 dependencies:
     'actions/checkout@v7':
         ref: 'v7'
@@ -56,3 +57,8 @@ dependencies:
         commit: 'sha1-3138316df39ed29be04236d7ffc686fa525866aa'
         owner_id: 80991770
         repo_id: 588678074
+    'docker/setup-qemu-action@v4':
+        ref: 'v4'
+        commit: 'sha1-99012661954931238ded8c8b007157a8430204e1'
+        owner_id: 5429470
+        repo_id: 288487894

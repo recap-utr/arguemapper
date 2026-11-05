@@ -77,7 +77,10 @@
           };
           legacyPackages.docker-manifest = flocken.legacyPackages.${system}.mkDockerManifest {
             github.enable = true;
-            images = with self.packages; [ x86_64-linux.docker ];
+            images = with self.packages; [
+              x86_64-linux.docker
+              aarch64-linux.docker
+            ];
           };
         };
     };
