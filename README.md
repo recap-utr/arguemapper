@@ -43,7 +43,7 @@ function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
       {/* Present several small graphs read-only; click one to drill in */}
       {graphs.map((g, i) => (
         <div key={i} style={{ height: 240 }}>
-          <GraphViewer graph={g} minimap controls onNodeClick={(_e, node) => console.log(node)} />
+          <GraphViewer graph={g} minimap controls onNodeClick={(node) => console.log(node)} />
         </div>
       ))}
 
@@ -63,7 +63,7 @@ function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
 }
 ```
 
-`<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick`/`onSelectionChange`, and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
+`<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick` (which receive the arguebuf node or edge) and `onSelectionChange` (which receives the selected ids), and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
 `<GraphEditor>` edits the `graph` prop: a new graph from the host replaces the current one as an edit that can be undone, and `onGraphChange` receives the graph after each change, so it can be passed back.
 Graphs are immutable arguebuf graphs, so sharing them between the host and the editor is safe, `importGraph` and `exportGraph` convert them from and to JSON.
 The imperative `ref` (`exportGraph`, `clear`, `fitView`, `undo`/`redo`, …) offers explicit actions.

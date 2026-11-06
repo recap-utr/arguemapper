@@ -1,14 +1,6 @@
-import {
-  type EdgeMouseHandler,
-  type NodeMouseHandler,
-  type OnSelectionChangeFunc,
-  ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-} from "@xyflow/react";
+import { ReactFlowProvider, useEdgesState, useNodesState, useReactFlow } from "@xyflow/react";
 import { type Ref, useCallback, useId, useImperativeHandle, useMemo, useState } from "react";
-import { GraphCanvas } from "@/components/GraphCanvas.js";
+import { GraphCanvas, type GraphCanvasProps } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import * as model from "@/model.js";
 
@@ -25,9 +17,10 @@ export interface GraphViewerProps {
   minimap?: boolean;
   /** Show the zoom/fit controls overlay. */
   controls?: boolean;
-  onNodeClick?: NodeMouseHandler<model.CanvasNode>;
-  onEdgeClick?: EdgeMouseHandler<model.CanvasEdge>;
-  onSelectionChange?: OnSelectionChangeFunc;
+  onNodeClick?: (node: model.Node) => void;
+  onEdgeClick?: (edge: model.Edge) => void;
+  /** Called with the ids of the selected nodes and edges. */
+  onSelectionChange?: (selection: model.Selection) => void;
   style?: React.CSSProperties;
   className?: string;
   ref?: Ref<GraphViewerHandle>;
@@ -106,6 +99,22 @@ function GraphViewerInner({
     setShouldFitView,
   });
 
+  // the canvas reports its own elements, the host receives the ones of the graph
+  const callbacks = useMemo(
+    (): Pick<GraphCanvasProps, "onNodeClick" | "onEdgeClick" | "onSelectionChange"> => ({
+      onNodeClick: onNodeClick && ((_event, node) => onNodeClick(node.data.node)),
+      onEdgeClick: onEdgeClick && ((_event, edge) => onEdgeClick(graph.edges[edge.id])),
+      onSelectionChange:
+        onSelectionChange &&
+        (({ nodes, edges }) =>
+          onSelectionChange({
+            nodes: nodes.map((node) => node.id),
+            edges: edges.map((edge) => edge.id),
+          })),
+    }),
+    [graph, onNodeClick, onEdgeClick, onSelectionChange],
+  );
+
   useImperativeHandle(
     ref,
     (): GraphViewerHandle => ({
@@ -128,9 +137,7 @@ function GraphViewerInner({
       edgeStyle={edgeStyle}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onSelectionChange={onSelectionChange}
-      onNodeClick={onNodeClick}
-      onEdgeClick={onEdgeClick}
+      {...callbacks}
       nodesDraggable
       nodesConnectable={false}
       minimap={minimap}

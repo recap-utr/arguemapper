@@ -78,6 +78,7 @@ export const codecs: arguebuf.Codecs<Schema> = {
 export type Graph = arguebuf.Graph<Schema>;
 export type GraphDraft = arguebuf.GraphDraft<Schema>;
 export type Node = arguebuf.Node<Schema>;
+export type Edge = arguebuf.Edge<ElementUserdata>;
 export type AtomNode = arguebuf.AtomNode<NodeUserdata>;
 export type SchemeNode = arguebuf.SchemeNode<NodeUserdata>;
 
