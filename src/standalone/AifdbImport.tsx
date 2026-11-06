@@ -7,33 +7,35 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import { enqueueSnackbar } from "notistack";
 import type React from "react";
 import { useState } from "react";
+import { getErrorMessage } from "react-error-boundary";
 import { IconMenuItem } from "@/components/IconMenuItem.js";
 import { useReplaceGraph } from "@/components/useReplaceGraph.js";
+import { useArgueActions } from "@/store.js";
 
 /** Standalone-only file menu entry: opens an argument map of aifdb.org via the dev/server proxy. */
 export const AifdbImport: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [aifdbId, setAifdbId] = useState("");
   const replaceGraph = useReplaceGraph();
+  const { notify } = useArgueActions();
 
   const handleImport = async () => {
-    const response = await fetch(`/api/aifdb/json/${aifdbId}`);
+    try {
+      const response = await fetch(`/api/aifdb/json/${aifdbId}`);
 
-    if (!response.ok) {
-      enqueueSnackbar(
-        `Failed to fetch map ${aifdbId} from AIFdb.org: ${response.statusText} (${response.status})`,
-        { variant: "error" },
-      );
+      if (!response.ok) {
+        throw new Error(`${response.statusText} (${response.status})`);
+      }
 
-      return;
+      replaceGraph(await response.json());
+      setOpen(false);
+      setAifdbId("");
+    } catch (error) {
+      const reason = getErrorMessage(error) ?? String(error);
+      notify(`Failed to fetch map ${aifdbId} from AIFdb.org: ${reason}`, "error");
     }
-
-    replaceGraph(await response.json());
-    setOpen(false);
-    setAifdbId("");
   };
 
   return (

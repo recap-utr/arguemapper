@@ -149,8 +149,7 @@ function GraphViewerInner({
 /**
  * A pure, externally-controlled argument-graph viewer. The `graph` prop is the single source of
  * truth; local view interactions such as dragging nodes do not update the controlled graph.
- * Render it under an MUI `ThemeProvider` (e.g. the bundled `<GraphProviders>`); the editing-only
- * providers (notistack, material-ui-confirm) are not required.
+ * Without an MUI `ThemeProvider` of the host, MUI's default theme applies.
  */
 export function GraphViewer(props: GraphViewerProps): React.JSX.Element {
   const { style, className } = props;

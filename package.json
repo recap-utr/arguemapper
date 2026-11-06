@@ -56,8 +56,6 @@
     "@mui/material": "^9",
     "@xyflow/react": "^12",
     "arguebuf": "^3",
-    "material-ui-confirm": "^4",
-    "notistack": "^3",
     "react": "^19",
     "react-dom": "^19"
   }

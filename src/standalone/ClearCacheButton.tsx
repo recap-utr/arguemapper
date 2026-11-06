@@ -1,7 +1,8 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Tooltip } from "@mui/material";
-import { useConfirm } from "material-ui-confirm";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog.js";
 
 /** Remove everything the app stored and reload it, for when the stored state breaks it. */
 export function resetApp(): void {
@@ -16,23 +17,32 @@ export function resetApp(): void {
 
 /** Standalone-only recovery action, see `resetApp`. */
 export const ClearCacheButton: React.FC = () => {
-  const confirm = useConfirm();
+  const [open, setOpen] = useState(false);
 
   return (
-    <Tooltip
-      title="If errors occur, you can clear your browser's cache and reload the page with this button"
-      describeChild
-    >
-      <Button
-        color="error"
-        startIcon={<FontAwesomeIcon icon={faTrash} />}
-        variant="outlined"
-        onClick={() => {
-          void confirm().then(({ confirmed }) => confirmed && resetApp());
-        }}
+    <>
+      <Tooltip
+        title="If errors occur, you can clear the stored data and reload the page with this button"
+        describeChild
       >
-        Reset the app
-      </Button>
-    </Tooltip>
+        <Button
+          color="error"
+          startIcon={<FontAwesomeIcon icon={faTrash} />}
+          variant="outlined"
+          onClick={() => setOpen(true)}
+        >
+          Reset the app
+        </Button>
+      </Tooltip>
+      <ConfirmDialog
+        open={open}
+        title="Reset the app?"
+        description="This removes your graph, its undo history, the assistant conversation, and all settings. It cannot be undone."
+        confirmText="Reset"
+        destructive
+        onConfirm={resetApp}
+        onClose={() => setOpen(false)}
+      />
+    </>
   );
 };

@@ -13,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Panel } from "@xyflow/react";
-import { enqueueSnackbar } from "notistack";
 import type React from "react";
 import { useState } from "react";
 import { shallow } from "zustand/shallow";
@@ -91,7 +90,7 @@ const GuideCard: React.FC = () => {
   // collapsed while a panel covers half of a narrow canvas, unless the user chose otherwise
   const [expanded, setExpanded] = useState<boolean>();
   const auto = wide || !available.some(isShown);
-  const { setState, openPanel } = useArgueActions();
+  const { setState, openPanel, notify } = useArgueActions();
   const replaceGraph = useReplaceGraph();
   const active = completed.indexOf(false);
 
@@ -101,7 +100,7 @@ const GuideCard: React.FC = () => {
 
   const hide = () => {
     setState({ guide: false });
-    enqueueSnackbar("You can show the guide again in the settings.", { variant: "info" });
+    notify("You can show the guide again in the settings.", "info");
   };
 
   return (

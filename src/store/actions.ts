@@ -1,9 +1,8 @@
 import type { XYPosition } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
-import { enqueueSnackbar } from "notistack";
 import type { RefObject } from "react";
 import * as model from "@/model.js";
-import type { ArgueStore, Panel, State } from "@/store/types.js";
+import type { ArgueStore, Notice, Panel, State } from "@/store/types.js";
 
 /** Where `addNode` places the node and what it connects it to. */
 export interface NodePlacement {
@@ -33,6 +32,8 @@ export interface ArgueActions {
   deleteSelection: () => void;
   /** Add the node, connect it as given, and select it. */
   addNode: (node: model.Node, placement?: NodePlacement) => void;
+  /** Show the message to the user, replacing the current one. */
+  notify: (message: string, severity: Notice["severity"]) => void;
 }
 
 /** Remount the assistant chat, which aborts a running reply. */
@@ -72,6 +73,10 @@ export function createActions(
 ): ArgueActions {
   const { getState, setState, temporal } = store;
 
+  const notify: ArgueActions["notify"] = (message, severity) => {
+    setState({ notice: { key: crypto.randomUUID(), message, severity } });
+  };
+
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     const state = getState();
     const issue = arguebuf.catchGraphError(() => {
@@ -83,7 +88,7 @@ export function createActions(
     });
 
     if (issue !== undefined) {
-      enqueueSnackbar(model.describeIssue(issue), { variant: "warning" });
+      notify(model.describeIssue(issue), "warning");
     }
   };
 
@@ -152,5 +157,6 @@ export function createActions(
     closePanels,
     deleteSelection,
     addNode,
+    notify,
   };
 }

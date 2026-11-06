@@ -1,3 +1,4 @@
+import type { AlertColor } from "@mui/material";
 import type { ChatMessage } from "@mui/x-chat/headless";
 import type { LanguageModelCallOptions } from "ai";
 import type { TemporalState } from "zundo";
@@ -46,6 +47,9 @@ export type Panel = "text" | "inspector" | "assistant";
 /** Person using the editor, exported graphs record them as analyst. */
 export type AnalystIdentity = Readonly<{ id: string; name?: string; email?: string }>;
 
+/** Message for the user, each new key shows it again. */
+export type Notice = Readonly<{ key: string; message: string; severity: AlertColor }>;
+
 export interface State {
   readonly analyst: AnalystIdentity;
   readonly edgeStyle: model.EdgeStyle;
@@ -73,6 +77,8 @@ export interface State {
    * e.g. when the transcript is cleared or the graph is replaced wholesale. Transient.
    */
   readonly assistantConversation: number;
+  /** Message for the user, shown by the editor until it is closed or replaced. Transient. */
+  readonly notice?: Notice;
 }
 
 /** Undo and redo revert edits of the graph, not the selection or other view state. */

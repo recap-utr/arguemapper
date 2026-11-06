@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { shallow } from "zustand/shallow";
+import { NoticeSnackbar } from "@/components/NoticeSnackbar.js";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
@@ -156,7 +157,11 @@ export function GraphEditor({
   );
 
   return (
-    <div ref={rootRef} className={className} style={{ width: "100%", height: "100%", ...style }}>
+    <div
+      ref={rootRef}
+      className={className}
+      style={{ position: "relative", width: "100%", height: "100%", ...style }}
+    >
       <ReactFlowProvider>
         <ArgueStoreProvider value={store}>
           <FlowWrapperProvider value={wrapperRef}>
@@ -164,6 +169,7 @@ export function GraphEditor({
               <InstanceFocusProvider value={focused}>
                 <SlotsProvider value={slots ?? EMPTY_SLOTS}>
                   <GraphEditorLayout />
+                  <NoticeSnackbar />
                   {children}
                 </SlotsProvider>
               </InstanceFocusProvider>

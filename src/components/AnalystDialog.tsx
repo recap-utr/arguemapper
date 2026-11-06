@@ -1,15 +1,7 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import type React from "react";
 import { useCallback, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog.js";
 import { useArgueActions, useStore } from "@/store.js";
 
 /** Name and email of the analyst, which exported graphs contain. */
@@ -58,28 +50,17 @@ export function useAnalystGuard(): [guard: (action: () => void) => void, dialog:
   );
 
   const dialog = (
-    <Dialog open={pending !== undefined} onClose={close}>
-      <DialogTitle>Who created this graph?</DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ mb: 2 }}>
-          Your name and email are saved in the exported file. You only need to enter them once.
-        </DialogContentText>
-        <AnalystFields />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={close}>Cancel</Button>
-        <Button
-          variant="contained"
-          disabled={!known}
-          onClick={() => {
-            pending?.();
-            close();
-          }}
-        >
-          Export
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={pending !== undefined}
+      title="Who created this graph?"
+      description="Your name and email are saved in the exported file. You only need to enter them once."
+      confirmText="Export"
+      confirmDisabled={!known}
+      onConfirm={() => pending?.()}
+      onClose={close}
+    >
+      <AnalystFields />
+    </ConfirmDialog>
   );
 
   return [guard, dialog];

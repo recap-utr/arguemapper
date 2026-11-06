@@ -20,7 +20,7 @@ ArgueMapper ships two embeddable components, layered on a shared rendering core,
 - **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
   The same components adapt to desktops, tablets, and phones: wide screens show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
-Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistant features additionally need notistack and material-ui-confirm providers. The bundled `<GraphProviders>` sets all of these up for you, or wire your own. `<GraphViewer>` needs only the theme.
+Both need no wrapper. They use the MUI theme of the host, e.g. `createTheme({ colorSchemes: { dark: true } })` to follow the dark mode of the OS, or MUI's default theme without a `ThemeProvider`.
 
 ```tsx
 import {
@@ -28,7 +28,6 @@ import {
   type GraphEditorHandle,
   type GraphJson,
   GraphEditor,
-  GraphProviders,
   GraphViewer,
   importGraph,
 } from "arguemapper";
@@ -39,7 +38,7 @@ function Example({ graphs, json }: { graphs: Graph[]; json: GraphJson }) {
   const [graph, setGraph] = useState(() => importGraph(json));
 
   return (
-    <GraphProviders>
+    <>
       {/* Present several small graphs read-only; click one to drill in */}
       {graphs.map((g, i) => (
         <div key={i} style={{ height: 240 }}>
@@ -58,7 +57,7 @@ function Example({ graphs, json }: { graphs: Graph[]; json: GraphJson }) {
           assistant
         />
       </div>
-    </GraphProviders>
+    </>
   );
 }
 ```

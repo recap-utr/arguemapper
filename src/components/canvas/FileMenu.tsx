@@ -117,7 +117,8 @@ export const FileMenu: React.FC = () => {
           slots.fileMenu,
           <Divider key="divider" />,
         ]}
-        <ListSubheader>Download as</ListSubheader>
+        {/* sticky headers take on the elevation tint of the menu they are on */}
+        <ListSubheader sx={{ backgroundImage: "var(--Paper-overlay)" }}>Download as</ListSubheader>
         <IconMenuItem
           icon={faFileCode}
           text="Arguebuf (JSON, Ctrl+S)"
