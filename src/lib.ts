@@ -15,4 +15,5 @@ export type {
   Schema,
   Selection,
 } from "@/model.js";
+export { codecs } from "@/model.js";
 export type { GraphJson } from "arguebuf";

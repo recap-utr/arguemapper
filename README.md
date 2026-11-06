@@ -65,6 +65,7 @@ function Example({ graphs, json }: { graphs: Graph[]; json: GraphJson }) {
 `<GraphViewer>` is controlled — pass `graph` (keep it referentially stable unless it actually changes), react via `onNodeClick`/`onEdgeClick` (which receive the arguebuf node or edge) and `onSelectionChange` (which receives the selected ids), and use its imperative `ref` (`fitView`, `zoomIn`, `zoomOut`, `layout`).
 `<GraphEditor>` edits the `graph` prop: a new graph from the host replaces the current one as an edit that can be undone, and `onGraphChange` receives the graph after each change, so it can be passed back.
 Graphs are immutable arguebuf graphs, so sharing them between the host and the editor is safe, `importGraph` and `exportGraph` convert them from and to JSON.
+`codecs` passes the userdata of ArgueMapper to the functions of arguebuf, e.g. `applyPatch(graph, patch, { codecs })` to build a graph whose claims are anchored in its texts.
 The imperative `ref` (`exportGraph`, `clear`, `fitView`, `undo`/`redo`, …) offers explicit actions.
 `assistant` enables the AI assistant, settings passed as an object (e.g. `assistant={{ baseURL, model }}`) are fixed and hidden from its settings dialog.
 The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf, …) must be provided by the host, so its copies are reused.
