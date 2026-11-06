@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
 import * as model from "@/model.js";
-import { localStorageBacked, partialize, persistVersion } from "@/store/storage.js";
+import { browserStorage, partialize, persistVersion } from "@/store/storage.js";
 import {
   type ArgueStore,
   defaultAssistantConfig,
@@ -61,7 +61,7 @@ export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueSt
         persist(tracked, {
           name: options.persistKey,
           version: persistVersion,
-          storage: localStorageBacked,
+          storage: browserStorage,
           partialize,
         }),
       )

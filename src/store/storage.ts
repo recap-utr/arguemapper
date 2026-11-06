@@ -17,11 +17,13 @@ type PersistState = Pick<
   | "panels"
   | "assistantConfig"
   | "assistantMessages"
+  | "assistantApiKey"
 >;
 
-// On disk the graph is arguebuf JSON.
-type SerializedState = Omit<PersistState, "graph"> & {
+// On disk the graph is arguebuf JSON, and a new session lacks the API key.
+type SerializedState = Omit<PersistState, "graph" | "assistantApiKey"> & {
   graph: arguebuf.GraphJson;
+  assistantApiKey?: string;
 };
 
 const fields = [
@@ -36,9 +38,14 @@ const fields = [
   "panels",
   "assistantConfig",
   "assistantMessages",
+  "assistantApiKey",
 ] as const satisfies readonly (keyof PersistState)[];
 
 type Field = (typeof fields)[number];
+
+// The API key is a secret, so it is kept for the browser session only.
+const sessionFields: ReadonlySet<Field> = new Set(["assistantApiKey"]);
+const backend = (field: Field): Storage => (sessionFields.has(field) ? sessionStorage : localStorage);
 
 // Each field has its own key below the version, so a change writes only the changed fields.
 const fieldKey = (name: string, field: Field) => `${name}/${field}`;
@@ -62,7 +69,7 @@ const writePending = throttle(
 
       for (const field of fields) {
         // JSON has no undefined, e.g. of `selectedResource`, so it is stored as null
-        localStorage.setItem(
+        backend(field).setItem(
           fieldKey(name, field),
           JSON.stringify(serialize(value.state, field) ?? null),
         );
@@ -86,12 +93,13 @@ export function readState(name: string): StorageValue<PersistState> | null {
   }
 
   const entries = fields.flatMap((field) => {
-    const value = localStorage.getItem(fieldKey(name, field));
+    const value = backend(field).getItem(fieldKey(name, field));
     return value === null ? [] : [[field, JSON.parse(value) ?? undefined] as const];
   });
+  const stored = new Set(entries.map(([field]) => field));
 
   // the first write of every session stores all fields, so missing ones stem from another version
-  if (entries.length < fields.length) {
+  if (fields.some((field) => !stored.has(field) && !sessionFields.has(field))) {
     return null;
   }
 
@@ -103,12 +111,13 @@ export function readState(name: string): StorageValue<PersistState> | null {
       ...state,
       graph: convert.importGraph(state.graph),
       assistantConfig: resolveAssistantConfig(state.assistantConfig),
+      assistantApiKey: state.assistantApiKey ?? "",
     },
   };
 }
 
-/** localStorage-backed persistence that serializes the graph to/from arguebuf JSON. */
-export const localStorageBacked: PersistStorage<PersistState> = {
+/** Persistence in the local storage, and the session storage for secrets, with the graph as arguebuf JSON. */
+export const browserStorage: PersistStorage<PersistState> = {
   getItem: readState,
   setItem: (name, value) => {
     const previous = written.get(name);
@@ -143,7 +152,7 @@ export const localStorageBacked: PersistStorage<PersistState> = {
     localStorage.removeItem(name);
 
     for (const field of fields) {
-      localStorage.removeItem(fieldKey(name, field));
+      backend(field).removeItem(fieldKey(name, field));
     }
   },
 };

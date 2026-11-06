@@ -13,7 +13,7 @@ export interface AssistantConfig {
 
 /** Connection and model settings of the assistant. */
 export interface AssistantSettings extends AssistantConfig {
-  /** Optional, local servers usually need none. Held in memory only, never persisted. */
+  /** Optional, local servers usually need none. Persisted for the browser session only. */
   readonly apiKey: string;
 }
 
@@ -64,7 +64,7 @@ export interface State {
   /** The open panels, the last one was opened most recently. */
   readonly panels: readonly Panel[];
   readonly assistantConfig: AssistantConfig;
-  /** API key for the assistant; held in memory only (never persisted). */
+  /** API key for the assistant, persisted in the session storage only. */
   readonly assistantApiKey: string;
   /** Transcript of the assistant (MUI X Chat messages), persisted but not part of the undo history. */
   readonly assistantMessages: readonly ChatMessage[];
