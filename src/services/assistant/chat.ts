@@ -7,6 +7,7 @@ import {
   isStepCount,
   ToolLoopAgent,
 } from "ai";
+import { getErrorMessage } from "react-error-boundary";
 import type { ArgueStore, AssistantSettings } from "@/store.js";
 import { createTools } from "@/services/assistant/tools.js";
 
@@ -102,7 +103,7 @@ export function createAssistantAdapter(
         // so a reply after a reload would be merged into a persisted one
         generateMessageId: generateId,
         // show the actual cause, e.g. a wrong API key, instead of a generic message
-        onError: (error) => (error instanceof Error ? error.message : String(error)),
+        onError: (error) => getErrorMessage(error) ?? String(error),
       }),
   });
 }
