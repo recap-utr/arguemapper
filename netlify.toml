@@ -2,3 +2,16 @@
 base = "/"
 publish = "dist/app"
 command = "npm run build"
+
+# Same-origin proxy for third-party APIs without CORS support, mirroring the Caddyfile.
+[[redirects]]
+from = "/api/aifdb/*"
+to = "https://aifdb.org/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/api/wikipedia/*"
+to = "https://api.wikimedia.org/:splat"
+status = 200
+force = true

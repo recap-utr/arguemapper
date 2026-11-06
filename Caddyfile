@@ -4,7 +4,7 @@
 	persist_config off
 }
 
-# Same-origin proxy for third-party APIs without CORS support, mirrored by the Vite dev server.
+# Same-origin proxy for third-party APIs without CORS support, mirrored by the Vite dev server and netlify.toml.
 (proxy) {
 	handle_path {args[0]}/* {
 		reverse_proxy {args[1]} {
