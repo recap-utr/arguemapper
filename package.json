@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "start": "vite --open",
+    "dev": "vite",
     "preview": "vite preview",
     "build": "tsc -b && vite build",
     "build:lib": "tsc -b && vite build --mode lib",
