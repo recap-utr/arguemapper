@@ -7,18 +7,13 @@ import { Assistant } from "@/components/panels/Assistant.js";
 import { usePanelLayout } from "@/components/panels/layout.js";
 import { PanelArea } from "@/components/panels/PanelArea.js";
 import { TextPane } from "@/components/panels/TextPane.js";
-import type { AssistantOptions } from "@/services/assistant/chat.js";
 import { type Panel, useArgueActions, useArgueConfig } from "@/store.js";
-
-export interface GraphEditorLayoutProps {
-  assistant?: AssistantOptions;
-}
 
 /**
  * Internal layout: the canvas with the text panel on its left and the details on its right.
  * Narrow screens show one panel at a time below the canvas instead, with the same components.
  */
-export const GraphEditorLayout: React.FC<GraphEditorLayoutProps> = ({ assistant }) => {
+export const GraphEditorLayout: React.FC = () => {
   const { panels } = useArgueConfig();
   const { wide, areas } = usePanelLayout();
   const { closePanels } = useArgueActions();
@@ -35,7 +30,7 @@ export const GraphEditorLayout: React.FC<GraphEditorLayoutProps> = ({ assistant 
       case "inspector":
         return <Inspector />;
       case "assistant":
-        return <Assistant options={assistant} />;
+        return <Assistant />;
     }
   };
 

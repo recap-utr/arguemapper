@@ -11,9 +11,8 @@ import {
   type PersistState,
 } from "@/store/storage.js";
 import {
-  type AssistantConfig,
   type ArgueStore,
-  resolveAssistantConfig,
+  defaultAssistantConfig,
   type State,
   type ZundoState,
 } from "@/store/types.js";
@@ -25,10 +24,6 @@ export interface CreateArgueStoreOptions {
   persistKey?: string;
   /** Override the persistence backend (defaults to localStorage). */
   storage?: PersistStorage<PersistState>;
-  /** Partial assistant configuration merged over the defaults. */
-  assistantConfig?: Partial<AssistantConfig>;
-  /** Initial assistant API key (held in memory only). */
-  assistantApiKey?: string;
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
@@ -44,8 +39,8 @@ function buildInitialState(options: CreateArgueStoreOptions): State {
     prettifyJson: true,
     imageScale: 3,
     panels: ["text", "inspector"],
-    assistantConfig: resolveAssistantConfig(options.assistantConfig),
-    assistantApiKey: options.assistantApiKey ?? "",
+    assistantConfig: defaultAssistantConfig,
+    assistantApiKey: "",
     assistantMessages: [],
     assistantConversation: 0,
   };

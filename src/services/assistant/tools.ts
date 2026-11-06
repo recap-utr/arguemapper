@@ -2,7 +2,7 @@ import { jsonSchema, tool, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { z } from "zod";
 import * as model from "@/model.js";
-import type { ArgueStore } from "@/store.js";
+import type { ArgueStore, AssistantConfig } from "@/store.js";
 
 const wikipediaLanguage = z
   .string()
@@ -104,10 +104,11 @@ async function fetchWikipediaJson(path: string, signal: AbortSignal | undefined)
 }
 
 /**
- * Build the assistant tools bound to a specific instance's store.
+ * Build the assistant tools bound to a specific instance's store,
+ * the config is recorded as provenance of the edited nodes.
  * The return type is explicit, as the library build requires declarations without inference.
  */
-export function createTools(store: ArgueStore): ToolSet {
+export function createTools(store: ArgueStore, config: AssistantConfig): ToolSet {
   const { getState } = store;
 
   return {
@@ -245,7 +246,7 @@ export function createTools(store: ArgueStore): ToolSet {
                 ...userdata,
                 assistant: {
                   ...userdata.assistant,
-                  config: { ...state.assistantConfig },
+                  config: { ...config },
                   explanation: explanations[id] ?? userdata.assistant?.explanation,
                 },
               });

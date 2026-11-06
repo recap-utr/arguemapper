@@ -10,14 +10,16 @@ import {
   useRef,
   useState,
 } from "react";
+import { shallow } from "zustand/shallow";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
-import type { AssistantOptions } from "@/services/assistant/chat.js";
 import {
+  type ArgueConfig,
   type ArgueStore,
   ArgueConfigProvider,
   ArgueStoreProvider,
+  type AssistantSettings,
   createArgueStore,
   type EditorSlots,
   FlowWrapperProvider,
@@ -26,8 +28,6 @@ import {
   SlotsProvider,
   useFocusWithin,
 } from "@/store.js";
-
-export type GraphEditorAssistantConfig = AssistantOptions;
 
 const EMPTY_SLOTS: EditorSlots = {};
 
@@ -48,8 +48,11 @@ export interface GraphEditorProps extends React.PropsWithChildren {
    * Wide screens show them beside the canvas, narrow ones below it.
    */
   panels?: boolean;
-  /** Enable the AI assistant (absent => disabled). */
-  assistant?: GraphEditorAssistantConfig;
+  /**
+   * Enable the AI assistant, disabled by default.
+   * The given settings are fixed, the user chooses the others in the settings of the assistant.
+   */
+  assistant?: boolean | Partial<AssistantSettings>;
   /** Persist to localStorage under this key (absent => no persistence). */
   persistKey?: string;
   /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
@@ -93,25 +96,24 @@ export function GraphEditor({
   const id = idProp ?? generatedId;
 
   // Create the store exactly once per instance.
-  const [store] = useState(() =>
-    createArgueStore({
-      graph,
-      persistKey,
-      assistantConfig: assistant,
-      assistantApiKey: assistant?.apiKey,
-    }),
-  );
+  const [store] = useState(() => createArgueStore({ graph, persistKey }));
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const focused = useFocusWithin(rootRef);
 
   // The assistant edits the graph, so read-only instances hide it.
-  const activeAssistant = readOnly ? undefined : assistant;
-  const assistantEnabled = activeAssistant != null;
+  const requested = readOnly || !assistant ? undefined : assistant === true ? {} : assistant;
+  // a fresh object of the host with the same settings keeps the config
+  const [fixed, setFixed] = useState(requested);
+
+  if (!shallow(fixed, requested)) {
+    setFixed(requested);
+  }
+
   const config = useMemo(
-    () => ({ id, readOnly, toolbar, panels, assistant: assistantEnabled }),
-    [id, readOnly, toolbar, panels, assistantEnabled],
+    (): ArgueConfig => ({ id, readOnly, toolbar, panels, assistant: fixed }),
+    [id, readOnly, toolbar, panels, fixed],
   );
 
   // a new graph of the host replaces the current one as an edit that can be undone
@@ -165,7 +167,7 @@ export function GraphEditor({
             <ArgueConfigProvider value={config}>
               <InstanceFocusProvider value={focused}>
                 <SlotsProvider value={slots ?? EMPTY_SLOTS}>
-                  <GraphEditorLayout assistant={activeAssistant} />
+                  <GraphEditorLayout />
                   {children}
                 </SlotsProvider>
               </InstanceFocusProvider>

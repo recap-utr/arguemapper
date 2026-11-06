@@ -55,7 +55,7 @@ function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
           onGraphChange={setGraph}
           toolbar
           panels
-          assistant={{}}
+          assistant
         />
       </div>
     </GraphProviders>
@@ -67,6 +67,7 @@ function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
 `<GraphEditor>` edits the `graph` prop: a new graph from the host replaces the current one as an edit that can be undone, and `onGraphChange` receives the graph after each change, so it can be passed back.
 Graphs are immutable arguebuf graphs, so sharing them between the host and the editor is safe, `importGraph` and `exportGraph` convert them from and to JSON.
 The imperative `ref` (`exportGraph`, `clear`, `fitView`, `undo`/`redo`, …) offers explicit actions.
+`assistant` enables the AI assistant, settings passed as an object (e.g. `assistant={{ baseURL, model }}`) are fixed and hidden from its settings dialog.
 The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf, …) must be provided by the host, so its copies are reused.
 
 ## Tutorial

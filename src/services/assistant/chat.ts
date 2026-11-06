@@ -7,7 +7,7 @@ import {
   isStepCount,
   ToolLoopAgent,
 } from "ai";
-import type { ArgueStore, AssistantConfig } from "@/store.js";
+import type { ArgueStore, AssistantSettings } from "@/store.js";
 import { createTools } from "@/services/assistant/tools.js";
 
 const SYSTEM_PROMPT = `
@@ -26,15 +26,6 @@ Read the graph with readGraph and change it with editGraph, which accepts all ch
 Briefly explain what you are doing and summarise the result for the analyst.
 `.trim();
 
-/** Connection and model settings of the assistant. */
-export interface AssistantSettings extends AssistantConfig {
-  /** Optional, local servers usually need none. */
-  apiKey: string;
-}
-
-/** Settings of the host, they take precedence over the ones of the store. */
-export type AssistantOptions = Partial<AssistantSettings>;
-
 function createAgent(store: ArgueStore, { apiKey, model, baseURL, reasoning }: AssistantSettings) {
   // The Chat Completions API is implemented by OpenAI and every compatible server (llama.cpp, Ollama, vLLM, …),
   // and this provider surfaces the `reasoning_content` that reasoning models stream.
@@ -52,7 +43,7 @@ function createAgent(store: ArgueStore, { apiKey, model, baseURL, reasoning }: A
   return new ToolLoopAgent({
     model: provider.chatModel(model),
     instructions: SYSTEM_PROMPT,
-    tools: createTools(store),
+    tools: createTools(store, { model, baseURL, reasoning }),
     reasoning,
     stopWhen: isStepCount(32),
     onEnd: () => store.setState({ shouldFitView: true }),

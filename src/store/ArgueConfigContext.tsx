@@ -1,4 +1,5 @@
 import { type Context, createContext, useContext } from "react";
+import type { AssistantSettings } from "@/store/types.js";
 
 export interface ArgueConfig {
   /** Instance id; namespaces ReactFlow and the SVG arrow markers so instances don't collide. */
@@ -9,8 +10,11 @@ export interface ArgueConfig {
   toolbar: boolean;
   /** Show the text and inspector panels. */
   panels: boolean;
-  /** Whether the assistant is enabled, which adds its panel. */
-  assistant: boolean;
+  /**
+   * The settings fixed by the host if the assistant is enabled, which adds its panel.
+   * The user chooses the others in the settings of the assistant.
+   */
+  assistant?: Partial<AssistantSettings>;
 }
 
 const ArgueConfigContext = createContext<ArgueConfig>({
@@ -18,7 +22,6 @@ const ArgueConfigContext = createContext<ArgueConfig>({
   readOnly: false,
   toolbar: false,
   panels: false,
-  assistant: false,
 });
 
 export const ArgueConfigProvider: Context<ArgueConfig> = ArgueConfigContext;

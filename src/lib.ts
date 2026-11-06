@@ -1,6 +1,5 @@
 export {
   GraphEditor,
-  type GraphEditorAssistantConfig,
   type GraphEditorHandle,
   type GraphEditorProps,
 } from "@/GraphEditor.js";
@@ -27,5 +26,5 @@ export {
 // Graph model + conversion helpers.
 export * as model from "@/model.js";
 export { exportGraph, importGraph } from "@/services/convert.js";
-export type { AssistantOptions } from "@/services/assistant/chat.js";
+export type { AssistantSettings } from "@/store/types.js";
 export type { GraphJson } from "arguebuf";

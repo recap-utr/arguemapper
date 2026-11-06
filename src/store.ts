@@ -20,6 +20,7 @@ export { useArgueActions, useStore, useTemporalStore } from "@/store/hooks.js";
 export {
   type ArgueStore,
   type AssistantConfig,
+  type AssistantSettings,
   defaultAssistantConfig,
   type Panel,
   type State,

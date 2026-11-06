@@ -11,6 +11,12 @@ export interface AssistantConfig {
   readonly reasoning: NonNullable<LanguageModelCallOptions["reasoning"]>;
 }
 
+/** Connection and model settings of the assistant. */
+export interface AssistantSettings extends AssistantConfig {
+  /** Optional, local servers usually need none. Held in memory only, never persisted. */
+  readonly apiKey: string;
+}
+
 export const defaultAssistantConfig: AssistantConfig = {
   model: "chatgpt-latest",
   baseURL: "https://api.openai.com/v1",

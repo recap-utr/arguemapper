@@ -5,8 +5,15 @@ import { ChatBox, ChatComposerToolbar, type ChatComposerToolbarProps } from "@mu
 import type { ChatSuggestion } from "@mui/x-chat/headless";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { type AssistantOptions, createAssistantAdapter } from "@/services/assistant/chat.js";
-import { resetConversation, useArgueActions, useStore, useStoreApi } from "@/store.js";
+import { createAssistantAdapter } from "@/services/assistant/chat.js";
+import {
+  type AssistantSettings,
+  resetConversation,
+  useArgueActions,
+  useArgueConfig,
+  useStore,
+  useStoreApi,
+} from "@/store.js";
 import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 
 const SUGGESTIONS: ChatSuggestion[] = [
@@ -36,15 +43,41 @@ const SUGGESTIONS: ChatSuggestion[] = [
   },
 ];
 
-interface Props {
-  options?: AssistantOptions;
+const settingKeys = [
+  "apiKey",
+  "model",
+  "baseURL",
+  "reasoning",
+] as const satisfies readonly (keyof AssistantSettings)[];
+
+/**
+ * The settings of the assistant, the ones fixed by the host take precedence over the user's,
+ * who can edit the settings if the host does not fix all of them.
+ */
+function useAssistantSettings(): { settings: AssistantSettings; editable: boolean } {
+  const { assistant: fixed = {} } = useArgueConfig();
+  const config = useStore((state) => state.assistantConfig);
+  const apiKey = useStore((state) => state.assistantApiKey);
+
+  return {
+    settings: {
+      apiKey: fixed.apiKey ?? apiKey,
+      model: fixed.model ?? config.model,
+      baseURL: fixed.baseURL ?? config.baseURL,
+      reasoning: fixed.reasoning ?? config.reasoning,
+    },
+    editable: settingKeys.some((key) => fixed[key] === undefined),
+  };
 }
 
 /** Toolbar of the composer with the actions of the conversation left of the send button. */
 const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...props }) => {
   const store = useStoreApi();
   const empty = useStore((state) => state.assistantMessages.length === 0);
-  const model = useStore((state) => state.assistantConfig.model);
+  const {
+    settings: { model },
+    editable,
+  } = useAssistantSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -66,7 +99,8 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
           <Button
             size="small"
             color="inherit"
-            endIcon={<FontAwesomeIcon icon={faChevronDown} />}
+            endIcon={editable && <FontAwesomeIcon icon={faChevronDown} />}
+            disabled={!editable}
             onClick={() => setSettingsOpen(true)}
             sx={{ minWidth: 0, textTransform: "none" }}
           >
@@ -82,22 +116,15 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
   );
 };
 
-export const Assistant: React.FC<Props> = ({ options = {} }) => {
+export const Assistant: React.FC = () => {
   const store = useStoreApi();
   const { setState } = useArgueActions();
   const messages = useStore((state) => state.assistantMessages);
   // MUI X Chat takes a mutable array
   const chatMessages = useMemo(() => [...messages], [messages]);
   const conversation = useStore((state) => state.assistantConversation);
-  const config = useStore((state) => state.assistantConfig);
-  const storedApiKey = useStore((state) => state.assistantApiKey);
-  // the individual settings determine the agent, a fresh `options` object must not rebuild it
-  const {
-    apiKey = storedApiKey,
-    model = config.model,
-    baseURL = config.baseURL,
-    reasoning = config.reasoning,
-  } = options;
+  // the individual settings determine the agent, a fresh settings object must not rebuild it
+  const { apiKey, model, baseURL, reasoning } = useAssistantSettings().settings;
   const adapter = useMemo(
     () => createAssistantAdapter(store, { apiKey, model, baseURL, reasoning }),
     [store, apiKey, model, baseURL, reasoning],
