@@ -41,11 +41,18 @@ export const FileMenu: React.FC = () => {
   const replaceGraph = useReplaceGraph();
   const [guard, analystDialog] = useAnalystGuard();
 
-  const downloadGraph = (format: convert.ExportFormat) =>
-    guard(() => {
+  const downloadGraph = (format: convert.ExportFormat) => {
+    const download = () => {
       const { graph, analyst, prettifyJson } = getState();
       convert.downloadJson(convert.exportGraph(graph, format, analyst), prettifyJson);
-    });
+    };
+
+    if (convert.recordsAnalyst(format)) {
+      guard(download);
+    } else {
+      download();
+    }
+  };
 
   const downloadImage = (format: convert.ImgFormat) => {
     const element = wrapperRef?.current;

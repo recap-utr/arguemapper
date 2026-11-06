@@ -6,6 +6,9 @@ import type { AnalystIdentity } from "@/store/types.js";
 
 export type ExportFormat = "aif" | "arguebuf";
 
+/** Whether exports in the format record the analyst, who is then asked for first. */
+export const recordsAnalyst = (format: ExportFormat): format is "arguebuf" => format === "arguebuf";
+
 /** Load a graph from a JSON object in any format supported by arguebuf, repairs are reported to `onIssue`. */
 export function importGraph(
   obj: arguebuf.load.JsonGraph,
@@ -46,8 +49,8 @@ export function exportGraph(
   format: ExportFormat,
   analyst: AnalystIdentity,
 ): arguebuf.dump.Formats[ExportFormat] {
-  if (format === "aif") {
-    return arguebuf.dump.json(graph, "aif");
+  if (!recordsAnalyst(format)) {
+    return arguebuf.dump.json(graph, format);
   }
 
   const known = Object.values(graph.analysts).some(
