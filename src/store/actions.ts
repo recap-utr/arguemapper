@@ -35,26 +35,28 @@ export interface ArgueActions {
   addNode: (node: model.Node, placement?: NodePlacement) => void;
 }
 
+/** Remount the assistant chat, which aborts a running reply. */
+const abortReply = (state: State): Pick<State, "assistantConversation"> => ({
+  assistantConversation: state.assistantConversation + 1,
+});
+
 /** Start a fresh assistant conversation, which also aborts a running reply. */
 export function resetConversation(store: ArgueStore): void {
-  store.setState((state) => ({
-    assistantMessages: [],
-    assistantConversation: state.assistantConversation + 1,
-  }));
+  store.setState((state) => ({ assistantMessages: [], ...abortReply(state) }));
 }
 
 /**
- * Replace the graph wholesale (load/import/new), which starts a fresh assistant conversation.
- * Defaults to an empty graph.
+ * Replace the graph wholesale (load/import/new), which aborts a running assistant reply,
+ * so that it does not edit the new graph. Defaults to an empty graph.
  */
 export function resetGraphState(store: ArgueStore, graph: model.Graph = model.newGraph()): void {
-  store.setState({
+  store.setState((state) => ({
     graph,
     selection: model.emptySelection,
     shouldLayout: false,
     shouldFitView: true,
-  });
-  resetConversation(store);
+    ...abortReply(state),
+  }));
 }
 
 /**

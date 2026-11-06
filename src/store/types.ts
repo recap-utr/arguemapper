@@ -69,8 +69,8 @@ export interface State {
   /** Transcript of the assistant (MUI X Chat messages), persisted but not part of the undo history. */
   readonly assistantMessages: readonly ChatMessage[];
   /**
-   * Counter of the assistant conversation, bumped to start a fresh one, e.g. when the graph is
-   * replaced wholesale or the transcript is cleared. A new value also aborts a running reply. Transient.
+   * Counter of the assistant chat, a new value remounts it and aborts a running reply,
+   * e.g. when the transcript is cleared or the graph is replaced wholesale. Transient.
    */
   readonly assistantConversation: number;
 }
