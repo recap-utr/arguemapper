@@ -13,35 +13,37 @@ const wikipediaLanguage = z
     "Use a Wikipedia language code such as en, de, simple or be-tarask.",
   );
 
-type WikipediaSearchPage = {
-  id?: number;
-  key?: string;
-  title?: string;
-  excerpt?: string;
-  description?: string;
-  thumbnail?: {
-    mimetype?: string;
-    width?: number;
-    height?: number;
-    url?: string;
-  };
-};
+const searchPages = z.object({
+  pages: z
+    .array(
+      z.object({
+        id: z.number().optional(),
+        key: z.string().optional(),
+        title: z.string().optional(),
+        excerpt: z.string().optional(),
+        description: z.string().optional(),
+        thumbnail: z
+          .object({
+            mimetype: z.string().optional(),
+            width: z.number().optional(),
+            height: z.number().optional(),
+            url: z.string().optional(),
+          })
+          .optional(),
+      }),
+    )
+    .default([]),
+});
 
-type WikipediaPageSource = {
-  id?: number;
-  key?: string;
-  title?: string;
-  latest?: {
-    id?: number;
-    timestamp?: string;
-  };
-  content_model?: string;
-  license?: {
-    url?: string;
-    title?: string;
-  };
-  source?: string;
-};
+const pageSource = z.object({
+  id: z.number().optional(),
+  key: z.string().optional(),
+  title: z.string().optional(),
+  latest: z.object({ id: z.number().optional(), timestamp: z.string().optional() }).optional(),
+  content_model: z.string().optional(),
+  license: z.object({ url: z.string().optional(), title: z.string().optional() }).optional(),
+  source: z.string().optional(),
+});
 
 function wikipediaApiPath(language: string, path: string, params?: Record<string, string>): string {
   const query = params === undefined ? "" : `?${new URLSearchParams(params).toString()}`;
@@ -93,14 +95,18 @@ const failure = (issues: readonly arguebuf.Issue[]): Error =>
   new Error(`The graph was not changed:\n${report(issues).join("\n")}`);
 
 /** Fetch JSON from the Wikipedia proxy, failing with the reason of the response. */
-async function fetchWikipediaJson(path: string, signal: AbortSignal | undefined): Promise<unknown> {
+async function fetchWikipediaJson<S extends z.ZodType>(
+  schema: S,
+  path: string,
+  signal: AbortSignal | undefined,
+): Promise<z.output<S>> {
   const response = await fetch(path, { headers: { Accept: "application/json" }, signal });
 
   if (!response.ok) {
     throw new Error(`Wikipedia request failed: ${response.statusText} (${response.status}).`);
   }
 
-  return response.json();
+  return schema.parse(await response.json());
 }
 
 /**
@@ -114,27 +120,28 @@ export function createTools(store: ArgueStore, config: AssistantConfig): ToolSet
   return {
     searchWikipedia: tool({
       description:
-        "Search Wikipedia articles by query. Defaults to English, but any Wikipedia language code can be supplied, such as en, de, simple or be-tarask. Use the returned key with fetchWikipedia.",
+        "Search Wikipedia articles by query in any language, such as en, de, simple or be-tarask. Use the returned key with fetchWikipedia.",
       inputSchema: z.object({
         query: z.string().trim().min(1).describe("Search phrase"),
-        language: wikipediaLanguage.optional().describe("Wikipedia language code. Defaults to en."),
+        language: wikipediaLanguage.default("en").describe("Wikipedia language code."),
         limit: z
           .number()
           .int()
           .min(1)
           .max(20)
-          .optional()
-          .describe("Maximum number of results. Defaults to 5."),
+          .default(5)
+          .describe("Maximum number of results."),
       }),
-      execute: async ({ query, language = "en", limit = 5 }, { abortSignal }) => {
-        const data = (await fetchWikipediaJson(
+      execute: async ({ query, language, limit }, { abortSignal }) => {
+        const data = await fetchWikipediaJson(
+          searchPages,
           wikipediaApiPath(language, "search/page", { q: query, limit: String(limit) }),
           abortSignal,
-        )) as { pages?: WikipediaSearchPage[] };
+        );
 
         return {
           language,
-          results: (data.pages ?? []).map((page) => {
+          results: data.pages.map((page) => {
             const key = page.key ?? page.title ?? "";
             return {
               id: page.id,
@@ -162,13 +169,14 @@ export function createTools(store: ArgueStore, config: AssistantConfig): ToolSet
           .trim()
           .min(1)
           .describe("Article title or key, preferably from searchWikipedia"),
-        language: wikipediaLanguage.optional().describe("Wikipedia language code. Defaults to en."),
+        language: wikipediaLanguage.default("en").describe("Wikipedia language code."),
       }),
-      execute: async ({ title, language = "en" }, { abortSignal }) => {
-        const data = (await fetchWikipediaJson(
+      execute: async ({ title, language }, { abortSignal }) => {
+        const data = await fetchWikipediaJson(
+          pageSource,
           wikipediaApiPath(language, `page/${encodeWikipediaTitle(title)}`),
           abortSignal,
-        )) as WikipediaPageSource;
+        );
 
         return {
           language,
