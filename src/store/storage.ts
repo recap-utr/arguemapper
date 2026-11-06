@@ -4,7 +4,7 @@ import { type PersistStorage, type StorageValue } from "zustand/middleware";
 import * as convert from "@/services/convert.js";
 import { resolveAssistantConfig, type State } from "@/store/types.js";
 
-export type PersistState = Pick<
+type PersistState = Pick<
   State,
   | "analyst"
   | "edgeStyle"

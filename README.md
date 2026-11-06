@@ -24,17 +24,17 @@ Both expect the host to provide an MUI theme; `<GraphEditor>`'s editing/assistan
 
 ```tsx
 import {
+  type Graph,
   type GraphEditorHandle,
   type GraphJson,
   GraphEditor,
   GraphProviders,
   GraphViewer,
   importGraph,
-  type model,
 } from "arguemapper";
 import { useRef, useState } from "react";
 
-function Example({ graphs, json }: { graphs: model.Graph[]; json: GraphJson }) {
+function Example({ graphs, json }: { graphs: Graph[]; json: GraphJson }) {
   const ref = useRef<GraphEditorHandle>(null);
   const [graph, setGraph] = useState(() => importGraph(json));
 

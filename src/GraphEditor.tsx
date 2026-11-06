@@ -16,7 +16,6 @@ import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import {
   type ArgueConfig,
-  type ArgueStore,
   ArgueConfigProvider,
   ArgueStoreProvider,
   type AssistantSettings,
@@ -73,8 +72,6 @@ export interface GraphEditorHandle {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
-  /** Escape hatch: the underlying zustand store for advanced integrations. */
-  getStore: () => ArgueStore;
 }
 
 export function GraphEditor({
@@ -154,7 +151,6 @@ export function GraphEditor({
       redo: () => store.temporal.getState().redo(),
       canUndo: () => store.temporal.getState().pastStates.length > 0,
       canRedo: () => store.temporal.getState().futureStates.length > 0,
-      getStore: () => store,
     }),
     [store],
   );

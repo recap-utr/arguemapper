@@ -1,15 +1,10 @@
 import { throttle } from "es-toolkit";
 import { temporal, type ZundoOptions } from "zundo";
-import { persist, type PersistStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
 import * as model from "@/model.js";
-import {
-  localStorageBacked,
-  partialize,
-  persistVersion,
-  type PersistState,
-} from "@/store/storage.js";
+import { localStorageBacked, partialize, persistVersion } from "@/store/storage.js";
 import {
   type ArgueStore,
   defaultAssistantConfig,
@@ -22,8 +17,6 @@ export interface CreateArgueStoreOptions {
   graph?: model.Graph;
   /** When set, the store is persisted to localStorage under this key. Absent => no persistence. */
   persistKey?: string;
-  /** Override the persistence backend (defaults to localStorage). */
-  storage?: PersistStorage<PersistState>;
 }
 
 function buildInitialState(options: CreateArgueStoreOptions): State {
@@ -68,7 +61,7 @@ export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueSt
         persist(tracked, {
           name: options.persistKey,
           version: persistVersion,
-          storage: options.storage ?? localStorageBacked,
+          storage: localStorageBacked,
           partialize,
         }),
       )
