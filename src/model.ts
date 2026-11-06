@@ -16,11 +16,14 @@ export interface ElementUserdata {
 
 /** Userdata of atoms and schemes. */
 export interface NodeUserdata extends ElementUserdata {
-  arguemapper?: { position: XYPosition; [key: string]: unknown };
-  /** Provenance of elements created or changed by the assistant. */
-  assistant?: {
-    explanation?: string;
-    config?: { model?: string; baseURL?: string; reasoning?: string; [key: string]: unknown };
+  arguemapper?: {
+    position?: XYPosition;
+    /** Provenance of elements created or changed by the assistant. */
+    assistant?: {
+      explanation?: string;
+      config?: { model?: string; baseURL?: string; reasoning?: string; [key: string]: unknown };
+      [key: string]: unknown;
+    };
     [key: string]: unknown;
   };
 }
@@ -30,15 +33,19 @@ const elementSchema = z.looseObject({ notes: z.string().optional() });
 const elementUserdata: z.ZodType<ElementUserdata> = elementSchema;
 
 const nodeUserdata: z.ZodType<NodeUserdata> = elementSchema.extend({
-  arguemapper: z.looseObject({ position: z.object({ x: z.number(), y: z.number() }) }).optional(),
-  assistant: z
+  arguemapper: z
     .looseObject({
-      explanation: z.string().optional(),
-      config: z
+      position: z.object({ x: z.number(), y: z.number() }).optional(),
+      assistant: z
         .looseObject({
-          model: z.string().optional(),
-          baseURL: z.string().optional(),
-          reasoning: z.string().optional(),
+          explanation: z.string().optional(),
+          config: z
+            .looseObject({
+              model: z.string().optional(),
+              baseURL: z.string().optional(),
+              reasoning: z.string().optional(),
+            })
+            .optional(),
         })
         .optional(),
     })
@@ -95,11 +102,15 @@ export const fitViewOptions: FitViewOptions = { maxZoom: 1 };
 
 export const position = (node: Node): XYPosition => node.userdata.arguemapper?.position ?? ORIGIN;
 
+/** Userdata of the node with the given fields of arguemapper changed. */
+export const withArguemapper = (
+  { userdata }: Node,
+  changes: NonNullable<NodeUserdata["arguemapper"]>,
+): NodeUserdata => ({ ...userdata, arguemapper: { ...userdata.arguemapper, ...changes } });
+
 /** Userdata of the node with the position changed. */
-export const positioned = ({ userdata }: Node, value: XYPosition): NodeUserdata => ({
-  ...userdata,
-  arguemapper: { ...userdata.arguemapper, position: value },
-});
+export const positioned = (node: Node, position: XYPosition): NodeUserdata =>
+  withArguemapper(node, { position });
 
 /** Update the scheme nodes with the given ids, other ids are skipped. */
 export function updateSchemes(
@@ -176,7 +187,7 @@ export function toggleMajorClaim(graph: GraphDraft, id: string): void {
 
 /** A graph needs auto-layout when it carries no coordinates. */
 export const needsLayout = (graph: Graph): boolean =>
-  Object.values(graph.nodes).every((node) => node.userdata.arguemapper === undefined);
+  Object.values(graph.nodes).every((node) => node.userdata.arguemapper?.position === undefined);
 
 export interface Selection {
   readonly nodes: readonly string[];

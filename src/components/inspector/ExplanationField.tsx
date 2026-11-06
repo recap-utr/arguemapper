@@ -4,7 +4,7 @@ import type * as model from "@/model.js";
 
 /** The explanation of the assistant for a node it created or changed. */
 export const ExplanationField: React.FC<{ node: model.Node }> = ({ node }) => {
-  const explanation = node.userdata.assistant?.explanation;
+  const explanation = node.userdata.arguemapper?.assistant?.explanation;
 
   return explanation ? (
     <TextField
