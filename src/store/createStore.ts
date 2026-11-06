@@ -56,16 +56,17 @@ export function createArgueStore(options: CreateArgueStoreOptions = {}): ArgueSt
 
   const tracked = temporal<State, [], [], ZundoState>(() => initialState, temporalOptions);
   // persistence wraps the history, so that undo and redo are saved as well
-  const store: ArgueStore = options.persistKey
-    ? createStore<State>()(
-        persist(tracked, {
-          name: options.persistKey,
-          version: persistVersion,
-          storage: browserStorage,
-          partialize,
-        }),
-      )
-    : createStore<State>()(tracked);
+  const store: ArgueStore =
+    options.persistKey && browserStorage
+      ? createStore<State>()(
+          persist(tracked, {
+            name: options.persistKey,
+            version: persistVersion,
+            storage: browserStorage,
+            partialize,
+          }),
+        )
+      : createStore<State>()(tracked);
 
   // Every change of the graph, e.g. an edit or an undo, deselects the removed elements.
   store.subscribe((state, previous) => {

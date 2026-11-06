@@ -5,8 +5,12 @@ import { useConfirm } from "material-ui-confirm";
 
 /** Remove everything the app stored and reload it, for when the stored state breaks it. */
 export function resetApp(): void {
-  localStorage.clear();
-  sessionStorage.clear();
+  // browsers throw on access if the site data is blocked, then nothing is stored
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch {}
+
   window.location.reload();
 }
 

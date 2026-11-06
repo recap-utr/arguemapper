@@ -117,7 +117,7 @@ export function readState(name: string): StorageValue<PersistState> | null {
 }
 
 /** Persistence in the local storage, and the session storage for secrets, with the graph as arguebuf JSON. */
-export const browserStorage: PersistStorage<PersistState> = {
+const storage: PersistStorage<PersistState> = {
   getItem: readState,
   setItem: (name, value) => {
     const previous = written.get(name);
@@ -156,6 +156,20 @@ export const browserStorage: PersistStorage<PersistState> = {
     }
   },
 };
+
+/** Whether the storages are accessible, browsers throw on access if the site data is blocked. */
+function accessible(): boolean {
+  try {
+    return localStorage !== undefined && sessionStorage !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/** The persistence of the browser, absent if its storages are not accessible. */
+export const browserStorage: PersistStorage<PersistState> | undefined = accessible()
+  ? storage
+  : undefined;
 
 export const partialize = (state: State): PersistState => pick(state, fields);
 
