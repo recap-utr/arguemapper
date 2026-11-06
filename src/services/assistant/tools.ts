@@ -1,4 +1,4 @@
-import { jsonSchema, tool, type ToolSet } from "ai";
+import { tool, type ToolSet } from "ai";
 import * as arguebuf from "arguebuf";
 import { z } from "zod";
 import * as model from "@/model.js";
@@ -69,19 +69,12 @@ function absoluteUrl(url: string | undefined): string | undefined {
 }
 
 /** The patch of arguebuf with the explanations of the assistant. */
-type GraphEdit = arguebuf.Patch & { readonly explanations?: Readonly<Record<string, string>> };
-
-const graphEditSchema: arguebuf.JsonSchema = {
-  ...arguebuf.patchSchema,
-  properties: {
-    ...arguebuf.patchSchema.properties,
-    explanations: {
-      type: "object",
-      additionalProperties: { type: "string" },
-      description: "Short reasons for the atoms and schemes of this edit, keyed by their id.",
-    },
-  },
-};
+const graphEditSchema = arguebuf.patchSchema.extend({
+  explanations: z
+    .record(z.string(), z.string())
+    .default({})
+    .describe("Short reasons for the atoms and schemes of this edit, keyed by their id."),
+});
 
 /** Issues as compact lines for the assistant, the ids of the elements are part of the message. */
 const report = (issues: readonly arguebuf.Issue[]): string[] =>
@@ -228,17 +221,9 @@ export function createTools(store: ArgueStore, config: AssistantConfig): ToolSet
 
     editGraph: tool({
       description:
-        "Create, update, or remove resources, participants, atoms, schemes, and the major claim in one call. Ids are chosen by you: an item with a new id creates the element, an existing id updates the given fields. The edit is applied all or nothing, errors name the offending item, so fix them and call again. Warnings and the remaining issues of the graph are returned on success.",
-      inputSchema: jsonSchema<GraphEdit>(graphEditSchema, {
-        validate: (value) => {
-          const { patch, issues } = arguebuf.parsePatch<GraphEdit>(value, graphEditSchema);
-
-          return patch === undefined
-            ? { success: false, error: failure(issues) }
-            : { success: true, value: patch };
-        },
-      }),
-      execute: async ({ explanations = {}, ...patch }) => {
+        "Change the graph in one call. If it fails, nothing was changed: fix the items its errors name and call it again. Warnings and the remaining issues of the graph are returned on success.",
+      inputSchema: graphEditSchema,
+      execute: async ({ explanations, ...patch }) => {
         const state = getState();
         const result = arguebuf.applyPatch(state.graph, patch, { codecs: model.codecs });
 
