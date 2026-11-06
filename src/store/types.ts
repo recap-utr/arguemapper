@@ -39,8 +39,8 @@ export function resolveAssistantConfig({
 
 /**
  * A panel beside the canvas.
- * Wide screens show the text on the left and the inspector or assistant on the right,
- * narrow screens show the last opened panel below the canvas.
+ * Wide editors show the text on the left and the inspector or assistant on the right,
+ * narrow ones show the last opened panel below the canvas.
  */
 export type Panel = "text" | "inspector" | "assistant";
 

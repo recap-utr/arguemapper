@@ -12,6 +12,7 @@ import {
 } from "react";
 import { shallow } from "zustand/shallow";
 import { NoticeSnackbar } from "@/components/NoticeSnackbar.js";
+import { useContainerBreakpoint } from "@/components/breakpoints.js";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
@@ -45,7 +46,7 @@ export interface GraphEditorProps extends React.PropsWithChildren {
   toolbar?: boolean;
   /**
    * Show the panels for the text and the details of the selection, and the assistant if enabled.
-   * Wide screens show them beside the canvas, narrow ones below it.
+   * Wide editors show them beside the canvas, narrow ones below it.
    */
   panels?: boolean;
   /**
@@ -99,6 +100,7 @@ export function GraphEditor({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const focused = useFocusWithin(rootRef);
+  const breakpoint = useContainerBreakpoint(rootRef);
 
   // The assistant edits the graph, so read-only instances hide it.
   const requested = readOnly || !assistant ? undefined : assistant === true ? {} : assistant;
@@ -110,8 +112,8 @@ export function GraphEditor({
   }
 
   const config = useMemo(
-    (): ArgueConfig => ({ id, readOnly, toolbar, panels, assistant: fixed }),
-    [id, readOnly, toolbar, panels, fixed],
+    (): ArgueConfig => ({ id, readOnly, toolbar, panels, assistant: fixed, breakpoint }),
+    [id, readOnly, toolbar, panels, fixed, breakpoint],
   );
 
   // a new graph of the host replaces the current one as an edit that can be undone
@@ -160,7 +162,7 @@ export function GraphEditor({
     <div
       ref={rootRef}
       className={className}
-      style={{ position: "relative", width: "100%", height: "100%", ...style }}
+      style={{ position: "relative", width: "100%", height: "100%", containerType: "inline-size", ...style }}
     >
       <ReactFlowProvider>
         <ArgueStoreProvider value={store}>

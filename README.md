@@ -18,7 +18,7 @@ ArgueMapper ships two embeddable components, layered on a shared rendering core,
 
 - **`<GraphViewer>`** — a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
 - **`<GraphEditor>`** — the full embeddable editor (the standalone ArgueMapper app is one configuration of it). It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
-  The same components adapt to desktops, tablets, and phones: wide screens show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
+  The same components adapt to desktops, tablets, and phones: wide editors show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
 Both need no wrapper. They use the MUI theme of the host, e.g. `createTheme({ colorSchemes: { dark: true } })` to follow the dark mode of the OS, or MUI's default theme without a `ThemeProvider`.
 

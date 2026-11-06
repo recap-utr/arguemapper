@@ -38,7 +38,7 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
         borderColor: "divider",
         ...(placement === "bottom"
           ? { height: expanded ? 1 : "50%" }
-          : { width: "clamp(300px, 30vw, 460px)" }),
+          : { width: "clamp(300px, 30cqw, 460px)" }),
       }}
     >
       <Stack

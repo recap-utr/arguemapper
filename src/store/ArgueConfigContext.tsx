@@ -1,3 +1,4 @@
+import type { Breakpoint } from "@mui/material";
 import { type Context, createContext, useContext } from "react";
 import type { AssistantSettings } from "@/store/types.js";
 
@@ -15,6 +16,8 @@ export interface ArgueConfig {
    * The user chooses the others in the settings of the assistant.
    */
   assistant?: Partial<AssistantSettings>;
+  /** The largest breakpoint of the theme that the editor is as wide as. */
+  breakpoint: Breakpoint;
 }
 
 const ArgueConfigContext = createContext<ArgueConfig>({
@@ -22,6 +25,7 @@ const ArgueConfigContext = createContext<ArgueConfig>({
   readOnly: false,
   toolbar: false,
   panels: false,
+  breakpoint: "xl",
 });
 
 export const ArgueConfigProvider: Context<ArgueConfig> = ArgueConfigContext;

@@ -18,7 +18,7 @@ export const GraphEditorLayout: React.FC = () => {
   const { wide, areas } = usePanelLayout();
   const { closePanels } = useArgueActions();
 
-  // Panels below the canvas cover half of it, so narrow screens start with none.
+  // Panels below the canvas cover half of it, so narrow editors start with none.
   useEffect(() => {
     if (!wide) closePanels("text", "inspector", "assistant");
   }, [wide, closePanels]);

@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import { Button, Tooltip } from "@mui/material";
 import type React from "react";
+import { useEditorUp } from "@/components/breakpoints.js";
 import { ToolbarPaper } from "@/components/canvas/SelectionToolbar.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { PANELS, usePanelLayout } from "@/components/panels/layout.js";
@@ -12,7 +13,7 @@ import { useArgueActions } from "@/store.js";
  */
 export const PanelToggles: React.FC = () => {
   const { areas, shown } = usePanelLayout();
-  const labeled = useMediaQuery(useTheme().breakpoints.up("lg"));
+  const labeled = useEditorUp("lg");
   const { openPanel } = useArgueActions();
   const { coarse } = useGraphRender();
   const closed = areas.filter((area) => shown(area) === undefined).flat();
