@@ -10,12 +10,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Divider, ListSubheader, Menu } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import type React from "react";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useAnalystGuard } from "@/components/AnalystDialog.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { IconMenuItem } from "@/components/IconMenuItem.js";
-import { useReplaceGraph } from "@/components/useReplaceGraph.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import { generateDemo } from "@/services/demo.js";
@@ -25,6 +24,7 @@ import {
   useFlowWrapperRef,
   useInstanceFocused,
   useSlots,
+  useWorkspace,
 } from "@/store.js";
 
 /** Menu to start, open, and download graphs. */
@@ -32,19 +32,20 @@ export const FileMenu: React.FC = () => {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { readOnly } = useArgueConfig();
+  const tabs = useWorkspace((state) => state.tabs);
   const { coarse } = useGraphRender();
   const slots = useSlots();
   const flow = useReactFlow();
   const wrapperRef = useFlowWrapperRef();
   const focused = useInstanceFocused();
-  const { getState } = useArgueActions();
-  const replaceGraph = useReplaceGraph();
+  const { getState, getWorkspace, openGraph } = useArgueActions();
   const [guard, analystDialog] = useAnalystGuard();
 
   const downloadGraph = (format: convert.ExportFormat) => {
     const download = () => {
-      const { graph, analyst, prettifyJson } = getState();
-      convert.downloadJson(convert.exportGraph(graph, format, analyst), prettifyJson);
+      const { analyst, prettifyJson } = getWorkspace();
+      const { graph } = getState();
+      convert.downloadJson(convert.exportGraph(graph, format, analyst), prettifyJson, graph.name);
     };
 
     if (convert.recordsAnalyst(format)) {
@@ -59,7 +60,11 @@ export const FileMenu: React.FC = () => {
 
     if (element) {
       void flow.fitView(model.fitViewOptions);
-      void convert.downloadImage(format, { element, pixelRatio: getState().imageScale });
+      void convert.downloadImage(format, {
+        element,
+        pixelRatio: getWorkspace().imageScale,
+        name: getState().graph.name,
+      });
     }
   };
 
@@ -87,9 +92,9 @@ export const FileMenu: React.FC = () => {
         onClick={(event) => {
           event.currentTarget.value = "";
         }}
+        multiple={tabs}
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) replaceGraph(file);
+          for (const file of event.target.files ?? []) openGraph(file);
         }}
       />
       {/* clicks on items bubble up and close the menu, it stays mounted for dialogs of the slots */}
@@ -101,7 +106,7 @@ export const FileMenu: React.FC = () => {
         onClick={() => setAnchor(null)}
       >
         {!readOnly && [
-          <IconMenuItem key="new" icon={faFile} text="New graph" onClick={() => replaceGraph()} />,
+          <IconMenuItem key="new" icon={faFile} text="New graph" onClick={() => openGraph()} />,
           <IconMenuItem
             key="open"
             icon={faFolderOpen}
@@ -112,9 +117,9 @@ export const FileMenu: React.FC = () => {
             key="example"
             icon={faLightbulb}
             text="Load example"
-            onClick={() => replaceGraph(generateDemo())}
+            onClick={() => openGraph(generateDemo())}
           />,
-          slots.fileMenu,
+          <Fragment key="slots">{slots.fileMenu}</Fragment>,
           <Divider key="divider" />,
         ]}
         {/* sticky headers take on the elevation tint of the menu they are on */}

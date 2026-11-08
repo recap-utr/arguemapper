@@ -17,10 +17,9 @@ import type React from "react";
 import { useState } from "react";
 import { shallow } from "zustand/shallow";
 import { usePanelLayout } from "@/components/panels/layout.js";
-import { useReplaceGraph } from "@/components/useReplaceGraph.js";
 import type * as model from "@/model.js";
 import { generateDemo } from "@/services/demo.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument, useWorkspace } from "@/store.js";
 
 interface GuideStep {
   id: "text" | "claims" | "relations" | "majorClaim";
@@ -64,10 +63,10 @@ const STEPS: readonly GuideStep[] = [
 
 /** The step the guide shows, undefined while it is hidden or done. */
 export function useGuideStep(): GuideStep["id"] | undefined {
-  const shown = useStore((state) => state.guide);
+  const shown = useWorkspace((state) => state.guide);
   const { readOnly } = useArgueConfig();
 
-  return useStore((state) =>
+  return useDocument((state) =>
     shown && !readOnly ? STEPS.find((step) => !step.done(state.graph))?.id : undefined,
   );
 }
@@ -77,7 +76,7 @@ export function useGuideStep(): GuideStep["id"] | undefined {
  * It is shown on the canvas until all steps are done or the user hides it.
  */
 export const Guide: React.FC = () => {
-  const shown = useStore((state) => state.guide);
+  const shown = useWorkspace((state) => state.guide);
   const { readOnly } = useArgueConfig();
 
   // the steps are only checked while the guide may be shown
@@ -85,13 +84,12 @@ export const Guide: React.FC = () => {
 };
 
 const GuideCard: React.FC = () => {
-  const completed = useStore((state) => STEPS.map((step) => step.done(state.graph)), shallow);
+  const completed = useDocument((state) => STEPS.map((step) => step.done(state.graph)), shallow);
   const { wide, available, isShown } = usePanelLayout();
   // collapsed while a panel covers half of a narrow canvas, unless the user chose otherwise
   const [expanded, setExpanded] = useState<boolean>();
   const auto = wide || !available.some(isShown);
-  const { setState, openPanel, notify } = useArgueActions();
-  const replaceGraph = useReplaceGraph();
+  const { setWorkspace, openPanel, notify, openGraph } = useArgueActions();
   const active = completed.indexOf(false);
 
   if (active === -1) {
@@ -99,7 +97,7 @@ const GuideCard: React.FC = () => {
   }
 
   const hide = () => {
-    setState({ guide: false });
+    setWorkspace({ guide: false });
     notify("You can show the guide again in the settings.", "info");
   };
 
@@ -147,7 +145,7 @@ const GuideCard: React.FC = () => {
             <Button
               size="small"
               startIcon={<FontAwesomeIcon icon={faLightbulb} />}
-              onClick={() => replaceGraph(generateDemo())}
+              onClick={() => openGraph(generateDemo())}
             >
               See an example
             </Button>

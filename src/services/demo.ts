@@ -22,7 +22,7 @@ export function generateDemo(): model.Graph {
   const support = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("support") });
   const conflict = new arguebuf.SchemeNode({ scheme: arguebuf.defaultScheme("attack") });
 
-  return model.newGraph().edit((graph) => {
+  return model.newGraph("Example").edit((graph) => {
     graph.addResource(resource);
     graph.addParticipant(participant);
     graph.addAnalyst(new arguebuf.Analyst({ name: "Michael Web" }));

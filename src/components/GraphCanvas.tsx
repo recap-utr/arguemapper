@@ -10,9 +10,11 @@ import {
   type OnConnectEnd,
   type OnEdgesChange,
   type OnNodesChange,
+  type OnMoveEnd,
   type OnReconnect,
   type OnSelectionChangeFunc,
   ReactFlow,
+  type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { type ReactNode, type RefObject, useMemo } from "react";
@@ -33,6 +35,10 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
   nodes: model.CanvasNode[];
   edges: model.CanvasEdge[];
   edgeStyle: model.EdgeStyle;
+
+  /** Viewport to restore, the graph is fitted into view without one. */
+  viewport?: Viewport;
+  onMoveEnd?: OnMoveEnd;
 
   /** Ref forwarded to the ReactFlow wrapper element (for coordinate transforms / image export). */
   wrapperRef?: RefObject<HTMLDivElement | null> | null;
@@ -77,6 +83,7 @@ export function GraphCanvas({
   nodes,
   edges,
   edgeStyle,
+  viewport,
   wrapperRef,
   edgeToolbar,
   finishEditing,
@@ -118,8 +125,9 @@ export function GraphCanvas({
           edges={edges}
           {...props}
           deleteKeyCode={null}
-          fitView
+          fitView={viewport === undefined}
           fitViewOptions={model.fitViewOptions}
+          onInit={(instance) => viewport && void instance.setViewport(viewport)}
           selectNodesOnDrag
           nodeTypes={NodeTypes}
           edgeTypes={EdgeTypes}

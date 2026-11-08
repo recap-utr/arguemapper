@@ -1,73 +1,31 @@
 import type * as arguebuf from "arguebuf";
-import { ReactFlowProvider } from "@xyflow/react";
-import {
-  type Ref,
-  useEffect,
-  useEffectEvent,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { shallow } from "zustand/shallow";
-import { NoticeSnackbar } from "@/components/NoticeSnackbar.js";
-import { useContainerBreakpoint } from "@/components/breakpoints.js";
-import type { AssistantSettings } from "@/assistant/config.js";
-import { GraphEditorLayout } from "@/GraphEditorLayout.js";
-import * as model from "@/model.js";
+import { type Ref, useEffect, useEffectEvent, useImperativeHandle, useState } from "react";
+import { EditorShell, type EditorProps } from "@/EditorShell.js";
+import type * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import {
-  type ArgueConfig,
-  ArgueConfigProvider,
-  ArgueStoreProvider,
-  createArgueStore,
-  type EditorSlots,
-  FlowWrapperProvider,
-  InstanceFocusProvider,
-  resetGraphState,
-  SlotsProvider,
-  useFocusWithin,
+  canRedo,
+  canUndo,
+  commit,
+  createDocumentStore,
+  createWorkspaceStore,
+  redo,
+  undo,
 } from "@/store.js";
 
-const EMPTY_SLOTS: EditorSlots = {};
-
-export interface GraphEditorProps extends React.PropsWithChildren {
+export interface GraphEditorProps extends EditorProps {
   /**
-   * The graph to edit, it replaces the current one (including a persisted one) whenever it changes.
+   * The graph to edit, it replaces the current one as an edit that can be undone whenever it changes.
    * Graphs are immutable, so the editor and the host can share them safely.
    */
   graph?: model.Graph;
   /** Called with the new graph after each change, e.g. an edit, an undo, or an import. */
   onGraphChange?: (graph: model.Graph) => void;
-  /** Disable all editing — pure viewer. */
-  readOnly?: boolean;
-  /** Show the file menu, the settings, and the undo, redo, and layout controls. */
-  toolbar?: boolean;
-  /**
-   * Show the panels for the text and the details of the selection, and the assistant if enabled.
-   * Wide editors show them beside the canvas, narrow ones below it.
-   */
-  panels?: boolean;
-  /**
-   * Enable the AI assistant, disabled by default.
-   * The given settings are fixed, the user chooses the others in the settings of the assistant.
-   */
-  assistant?: boolean | Partial<AssistantSettings>;
-  /** Persist to localStorage under this key (absent => no persistence). */
-  persistKey?: string;
-  /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
-  id?: string;
-  /** Host content added to the file menu and the settings. */
-  slots?: EditorSlots;
-  style?: React.CSSProperties;
-  className?: string;
   ref?: Ref<GraphEditorHandle>;
 }
 
 export interface GraphEditorHandle {
   exportGraph: <F extends convert.ExportFormat>(format: F) => arguebuf.dump.Formats[F];
-  clear: () => void;
   fitView: () => void;
   layout: () => void;
   undo: () => void;
@@ -76,109 +34,48 @@ export interface GraphEditorHandle {
   canRedo: () => boolean;
 }
 
+/** Editor of a single graph, which opening a file replaces. See `<GraphWorkspace>` for several graphs. */
 export function GraphEditor({
   graph,
   onGraphChange,
-  readOnly = false,
-  toolbar = false,
-  panels = false,
-  assistant,
-  persistKey,
-  id: idProp,
-  slots,
-  style,
-  className,
-  children,
   ref,
+  ...props
 }: GraphEditorProps): React.JSX.Element {
-  const generatedId = useId();
-  const id = idProp ?? generatedId;
+  // Create the stores exactly once per instance.
+  const [doc] = useState(() => createDocumentStore({ graph }));
+  const [workspace] = useState(() => createWorkspaceStore({ documents: [doc], tabs: false }));
 
-  // Create the store exactly once per instance.
-  const [store] = useState(() => createArgueStore({ graph, persistKey }));
-
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const focused = useFocusWithin(rootRef);
-  const breakpoint = useContainerBreakpoint(rootRef);
-
-  // The assistant edits the graph, so read-only instances hide it.
-  const requested = readOnly || !assistant ? undefined : assistant === true ? {} : assistant;
-  // a fresh object of the host with the same settings keeps the config
-  const [fixed, setFixed] = useState(requested);
-
-  if (!shallow(fixed, requested)) {
-    setFixed(requested);
-  }
-
-  const config = useMemo(
-    (): ArgueConfig => ({ id, readOnly, toolbar, panels, assistant: fixed, breakpoint }),
-    [id, readOnly, toolbar, panels, fixed, breakpoint],
-  );
-
-  // a new graph of the host replaces the current one as an edit that can be undone
   useEffect(() => {
-    if (graph !== undefined && graph !== store.getState().graph) {
-      store.setState({ graph });
-    }
-  }, [store, graph]);
+    if (graph !== undefined) commit(doc, graph);
+  }, [doc, graph]);
 
   // reads the latest callback, so the subscription is kept when the host passes an inline one
   const emitChange = useEffectEvent((next: model.Graph) => onGraphChange?.(next));
 
   useEffect(
     () =>
-      store.subscribe((state, previous) => {
+      doc.subscribe((state, previous) => {
         if (state.graph !== previous.graph) {
           emitChange(state.graph);
         }
       }),
-    [store],
+    [doc],
   );
 
   useImperativeHandle(
     ref,
     (): GraphEditorHandle => ({
-      exportGraph: (format) => {
-        const { graph, analyst } = store.getState();
-        return convert.exportGraph(graph, format, analyst);
-      },
-      clear: () => resetGraphState(store),
-      fitView: () => {
-        store.setState({ shouldFitView: true });
-      },
-      layout: () => {
-        store.setState({ shouldLayout: true });
-      },
-      undo: () => store.temporal.getState().undo(),
-      redo: () => store.temporal.getState().redo(),
-      canUndo: () => store.temporal.getState().pastStates.length > 0,
-      canRedo: () => store.temporal.getState().futureStates.length > 0,
+      exportGraph: (format) =>
+        convert.exportGraph(doc.getState().graph, format, workspace.getState().analyst),
+      fitView: () => doc.setState({ shouldFitView: true }),
+      layout: () => doc.setState({ shouldLayout: true }),
+      undo: () => undo(doc),
+      redo: () => redo(doc),
+      canUndo: () => canUndo(doc.getState()),
+      canRedo: () => canRedo(doc.getState()),
     }),
-    [store],
+    [doc, workspace],
   );
 
-  return (
-    <div
-      ref={rootRef}
-      className={className}
-      style={{ position: "relative", width: "100%", height: "100%", containerType: "inline-size", ...style }}
-    >
-      <ReactFlowProvider>
-        <ArgueStoreProvider value={store}>
-          <FlowWrapperProvider value={wrapperRef}>
-            <ArgueConfigProvider value={config}>
-              <InstanceFocusProvider value={focused}>
-                <SlotsProvider value={slots ?? EMPTY_SLOTS}>
-                  <GraphEditorLayout />
-                  <NoticeSnackbar />
-                  {children}
-                </SlotsProvider>
-              </InstanceFocusProvider>
-            </ArgueConfigProvider>
-          </FlowWrapperProvider>
-        </ArgueStoreProvider>
-      </ReactFlowProvider>
-    </div>
-  );
+  return <EditorShell workspace={workspace} {...props} />;
 }

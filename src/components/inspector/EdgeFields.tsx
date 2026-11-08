@@ -3,12 +3,12 @@ import type React from "react";
 import { AdvancedSection } from "@/components/inspector/AdvancedSection.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import * as model from "@/model.js";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useDocument } from "@/store.js";
 
 /** Fields of the selected edge. */
 export const EdgeFields: React.FC = () => {
-  const id = useStore((state) => state.selection.edges[0]);
-  const edge = useStore((state) => state.graph.edges[id]);
+  const id = useDocument((state) => state.selection.edges[0]);
+  const edge = useDocument((state) => state.graph.edges[id]);
   const { editGraph } = useArgueActions();
 
   return (

@@ -6,12 +6,13 @@ import type React from "react";
 import { AdvancedSection } from "@/components/inspector/AdvancedSection.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Fields of the whole graph, shown while nothing is selected. */
 export const GraphFields: React.FC = () => {
-  const notes = useStore((state) => state.graph.userdata.notes);
-  const participants = useStore((state) => state.graph.participants);
+  const name = useDocument((state) => state.graph.name);
+  const notes = useDocument((state) => state.graph.userdata.notes);
+  const participants = useDocument((state) => state.graph.participants);
   const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();
 
@@ -21,6 +22,18 @@ export const GraphFields: React.FC = () => {
         Select a claim or relation on the canvas to edit it here.
       </Typography>
       <Typography variant="overline">Graph</Typography>
+      <TextField
+        label="Name"
+        fullWidth
+        value={name ?? ""}
+        slotProps={{ input: { readOnly } }}
+        onChange={(event) => {
+          const { value } = event.target;
+          editGraph((graph) => {
+            graph.name = value || undefined;
+          });
+        }}
+      />
       <NotesField
         label="Notes"
         value={notes ?? ""}

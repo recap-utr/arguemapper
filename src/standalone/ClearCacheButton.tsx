@@ -2,14 +2,16 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Tooltip } from "@mui/material";
 import { useState } from "react";
+import { PERSIST_KEY } from "@/App.js";
 import { ConfirmDialog } from "@/components/ConfirmDialog.js";
+import { clearSession } from "@/store/persistence.js";
 
 /** Remove everything the app stored and reload it, for when the stored state breaks it. */
-export function resetApp(): void {
+export async function resetApp(): Promise<void> {
   // browsers throw on access if the site data is blocked, then nothing is stored
   try {
     localStorage.clear();
-    sessionStorage.clear();
+    await clearSession(PERSIST_KEY);
   } catch {}
 
   window.location.reload();
@@ -37,10 +39,10 @@ export const ClearCacheButton: React.FC = () => {
       <ConfirmDialog
         open={open}
         title="Reset the app?"
-        description="This removes your graph, its undo history, the assistant conversation, and all settings. It cannot be undone."
+        description="This closes all your graphs and removes them together with their undo history, the assistant conversation, and all settings. It cannot be undone."
         confirmText="Reset"
         destructive
-        onConfirm={resetApp}
+        onConfirm={() => void resetApp()}
         onClose={() => setOpen(false)}
       />
     </>

@@ -2,12 +2,12 @@ import { Stack, TextField } from "@mui/material";
 import type React from "react";
 import { useCallback, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog.js";
-import { useArgueActions, useStore } from "@/store.js";
+import { useArgueActions, useWorkspace } from "@/store.js";
 
 /** Name and email of the analyst, which exported graphs contain. */
 export const AnalystFields: React.FC = () => {
-  const analyst = useStore((state) => state.analyst);
-  const { setState } = useArgueActions();
+  const analyst = useWorkspace((state) => state.analyst);
+  const { setWorkspace } = useArgueActions();
 
   return (
     <Stack spacing={2}>
@@ -17,7 +17,7 @@ export const AnalystFields: React.FC = () => {
         value={analyst.name ?? ""}
         onChange={(event) => {
           const name = event.target.value;
-          setState((state) => ({ analyst: { ...state.analyst, name } }));
+          setWorkspace((state) => ({ analyst: { ...state.analyst, name } }));
         }}
       />
       <TextField
@@ -27,7 +27,7 @@ export const AnalystFields: React.FC = () => {
         value={analyst.email ?? ""}
         onChange={(event) => {
           const email = event.target.value;
-          setState((state) => ({ analyst: { ...state.analyst, email } }));
+          setWorkspace((state) => ({ analyst: { ...state.analyst, email } }));
         }}
       />
     </Stack>
@@ -39,7 +39,7 @@ export const AnalystFields: React.FC = () => {
  * Returns the guard and the dialog that asks, which must be rendered.
  */
 export function useAnalystGuard(): [guard: (action: () => void) => void, dialog: React.ReactNode] {
-  const analyst = useStore((state) => state.analyst);
+  const analyst = useWorkspace((state) => state.analyst);
   const [pending, setPending] = useState<() => void>();
   const known = Boolean(analyst.name && analyst.email);
   const close = () => setPending(undefined);

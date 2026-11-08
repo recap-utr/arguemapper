@@ -1,7 +1,7 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faFileLines, faRobot, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { useEditorUp } from "@/components/breakpoints.js";
-import { type Panel, useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { type Panel, useArgueActions, useArgueConfig, useWorkspace } from "@/store.js";
 
 export const PANELS: Readonly<Record<Panel, { label: string; icon: IconProp }>> = {
   text: { label: "Text", icon: faFileLines },
@@ -28,7 +28,7 @@ export interface PanelLayout {
 
 /** Which panels are shown where, shared by the layout, the panel toggles, and the panels. */
 export function usePanelLayout(): PanelLayout {
-  const panels = useStore((state) => state.panels);
+  const panels = useWorkspace((state) => state.panels);
   const { assistant } = useArgueConfig();
   const wide = useEditorUp("md");
   const { closePanels } = useArgueActions();

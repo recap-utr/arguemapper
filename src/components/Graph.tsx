@@ -37,9 +37,10 @@ import {
   useArgueActions,
   useArgueConfig,
   useFlowWrapperRef,
-  type State,
+  type DocumentState,
+  useDocument,
   useInstanceFocused,
-  useStore,
+  useWorkspace,
 } from "@/store.js";
 
 type CanvasChange = NodeChange<model.CanvasNode> | EdgeChange<model.CanvasEdge>;
@@ -69,7 +70,7 @@ function linkAndSelect(
   graph: model.GraphDraft,
   source: string,
   target: string,
-): Pick<State, "selection"> | undefined {
+): Pick<DocumentState, "selection"> | undefined {
   const scheme = model.link(graph, source, target);
 
   return scheme && { selection: model.nodeSelection(scheme.id) };
@@ -83,14 +84,14 @@ export default function Graph(): React.JSX.Element {
   const wrapperRef = useFlowWrapperRef();
   const focused = useInstanceFocused();
 
-  const graph = useStore((state) => state.graph);
-  const selection = useStore((state) => state.selection);
-  const edgeStyle = useStore((state) => state.edgeStyle);
+  const graph = useDocument((state) => state.graph);
+  const selection = useDocument((state) => state.selection);
+  const edgeStyle = useWorkspace((state) => state.edgeStyle);
   // Graphs without coordinates (initial, restored, imported) lay themselves out.
   const needsLayout = useMemo(() => model.needsLayout(graph), [graph]);
-  const shouldLayout = useStore((state) => state.shouldLayout) || needsLayout;
-  const shouldFitView = useStore((state) => state.shouldFitView);
-  const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
+  const shouldLayout = useDocument((state) => state.shouldLayout) || needsLayout;
+  const shouldFitView = useDocument((state) => state.shouldFitView);
+  const layoutAlgorithm = useWorkspace((state) => state.layoutAlgorithm);
 
   // view state of the canvas, neither undoable nor persisted
   const [measured, setMeasured] = useState<Record<string, model.Dimensions>>({});
@@ -99,6 +100,8 @@ export default function Graph(): React.JSX.Element {
   const [editingId, setEditingId] = useState<string>();
   const [nodeCache] = useState<model.CanvasCache<model.CanvasNode>>(() => new Map());
   const [edgeCache] = useState<model.CanvasCache<model.CanvasEdge>>(() => new Map());
+  // the viewport of the graph when it was shown before
+  const [viewport] = useState(() => getState().viewport);
   const nodes = useMemo(
     () => model.canvasNodes(graph, { selection, measured, dragged, editing: editingId }, nodeCache),
     [graph, selection, measured, dragged, editingId, nodeCache],
@@ -328,6 +331,8 @@ export default function Graph(): React.JSX.Element {
       nodes={nodes}
       edges={edges}
       edgeStyle={edgeStyle}
+      viewport={viewport}
+      onMoveEnd={(_event, current) => setState({ viewport: current })}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={readOnly ? undefined : onConnect}

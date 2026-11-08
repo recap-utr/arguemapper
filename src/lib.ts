@@ -1,4 +1,9 @@
 export { GraphEditor, type GraphEditorHandle, type GraphEditorProps } from "@/GraphEditor.js";
+export {
+  GraphWorkspace,
+  type GraphWorkspaceHandle,
+  type GraphWorkspaceProps,
+} from "@/GraphWorkspace.js";
 export { GraphViewer, type GraphViewerHandle, type GraphViewerProps } from "@/GraphViewer.js";
 export { type ExportFormat, exportGraph, importGraph } from "@/services/convert.js";
 export type { AssistantSettings } from "@/assistant/config.js";

@@ -4,6 +4,8 @@ import {
   codecs,
   describeIssue,
   type Graph,
+  graphTitle,
+  newGraph,
   type Provenance,
   type Schema,
   shownResource,
@@ -32,8 +34,10 @@ export interface GraphState {
   readonly selectedResource?: string;
 }
 
-/** Access to the graph that the tools read and edit, e.g. the store of an editor or a file. */
+/** Access to a graph that the tools read and edit, e.g. the store of a tab or a file. */
 export interface GraphSession {
+  /** Id of the graph within its workspace. */
+  readonly id: string;
   read(): GraphState | Promise<GraphState>;
   /** Store the edited graph, the changes name the elements that the edit created and removed. */
   write(
@@ -42,8 +46,24 @@ export interface GraphSession {
   ): void | Promise<void>;
 }
 
+/** The graphs that the tools read and edit, e.g. the tabs of an editor or the files of a folder. */
+export interface GraphWorkspace {
+  /** The open graphs. */
+  list(): readonly GraphSession[] | Promise<readonly GraphSession[]>;
+  /** The graph with the id, the default graph if it is omitted. Throws if there is none. */
+  get(id?: string): GraphSession | Promise<GraphSession>;
+  /** Add the graph and return its session, absent if the workspace cannot hold more graphs. */
+  readonly add?: (graph: Graph) => GraphSession | Promise<GraphSession>;
+}
+
+const graphId = z
+  .string()
+  .optional()
+  .describe("Id of the graph from listGraphs, the graph the analyst works on if omitted.");
+
 /** The patch of arguebuf with the explanations of the assistant. */
 const graphEditSchema = arguebuf.patchSchema.extend({
+  graph: graphId,
   explanations: z
     .record(z.string(), z.string())
     .default({})
@@ -60,14 +80,48 @@ const report = (issues: readonly arguebuf.Issue[]): string[] =>
 const failure = (issues: readonly arguebuf.Issue[]): Error =>
   new Error(`The graph was not changed:\n${report(issues).join("\n")}`);
 
-/** Tools that read and edit the graph of the session, edited nodes record the provenance. */
-export function graphTools(session: GraphSession, provenance: Provenance): AssistantTools {
-  return {
+const count = (graph: Graph, type: "atom" | "scheme"): number =>
+  Object.values(graph.nodes).filter((node) => node.type === type).length;
+
+/** Tools that read and edit the graphs of the workspace, edited nodes record the provenance. */
+export function graphTools(workspace: GraphWorkspace, provenance: Provenance): AssistantTools {
+  const { add } = workspace;
+  const tools: AssistantTools = {
+    listGraphs: defineTool({
+      description:
+        "List the open argument graphs with their ids and sizes. Only needed to work on another graph than the one of the analyst.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const fallback = await Promise.resolve(workspace.get()).then(
+          (session) => session.id,
+          () => undefined,
+        );
+
+        return Promise.all(
+          (await workspace.list()).map(async (session) => {
+            const { graph } = await session.read();
+
+            return {
+              id: session.id,
+              title: graphTitle(graph),
+              analystWorksOnIt: session.id === fallback,
+              resources: Object.keys(graph.resources).length,
+              atoms: count(graph, "atom"),
+              schemes: count(graph, "scheme"),
+            };
+          }),
+        );
+      },
+    }),
+
     readResource: defineTool({
       description: "Read the full text of a single resource by id.",
-      inputSchema: z.object({ id: z.string().describe("The id of the resource to read") }),
-      execute: async ({ id }) => {
-        const resource = (await session.read()).graph.resources[id];
+      inputSchema: z.object({
+        id: z.string().describe("The id of the resource to read"),
+        graph: graphId,
+      }),
+      execute: async ({ id, graph }) => {
+        const resource = (await (await workspace.get(graph)).read()).graph.resources[id];
 
         if (resource === undefined) {
           throw new Error(`No resource with id "${id}".`);
@@ -84,12 +138,14 @@ export function graphTools(session: GraphSession, provenance: Provenance): Assis
 
     readGraph: defineTool({
       description:
-        "Read the argument graph: resources (without text), the resource selected by the analyst, participants, atoms, schemes, the major claim, and the issues of the graph. Call this before editing the graph.",
-      inputSchema: z.object({}),
-      execute: async () => {
+        "Read an argument graph: resources (without text), the resource selected by the analyst, participants, atoms, schemes, the major claim, and the issues of the graph. Call this before editing the graph.",
+      inputSchema: z.object({ graph: graphId }),
+      execute: async ({ graph: target }) => {
+        const session = await workspace.get(target);
         const { graph, selectedResource } = await session.read();
 
         return {
+          graph: session.id,
           ...arguebuf.outline(graph),
           selectedResource: shownResource(graph, selectedResource),
           issues: report(arguebuf.check(graph)),
@@ -99,9 +155,10 @@ export function graphTools(session: GraphSession, provenance: Provenance): Assis
 
     editGraph: defineTool({
       description:
-        "Change the graph in one call. If it fails, nothing was changed: fix the items its errors name and call it again. Warnings and the remaining issues of the graph are returned on success.",
+        "Change a graph in one call. If it fails, nothing was changed: fix the items its errors name and call it again. Warnings and the remaining issues of the graph are returned on success.",
       inputSchema: graphEditSchema,
-      execute: async ({ explanations, ...patch }) => {
+      execute: async ({ graph: target, explanations, ...patch }) => {
+        const session = await workspace.get(target);
         const { graph } = await session.read();
         const result = arguebuf.applyPatch(graph, patch, { codecs });
 
@@ -130,8 +187,22 @@ export function graphTools(session: GraphSession, provenance: Provenance): Assis
         });
         await session.write(next, result);
 
-        return { issues: report([...result.issues, ...arguebuf.check(next)]) };
+        return { graph: session.id, issues: report([...result.issues, ...arguebuf.check(next)]) };
       },
+    }),
+  };
+
+  if (add === undefined) {
+    return tools;
+  }
+
+  return {
+    ...tools,
+    createGraph: defineTool({
+      description:
+        "Create an empty graph, which the analyst then sees, and return its id to fill it with editGraph. Only create graphs when the analyst asks for a new one.",
+      inputSchema: z.object({ name: z.string().describe("Short name of the graph") }),
+      execute: async ({ name }) => ({ graph: (await add(newGraph(name))).id }),
     }),
   };
 }

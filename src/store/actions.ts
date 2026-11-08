@@ -1,9 +1,12 @@
 import type { XYPosition } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import type { RefObject } from "react";
-import type { GraphSession } from "@/assistant/tools.js";
+import { getErrorMessage } from "react-error-boundary";
 import * as model from "@/model.js";
-import type { ArgueStore, Notice, Panel, State } from "@/store/types.js";
+import * as convert from "@/services/convert.js";
+import { commit, redo, undo } from "@/store/history.js";
+import { notify, openDocument } from "@/store/workspace.js";
+import type { DocumentState, DocumentStore, Notice, Panel, WorkspaceStore } from "@/store/types.js";
 
 /** Where `addNode` places the node and what it connects it to. */
 export interface NodePlacement {
@@ -14,15 +17,28 @@ export interface NodePlacement {
 }
 
 export interface ArgueActions {
-  setState: ArgueStore["setState"];
-  getState: ArgueStore["getState"];
+  /** The state of the graph that the component shows. */
+  getState: DocumentStore["getState"];
+  setState: DocumentStore["setState"];
+  getWorkspace: WorkspaceStore["getState"];
+  setWorkspace: WorkspaceStore["setState"];
   /**
    * Edit a draft of the graph with its validated methods and store it, together with the returned state.
    * The selection is pruned to the remaining elements.
    * Violations of the strict graph model are shown to the user and leave the state unchanged.
    */
-  editGraph: (edit: (graph: model.GraphDraft, state: State) => Partial<State> | void) => void;
-  resetState: (graph?: model.Graph) => void;
+  editGraph: (
+    edit: (graph: model.GraphDraft, state: DocumentState) => Partial<DocumentState> | void,
+  ) => void;
+  /**
+   * Open the graph, an empty one by default, see `openDocument`.
+   * Graphs given as JSON or file are loaded first, their repairs and load errors are shown to the user.
+   */
+  openGraph: (source?: convert.GraphSource) => void;
+  /** Revert the last edit of the graph. */
+  undo: () => void;
+  /** Restore the last undone edit of the graph. */
+  redo: () => void;
   /** Move the nodes without an undo step, e.g. to apply an automatic layout. */
   arrange: (positions: Iterable<readonly [string, XYPosition]>) => void;
   /** Show the panel, which becomes the most recently opened one. */
@@ -37,82 +53,74 @@ export interface ArgueActions {
   notify: (message: string, severity: Notice["severity"]) => void;
 }
 
-/** The graph of the store for the assistant tools, edits that add or remove nodes trigger a layout. */
-export const graphSession = (store: ArgueStore): GraphSession => ({
-  read: () => store.getState(),
-  write: (graph, { created, removed }) =>
-    store.setState((state) => ({
-      graph,
-      shouldLayout: state.shouldLayout || created.length > 0 || removed.length > 0,
-    })),
-});
-
-/** Remount the assistant chat, which aborts a running reply. */
-const abortReply = (state: State): Pick<State, "assistantConversation"> => ({
-  assistantConversation: state.assistantConversation + 1,
-});
-
-/** Start a fresh assistant conversation, which also aborts a running reply. */
-export function resetConversation(store: ArgueStore): void {
-  store.setState((state) => ({ assistantMessages: [], ...abortReply(state) }));
+export interface ActionsContext {
+  readonly workspace: WorkspaceStore;
+  /** The graph that the actions edit. */
+  readonly doc: DocumentStore;
+  /** Convert client coordinates to flow coordinates, e.g. `useReactFlow().screenToFlowPosition`. */
+  readonly screenToFlow: (position: XYPosition) => XYPosition;
+  /** The ReactFlow wrapper element of the editor for its geometry. */
+  readonly wrapperRef: RefObject<HTMLElement | null> | null;
 }
 
-/**
- * Replace the graph wholesale (load/import/new), which aborts a running assistant reply,
- * so that it does not edit the new graph. Defaults to an empty graph.
- */
-export function resetGraphState(store: ArgueStore, graph: model.Graph = model.newGraph()): void {
-  store.setState((state) => ({
-    graph,
-    selection: model.emptySelection,
-    shouldLayout: false,
-    shouldFitView: true,
-    ...abortReply(state),
-  }));
-}
+/** Build the action helpers bound to a graph of a workspace, consumed via the `useArgueActions` hook. */
+export function createActions({
+  workspace,
+  doc,
+  screenToFlow,
+  wrapperRef,
+}: ActionsContext): ArgueActions {
+  const { getState, setState } = doc;
 
-/**
- * Build the action helpers bound to a specific store instance (consumed via the `useArgueActions`
- * hook). `screenToFlow` converts client coordinates to flow coordinates (typically
- * `useReactFlow().screenToFlowPosition`); `wrapperRef` holds the instance's ReactFlow wrapper
- * element for geometry.
- */
-export function createActions(
-  store: ArgueStore,
-  screenToFlow: (pos: XYPosition) => XYPosition,
-  wrapperRef: RefObject<HTMLElement | null> | null,
-): ArgueActions {
-  const { getState, setState, temporal } = store;
-
-  const notify: ArgueActions["notify"] = (message, severity) => {
-    setState({ notice: { key: crypto.randomUUID(), message, severity } });
-  };
+  const show: ArgueActions["notify"] = (message, severity) => notify(workspace, message, severity);
 
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     const state = getState();
     const issue = arguebuf.catchGraphError(() => {
-      let changes: Partial<State> = {};
+      let changes: Partial<DocumentState> = {};
       const graph = state.graph.edit((draft) => {
         changes = edit(draft, state) ?? {};
       });
-      setState({ ...changes, graph });
+      commit(doc, graph, changes);
     });
 
     if (issue !== undefined) {
-      notify(model.describeIssue(issue), "warning");
+      show(model.describeIssue(issue), "warning");
     }
   };
 
+  const openGraph: ArgueActions["openGraph"] = (source) => {
+    const issues: arguebuf.Issue[] = [];
+
+    convert
+      .loadGraph(source, (issue) => issues.push(issue))
+      .then(
+        (graph) => {
+          openDocument(workspace, { graph });
+
+          if (issues.length > 0) {
+            show(
+              `The graph was repaired while loading it: ${issues.map(model.describeIssue).join(" ")}`,
+              "warning",
+            );
+          }
+        },
+        (error: unknown) => {
+          // invalid input throws a `GraphError` listing all problems with a hint
+          const reason =
+            error instanceof arguebuf.GraphError
+              ? model.describeIssue(error.issue)
+              : (getErrorMessage(error) ?? String(error));
+          show(`The graph could not be loaded: ${reason}`, "error");
+        },
+      );
+  };
+
   const arrange: ArgueActions["arrange"] = (positions) => {
-    const { isTracking, pause, resume } = temporal.getState();
-    if (isTracking) pause();
     setState((state) => ({
       graph: state.graph.edit((draft) => model.moveNodes(draft, positions)),
     }));
-    if (isTracking) resume();
   };
-
-  const resetState = (graph?: model.Graph) => resetGraphState(store, graph);
 
   const canvasCenter = (): XYPosition => {
     const el = wrapperRef?.current;
@@ -141,7 +149,7 @@ export function createActions(
   };
 
   const openPanel = (panel: Panel) => {
-    setState((state) =>
+    workspace.setState((state) =>
       state.panels.at(-1) === panel
         ? {}
         : { panels: [...state.panels.filter((current) => current !== panel), panel] },
@@ -149,7 +157,9 @@ export function createActions(
   };
 
   const closePanels = (...panels: Panel[]) => {
-    setState((state) => ({ panels: state.panels.filter((panel) => !panels.includes(panel)) }));
+    workspace.setState((state) => ({
+      panels: state.panels.filter((panel) => !panels.includes(panel)),
+    }));
   };
 
   const deleteSelection = () => {
@@ -159,15 +169,19 @@ export function createActions(
   };
 
   return {
-    setState,
     getState,
+    setState,
+    getWorkspace: workspace.getState,
+    setWorkspace: workspace.setState,
     editGraph,
-    resetState,
+    openGraph,
+    undo: () => undo(doc),
+    redo: () => redo(doc),
     arrange,
     openPanel,
     closePanels,
     deleteSelection,
     addNode,
-    notify,
+    notify: show,
   };
 }

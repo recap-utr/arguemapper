@@ -12,8 +12,8 @@ import {
   resetConversation,
   useArgueActions,
   useArgueConfig,
-  useStore,
-  useStoreApi,
+  useWorkspace,
+  useWorkspaceApi,
 } from "@/store.js";
 import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 
@@ -35,8 +35,8 @@ const settingKeys = [
  */
 function useAssistantSettings(): { settings: AssistantSettings; editable: boolean } {
   const { assistant: fixed = {} } = useArgueConfig();
-  const config = useStore((state) => state.assistantConfig);
-  const apiKey = useStore((state) => state.assistantApiKey);
+  const config = useWorkspace((state) => state.assistantConfig);
+  const apiKey = useWorkspace((state) => state.assistantApiKey);
 
   return {
     settings: {
@@ -51,8 +51,8 @@ function useAssistantSettings(): { settings: AssistantSettings; editable: boolea
 
 /** Toolbar of the composer with the actions of the conversation left of the send button. */
 const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...props }) => {
-  const store = useStoreApi();
-  const empty = useStore((state) => state.assistantMessages.length === 0);
+  const store = useWorkspaceApi();
+  const empty = useWorkspace((state) => state.assistantMessages.length === 0);
   const {
     settings: { model },
     editable,
@@ -96,12 +96,12 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
 };
 
 export const Assistant: React.FC = () => {
-  const store = useStoreApi();
-  const { setState } = useArgueActions();
-  const messages = useStore((state) => state.assistantMessages);
+  const store = useWorkspaceApi();
+  const { setWorkspace } = useArgueActions();
+  const messages = useWorkspace((state) => state.assistantMessages);
   // MUI X Chat takes a mutable array
   const chatMessages = useMemo(() => [...messages], [messages]);
-  const conversation = useStore((state) => state.assistantConversation);
+  const conversation = useWorkspace((state) => state.assistantConversation);
   // the individual settings determine the agent, a fresh settings object must not rebuild it
   const { apiKey, model, baseURL, reasoning } = useAssistantSettings().settings;
   const adapter = useMemo(
@@ -115,7 +115,7 @@ export const Assistant: React.FC = () => {
       key={conversation}
       adapter={adapter}
       messages={chatMessages}
-      onMessagesChange={(next) => setState({ assistantMessages: next })}
+      onMessagesChange={(next) => setWorkspace({ assistantMessages: next })}
       suggestions={SUGGESTIONS}
       suggestionsAutoSubmit
       // a single conversation without attachments in a narrow pane, errors show on the message

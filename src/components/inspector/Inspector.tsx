@@ -7,12 +7,12 @@ import { EdgeFields } from "@/components/inspector/EdgeFields.js";
 import { GraphFields } from "@/components/inspector/GraphFields.js";
 import { SchemeFields } from "@/components/inspector/SchemeFields.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Details of the selected elements, or of the graph if nothing is selected. */
 const Inspector: React.FC = () => {
-  const selectionType = useStore((state) => model.selectionType(state.graph, state.selection));
-  const count = useStore(({ selection }) => selection.nodes.length + selection.edges.length);
+  const selectionType = useDocument((state) => model.selectionType(state.graph, state.selection));
+  const count = useDocument(({ selection }) => selection.nodes.length + selection.edges.length);
   const { readOnly } = useArgueConfig();
   const { deleteSelection } = useArgueActions();
 

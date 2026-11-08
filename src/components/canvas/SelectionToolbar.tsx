@@ -8,7 +8,7 @@ import { useMemo } from "react";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { SchemeTypeToggle } from "@/components/inspector/SchemeTypeToggle.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 interface ButtonProps {
   title: string;
@@ -44,12 +44,12 @@ export const ToolbarPaper: React.FC<React.PropsWithChildren> = ({ children }) =>
 
 /** Actions for the selected nodes, shown above them on all devices. */
 export const SelectionToolbar: React.FC = () => {
-  const ids = useStore((state) => state.selection.nodes);
-  const node = useStore(({ graph, selection }) => model.selectedNode(graph, selection));
-  const schemes = useStore(
+  const ids = useDocument((state) => state.selection.nodes);
+  const node = useDocument(({ graph, selection }) => model.selectedNode(graph, selection));
+  const schemes = useDocument(
     ({ graph, selection }) => model.selectionType(graph, selection) === "schemes",
   );
-  const isMajorClaim = useStore(
+  const isMajorClaim = useDocument(
     (state) => node !== undefined && state.graph.majorClaim === node.id,
   );
   const { readOnly, panels } = useArgueConfig();

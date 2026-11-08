@@ -11,15 +11,13 @@ import type React from "react";
 import { useState } from "react";
 import { getErrorMessage } from "react-error-boundary";
 import { IconMenuItem } from "@/components/IconMenuItem.js";
-import { useReplaceGraph } from "@/components/useReplaceGraph.js";
 import { useArgueActions } from "@/store.js";
 
 /** Standalone-only file menu entry: opens an argument map of aifdb.org via the dev/server proxy. */
 export const AifdbImport: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [aifdbId, setAifdbId] = useState("");
-  const replaceGraph = useReplaceGraph();
-  const { notify } = useArgueActions();
+  const { notify, openGraph } = useArgueActions();
 
   const handleImport = async () => {
     try {
@@ -29,7 +27,7 @@ export const AifdbImport: React.FC = () => {
         throw new Error(`${response.statusText} (${response.status})`);
       }
 
-      replaceGraph(await response.json());
+      openGraph(await response.json());
       setOpen(false);
       setAifdbId("");
     } catch (error) {

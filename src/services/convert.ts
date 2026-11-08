@@ -9,12 +9,15 @@ export type ExportFormat = "aif" | "arguebuf";
 /** Whether exports in the format record the analyst, who is then asked for first. */
 export const recordsAnalyst = (format: ExportFormat): format is "arguebuf" => format === "arguebuf";
 
-/** Load a graph from a JSON object in any format supported by arguebuf, repairs are reported to `onIssue`. */
+/**
+ * Load a graph from a JSON object in any format supported by arguebuf, repairs are reported to `onIssue`.
+ * The formats do not hold the name of the graph, which files take from their name.
+ */
 export function importGraph(
   obj: arguebuf.load.JsonGraph,
-  onIssue?: arguebuf.Reporter,
+  { onIssue, name }: { onIssue?: arguebuf.Reporter; name?: string } = {},
 ): model.Graph {
-  return arguebuf.load.json(obj, { codecs: model.codecs, onIssue });
+  return arguebuf.load.json(obj, { codecs: model.codecs, onIssue, name });
 }
 
 /** File suffixes that `importFile` reads, e.g. for the `accept` attribute of file inputs. */
@@ -37,6 +40,29 @@ export async function importFile(file: File, onIssue?: arguebuf.Reporter): Promi
 
   return loadArgdown(await file.text(), { ...options, name });
 }
+
+/** Graph to open, JSON objects and files are loaded first, undefined stands for a new graph. */
+export type GraphSource = model.Graph | arguebuf.load.JsonGraph | File;
+
+/** Load the graph from the source, repairs are reported to `onIssue`. */
+export async function loadGraph(
+  source: GraphSource | undefined,
+  onIssue?: arguebuf.Reporter,
+): Promise<model.Graph | undefined> {
+  if (source === undefined || source instanceof arguebuf.Graph) {
+    return source;
+  }
+
+  if (source instanceof File) {
+    return importFile(source, onIssue);
+  }
+
+  return importGraph(source, { onIssue });
+}
+
+/** The graph as arguebuf JSON without recording the analyst, e.g. to store it. */
+export const dumpGraph = (graph: model.Graph): arguebuf.GraphJson =>
+  arguebuf.dump.json(graph, { codecs: model.codecs });
 
 /** Serialize the graph, the arguebuf format also records the analyst. */
 export function exportGraph<F extends ExportFormat>(
@@ -74,7 +100,12 @@ export function exportGraph(
   return arguebuf.dump.json(result, { codecs: model.codecs });
 }
 
-function generateFilename(): string {
+/** Name of a downloaded file without suffix, the name of the graph if it has one. */
+function generateFilename(name: string | undefined): string {
+  if (name) {
+    return name;
+  }
+
   const timestamp = Temporal.Now.plainDateTimeISO()
     .toString({ smallestUnit: "second" })
     .replaceAll(":", "-");
@@ -83,21 +114,15 @@ function generateFilename(): string {
 }
 
 // https://stackoverflow.com/a/55613750/7626878
-export function downloadJson(data: unknown, prettify: boolean): void {
+export function downloadJson(data: unknown, prettify: boolean, name?: string): void {
   const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
   const blob = new Blob([json], { type: "application/json" });
-  downloadBlob(blob, ".json");
-}
-
-function downloadBlob(data: Blob, suffix: string): void {
-  const href = URL.createObjectURL(data);
-  const filename = generateFilename() + suffix;
-  downloadFile(href, filename);
+  downloadFile(URL.createObjectURL(blob), `${generateFilename(name)}.json`);
 }
 
 export const downloadImage = async (
   format: ImgFormat,
-  options: { element: HTMLElement; pixelRatio: number },
+  options: { element: HTMLElement; pixelRatio: number; name?: string },
 ): Promise<void> => {
   // overlays such as controls and toolbars are not part of the graph
   const excludedClasses = [
@@ -120,7 +145,7 @@ export const downloadImage = async (
       return !excludedClasses.some((className) => classList.includes(className));
     },
   });
-  const filename = `${generateFilename()}.${format}`;
+  const filename = `${generateFilename(options.name)}.${format}`;
   downloadFile(href, filename);
 };
 

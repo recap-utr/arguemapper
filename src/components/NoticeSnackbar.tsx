@@ -1,18 +1,18 @@
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Button, Snackbar } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
-import { useStore } from "@/store.js";
+import { useWorkspace } from "@/store.js";
 import type { Notice } from "@/store/types.js";
 
 /** Shows the current notice of the editor at the bottom of its area. */
 export const NoticeSnackbar: React.FC = () => {
-  const notice = useStore((state) => state.notice);
+  const notice = useWorkspace((state) => state.notice);
 
   // remounting reopens it for every new notice
   return notice && <NoticeView key={notice.key} notice={notice} />;
 };
 
-const NoticeView: React.FC<{ notice: Notice }> = ({ notice: { message, severity } }) => {
+const NoticeView: React.FC<{ notice: Notice }> = ({ notice: { message, severity, action } }) => {
   const [open, setOpen] = useState(true);
 
   return (
@@ -23,7 +23,25 @@ const NoticeView: React.FC<{ notice: Notice }> = ({ notice: { message, severity 
       // within the editor instead of the viewport, so that each editor shows its own notices
       sx={{ position: "absolute" }}
     >
-      <Alert severity={severity} variant="filled" onClose={() => setOpen(false)}>
+      <Alert
+        severity={severity}
+        variant="filled"
+        onClose={() => setOpen(false)}
+        action={
+          action && (
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => {
+                action.run();
+                setOpen(false);
+              }}
+            >
+              {action.label}
+            </Button>
+          )
+        }
+      >
         {message}
       </Alert>
     </Snackbar>

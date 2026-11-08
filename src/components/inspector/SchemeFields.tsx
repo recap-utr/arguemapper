@@ -7,13 +7,13 @@ import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import { SchemeTypeToggle } from "@/components/inspector/SchemeTypeToggle.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Fields of the selected scheme nodes, edited together if several are selected. */
 export const SchemeFields: React.FC = () => {
-  const ids = useStore((state) => state.selection.nodes);
+  const ids = useDocument((state) => state.selection.nodes);
   // only the selected nodes, so that changes elsewhere do not re-render
-  const schemeNodes = useStore(
+  const schemeNodes = useDocument(
     ({ graph }) =>
       ids
         .map((id) => graph.nodes[id])

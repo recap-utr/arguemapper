@@ -1,15 +1,17 @@
 import { type Context, createContext, useContext } from "react";
-import type { ArgueStore } from "@/store/types.js";
+import type { WorkspaceStore } from "@/store/types.js";
 
-const ArgueStoreContext = createContext<ArgueStore | null>(null);
+const WorkspaceContext = createContext<WorkspaceStore | null>(null);
 
-export const ArgueStoreProvider: Context<ArgueStore | null> = ArgueStoreContext;
+export const WorkspaceProvider: Context<WorkspaceStore | null> = WorkspaceContext;
 
-/** Access the current instance's store API (getState/setState/subscribe + temporal). */
-export function useStoreApi(): ArgueStore {
-  const store = useContext(ArgueStoreContext);
+/** The store of the workspace of the editor. */
+export function useWorkspaceApi(): WorkspaceStore {
+  const store = useContext(WorkspaceContext);
+
   if (store === null) {
-    throw new Error("useStoreApi must be used within a <GraphEditor> (ArgueStoreProvider).");
+    throw new Error("useWorkspaceApi must be used within a <GraphEditor> or <GraphWorkspace>.");
   }
+
   return store;
 }

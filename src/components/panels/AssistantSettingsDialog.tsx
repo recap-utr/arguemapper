@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import type React from "react";
 import type { AssistantConfig } from "@/assistant/config.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useWorkspace } from "@/store.js";
 
 const reasoningLevels: readonly (readonly [AssistantConfig["reasoning"], string])[] = [
   ["low", "Low"],
@@ -26,11 +26,11 @@ interface Props {
 /** Assistant connection settings (API key, model, base URL, reasoning effort) not fixed by the host. */
 export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
   const { assistant: fixed = {} } = useArgueConfig();
-  const assistantApiKey = useStore((state) => state.assistantApiKey);
-  const assistantConfig = useStore((state) => state.assistantConfig);
-  const { setState } = useArgueActions();
+  const assistantApiKey = useWorkspace((state) => state.assistantApiKey);
+  const assistantConfig = useWorkspace((state) => state.assistantConfig);
+  const { setWorkspace } = useArgueActions();
   const setConfig = (changes: Partial<AssistantConfig>) =>
-    setState({ assistantConfig: { ...assistantConfig, ...changes } });
+    setWorkspace({ assistantConfig: { ...assistantConfig, ...changes } });
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
@@ -45,7 +45,7 @@ export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
               helperText="Optional — not required for local models"
               value={assistantApiKey}
               onChange={(event) => {
-                setState({ assistantApiKey: event.target.value });
+                setWorkspace({ assistantApiKey: event.target.value });
               }}
             />
           )}

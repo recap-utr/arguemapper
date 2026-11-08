@@ -16,15 +16,15 @@ import { AdvancedSection } from "@/components/inspector/AdvancedSection.js";
 import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Fields of the selected atom node. */
 export const AtomFields: React.FC = () => {
-  const id = useStore((state) => state.selection.nodes[0]);
-  const atom = useStore((state) => state.graph.nodes[id]);
-  const isMajorClaim = useStore((state) => state.graph.majorClaim === id);
-  const participants = useStore((state) => state.graph.participants);
-  const hasText = useStore((state) => Object.keys(state.graph.resources).length > 0);
+  const id = useDocument((state) => state.selection.nodes[0]);
+  const atom = useDocument((state) => state.graph.nodes[id]);
+  const isMajorClaim = useDocument((state) => state.graph.majorClaim === id);
+  const participants = useDocument((state) => state.graph.participants);
+  const hasText = useDocument((state) => Object.keys(state.graph.resources).length > 0);
   const { readOnly, panels } = useArgueConfig();
   const { editGraph, openPanel } = useArgueActions();
 

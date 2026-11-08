@@ -5,16 +5,21 @@ import type React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { usePanelLayout } from "@/components/panels/layout.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useInstanceFocused, useTemporalStore } from "@/store.js";
+import {
+  canRedo,
+  canUndo,
+  useArgueActions,
+  useArgueConfig,
+  useDocument,
+  useInstanceFocused,
+} from "@/store.js";
 
 /** React Flow's zoom and fit controls, extended by undo, redo, layout, and adding a claim. */
 export const EditorControls: React.FC = () => {
-  const undo = useTemporalStore((state) => state.undo);
-  const redo = useTemporalStore((state) => state.redo);
-  const undoable = useTemporalStore((state) => state.pastStates.length > 0);
-  const redoable = useTemporalStore((state) => state.futureStates.length > 0);
+  const undoable = useDocument(canUndo);
+  const redoable = useDocument(canRedo);
   const { readOnly } = useArgueConfig();
-  const { setState, addNode, openPanel } = useArgueActions();
+  const { setState, addNode, openPanel, undo, redo } = useArgueActions();
   const focused = useInstanceFocused();
   // short canvases above the panels have more room in width
   const { wide } = usePanelLayout();

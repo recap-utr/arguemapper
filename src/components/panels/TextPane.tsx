@@ -20,13 +20,12 @@ import * as arguebuf from "arguebuf";
 import type React from "react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useGuideStep } from "@/components/canvas/Guide.js";
-import { useReplaceGraph } from "@/components/useReplaceGraph.js";
 import * as model from "@/model.js";
 import { generateDemo } from "@/services/demo.js";
-import { type State, useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { type DocumentState, useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** The atom if it is the only selected element. */
-function selectedAtom({ graph, selection }: State): model.AtomNode | undefined {
+function selectedAtom({ graph, selection }: DocumentState): model.AtomNode | undefined {
   const node = model.selectedNode(graph, selection);
 
   return node?.type === "atom" ? node : undefined;
@@ -44,10 +43,10 @@ const sameAnnotations = (a: Annotations, b: Annotations): boolean =>
 
 /** Text panel: read the texts, annotate passages as claims, and edit them. */
 export const TextPane: React.FC = () => {
-  const resources = useStore((state) => state.graph.resources);
-  const shown = useStore((state) => model.shownResource(state.graph, state.selectedResource));
+  const resources = useDocument((state) => state.graph.resources);
+  const shown = useDocument((state) => model.shownResource(state.graph, state.selectedResource));
   // graph edits keep unchanged elements, so references are compared by identity
-  const selectedReference = useStore((state) => selectedAtom(state)?.reference);
+  const selectedReference = useDocument((state) => selectedAtom(state)?.reference);
   const { readOnly } = useArgueConfig();
   const { editGraph, setState } = useArgueActions();
   const [editing, setEditing] = useState(false);
@@ -135,7 +134,7 @@ export const TextPane: React.FC = () => {
 /** The first text of a graph, pasted to start annotating it. */
 const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) => {
   const [text, setText] = useState("");
-  const replaceGraph = useReplaceGraph();
+  const { openGraph } = useArgueActions();
 
   return (
     <Stack spacing={2}>
@@ -158,7 +157,7 @@ const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) =
         </Button>
         <Button
           startIcon={<FontAwesomeIcon icon={faLightbulb} />}
-          onClick={() => replaceGraph(generateDemo())}
+          onClick={() => openGraph(generateDemo())}
         >
           See an example
         </Button>
@@ -168,7 +167,7 @@ const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) =
 };
 
 const ResourceEditor: React.FC<{ id: string; onDone: () => void }> = ({ id, onDone }) => {
-  const resource = useStore((state) => state.graph.resources[id]);
+  const resource = useDocument((state) => state.graph.resources[id]);
   const { editGraph } = useArgueActions();
 
   const update =
@@ -297,14 +296,14 @@ function selectedSpan(container: HTMLElement): Span | undefined {
 
 /** The text with its annotated passages, which select their claims. */
 const ResourceView: React.FC<{ id: string }> = ({ id }) => {
-  const resource = useStore((state) => state.graph.resources[id]);
+  const resource = useDocument((state) => state.graph.resources[id]);
   // the resource may be removed before this view
-  const annotations = useStore(
+  const annotations = useDocument(
     ({ graph }) => (Object.hasOwn(graph.resources, id) ? graph.annotations(id) : []),
     sameAnnotations,
   );
-  const selected = useStore((state) => state.selection.nodes);
-  const selectedId = useStore((state) => selectedAtom(state)?.id);
+  const selected = useDocument((state) => state.selection.nodes);
+  const selectedId = useDocument((state) => selectedAtom(state)?.id);
   const guideStep = useGuideStep();
   const { readOnly } = useArgueConfig();
   const { setState } = useArgueActions();
@@ -420,10 +419,10 @@ interface ActionsProps {
 
 /** Turn the selected passage into a claim, related to the selected claim if there is one. */
 const PassageActions: React.FC<ActionsProps> = ({ resource, span, onDone }) => {
-  const text = useStore((state) =>
+  const text = useDocument((state) =>
     state.graph.resources[resource].text.slice(span.start, span.end),
   );
-  const target = useStore(selectedAtom);
+  const target = useDocument(selectedAtom);
   const { editGraph, addNode } = useArgueActions();
   const reference = new arguebuf.Reference({ text, resource, offset: span.start });
   const atom = model.newAtom().with({ text, reference });

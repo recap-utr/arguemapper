@@ -33,11 +33,11 @@
     "elkjs": "^0.12",
     "es-toolkit": "^1",
     "html-to-image": "^1",
+    "idb-keyval": "^6",
     "react-error-boundary": "^6",
     "react-hotkeys-hook": "^5",
     "temporal-polyfill": "^1",
     "zod": "^4",
-    "zundo": "^2",
     "zustand": "^5"
   },
   "devDependencies": {

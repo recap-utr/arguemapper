@@ -23,20 +23,20 @@ import { version } from "@root/package.json";
 import { AnalystFields } from "@/components/AnalystDialog.js";
 import { ToolbarButton } from "@/components/canvas/SelectionToolbar.js";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useSlots, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useSlots, useWorkspace } from "@/store.js";
 
 /** Button that opens the settings of the editor. */
 export const SettingsButton: React.FC = () => {
   const [open, setOpen] = useState(false);
   const fullScreen = useMediaQuery(useTheme().breakpoints.down("sm"));
-  const layoutAlgorithm = useStore((state) => state.layoutAlgorithm);
-  const edgeStyle = useStore((state) => state.edgeStyle);
-  const prettifyJson = useStore((state) => state.prettifyJson);
-  const imageScale = useStore((state) => state.imageScale);
-  const guide = useStore((state) => state.guide);
+  const layoutAlgorithm = useWorkspace((state) => state.layoutAlgorithm);
+  const edgeStyle = useWorkspace((state) => state.edgeStyle);
+  const prettifyJson = useWorkspace((state) => state.prettifyJson);
+  const imageScale = useWorkspace((state) => state.imageScale);
+  const guide = useWorkspace((state) => state.guide);
   const { readOnly } = useArgueConfig();
   const slots = useSlots();
-  const { setState } = useArgueActions();
+  const { setState, setWorkspace } = useArgueActions();
 
   return (
     <>
@@ -57,7 +57,7 @@ export const SettingsButton: React.FC = () => {
                 control={
                   <Switch
                     checked={guide}
-                    onChange={(event) => setState({ guide: event.target.checked })}
+                    onChange={(event) => setWorkspace({ guide: event.target.checked })}
                   />
                 }
                 label="Getting started guide"
@@ -67,12 +67,10 @@ export const SettingsButton: React.FC = () => {
               select
               label="Arrangement"
               value={layoutAlgorithm}
-              onChange={(event) =>
-                setState({
-                  layoutAlgorithm: event.target.value as model.LayoutAlgorithm,
-                  shouldLayout: true,
-                })
-              }
+              onChange={(event) => {
+                setWorkspace({ layoutAlgorithm: event.target.value as model.LayoutAlgorithm });
+                setState({ shouldLayout: true });
+              }}
             >
               {model.layoutAlgorithms.map((algorithm) => (
                 <MenuItem key={algorithm} value={algorithm}>
@@ -84,7 +82,7 @@ export const SettingsButton: React.FC = () => {
               select
               label="Connection style"
               value={edgeStyle}
-              onChange={(event) => setState({ edgeStyle: event.target.value as model.EdgeStyle })}
+              onChange={(event) => setWorkspace({ edgeStyle: event.target.value as model.EdgeStyle })}
             >
               {model.edgeStyles.map((style) => (
                 <MenuItem key={style} value={style}>
@@ -100,13 +98,13 @@ export const SettingsButton: React.FC = () => {
               helperText="Multiple of the screen resolution"
               value={imageScale}
               slotProps={{ htmlInput: { min: 1, max: 10 } }}
-              onChange={(event) => setState({ imageScale: Number(event.target.value) })}
+              onChange={(event) => setWorkspace({ imageScale: Number(event.target.value) })}
             />
             <FormControlLabel
               control={
                 <Switch
                   checked={prettifyJson}
-                  onChange={(event) => setState({ prettifyJson: event.target.checked })}
+                  onChange={(event) => setWorkspace({ prettifyJson: event.target.checked })}
                 />
               }
               label="Readable JSON files"

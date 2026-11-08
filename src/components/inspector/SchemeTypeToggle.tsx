@@ -2,7 +2,7 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
 import * as model from "@/model.js";
-import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 interface Props {
   /** The scheme nodes to change together. */
@@ -20,7 +20,7 @@ export const SchemeTypeToggle: React.FC<Props> = ({
   fullWidth,
 }) => {
   // the type of all nodes if they share it, null otherwise
-  const current = useStore(
+  const current = useDocument(
     ({ graph }) =>
       model.shared(
         ids.map((id) => {
