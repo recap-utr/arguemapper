@@ -13,6 +13,7 @@ import {
 import { shallow } from "zustand/shallow";
 import { NoticeSnackbar } from "@/components/NoticeSnackbar.js";
 import { useContainerBreakpoint } from "@/components/breakpoints.js";
+import type { AssistantSettings } from "@/assistant/config.js";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
@@ -20,7 +21,6 @@ import {
   type ArgueConfig,
   ArgueConfigProvider,
   ArgueStoreProvider,
-  type AssistantSettings,
   createArgueStore,
   type EditorSlots,
   FlowWrapperProvider,

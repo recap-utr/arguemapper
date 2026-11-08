@@ -9,7 +9,8 @@ import {
   TextField,
 } from "@mui/material";
 import type React from "react";
-import { type AssistantConfig, useArgueActions, useArgueConfig, useStore } from "@/store.js";
+import type { AssistantConfig } from "@/assistant/config.js";
+import { useArgueActions, useArgueConfig, useStore } from "@/store.js";
 
 const reasoningLevels: readonly (readonly [AssistantConfig["reasoning"], string])[] = [
   ["low", "Low"],

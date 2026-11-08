@@ -5,9 +5,10 @@ import { ChatBox, ChatComposerToolbar, type ChatComposerToolbarProps } from "@mu
 import type { ChatSuggestion } from "@mui/x-chat/headless";
 import type React from "react";
 import { useMemo, useState } from "react";
-import { createAssistantAdapter } from "@/services/assistant/chat.js";
+import type { AssistantSettings } from "@/assistant/config.js";
+import { PROMPTS } from "@/assistant/instructions.js";
+import { createAssistantAdapter } from "@/components/panels/chatAdapter.js";
 import {
-  type AssistantSettings,
   resetConversation,
   useArgueActions,
   useArgueConfig,
@@ -16,32 +17,10 @@ import {
 } from "@/store.js";
 import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 
-const SUGGESTIONS: ChatSuggestion[] = [
-  {
-    label: "Generate full graph",
-    value:
-      "Generate a complete argument graph from the selected resource: clear the current graph, then extract the ADUs as atoms, identify the major claim, and connect them with support/attack scheme nodes.",
-  },
-  {
-    label: "Extract ADUs",
-    value:
-      "Clear the graph, then extract the argumentative discourse units from the selected resource and add them as atoms.",
-  },
-  {
-    label: "Identify major claim",
-    value: "Identify the major claim among the current atoms and set it.",
-  },
-  {
-    label: "Predict relations",
-    value:
-      "Predict support/attack relations between the current atoms to form a hierarchical graph rooted at the major claim.",
-  },
-  {
-    label: "Clean up structure",
-    value:
-      "Inspect the graph for structural issues (orphaned atoms, atoms not connected to the major claim, cycles) and fix them.",
-  },
-];
+const SUGGESTIONS: ChatSuggestion[] = PROMPTS.map(({ title, text }) => ({
+  label: title,
+  value: text,
+}));
 
 const settingKeys = [
   "apiKey",

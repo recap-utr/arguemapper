@@ -1,7 +1,8 @@
 export { GraphEditor, type GraphEditorHandle, type GraphEditorProps } from "@/GraphEditor.js";
 export { GraphViewer, type GraphViewerHandle, type GraphViewerProps } from "@/GraphViewer.js";
 export { type ExportFormat, exportGraph, importGraph } from "@/services/convert.js";
-export type { AnalystIdentity, AssistantSettings } from "@/store/types.js";
+export type { AssistantSettings } from "@/assistant/config.js";
+export type { AnalystIdentity } from "@/store/types.js";
 export type {
   AtomNode,
   Edge,

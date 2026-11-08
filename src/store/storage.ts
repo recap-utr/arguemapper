@@ -2,7 +2,8 @@ import * as arguebuf from "arguebuf";
 import { pick, throttle } from "es-toolkit";
 import { type PersistStorage, type StorageValue } from "zustand/middleware";
 import * as convert from "@/services/convert.js";
-import { resolveAssistantConfig, type State } from "@/store/types.js";
+import { resolveAssistantConfig } from "@/assistant/config.js";
+import type { State } from "@/store/types.js";
 
 type PersistState = Pick<
   State,

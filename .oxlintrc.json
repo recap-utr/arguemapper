@@ -10,5 +10,36 @@
     "react-perf",
     "typescript",
     "unicorn"
+  ],
+  "overrides": [
+    {
+      "files": ["src/graph.ts", "src/assistant/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "react",
+                  "react-*",
+                  "react/*",
+                  "@mui/*",
+                  "@emotion/*",
+                  "@xyflow/*",
+                  "zustand",
+                  "zustand/*",
+                  "zundo",
+                  "@/*",
+                  "!@/graph.js",
+                  "!@/assistant/*"
+                ],
+                "message": "The graph model and the assistant run outside the editor, e.g. in MCP servers."
+              }
+            ]
+          }
+        ]
+      }
+    }
   ]
 }

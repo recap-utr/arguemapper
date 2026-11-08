@@ -5,12 +5,8 @@ import { shallow } from "zustand/shallow";
 import { createStore } from "zustand/vanilla";
 import * as model from "@/model.js";
 import { browserStorage, partialize, persistVersion } from "@/store/storage.js";
-import {
-  type ArgueStore,
-  defaultAssistantConfig,
-  type State,
-  type ZundoState,
-} from "@/store/types.js";
+import { defaultAssistantConfig } from "@/assistant/config.js";
+import type { ArgueStore, State, ZundoState } from "@/store/types.js";
 
 export interface CreateArgueStoreOptions {
   /** Initial graph, replaced by a persisted one. */

@@ -1,41 +1,9 @@
 import type { AlertColor } from "@mui/material";
 import type { ChatMessage } from "@mui/x-chat/headless";
-import type { LanguageModelCallOptions } from "ai";
 import type { TemporalState } from "zundo";
 import type { StoreApi } from "zustand/vanilla";
+import type { AssistantConfig } from "@/assistant/config.js";
 import type * as model from "@/model.js";
-
-export interface AssistantConfig {
-  readonly model: string;
-  readonly baseURL: string;
-  /** Reasoning effort, the `reasoning` call setting of the AI SDK. */
-  readonly reasoning: NonNullable<LanguageModelCallOptions["reasoning"]>;
-}
-
-/** Connection and model settings of the assistant. */
-export interface AssistantSettings extends AssistantConfig {
-  /** Optional, local servers usually need none. Persisted for the browser session only. */
-  readonly apiKey: string;
-}
-
-export const defaultAssistantConfig: AssistantConfig = {
-  model: "chatgpt-latest",
-  baseURL: "https://api.openai.com/v1",
-  reasoning: "medium",
-};
-
-/** The given settings completed with the defaults, other fields (e.g. of older versions) are dropped. */
-export function resolveAssistantConfig({
-  model,
-  baseURL,
-  reasoning,
-}: Partial<AssistantConfig> = {}): AssistantConfig {
-  return {
-    model: model ?? defaultAssistantConfig.model,
-    baseURL: baseURL ?? defaultAssistantConfig.baseURL,
-    reasoning: reasoning ?? defaultAssistantConfig.reasoning,
-  };
-}
 
 /**
  * A panel beside the canvas.

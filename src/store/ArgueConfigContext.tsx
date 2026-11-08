@@ -1,6 +1,6 @@
 import type { Breakpoint } from "@mui/material";
 import { type Context, createContext, useContext } from "react";
-import type { AssistantSettings } from "@/store/types.js";
+import type { AssistantSettings } from "@/assistant/config.js";
 
 export interface ArgueConfig {
   /** Instance id; namespaces ReactFlow and the SVG arrow markers so instances don't collide. */

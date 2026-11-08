@@ -1,6 +1,7 @@
 import type { XYPosition } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import type { RefObject } from "react";
+import type { GraphSession } from "@/assistant/tools.js";
 import * as model from "@/model.js";
 import type { ArgueStore, Notice, Panel, State } from "@/store/types.js";
 
@@ -35,6 +36,16 @@ export interface ArgueActions {
   /** Show the message to the user, replacing the current one. */
   notify: (message: string, severity: Notice["severity"]) => void;
 }
+
+/** The graph of the store for the assistant tools, edits that add or remove nodes trigger a layout. */
+export const graphSession = (store: ArgueStore): GraphSession => ({
+  read: () => store.getState(),
+  write: (graph, { created, removed }) =>
+    store.setState((state) => ({
+      graph,
+      shouldLayout: state.shouldLayout || created.length > 0 || removed.length > 0,
+    })),
+});
 
 /** Remount the assistant chat, which aborts a running reply. */
 const abortReply = (state: State): Pick<State, "assistantConversation"> => ({
