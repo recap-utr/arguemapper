@@ -62,7 +62,7 @@ export const FileMenu: React.FC = () => {
       void flow.fitView(model.fitViewOptions);
       void convert.downloadImage(format, {
         element,
-        pixelRatio: getWorkspace().imageScale,
+        scale: getWorkspace().imageScale,
         name: getState().graph.name,
       });
     }

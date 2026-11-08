@@ -1,6 +1,5 @@
 import * as arguebuf from "arguebuf";
-import { toJpeg, toPng } from "html-to-image";
-import type { Options as ImgOptions } from "html-to-image/lib/types.js";
+import { snapdom } from "@zumer/snapdom";
 import * as model from "@/model.js";
 import type { AnalystIdentity } from "@/store/types.js";
 
@@ -120,44 +119,29 @@ export function downloadJson(data: unknown, prettify: boolean, name?: string): v
   downloadFile(URL.createObjectURL(blob), `${generateFilename(name)}.json`);
 }
 
-export const downloadImage = async (
-  format: ImgFormat,
-  options: { element: HTMLElement; pixelRatio: number; name?: string },
-): Promise<void> => {
-  // overlays such as controls and toolbars are not part of the graph
-  const excludedClasses = [
-    "react-flow__handle",
-    "react-flow__attribution",
-    "react-flow__panel",
-    "react-flow__node-toolbar",
-    "react-flow__edge-toolbar",
-  ];
-  const func = imgFormatMap[format];
-
-  const href = await func(options.element, {
-    backgroundColor: "white",
-    cacheBust: true,
-    quality: 1.0,
-    pixelRatio: options.pixelRatio,
-    // https://github.com/bubkoo/html-to-image/blob/master/README.md#filter
-    filter: (domNode: HTMLElement) => {
-      const classList = domNode.classList ? Array.from(domNode.classList) : [];
-      return !excludedClasses.some((className) => classList.includes(className));
-    },
-  });
-  const filename = `${generateFilename(options.name)}.${format}`;
-  downloadFile(href, filename);
-};
-
 export type ImgFormat = "png" | "jpg";
 
-const imgFormatMap: Record<
-  ImgFormat,
-  (elem: HTMLElement, options?: ImgOptions) => Promise<string>
-> = {
-  png: toPng,
-  jpg: toJpeg,
-};
+// overlays such as controls and toolbars are not part of the graph
+const excludedElements = [
+  ".react-flow__handle",
+  ".react-flow__attribution",
+  ".react-flow__panel",
+  ".react-flow__node-toolbar",
+  ".react-flow__edge-toolbar",
+].join(",");
+
+/** Download the element as an image, `scale` multiplies its size on the screen. */
+export async function downloadImage(
+  format: ImgFormat,
+  { element, scale, name }: { element: HTMLElement; scale: number; name?: string },
+): Promise<void> {
+  const capture = await snapdom(element, {
+    backgroundColor: "white",
+    exclude: excludedElements,
+    excludeMode: "remove",
+  });
+  await capture.download({ format, scale, quality: 1, filename: generateFilename(name) });
+}
 
 const downloadFile = (href: string, filename: string) => {
   const link = document.createElement("a");
