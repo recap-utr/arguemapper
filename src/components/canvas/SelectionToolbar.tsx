@@ -1,6 +1,8 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faPen, faQuoteLeft, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import StarIcon from "@mui/icons-material/Star";
+import type { SvgIconComponent } from "@mui/icons-material";
 import { IconButton, Paper, Tooltip } from "@mui/material";
 import { NodeToolbar } from "@xyflow/react";
 import type React from "react";
@@ -12,13 +14,13 @@ import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 interface ButtonProps {
   title: string;
-  icon: IconProp;
+  icon: SvgIconComponent;
   onClick: () => void;
   color?: "primary" | "error";
 }
 
 /** Icon button of a canvas toolbar, larger for touch input. */
-export const ToolbarButton: React.FC<ButtonProps> = ({ title, icon, onClick, color }) => {
+export const ToolbarButton: React.FC<ButtonProps> = ({ title, icon: Icon, onClick, color }) => {
   const { coarse } = useGraphRender();
 
   return (
@@ -29,7 +31,7 @@ export const ToolbarButton: React.FC<ButtonProps> = ({ title, icon, onClick, col
         size={coarse ? "large" : "medium"}
         onClick={onClick}
       >
-        <FontAwesomeIcon icon={icon} fixedWidth />
+        <Icon />
       </IconButton>
     </Tooltip>
   );
@@ -75,7 +77,7 @@ export const SelectionToolbar: React.FC = () => {
         {node?.type === "atom" && !readOnly && (
           <ToolbarButton
             title={isMajorClaim ? "Unset main claim" : "Set as main claim"}
-            icon={faStar}
+            icon={StarIcon}
             color={isMajorClaim ? "primary" : undefined}
             onClick={() => editGraph((graph) => model.toggleMajorClaim(graph, node.id))}
           />
@@ -83,17 +85,17 @@ export const SelectionToolbar: React.FC = () => {
         {node?.type === "atom" && node.reference !== undefined && panels && (
           <ToolbarButton
             title="Show in text"
-            icon={faQuoteLeft}
+            icon={FormatQuoteIcon}
             onClick={() => openPanel("text")}
           />
         )}
         {panels && (
-          <ToolbarButton title="Edit details" icon={faPen} onClick={() => openPanel("inspector")} />
+          <ToolbarButton title="Edit details" icon={EditIcon} onClick={() => openPanel("inspector")} />
         )}
         {!readOnly && (
           <ToolbarButton
             title="Delete (Del)"
-            icon={faTrash}
+            icon={DeleteIcon}
             color="error"
             onClick={deleteSelection}
           />

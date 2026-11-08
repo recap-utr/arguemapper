@@ -1,4 +1,4 @@
-import { faCloudArrowDown } from "@fortawesome/free-solid-svg-icons";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import {
   Button,
   Dialog,
@@ -38,7 +38,7 @@ export const AifdbImport: React.FC = () => {
 
   return (
     <>
-      <IconMenuItem icon={faCloudArrowDown} text="Open from AIFdb…" onClick={() => setOpen(true)} />
+      <IconMenuItem icon={CloudDownloadIcon} text="Open from AIFdb…" onClick={() => setOpen(true)} />
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Open from AIFdb</DialogTitle>
         <DialogContent>

@@ -1,8 +1,9 @@
-import { faCompress, faExpand, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import CloseIcon from "@mui/icons-material/Close";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import { Box, IconButton, Paper, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
 import type React from "react";
-import { useState } from "react";
+import { createElement, useState } from "react";
 import { PANELS, usePanelLayout } from "@/components/panels/layout.js";
 import { type Panel, useArgueActions } from "@/store.js";
 
@@ -65,7 +66,7 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
                 value={panel}
                 label={PANELS[panel].label}
                 // narrow screens lack the room for icons
-                icon={wide ? <FontAwesomeIcon icon={PANELS[panel].icon} /> : undefined}
+                icon={wide ? createElement(PANELS[panel].icon) : undefined}
                 iconPosition="start"
                 sx={{ minHeight: 48 }}
               />
@@ -79,13 +80,13 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
         {placement === "bottom" && (
           <Tooltip title={expanded ? "Show the graph" : "Expand"}>
             <IconButton onClick={() => setExpanded((current) => !current)}>
-              <FontAwesomeIcon icon={expanded ? faCompress : faExpand} fixedWidth />
+              {expanded ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
             </IconButton>
           </Tooltip>
         )}
         <Tooltip title="Close">
           <IconButton onClick={() => active && hide(active)}>
-            <FontAwesomeIcon icon={faXmark} fixedWidth />
+            <CloseIcon />
           </IconButton>
         </Tooltip>
       </Stack>

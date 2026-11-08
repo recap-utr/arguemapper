@@ -1,5 +1,5 @@
-import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import { IconButton, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
 import type React from "react";
 import { useStore } from "zustand";
@@ -48,7 +48,7 @@ export const GraphTabs: React.FC = () => {
       {!readOnly && (
         <Tooltip title="New graph">
           <IconButton onClick={() => openGraph()}>
-            <FontAwesomeIcon icon={faPlus} />
+            <AddIcon />
           </IconButton>
         </Tooltip>
       )}
@@ -74,7 +74,7 @@ const GraphTabLabel: React.FC<{ doc: DocumentStore }> = ({ doc }) => {
           closeDocument(workspace, doc.id);
         }}
       >
-        <FontAwesomeIcon icon={faXmark} />
+        <CloseIcon />
       </IconButton>
     </Stack>
   );

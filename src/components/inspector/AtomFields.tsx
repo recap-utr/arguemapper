@@ -1,5 +1,4 @@
-import { faQuoteLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import {
   Button,
   FormControlLabel,
@@ -69,7 +68,7 @@ export const AtomFields: React.FC = () => {
             {panels && (
               <Button
                 size="small"
-                startIcon={<FontAwesomeIcon icon={faQuoteLeft} />}
+                startIcon={<FormatQuoteIcon />}
                 onClick={() => openPanel("text")}
                 sx={{ alignSelf: "flex-start" }}
               >

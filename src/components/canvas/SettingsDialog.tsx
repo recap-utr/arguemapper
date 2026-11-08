@@ -1,6 +1,5 @@
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Button,
   Dialog,
@@ -40,7 +39,7 @@ export const SettingsButton: React.FC = () => {
 
   return (
     <>
-      <ToolbarButton title="Settings" icon={faGear} onClick={() => setOpen(true)} />
+      <ToolbarButton title="Settings" icon={SettingsIcon} onClick={() => setOpen(true)} />
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -116,7 +115,7 @@ export const SettingsButton: React.FC = () => {
           <Button
             href="https://github.com/recap-utr/arguemapper"
             target="_blank"
-            startIcon={<FontAwesomeIcon icon={faGithub} />}
+            startIcon={<GitHubIcon />}
             sx={{ mr: "auto" }}
           >
             v{version}

@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Tooltip } from "@mui/material";
 import type React from "react";
 import { useEditorUp } from "@/components/breakpoints.js";
@@ -25,8 +24,8 @@ export const PanelToggles: React.FC = () => {
   return (
     <ToolbarPaper>
       {closed.map((panel) => {
-        const { label, icon } = PANELS[panel];
-        const iconElement = <FontAwesomeIcon icon={icon} fixedWidth />;
+        const { label, icon: Icon } = PANELS[panel];
+        const iconElement = <Icon />;
 
         return (
           <Tooltip key={panel} title={labeled ? "" : label}>

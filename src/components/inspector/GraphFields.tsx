@@ -1,5 +1,5 @@
-import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, IconButton, Paper, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
@@ -45,7 +45,7 @@ export const GraphFields: React.FC = () => {
         ))}
         {!readOnly && (
           <Button
-            startIcon={<FontAwesomeIcon icon={faPlus} />}
+            startIcon={<AddIcon />}
             onClick={() => {
               editGraph((graph) => {
                 graph.addParticipant(new arguebuf.Participant({ name: "" }));
@@ -95,7 +95,7 @@ const ParticipantFields: React.FC<{ participant: arguebuf.Participant }> = ({ pa
                   });
                 }}
               >
-                <FontAwesomeIcon icon={faTrash} fixedWidth />
+                <DeleteIcon />
               </IconButton>
             </Tooltip>
           )}

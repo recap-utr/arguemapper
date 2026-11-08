@@ -1,5 +1,6 @@
-import { faChevronDown, faFileLines, faLightbulb } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ArticleIcon from "@mui/icons-material/Article";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import {
   Accordion,
   AccordionDetails,
@@ -112,7 +113,7 @@ const GuideCard: React.FC = () => {
         elevation={4}
         disableGutters
       >
-        <AccordionSummary expandIcon={<FontAwesomeIcon icon={faChevronDown} />}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>
             Getting started · {completed.filter(Boolean).length} of {STEPS.length} done
           </Typography>
@@ -130,7 +131,7 @@ const GuideCard: React.FC = () => {
                     <Button
                       size="small"
                       variant="contained"
-                      startIcon={<FontAwesomeIcon icon={faFileLines} />}
+                      startIcon={<ArticleIcon />}
                       onClick={() => openPanel("text")}
                       sx={{ mt: 1 }}
                     >
@@ -144,7 +145,7 @@ const GuideCard: React.FC = () => {
           <Stack direction="row" sx={{ justifyContent: "space-between", mt: 2 }}>
             <Button
               size="small"
-              startIcon={<FontAwesomeIcon icon={faLightbulb} />}
+              startIcon={<LightbulbIcon />}
               onClick={() => openGraph(generateDemo())}
             >
               See an example

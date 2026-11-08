@@ -1,12 +1,14 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faFileLines, faRobot, faSliders } from "@fortawesome/free-solid-svg-icons";
+import type { SvgIconComponent } from "@mui/icons-material";
+import ArticleIcon from "@mui/icons-material/Article";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import TuneIcon from "@mui/icons-material/Tune";
 import { useEditorUp } from "@/components/breakpoints.js";
 import { type Panel, useArgueActions, useArgueConfig, useWorkspace } from "@/store.js";
 
-export const PANELS: Readonly<Record<Panel, { label: string; icon: IconProp }>> = {
-  text: { label: "Text", icon: faFileLines },
-  inspector: { label: "Details", icon: faSliders },
-  assistant: { label: "Assistant", icon: faRobot },
+export const PANELS: Readonly<Record<Panel, { label: string; icon: SvgIconComponent }>> = {
+  text: { label: "Text", icon: ArticleIcon },
+  inspector: { label: "Details", icon: TuneIcon },
+  assistant: { label: "Assistant", icon: SmartToyIcon },
 };
 
 /** Panels that share an area beside the canvas of wide editors. */

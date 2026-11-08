@@ -1,19 +1,18 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ListItemIcon, ListItemText, MenuItem } from "@mui/material";
+import type { SvgIconComponent } from "@mui/icons-material";
 import type React from "react";
 
 interface Props {
-  icon: IconProp;
+  icon: SvgIconComponent;
   text: string;
   onClick: () => void;
 }
 
-/** A menu entry with a leading FontAwesome icon. */
-export const IconMenuItem: React.FC<Props> = ({ icon, text, onClick }) => (
+/** A menu entry with a leading icon. */
+export const IconMenuItem: React.FC<Props> = ({ icon: Icon, text, onClick }) => (
   <MenuItem onClick={onClick}>
     <ListItemIcon>
-      <FontAwesomeIcon icon={icon} fixedWidth />
+      <Icon />
     </ListItemIcon>
     <ListItemText>{text}</ListItemText>
   </MenuItem>

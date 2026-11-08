@@ -1,5 +1,8 @@
-import { faCheck, faLightbulb, faPen, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import {
   Alert,
   Box,
@@ -97,7 +100,7 @@ export const TextPane: React.FC = () => {
             <>
               <Tooltip title="Add another text">
                 <IconButton onClick={() => addText()}>
-                  <FontAwesomeIcon icon={faPlus} fixedWidth />
+                  <AddIcon />
                 </IconButton>
               </Tooltip>
               {!empty && (
@@ -106,7 +109,7 @@ export const TextPane: React.FC = () => {
                     color={editing ? "primary" : "default"}
                     onClick={() => setEditing((current) => !current)}
                   >
-                    <FontAwesomeIcon icon={editing ? faCheck : faPen} fixedWidth />
+                    {editing ? <CheckIcon /> : <EditIcon />}
                   </IconButton>
                 </Tooltip>
               )}
@@ -156,7 +159,7 @@ const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) =
           Start annotating
         </Button>
         <Button
-          startIcon={<FontAwesomeIcon icon={faLightbulb} />}
+          startIcon={<LightbulbIcon />}
           onClick={() => openGraph(generateDemo())}
         >
           See an example
@@ -203,7 +206,7 @@ const ResourceEditor: React.FC<{ id: string; onDone: () => void }> = ({ id, onDo
         <Button
           variant="contained"
           disabled={resource.text.trim() === ""}
-          startIcon={<FontAwesomeIcon icon={faCheck} />}
+          startIcon={<CheckIcon />}
           onClick={onDone}
         >
           Done
@@ -211,7 +214,7 @@ const ResourceEditor: React.FC<{ id: string; onDone: () => void }> = ({ id, onDo
         <Button
           variant="outlined"
           color="error"
-          startIcon={<FontAwesomeIcon icon={faTrash} />}
+          startIcon={<DeleteIcon />}
           onClick={() => {
             editGraph((graph) => {
               graph.removeResource(id);
@@ -442,7 +445,7 @@ const PassageActions: React.FC<ActionsProps> = ({ resource, span, onDone }) => {
       <Button
         variant="contained"
         size="small"
-        startIcon={<FontAwesomeIcon icon={faPlus} />}
+        startIcon={<AddIcon />}
         onClick={() => {
           addNode(atom);
           onDone();

@@ -1,5 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Stack, Typography } from "@mui/material";
 import type React from "react";
 import { AtomFields } from "@/components/inspector/AtomFields.js";
@@ -31,7 +30,7 @@ const Inspector: React.FC = () => {
         <Button
           variant="outlined"
           color="error"
-          startIcon={<FontAwesomeIcon icon={faTrash} />}
+          startIcon={<DeleteIcon />}
           onClick={deleteSelection}
         >
           Delete

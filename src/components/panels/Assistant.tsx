@@ -1,5 +1,5 @@
-import { faChevronDown, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { ChatBox, ChatComposerToolbar, type ChatComposerToolbarProps } from "@mui/x-chat";
 import type { ChatSuggestion } from "@mui/x-chat/headless";
@@ -70,7 +70,7 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
               disabled={empty}
               onClick={() => resetConversation(store)}
             >
-              <FontAwesomeIcon icon={faPenToSquare} fixedWidth />
+              <EditNoteIcon />
             </IconButton>
           </span>
         </Tooltip>
@@ -78,7 +78,7 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
           <Button
             size="small"
             color="inherit"
-            endIcon={editable && <FontAwesomeIcon icon={faChevronDown} />}
+            endIcon={editable && <ExpandMoreIcon />}
             disabled={!editable}
             onClick={() => setSettingsOpen(true)}
             sx={{ minWidth: 0, textTransform: "none" }}

@@ -1,5 +1,7 @@
-import { faCommentMedical, faRedo, faSitemap, faUndo } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import AddCommentIcon from "@mui/icons-material/AddComment";
+import RedoIcon from "@mui/icons-material/Redo";
+import UndoIcon from "@mui/icons-material/Undo";
 import { ControlButton, Controls } from "@xyflow/react";
 import type React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -36,15 +38,15 @@ export const EditorControls: React.FC = () => {
       orientation={wide ? "vertical" : "horizontal"}
     >
       <ControlButton title="Arrange automatically" onClick={() => setState({ shouldLayout: true })}>
-        <FontAwesomeIcon icon={faSitemap} />
+        <AccountTreeIcon />
       </ControlButton>
       {!readOnly && (
         <>
           <ControlButton title="Undo (Ctrl+Z)" disabled={!undoable} onClick={() => undo()}>
-            <FontAwesomeIcon icon={faUndo} />
+            <UndoIcon />
           </ControlButton>
           <ControlButton title="Redo (Ctrl+Y)" disabled={!redoable} onClick={() => redo()}>
-            <FontAwesomeIcon icon={faRedo} />
+            <RedoIcon />
           </ControlButton>
           <ControlButton
             title="Add a claim without text"
@@ -53,7 +55,7 @@ export const EditorControls: React.FC = () => {
               openPanel("inspector");
             }}
           >
-            <FontAwesomeIcon icon={faCommentMedical} />
+            <AddCommentIcon />
           </ControlButton>
         </>
       )}

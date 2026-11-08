@@ -1,5 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Tooltip } from "@mui/material";
 import { useState } from "react";
 import { PERSIST_KEY } from "@/App.js";
@@ -29,7 +28,7 @@ export const ClearCacheButton: React.FC = () => {
       >
         <Button
           color="error"
-          startIcon={<FontAwesomeIcon icon={faTrash} />}
+          startIcon={<DeleteIcon />}
           variant="outlined"
           onClick={() => setOpen(true)}
         >

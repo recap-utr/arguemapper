@@ -1,4 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -58,7 +58,7 @@ const EdgeActions: React.FC = () => {
 
   return (
     <ToolbarPaper>
-      <ToolbarButton title="Delete (Del)" icon={faTrash} color="error" onClick={deleteSelection} />
+      <ToolbarButton title="Delete (Del)" icon={DeleteIcon} color="error" onClick={deleteSelection} />
     </ToolbarPaper>
   );
 };
