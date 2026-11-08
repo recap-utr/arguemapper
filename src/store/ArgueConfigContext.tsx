@@ -11,6 +11,8 @@ export interface ArgueConfig {
   toolbar: boolean;
   /** Show the text and inspector panels. */
   panels: boolean;
+  /** Offer the getting started guide, never while read-only. */
+  guide: boolean;
   /**
    * The settings fixed by the host if the assistant is enabled, which adds its panel.
    * The user chooses the others in the settings of the assistant.
@@ -25,6 +27,7 @@ const ArgueConfigContext = createContext<ArgueConfig>({
   readOnly: false,
   toolbar: false,
   panels: false,
+  guide: false,
   breakpoint: "xl",
 });
 

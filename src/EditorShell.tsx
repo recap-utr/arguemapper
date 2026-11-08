@@ -30,6 +30,8 @@ export interface EditorProps extends React.PropsWithChildren {
    * Wide editors show them beside the canvas, narrow ones below it.
    */
   panels?: boolean;
+  /** Offer the getting started guide on the canvas, which the user can hide in the settings. */
+  guide?: boolean;
   /**
    * Enable the AI assistant, disabled by default.
    * The given settings are fixed, the user chooses the others in the settings of the assistant.
@@ -53,6 +55,7 @@ export function EditorShell({
   readOnly = false,
   toolbar = false,
   panels = false,
+  guide = false,
   assistant,
   id: idProp,
   slots,
@@ -77,8 +80,16 @@ export function EditorShell({
   }
 
   const config = useMemo(
-    (): ArgueConfig => ({ id, readOnly, toolbar, panels, assistant: fixed, breakpoint }),
-    [id, readOnly, toolbar, panels, fixed, breakpoint],
+    (): ArgueConfig => ({
+      id,
+      readOnly,
+      toolbar,
+      panels,
+      guide: guide && !readOnly,
+      assistant: fixed,
+      breakpoint,
+    }),
+    [id, readOnly, toolbar, panels, guide, fixed, breakpoint],
   );
 
   return (

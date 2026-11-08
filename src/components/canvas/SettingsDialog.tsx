@@ -33,7 +33,7 @@ export const SettingsButton: React.FC = () => {
   const prettifyJson = useWorkspace((state) => state.prettifyJson);
   const imageScale = useWorkspace((state) => state.imageScale);
   const guide = useWorkspace((state) => state.guide);
-  const { readOnly } = useArgueConfig();
+  const { readOnly, guide: guideOffered } = useArgueConfig();
   const slots = useSlots();
   const { setState, setWorkspace } = useArgueActions();
 
@@ -51,7 +51,7 @@ export const SettingsButton: React.FC = () => {
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
             <Typography variant="overline">Display</Typography>
-            {!readOnly && (
+            {guideOffered && (
               <FormControlLabel
                 control={
                   <Switch

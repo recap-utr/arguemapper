@@ -62,13 +62,20 @@ const STEPS: readonly GuideStep[] = [
   },
 ];
 
+/** Whether the host offers the guide and the user has not hidden it. */
+function useGuide(): boolean {
+  const offered = useArgueConfig().guide;
+  const shown = useWorkspace((state) => state.guide);
+
+  return offered && shown;
+}
+
 /** The step the guide shows, undefined while it is hidden or done. */
 export function useGuideStep(): GuideStep["id"] | undefined {
-  const shown = useWorkspace((state) => state.guide);
-  const { readOnly } = useArgueConfig();
+  const shown = useGuide();
 
   return useDocument((state) =>
-    shown && !readOnly ? STEPS.find((step) => !step.done(state.graph))?.id : undefined,
+    shown ? STEPS.find((step) => !step.done(state.graph))?.id : undefined,
   );
 }
 
@@ -77,11 +84,8 @@ export function useGuideStep(): GuideStep["id"] | undefined {
  * It is shown on the canvas until all steps are done or the user hides it.
  */
 export const Guide: React.FC = () => {
-  const shown = useWorkspace((state) => state.guide);
-  const { readOnly } = useArgueConfig();
-
   // the steps are only checked while the guide may be shown
-  return shown && !readOnly ? <GuideCard /> : null;
+  return useGuide() ? <GuideCard /> : null;
 };
 
 const GuideCard: React.FC = () => {

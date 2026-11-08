@@ -13,6 +13,7 @@ export default function App(): React.JSX.Element {
       persistKey={PERSIST_KEY}
       toolbar
       panels
+      guide
       assistant
       slots={{ fileMenu: <AifdbImport />, settings: <ClearCacheButton /> }}
       style={{ height: "100dvh" }}

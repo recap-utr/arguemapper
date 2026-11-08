@@ -17,7 +17,7 @@ docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ArgueMapper ships three embeddable components, layered on a shared rendering core, for different needs:
 
 - **`<GraphViewer>`**: a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
-- **`<GraphEditor>`**: the full embeddable editor of a single graph. It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
+- **`<GraphEditor>`**: the full embeddable editor of a single graph. It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), the getting started guide (`guide`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
 - **`<GraphWorkspace>`**: the same editor for several graphs, which are opened as tabs (the standalone ArgueMapper app is one configuration of it). It starts with the `graphs` prop, reports changes via `onGraphChange(id, graph)`, and optionally persists itself in the browser under `persistKey`.
   The same components adapt to desktops, tablets, and phones: wide editors show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
