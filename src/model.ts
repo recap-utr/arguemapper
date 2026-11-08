@@ -5,86 +5,10 @@ import {
   type Node as FlowNode,
   type XYPosition,
 } from "@xyflow/react";
-import * as arguebuf from "arguebuf";
-import { z } from "zod";
+import { type Graph, type Node, position } from "@/graph.js";
 
-/** Userdata of graphs and edges, unknown fields of other tools are kept. */
-export interface ElementUserdata {
-  notes?: string;
-  [key: string]: unknown;
-}
-
-/** Userdata of atoms and schemes. */
-export interface NodeUserdata extends ElementUserdata {
-  arguemapper?: {
-    position?: XYPosition;
-    /** Provenance of elements created or changed by the assistant. */
-    assistant?: {
-      explanation?: string;
-      config?: { model?: string; baseURL?: string; reasoning?: string; [key: string]: unknown };
-      [key: string]: unknown;
-    };
-    [key: string]: unknown;
-  };
-}
-
-// the interfaces document the userdata, so the schemas are checked against them
-const elementSchema = z.looseObject({ notes: z.string().optional() });
-const elementUserdata: z.ZodType<ElementUserdata> = elementSchema;
-
-const nodeUserdata: z.ZodType<NodeUserdata> = elementSchema.extend({
-  arguemapper: z
-    .looseObject({
-      position: z.object({ x: z.number(), y: z.number() }).optional(),
-      assistant: z
-        .looseObject({
-          explanation: z.string().optional(),
-          config: z
-            .looseObject({
-              model: z.string().optional(),
-              baseURL: z.string().optional(),
-              reasoning: z.string().optional(),
-            })
-            .optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
-
-/** Userdata of arguemapper, unknown fields of other tools are kept. */
-export type Schema = {
-  graph: ElementUserdata;
-  atom: NodeUserdata;
-  scheme: NodeUserdata;
-  edge: ElementUserdata;
-};
-
-function codec<T>(schema: z.ZodType<T>): arguebuf.Codec<T> {
-  return {
-    decode: (data) => schema.parse(data),
-    // drops undefined values, which JSON objects cannot hold
-    encode: (value): arguebuf.JsonObject => JSON.parse(JSON.stringify(value)),
-  };
-}
-
-export const codecs: arguebuf.Codecs<Schema> = {
-  graph: codec(elementUserdata),
-  atom: codec(nodeUserdata),
-  scheme: codec(nodeUserdata),
-  edge: codec(elementUserdata),
-};
-
-export type Graph = arguebuf.Graph<Schema>;
-export type GraphDraft = arguebuf.GraphDraft<Schema>;
-export type Node = arguebuf.Node<Schema>;
-export type Edge = arguebuf.Edge<ElementUserdata>;
-export type AtomNode = arguebuf.AtomNode<NodeUserdata>;
-export type SchemeNode = arguebuf.SchemeNode<NodeUserdata>;
-
-export const newGraph = (): Graph => new arguebuf.Graph<Schema>({ userdata: {} });
-
-export const newAtom = (): AtomNode => new arguebuf.AtomNode({ text: "" });
+// the editor model extends the graph model, which is free of React for the assistant
+export * from "@/graph.js";
 
 /** Canvas element of a graph node, which is part of its data together with its highlights. */
 export type CanvasNode = FlowNode<
@@ -96,99 +20,8 @@ export type CanvasEdge = FlowEdge;
 /** Size of a node as measured by the canvas. */
 export type Dimensions = NonNullable<FlowNode["measured"]>;
 
-const ORIGIN: XYPosition = { x: 0, y: 0 };
-
 /** Small graphs are fitted into view without enlarging them. */
 export const fitViewOptions: FitViewOptions = { maxZoom: 1 };
-
-export const position = (node: Node): XYPosition => node.userdata.arguemapper?.position ?? ORIGIN;
-
-/** Userdata of the node with the given fields of arguemapper changed. */
-export const withArguemapper = (
-  { userdata }: Node,
-  changes: NonNullable<NodeUserdata["arguemapper"]>,
-): NodeUserdata => ({ ...userdata, arguemapper: { ...userdata.arguemapper, ...changes } });
-
-/** Userdata of the node with the position changed. */
-export const positioned = (node: Node, position: XYPosition): NodeUserdata =>
-  withArguemapper(node, { position });
-
-/** Update the scheme nodes with the given ids, other ids are skipped. */
-export function updateSchemes(
-  graph: GraphDraft,
-  ids: readonly string[],
-  changes: (node: SchemeNode) => arguebuf.SchemeChanges<NodeUserdata>,
-): void {
-  for (const id of ids) {
-    const node = graph.nodes[id];
-
-    if (node?.type === "scheme") {
-      graph.updateScheme(id, changes(node));
-    }
-  }
-}
-
-/** Replace the userdata of an atom or scheme node. */
-export function updateUserdata(graph: GraphDraft, id: string, userdata: NodeUserdata): void {
-  if (graph.nodes[id].type === "atom") {
-    graph.updateAtom(id, { userdata });
-  } else {
-    graph.updateScheme(id, { userdata });
-  }
-}
-
-/** Set the notes of the node or edge with the id, or of the graph without an id. */
-export function setNotes(graph: GraphDraft, id: string | undefined, notes: string): void {
-  if (id === undefined) {
-    graph.userdata = { ...graph.userdata, notes };
-  } else if (Object.hasOwn(graph.edges, id)) {
-    graph.updateEdge(id, { userdata: { ...graph.edges[id].userdata, notes } });
-  } else {
-    updateUserdata(graph, id, { ...graph.nodes[id].userdata, notes });
-  }
-}
-
-/** Move the nodes of the graph to the positions, unknown ids are skipped. */
-export function moveNodes(
-  graph: GraphDraft,
-  positions: Iterable<readonly [string, XYPosition]>,
-): void {
-  for (const [id, value] of positions) {
-    if (Object.hasOwn(graph.nodes, id)) {
-      updateUserdata(graph, id, positioned(graph.nodes[id], value));
-    }
-  }
-}
-
-/**
- * Connect the nodes, atoms through a new scheme node with the given scheme (support by default),
- * which is placed between them and returned.
- */
-export function link(
-  graph: GraphDraft,
-  source: string,
-  target: string,
-  scheme: arguebuf.Scheme = arguebuf.defaultScheme("support"),
-): SchemeNode | undefined {
-  const node = graph.link(source, target, { scheme });
-
-  if (node !== undefined) {
-    const from = position(graph.nodes[source]);
-    const to = position(graph.nodes[target]);
-    moveNodes(graph, [[node.id, { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 }]]);
-  }
-
-  return node;
-}
-
-/** Make the atom the major claim, or unset it if it already is. */
-export function toggleMajorClaim(graph: GraphDraft, id: string): void {
-  graph.majorClaim = graph.majorClaim === id ? undefined : id;
-}
-
-/** A graph needs auto-layout when it carries no coordinates. */
-export const needsLayout = (graph: Graph): boolean =>
-  Object.values(graph.nodes).every((node) => node.userdata.arguemapper?.position === undefined);
 
 export interface Selection {
   readonly nodes: readonly string[];
@@ -199,12 +32,6 @@ export const emptySelection: Selection = { nodes: [], edges: [] };
 
 /** Selection of the given nodes only. */
 export const nodeSelection = (...nodes: string[]): Selection => ({ nodes, edges: [] });
-
-/** The resource to show, the selected one if it exists and the first one otherwise. */
-export const shownResource = (graph: Graph, selected: string | undefined): string | undefined =>
-  selected !== undefined && Object.hasOwn(graph.resources, selected)
-    ? selected
-    : Object.keys(graph.resources).at(0);
 
 /** The selection without elements that are no longer part of the graph. */
 export function pruneSelection(graph: Graph, selection: Selection): Selection {
@@ -241,10 +68,6 @@ export function shared<T>(values: readonly T[]): T | undefined {
 
   return values.every((value) => value === first) ? first : undefined;
 }
-
-/** Message of the issue for the user, followed by its hint. */
-export const describeIssue = ({ message, hint }: arguebuf.Issue): string =>
-  hint === undefined ? message : `${message} ${hint}`;
 
 /** Ids of all selected elements. */
 export const selectedIds = ({ nodes, edges }: Selection): string[] => [...nodes, ...edges];
