@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => {
           ]
         : []),
     ],
+    // Assets of the library such as the layout worker are referenced relative to it, not to the host root.
+    base: isLib ? "./" : undefined,
     // Keeps the generated declarations away from the TS transform, as rolldown-plugin-dts requires.
     oxc: isLib ? { exclude: [/\.js$/, declarations] } : undefined,
     server: {

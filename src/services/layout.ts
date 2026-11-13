@@ -1,10 +1,14 @@
 import Elk, {
+  type ELK,
   type ElkExtendedEdge,
   type ElkNode,
   type LayoutOptions,
-} from "elkjs/lib/elk.bundled.js";
+} from "elkjs/lib/elk-api.js";
 import type { Edge, Node, XYPosition } from "@xyflow/react";
 import type * as model from "@/model.js";
+
+// ELK runs in a worker, so that large graphs do not block the page, started on the first layout
+let elk: ELK | undefined;
 
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 50;
@@ -59,12 +63,13 @@ export const layout = async (
     sources: [edge.source],
   }));
 
-  const elk = new Elk({ defaultLayoutOptions: layoutOptions[algorithm] });
-  const elkGraph = await elk.layout({
-    id: "root",
-    children: elkNodes,
-    edges: elkEdges,
+  elk ??= new Elk({
+    workerFactory: () => new Worker(new URL("elkjs/lib/elk-worker.min.js", import.meta.url)),
   });
+  const elkGraph = await elk.layout(
+    { id: "root", children: elkNodes, edges: elkEdges },
+    { layoutOptions: layoutOptions[algorithm] },
+  );
 
   return new Map(
     (elkGraph.children ?? []).flatMap(({ id, x, y }) =>
