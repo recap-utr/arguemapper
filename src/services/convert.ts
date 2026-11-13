@@ -1,5 +1,6 @@
 import * as arguebuf from "arguebuf";
 import { snapdom } from "@zumer/snapdom";
+import { Temporal } from "temporal-polyfill";
 import * as model from "@/model.js";
 import type { AnalystIdentity } from "@/store/types.js";
 
