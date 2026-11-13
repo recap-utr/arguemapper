@@ -3,13 +3,14 @@ import type React from "react";
 import { useArgueConfig } from "@/store.js";
 
 interface Props {
+  value: string;
+  /** The edited elements have different notes. */
+  mixed?: boolean;
   onChange: (value: string) => void;
-  value?: string;
-  label?: string;
 }
 
-/** Shared multiline notes input used across the inspector field panels. */
-export const NotesField: React.FC<Props> = ({ onChange, value, label = "Notes" }) => {
+/** Notes of the graph or of the selected elements, which typing replaces. */
+export const NotesField: React.FC<Props> = ({ value, mixed = false, onChange }) => {
   const { readOnly } = useArgueConfig();
 
   return (
@@ -17,9 +18,9 @@ export const NotesField: React.FC<Props> = ({ onChange, value, label = "Notes" }
       slotProps={{ input: { readOnly } }}
       fullWidth
       multiline
-      minRows={1}
-      label={label}
+      label="Notes"
       value={value}
+      placeholder={mixed ? "Mixed" : undefined}
       onChange={(event) => onChange(event.target.value)}
     />
   );

@@ -26,6 +26,7 @@ export const SchemeFields: React.FC = () => {
   const type = model.shared(schemeNodes.map(({ scheme }) => scheme.case));
   const options = type === undefined ? [] : arguebuf.schemeValues(type);
   const value = model.shared(schemeNodes.map(({ scheme }) => scheme.value));
+  const notes = model.shared(schemeNodes.map((node) => node.userdata.notes ?? ""));
 
   const update = (
     changes: (node: model.SchemeNode) => arguebuf.SchemeChanges<model.NodeUserdata>,
@@ -61,8 +62,8 @@ export const SchemeFields: React.FC = () => {
       <AdvancedSection id={single?.id}>
         {single !== undefined && <ExplanationField node={single} />}
         <NotesField
-          value={single === undefined ? undefined : (single.userdata.notes ?? "")}
-          label={single === undefined ? "Notes (replaces the notes of all)" : "Notes"}
+          value={notes ?? ""}
+          mixed={notes === undefined}
           onChange={(notes) =>
             editGraph((graph) => ids.forEach((id) => model.setNotes(graph, id, notes)))
           }
