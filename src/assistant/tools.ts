@@ -2,7 +2,6 @@ import * as arguebuf from "arguebuf";
 import { z } from "zod";
 import {
   codecs,
-  describeIssue,
   type Graph,
   graphTitle,
   newGraph,
@@ -74,7 +73,7 @@ const graphEditSchema = arguebuf.patchSchema.extend({
 const report = (issues: readonly arguebuf.Issue[]): string[] =>
   issues.map(
     (issue) =>
-      `${issue.severity} ${issue.code}${issue.path === undefined ? "" : ` at ${issue.path.join(".")}`}: ${describeIssue(issue)}`,
+      `${issue.severity} ${issue.code}${issue.path === undefined ? "" : ` at ${issue.path.join(".")}`}: ${arguebuf.describeIssue(issue)}`,
   );
 
 const failure = (issues: readonly arguebuf.Issue[]): Error =>

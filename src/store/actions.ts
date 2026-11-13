@@ -91,7 +91,7 @@ export function createActions({
     });
 
     if (issue !== undefined) {
-      show(model.describeIssue(issue), "warning");
+      show(arguebuf.describeIssue(issue), "warning");
     }
   };
 
@@ -106,7 +106,7 @@ export function createActions({
 
           if (issues.length > 0) {
             show(
-              `The graph was repaired while loading it: ${issues.map(model.describeIssue).join(" ")}`,
+              `The graph was repaired while loading it: ${issues.map(arguebuf.describeIssue).join(" ")}`,
               "warning",
             );
           }
