@@ -68,7 +68,7 @@ export const layout = async (
 
   return new Map(
     (elkGraph.children ?? []).flatMap(({ id, x, y }) =>
-      x === undefined || y === undefined ? [] : [[id, { x: x + Math.random() / 1000, y }]],
+      x === undefined || y === undefined ? [] : [[id, { x, y }]],
     ),
   );
 };

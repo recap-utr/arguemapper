@@ -1,10 +1,11 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, IconButton, Paper, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
 import { AdvancedSection } from "@/components/inspector/AdvancedSection.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
+import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import * as model from "@/model.js";
 import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
@@ -35,7 +36,6 @@ export const GraphFields: React.FC = () => {
         }}
       />
       <NotesField
-        label="Notes"
         value={notes ?? ""}
         onChange={(value) => editGraph((graph) => model.setNotes(graph, undefined, value))}
       />
@@ -86,18 +86,16 @@ const ParticipantFields: React.FC<{ participant: arguebuf.Participant }> = ({ pa
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           {field("name", "Name")}
           {!readOnly && (
-            <Tooltip title="Remove author">
-              <IconButton
-                color="error"
-                onClick={() => {
-                  editGraph((graph) => {
-                    graph.removeParticipant(participant.id);
-                  });
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+            <TooltipIconButton
+              title="Remove author"
+              icon={DeleteIcon}
+              color="error"
+              onClick={() => {
+                editGraph((graph) => {
+                  graph.removeParticipant(participant.id);
+                });
+              }}
+            />
           )}
         </Stack>
         {field("email", "Email")}

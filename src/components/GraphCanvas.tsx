@@ -17,7 +17,7 @@ import {
   type Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { type ReactNode, type RefObject, useMemo } from "react";
+import { type ReactNode, type RefObject, useId } from "react";
 import * as model from "@/model.js";
 import { EdgeTypes } from "@/components/EdgeTypes.js";
 import { GraphRenderProvider } from "@/components/GraphRenderContext.js";
@@ -29,9 +29,9 @@ const connectionLineTypes: Record<model.EdgeStyle, ConnectionLineType> = {
   step: ConnectionLineType.SmoothStep,
 };
 
-export interface GraphCanvasProps extends React.PropsWithChildren {
-  /** Instance id; namespaces the ReactFlow instance. */
-  id: string;
+interface GraphCanvasProps extends React.PropsWithChildren {
+  /** Instance id that namespaces React Flow and its SVG markers, a generated one by default. */
+  id?: string;
   nodes: model.CanvasNode[];
   edges: model.CanvasEdge[];
   edgeStyle: model.EdgeStyle;
@@ -40,8 +40,8 @@ export interface GraphCanvasProps extends React.PropsWithChildren {
   viewport?: Viewport;
   onMoveEnd?: OnMoveEnd;
 
-  /** Ref forwarded to the ReactFlow wrapper element (for coordinate transforms / image export). */
-  wrapperRef?: RefObject<HTMLDivElement | null> | null;
+  /** Ref forwarded to the React Flow wrapper element, e.g. for its geometry and the image export. */
+  wrapperRef?: RefObject<HTMLDivElement | null>;
 
   onNodesChange?: OnNodesChange<model.CanvasNode>;
   onEdgesChange?: OnEdgesChange<model.CanvasEdge>;
@@ -92,17 +92,13 @@ export function GraphCanvas({
   children,
   ...props
 }: GraphCanvasProps): React.JSX.Element {
+  const generatedId = useId();
   const theme = useTheme();
   const coarse = useMediaQuery("(pointer: coarse)");
   const buttonSize = coarse ? 44 : 32;
 
-  const renderValue = useMemo(
-    () => ({ edgeStyle, coarse, edgeToolbar, finishEditing }),
-    [edgeStyle, coarse, edgeToolbar, finishEditing],
-  );
-
   return (
-    <GraphRenderProvider value={renderValue}>
+    <GraphRenderProvider value={{ edgeStyle, coarse, edgeToolbar, finishEditing }}>
       <Box
         sx={{
           width: 1,
@@ -119,7 +115,7 @@ export function GraphCanvas({
         }}
       >
         <ReactFlow<model.CanvasNode, model.CanvasEdge>
-          id={id}
+          id={id ?? generatedId}
           ref={wrapperRef}
           nodes={nodes}
           edges={edges}

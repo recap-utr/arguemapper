@@ -1,22 +1,9 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import type React from "react";
-import type { AssistantConfig } from "@/assistant/config.js";
+import { type AssistantConfig, reasoningLevels } from "@/assistant/config.js";
+import { BaseDialog } from "@/components/BaseDialog.js";
+import { SelectField } from "@/components/SelectField.js";
 import { useArgueActions, useArgueConfig, useWorkspace } from "@/store.js";
-
-const reasoningLevels: readonly (readonly [AssistantConfig["reasoning"], string])[] = [
-  ["low", "Low"],
-  ["medium", "Medium"],
-  ["high", "High"],
-];
 
 interface Props {
   open: boolean;
@@ -33,72 +20,47 @@ export const AssistantSettingsDialog: React.FC<Props> = ({ open, onClose }) => {
     setWorkspace({ assistantConfig: { ...assistantConfig, ...changes } });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Assistant Settings</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          {fixed.apiKey === undefined && (
-            <TextField
-              fullWidth
-              type="password"
-              label="API Key"
-              helperText="Optional — not required for local models"
-              value={assistantApiKey}
-              onChange={(event) => {
-                setWorkspace({ assistantApiKey: event.target.value });
-              }}
-            />
-          )}
-          {fixed.model === undefined && (
-            <TextField
-              fullWidth
-              type="text"
-              label="Model"
-              value={assistantConfig.model}
-              onChange={(event) => {
-                setConfig({ model: event.target.value });
-              }}
-            />
-          )}
-          {fixed.baseURL === undefined && (
-            <TextField
-              fullWidth
-              type="text"
-              label="Base URL"
-              value={assistantConfig.baseURL}
-              onChange={(event) => {
-                setConfig({ baseURL: event.target.value });
-              }}
-            />
-          )}
-          {fixed.reasoning === undefined && (
-            <TextField
-              fullWidth
-              select
-              label="Reasoning"
-              value={assistantConfig.reasoning}
-              onChange={(event) => {
-                const level = reasoningLevels.find(([value]) => value === event.target.value);
-
-                if (level !== undefined) {
-                  setConfig({ reasoning: level[0] });
-                }
-              }}
-            >
-              {reasoningLevels.map(([value, label]) => (
-                <MenuItem key={value} value={value}>
-                  {label}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
-    </Dialog>
+    <BaseDialog
+      open={open}
+      title="Assistant settings"
+      onClose={onClose}
+      actions={
+        <Button variant="contained" onClick={onClose}>
+          Done
+        </Button>
+      }
+    >
+      {fixed.apiKey === undefined && (
+        <TextField
+          type="password"
+          label="API key"
+          helperText="Optional, local models usually need none"
+          value={assistantApiKey}
+          onChange={(event) => setWorkspace({ assistantApiKey: event.target.value })}
+        />
+      )}
+      {fixed.model === undefined && (
+        <TextField
+          label="Model"
+          value={assistantConfig.model}
+          onChange={(event) => setConfig({ model: event.target.value })}
+        />
+      )}
+      {fixed.baseURL === undefined && (
+        <TextField
+          label="Base URL"
+          value={assistantConfig.baseURL}
+          onChange={(event) => setConfig({ baseURL: event.target.value })}
+        />
+      )}
+      {fixed.reasoning === undefined && (
+        <SelectField
+          label="Reasoning"
+          value={assistantConfig.reasoning}
+          options={reasoningLevels}
+          onChange={(reasoning) => setConfig({ reasoning })}
+        />
+      )}
+    </BaseDialog>
   );
 };
-
-export default AssistantSettingsDialog;

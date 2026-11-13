@@ -6,21 +6,19 @@ import {
   type ToolLoopAgentSettings,
   type ToolSet,
 } from "ai";
+import { mapValues } from "es-toolkit";
 import type { AssistantSettings } from "@/assistant/config.js";
 import { INSTRUCTIONS } from "@/assistant/instructions.js";
 import type { AssistantTools } from "@/assistant/tools.js";
 
 /** The tools as tools of the AI SDK. */
 const toolSet = (tools: AssistantTools): ToolSet =>
-  Object.fromEntries(
-    Object.entries(tools).map(([name, definition]) => [
-      name,
-      tool({
-        description: definition.description,
-        inputSchema: definition.inputSchema,
-        execute: (input, { abortSignal }) => definition.execute(input, abortSignal),
-      }),
-    ]),
+  mapValues(tools, (definition) =>
+    tool({
+      description: definition.description,
+      inputSchema: definition.inputSchema,
+      execute: (input, { abortSignal }) => definition.execute(input, abortSignal),
+    }),
   );
 
 /** Agent of the AI SDK that runs the tools with the model of the settings. */

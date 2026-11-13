@@ -16,7 +16,7 @@ import {
 import { Panel } from "@xyflow/react";
 import type React from "react";
 import { useState } from "react";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 import { usePanelLayout } from "@/components/panels/layout.js";
 import type * as model from "@/model.js";
 import { generateDemo } from "@/services/demo.js";
@@ -89,7 +89,7 @@ export const Guide: React.FC = () => {
 };
 
 const GuideCard: React.FC = () => {
-  const completed = useDocument((state) => STEPS.map((step) => step.done(state.graph)), shallow);
+  const completed = useDocument(useShallow((state) => STEPS.map((step) => step.done(state.graph))));
   const { wide, available, isShown } = usePanelLayout();
   // collapsed while a panel covers half of a narrow canvas, unless the user chose otherwise
   const [expanded, setExpanded] = useState<boolean>();

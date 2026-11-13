@@ -1,20 +1,9 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Tooltip } from "@mui/material";
+import type React from "react";
 import { useState } from "react";
-import { PERSIST_KEY } from "@/App.js";
 import { ConfirmDialog } from "@/components/ConfirmDialog.js";
-import { clearSession } from "@/store/persistence.js";
-
-/** Remove everything the app stored and reload it, for when the stored state breaks it. */
-export async function resetApp(): Promise<void> {
-  // browsers throw on access if the site data is blocked, then nothing is stored
-  try {
-    localStorage.clear();
-    await clearSession(PERSIST_KEY);
-  } catch {}
-
-  window.location.reload();
-}
+import { resetApp } from "@/standalone/storage.js";
 
 /** Standalone-only recovery action, see `resetApp`. */
 export const ClearCacheButton: React.FC = () => {

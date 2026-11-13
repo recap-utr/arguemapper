@@ -1,7 +1,7 @@
 import { Autocomplete, TextField, Typography } from "@mui/material";
 import * as arguebuf from "arguebuf";
 import type React from "react";
-import { shallow } from "zustand/shallow";
+import { useShallow } from "zustand/shallow";
 import { AdvancedSection } from "@/components/inspector/AdvancedSection.js";
 import { ExplanationField } from "@/components/inspector/ExplanationField.js";
 import { NotesField } from "@/components/inspector/NotesField.js";
@@ -14,11 +14,11 @@ export const SchemeFields: React.FC = () => {
   const ids = useDocument((state) => state.selection.nodes);
   // only the selected nodes, so that changes elsewhere do not re-render
   const schemeNodes = useDocument(
-    ({ graph }) =>
+    useShallow(({ graph }) =>
       ids
         .map((id) => graph.nodes[id])
         .filter((node): node is model.SchemeNode => node?.type === "scheme"),
-    shallow,
+    ),
   );
   const { readOnly } = useArgueConfig();
   const { editGraph } = useArgueActions();

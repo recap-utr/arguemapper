@@ -9,8 +9,8 @@ import * as model from "@/model.js";
 import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Details of the selected elements, or of the graph if nothing is selected. */
-const Inspector: React.FC = () => {
-  const selectionType = useDocument((state) => model.selectionType(state.graph, state.selection));
+export const Inspector: React.FC = () => {
+  const selectionType = useDocument(model.selectionType);
   const count = useDocument(({ selection }) => selection.nodes.length + selection.edges.length);
   const { readOnly } = useArgueConfig();
   const { deleteSelection } = useArgueActions();
@@ -39,5 +39,3 @@ const Inspector: React.FC = () => {
     </Stack>
   );
 };
-
-export default Inspector;

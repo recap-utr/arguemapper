@@ -3,9 +3,9 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { CssBaseline, createTheme, ThemeProvider } from "@mui/material";
-import React from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "@/App.js";
+import { App } from "@/App.js";
 import { ErrorBoundary } from "react-error-boundary";
 import { Recovery } from "@/standalone/Recovery.js";
 
@@ -15,12 +15,12 @@ const theme = createTheme({ colorSchemes: { dark: true } });
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ErrorBoundary FallbackComponent={Recovery}>
         <App />
       </ErrorBoundary>
     </ThemeProvider>
-  </React.StrictMode>,
+  </StrictMode>,
 );

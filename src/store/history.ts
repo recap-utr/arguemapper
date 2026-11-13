@@ -38,7 +38,7 @@ function travel(doc: DocumentStore, from: "past" | "future", to: "past" | "futur
     const target = state[from].at(-1);
 
     return target === undefined
-      ? {}
+      ? state
       : {
           graph: target,
           [from]: state[from].slice(0, -1),

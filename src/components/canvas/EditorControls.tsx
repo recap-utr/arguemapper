@@ -4,17 +4,10 @@ import RedoIcon from "@mui/icons-material/Redo";
 import UndoIcon from "@mui/icons-material/Undo";
 import { ControlButton, Controls } from "@xyflow/react";
 import type React from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import { usePanelLayout } from "@/components/panels/layout.js";
+import { useEditorHotkeys } from "@/components/useEditorHotkeys.js";
 import * as model from "@/model.js";
-import {
-  canRedo,
-  canUndo,
-  useArgueActions,
-  useArgueConfig,
-  useDocument,
-  useInstanceFocused,
-} from "@/store.js";
+import { canRedo, canUndo, useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** React Flow's zoom and fit controls, extended by undo, redo, layout, and adding a claim. */
 export const EditorControls: React.FC = () => {
@@ -22,13 +15,11 @@ export const EditorControls: React.FC = () => {
   const redoable = useDocument(canRedo);
   const { readOnly } = useArgueConfig();
   const { setState, addNode, openPanel, undo, redo } = useArgueActions();
-  const focused = useInstanceFocused();
   // short canvases above the panels have more room in width
   const { wide } = usePanelLayout();
-  const hotkeys = { preventDefault: true, useKey: true, enabled: focused && !readOnly };
 
-  useHotkeys("mod+z", () => undoable && undo(), hotkeys);
-  useHotkeys("mod+y, mod+shift+z", () => redoable && redo(), hotkeys);
+  useEditorHotkeys("mod+z", undo);
+  useEditorHotkeys("mod+y, mod+shift+z", redo);
 
   return (
     <Controls
@@ -42,10 +33,10 @@ export const EditorControls: React.FC = () => {
       </ControlButton>
       {!readOnly && (
         <>
-          <ControlButton title="Undo (Ctrl+Z)" disabled={!undoable} onClick={() => undo()}>
+          <ControlButton title="Undo (Ctrl+Z)" disabled={!undoable} onClick={undo}>
             <UndoIcon />
           </ControlButton>
-          <ControlButton title="Redo (Ctrl+Y)" disabled={!redoable} onClick={() => redo()}>
+          <ControlButton title="Redo (Ctrl+Y)" disabled={!redoable} onClick={redo}>
             <RedoIcon />
           </ControlButton>
           <ControlButton

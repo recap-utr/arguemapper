@@ -1,9 +1,8 @@
 import type * as arguebuf from "arguebuf";
 import { omit, pick, throttle } from "es-toolkit";
 import { clear, createStore, delMany, get, getMany, setMany, type UseStore } from "idb-keyval";
-import { getErrorMessage } from "react-error-boundary";
 import { resolveAssistantConfig } from "@/assistant/config.js";
-import type * as model from "@/model.js";
+import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import { createStore as createZustandStore, type StoreApi } from "zustand/vanilla";
 import { createDocumentStore, createWorkspaceStore } from "@/store/createStore.js";
@@ -100,19 +99,20 @@ export type Lock = StoreApi<{ readonly held: boolean }>;
  * Without stealing, it is only granted if no other tab holds it.
  */
 function acquireLock(name: string, steal: boolean): Promise<Lock> {
-  return new Promise((resolve) => {
-    const lock: Lock = createZustandStore(() => ({ held: false }));
+  const { promise, resolve } = Promise.withResolvers<Lock>();
+  const lock: Lock = createZustandStore(() => ({ held: false }));
 
-    navigator.locks
-      .request(name, steal ? { steal: true } : { ifAvailable: true }, (granted) => {
-        lock.setState({ held: granted !== null });
-        resolve(lock);
+  navigator.locks
+    .request(name, steal ? { steal: true } : { ifAvailable: true }, (granted) => {
+      lock.setState({ held: granted !== null });
+      resolve(lock);
 
-        return granted === null ? undefined : new Promise<void>(() => {});
-      })
-      // another tab stole the lock
-      .catch(() => lock.setState({ held: false }));
-  });
+      return granted === null ? undefined : new Promise<void>(() => {});
+    })
+    // another tab stole the lock
+    .catch(() => lock.setState({ held: false }));
+
+  return promise;
 }
 
 /** Restore the undo history of the graphs after a reload of the page. */
@@ -243,7 +243,7 @@ function persist(name: string, workspace: WorkspaceStore, lock: Lock): void {
         ]);
       }
 
-      const deleted = [...stored].filter((id) => !current.has(id)).map(documentKey);
+      const deleted = [...stored.difference(current)].map(documentKey);
       dirty.clear();
       stored = current;
       workspaceChanged = false;
@@ -251,7 +251,7 @@ function persist(name: string, workspace: WorkspaceStore, lock: Lock): void {
       Promise.all([setMany(entries, db), delMany(deleted, db)]).catch((error: unknown) => {
         notify(
           workspace,
-          `Your graphs could not be saved: ${getErrorMessage(error) ?? String(error)}`,
+          `Your graphs could not be saved: ${model.describeError(error)}`,
           "error",
         );
       });

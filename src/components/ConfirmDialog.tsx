@@ -1,17 +1,8 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Stack,
-} from "@mui/material";
+import { Button, DialogContentText } from "@mui/material";
 import type React from "react";
+import { BaseDialog, type BaseDialogProps } from "@/components/BaseDialog.js";
 
-interface ConfirmDialogProps extends React.PropsWithChildren {
-  open: boolean;
-  title: string;
+interface ConfirmDialogProps extends Omit<BaseDialogProps, "actions"> {
   description: string;
   /** Label of the confirming button. */
   confirmText: string;
@@ -20,13 +11,10 @@ interface ConfirmDialogProps extends React.PropsWithChildren {
   /** Disable the confirming button, e.g. until the fields given as children are filled. */
   confirmDisabled?: boolean;
   onConfirm: () => void;
-  onClose: () => void;
 }
 
 /** Ask the user to confirm an action before running it, optionally with fields to fill. */
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  open,
-  title,
   description,
   confirmText,
   destructive = false,
@@ -34,28 +22,29 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onClose,
   children,
+  ...props
 }) => (
-  <Dialog open={open} onClose={onClose}>
-    <DialogTitle>{title}</DialogTitle>
-    <DialogContent>
-      <Stack spacing={2}>
-        <DialogContentText>{description}</DialogContentText>
-        {children}
-      </Stack>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Cancel</Button>
-      <Button
-        variant="contained"
-        color={destructive ? "error" : "primary"}
-        disabled={confirmDisabled}
-        onClick={() => {
-          onConfirm();
-          onClose();
-        }}
-      >
-        {confirmText}
-      </Button>
-    </DialogActions>
-  </Dialog>
+  <BaseDialog
+    {...props}
+    onClose={onClose}
+    actions={
+      <>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          variant="contained"
+          color={destructive ? "error" : "primary"}
+          disabled={confirmDisabled}
+          onClick={() => {
+            onConfirm();
+            onClose();
+          }}
+        >
+          {confirmText}
+        </Button>
+      </>
+    }
+  >
+    <DialogContentText>{description}</DialogContentText>
+    {children}
+  </BaseDialog>
 );

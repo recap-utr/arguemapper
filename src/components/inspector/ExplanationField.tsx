@@ -10,7 +10,7 @@ export const ExplanationField: React.FC<{ node: model.Node }> = ({ node }) => {
     <TextField
       fullWidth
       multiline
-      label="Assistant Explanation"
+      label="Assistant explanation"
       slotProps={{ input: { readOnly: true } }}
       value={explanation}
     />

@@ -21,6 +21,9 @@ export const defaultAssistantConfig: AssistantConfig = {
   reasoning: "medium",
 };
 
+/** Reasoning efforts offered to the user. */
+export const reasoningLevels: readonly AssistantConfig["reasoning"][] = ["low", "medium", "high"];
+
 /** The given settings completed with the defaults, other fields (e.g. of older versions) are dropped. */
 export function resolveAssistantConfig({
   model,

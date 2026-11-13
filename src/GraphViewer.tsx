@@ -1,13 +1,13 @@
 import { ReactFlowProvider, useEdgesState, useNodesState, useReactFlow } from "@xyflow/react";
-import { type Ref, useCallback, useId, useImperativeHandle, useMemo, useState } from "react";
-import { GraphCanvas, type GraphCanvasProps } from "@/components/GraphCanvas.js";
+import { type Ref, useImperativeHandle, useState } from "react";
+import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import * as model from "@/model.js";
 
 export interface GraphViewerProps {
   /** The graph to display. Controlled: updating it re-renders the view. */
   graph: model.Graph;
-  /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
+  /** Unique id that namespaces React Flow and its SVG markers, a generated one by default. */
   id?: string;
   /** Edge rendering style. Defaults to `"step"`. */
   edgeStyle?: model.EdgeStyle;
@@ -36,7 +36,7 @@ export interface GraphViewerHandle {
 
 function GraphViewerInner({
   graph,
-  id: idProp,
+  id,
   edgeStyle = "step",
   layoutAlgorithm = "layered",
   minimap = false,
@@ -46,36 +46,29 @@ function GraphViewerInner({
   onSelectionChange,
   ref,
 }: GraphViewerProps): React.JSX.Element {
-  const generatedId = useId();
-  const id = idProp ?? generatedId;
   const flow = useReactFlow<model.CanvasNode, model.CanvasEdge>();
 
-  const imported = useMemo(
-    () => ({
-      graph,
-      nodes: model.canvasNodes(
-        graph,
-        { selection: model.emptySelection, measured: {}, dragged: {} },
-        new Map(),
-      ),
-      edges: model.canvasEdges(graph.edges, [], new Map()),
-    }),
-    [graph],
+  const initialNodes = model.canvasNodes(
+    graph,
+    { selection: model.emptySelection, measured: {}, dragged: {} },
+    new Map(),
   );
+  const initialEdges = model.canvasEdges(graph.edges, [], new Map());
 
   // view interactions such as dragging only change the local canvas
-  const [nodes, setNodes, onNodesChange] = useNodesState(imported.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(imported.edges);
-  const [shouldLayout, setShouldLayout] = useState(() => model.needsLayout(imported.graph));
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [shouldLayout, setShouldLayout] = useState(() => model.needsLayout(graph));
   const [shouldFitView, setShouldFitView] = useState(true);
 
   // Re-seed the canvas during render whenever the controlled `graph` prop changes.
-  const [seeded, setSeeded] = useState(imported);
-  if (imported !== seeded) {
-    setSeeded(imported);
-    setNodes(imported.nodes);
-    setEdges(imported.edges);
-    setShouldLayout(model.needsLayout(imported.graph));
+  const [seeded, setSeeded] = useState(graph);
+
+  if (graph !== seeded) {
+    setSeeded(graph);
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    setShouldLayout(model.needsLayout(graph));
     setShouldFitView(true);
   }
 
@@ -85,35 +78,17 @@ function GraphViewerInner({
     layoutAlgorithm,
     shouldLayout,
     shouldFitView,
-    setPositions: useCallback(
-      (positions) =>
-        setNodes((current) =>
-          current.map((node) => {
-            const position = positions.get(node.id);
-            return position === undefined ? node : { ...node, position };
-          }),
-        ),
-      [setNodes],
-    ),
+    setPositions: (positions) =>
+      setNodes((current) =>
+        current.map((node) => {
+          const position = positions.get(node.id);
+          return position === undefined ? node : { ...node, position };
+        }),
+      ),
     setShouldLayout,
     setShouldFitView,
   });
 
-  // the canvas reports its own elements, the host receives the ones of the graph
-  const callbacks = useMemo(
-    (): Pick<GraphCanvasProps, "onNodeClick" | "onEdgeClick" | "onSelectionChange"> => ({
-      onNodeClick: onNodeClick && ((_event, node) => onNodeClick(node.data.node)),
-      onEdgeClick: onEdgeClick && ((_event, edge) => onEdgeClick(graph.edges[edge.id])),
-      onSelectionChange:
-        onSelectionChange &&
-        (({ nodes, edges }) =>
-          onSelectionChange({
-            nodes: nodes.map((node) => node.id),
-            edges: edges.map((edge) => edge.id),
-          })),
-    }),
-    [graph, onNodeClick, onEdgeClick, onSelectionChange],
-  );
 
   useImperativeHandle(
     ref,
@@ -137,7 +112,17 @@ function GraphViewerInner({
       edgeStyle={edgeStyle}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      {...callbacks}
+      // the canvas reports its own elements, the host receives the ones of the graph
+      onNodeClick={onNodeClick && ((_event, node) => onNodeClick(node.data.node))}
+      onEdgeClick={onEdgeClick && ((_event, edge) => onEdgeClick(graph.edges[edge.id]))}
+      onSelectionChange={
+        onSelectionChange &&
+        (({ nodes, edges }) =>
+          onSelectionChange({
+            nodes: nodes.map((node) => node.id),
+            edges: edges.map((edge) => edge.id),
+          }))
+      }
       nodesDraggable
       nodesConnectable={false}
       minimap={minimap}

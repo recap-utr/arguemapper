@@ -1,7 +1,7 @@
 import { Button, Tooltip } from "@mui/material";
 import type React from "react";
 import { useEditorUp } from "@/components/breakpoints.js";
-import { ToolbarPaper } from "@/components/canvas/SelectionToolbar.js";
+import { ToolbarPaper } from "@/components/canvas/Toolbar.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { PANELS, usePanelLayout } from "@/components/panels/layout.js";
 import { useArgueActions } from "@/store.js";

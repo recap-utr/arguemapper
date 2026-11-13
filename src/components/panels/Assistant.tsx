@@ -1,13 +1,15 @@
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Button, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { ChatBox, ChatComposerToolbar, type ChatComposerToolbarProps } from "@mui/x-chat";
 import type { ChatSuggestion } from "@mui/x-chat/headless";
 import type React from "react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { AssistantSettings } from "@/assistant/config.js";
 import { PROMPTS } from "@/assistant/instructions.js";
+import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 import { createAssistantAdapter } from "@/components/panels/chatAdapter.js";
+import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import {
   resetConversation,
   useArgueActions,
@@ -15,7 +17,6 @@ import {
   useWorkspace,
   useWorkspaceApi,
 } from "@/store.js";
-import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 
 const SUGGESTIONS: ChatSuggestion[] = PROMPTS.map(({ title, text }) => ({
   label: title,
@@ -62,18 +63,14 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
   return (
     <ChatComposerToolbar {...props}>
       <Stack direction="row" sx={{ alignItems: "center", minWidth: 0, color: "text.secondary" }}>
-        <Tooltip describeChild title="New conversation">
-          <span>
-            <IconButton
-              size="small"
-              color="inherit"
-              disabled={empty}
-              onClick={() => resetConversation(store)}
-            >
-              <EditNoteIcon />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <TooltipIconButton
+          title="New conversation"
+          icon={EditNoteIcon}
+          size="small"
+          color="inherit"
+          disabled={empty}
+          onClick={() => resetConversation(store)}
+        />
         <Tooltip describeChild title="Assistant settings">
           <Button
             size="small"
@@ -100,14 +97,10 @@ export const Assistant: React.FC = () => {
   const { setWorkspace } = useArgueActions();
   const messages = useWorkspace((state) => state.assistantMessages);
   // MUI X Chat takes a mutable array
-  const chatMessages = useMemo(() => [...messages], [messages]);
+  const chatMessages = [...messages];
   const conversation = useWorkspace((state) => state.assistantConversation);
-  // the individual settings determine the agent, a fresh settings object must not rebuild it
-  const { apiKey, model, baseURL, reasoning } = useAssistantSettings().settings;
-  const adapter = useMemo(
-    () => createAssistantAdapter(store, { apiKey, model, baseURL, reasoning }),
-    [store, apiKey, model, baseURL, reasoning],
-  );
+  const { settings } = useAssistantSettings();
+  const adapter = createAssistantAdapter(store, settings);
 
   return (
     <ChatBox
@@ -125,5 +118,3 @@ export const Assistant: React.FC = () => {
     />
   );
 };
-
-export default Assistant;

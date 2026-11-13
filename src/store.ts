@@ -1,42 +1,37 @@
 // Barrel of the store module. Components consume the workspace of their editor through React context
 // (see `store/hooks.ts`), each `<GraphEditor>` and `<GraphWorkspace>` owns one.
+export type { NodePlacement } from "@/store/actions.js";
 export {
   type ArgueConfig,
   ArgueConfigProvider,
+  type EditorSlots,
   useArgueConfig,
-} from "@/store/ArgueConfigContext.js";
-export { useWorkspaceApi, WorkspaceProvider } from "@/store/context.js";
-export {
-  createDocumentStore,
-  createWorkspaceStore,
-  type DocumentInit,
-} from "@/store/createStore.js";
-export { FlowWrapperProvider, useFlowWrapperRef } from "@/store/FlowWrapperContext.js";
+  useWorkspaceApi,
+  WorkspaceProvider,
+} from "@/store/context.js";
+export { createDocumentStore, createWorkspaceStore } from "@/store/createStore.js";
 export { canRedo, canUndo, commit, redo, undo } from "@/store/history.js";
 export {
   useArgueActions,
+  useDeepEqual,
   useDocument,
   useDocumentApi,
   useWorkspace,
 } from "@/store/hooks.js";
-export {
-  InstanceFocusProvider,
-  useFocusWithin,
-  useInstanceFocused,
-} from "@/store/InstanceFocusContext.js";
-export { type EditorSlots, SlotsProvider, useSlots } from "@/store/SlotsContext.js";
+export { clearSession, type GraphRecord, openSession, readBackups } from "@/store/persistence.js";
 export type {
   AnalystIdentity,
   DocumentState,
   DocumentStore,
+  Notice,
   Panel,
   WorkspaceState,
   WorkspaceStore,
 } from "@/store/types.js";
 export {
-  findDocument,
   assistantWorkspace,
   closeDocument,
+  findDocument,
   openDocument,
   resetConversation,
   showDocument,

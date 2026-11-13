@@ -1,6 +1,6 @@
 import type * as arguebuf from "arguebuf";
-import { type Ref, useEffect, useEffectEvent, useImperativeHandle, useState } from "react";
-import { EditorShell, type EditorProps } from "@/EditorShell.js";
+import { type Ref, useEffect, useImperativeHandle, useState } from "react";
+import { EditorShell, type EditorProps, useGraphChanges } from "@/EditorShell.js";
 import type * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import {
@@ -49,18 +49,7 @@ export function GraphEditor({
     if (graph !== undefined) commit(doc, graph);
   }, [doc, graph]);
 
-  // reads the latest callback, so the subscription is kept when the host passes an inline one
-  const emitChange = useEffectEvent((next: model.Graph) => onGraphChange?.(next));
-
-  useEffect(
-    () =>
-      doc.subscribe((state, previous) => {
-        if (state.graph !== previous.graph) {
-          emitChange(state.graph);
-        }
-      }),
-    [doc],
-  );
+  useGraphChanges(workspace, (_id, next) => onGraphChange?.(next));
 
   useImperativeHandle(
     ref,

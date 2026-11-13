@@ -1,6 +1,5 @@
 import { Box, InputBase } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import * as color from "@mui/material/colors";
 import {
   Handle,
   type NodeProps,
@@ -22,7 +21,7 @@ const NodeHandle = styled(Handle, { shouldForwardProp: (prop) => prop !== "size"
 }>(({ theme, size }) => ({
   width: size,
   height: size,
-  backgroundColor: color.grey[500],
+  backgroundColor: theme.palette.grey[500],
   borderColor: theme.palette.text.primary,
   borderWidth: size / 5,
   transition: theme.transitions.create(["width", "height", "background-color"]),

@@ -1,16 +1,8 @@
 import { Button, Stack, Typography } from "@mui/material";
 import type * as arguebuf from "arguebuf";
-import {
-  type Ref,
-  Suspense,
-  use,
-  useEffect,
-  useEffectEvent,
-  useImperativeHandle,
-  useState,
-} from "react";
+import { type Ref, Suspense, use, useImperativeHandle, useState } from "react";
 import { useStore } from "zustand";
-import { EditorShell, type EditorProps } from "@/EditorShell.js";
+import { EditorShell, type EditorProps, useGraphChanges } from "@/EditorShell.js";
 import type * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import {
@@ -18,10 +10,9 @@ import {
   createWorkspaceStore,
   findDocument,
   openDocument,
-  subscribeDocuments,
+  openSession,
   type WorkspaceStore,
 } from "@/store.js";
-import { openSession } from "@/store/persistence.js";
 
 export interface GraphWorkspaceProps extends EditorProps {
   /** Graphs opened initially, a persisted workspace restores its own instead. */
@@ -66,9 +57,7 @@ const MemoryWorkspace: React.FC<ViewProps & { graphs: readonly model.Graph[] }> 
   graphs,
   ...props
 }) => {
-  const [workspace] = useState(() =>
-    createWorkspaceStore({ graphs }),
-  );
+  const [workspace] = useState(() => createWorkspaceStore({ graphs }));
 
   return <WorkspaceView workspace={workspace} {...props} />;
 };
@@ -106,18 +95,7 @@ const WorkspaceView: React.FC<ViewProps & { workspace: WorkspaceStore }> = ({
   ref,
   ...props
 }) => {
-  // reads the latest callback, so the subscription is kept when the host passes an inline one
-  const emitChange = useEffectEvent((id: string, graph: model.Graph) => onGraphChange?.(id, graph));
-
-  useEffect(
-    () =>
-      subscribeDocuments(workspace, (doc, state, previous) => {
-        if (state.graph !== previous.graph) {
-          emitChange(doc.id, state.graph);
-        }
-      }),
-    [workspace],
-  );
+  useGraphChanges(workspace, onGraphChange);
 
   useImperativeHandle(ref, (): GraphWorkspaceHandle => {
     const find = (id: string) => {

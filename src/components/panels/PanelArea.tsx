@@ -1,10 +1,11 @@
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import { Box, IconButton, Paper, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
+import { Box, Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import type React from "react";
-import { createElement, useState } from "react";
+import { useState } from "react";
 import { PANELS, usePanelLayout } from "@/components/panels/layout.js";
+import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import { type Panel, useArgueActions } from "@/store.js";
 
 interface Props {
@@ -60,17 +61,21 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
             variant="fullWidth"
             sx={{ flexGrow: 1 }}
           >
-            {area.map((panel) => (
-              <Tab
-                key={panel}
-                value={panel}
-                label={PANELS[panel].label}
-                // narrow screens lack the room for icons
-                icon={wide ? createElement(PANELS[panel].icon) : undefined}
-                iconPosition="start"
-                sx={{ minHeight: 48 }}
-              />
-            ))}
+            {area.map((panel) => {
+              const { label, icon: Icon } = PANELS[panel];
+
+              return (
+                <Tab
+                  key={panel}
+                  value={panel}
+                  label={label}
+                  // narrow screens lack the room for icons
+                  icon={wide ? <Icon /> : undefined}
+                  iconPosition="start"
+                  sx={{ minHeight: 48 }}
+                />
+              );
+            })}
           </Tabs>
         ) : (
           <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
@@ -78,17 +83,13 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
           </Typography>
         )}
         {placement === "bottom" && (
-          <Tooltip title={expanded ? "Show the graph" : "Expand"}>
-            <IconButton onClick={() => setExpanded((current) => !current)}>
-              {expanded ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
-            </IconButton>
-          </Tooltip>
+          <TooltipIconButton
+            title={expanded ? "Show the graph" : "Expand"}
+            icon={expanded ? CloseFullscreenIcon : OpenInFullIcon}
+            onClick={() => setExpanded((current) => !current)}
+          />
         )}
-        <Tooltip title="Close">
-          <IconButton onClick={() => active && hide(active)}>
-            <CloseIcon />
-          </IconButton>
-        </Tooltip>
+        <TooltipIconButton title="Close" icon={CloseIcon} onClick={() => active && hide(active)} />
       </Stack>
       {area.map((panel) => (
         <Box

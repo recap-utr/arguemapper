@@ -1,10 +1,10 @@
 import { type ChatAdapter, type ChatMessage, createAiSdkAdapter } from "@mui/x-chat/headless";
 import { createAgentUIStream, generateId, type InferAgentUIMessage } from "ai";
-import { getErrorMessage } from "react-error-boundary";
 import { createAgent } from "@/assistant/agent.js";
 import { type AssistantSettings, resolveAssistantConfig } from "@/assistant/config.js";
 import { graphTools } from "@/assistant/tools.js";
 import { wikipediaTools } from "@/assistant/wikipedia.js";
+import { describeError } from "@/model.js";
 import { assistantWorkspace, type DocumentStore, type WorkspaceStore } from "@/store.js";
 
 type AssistantUIMessage = InferAgentUIMessage<ReturnType<typeof createAgent>>;
@@ -76,7 +76,7 @@ export function createAssistantAdapter(
         // so a reply after a reload would be merged into a persisted one
         generateMessageId: generateId,
         // show the actual cause, e.g. a wrong API key, instead of a generic message
-        onError: (error) => getErrorMessage(error) ?? String(error),
+        onError: describeError,
       });
     },
   });

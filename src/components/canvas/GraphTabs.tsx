@@ -1,8 +1,10 @@
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-import { IconButton, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
+import { IconButton, Stack, Tab, Typography } from "@mui/material";
 import type React from "react";
 import { useStore } from "zustand";
+import { TabBar } from "@/components/TabBar.js";
+import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import * as model from "@/model.js";
 import {
   closeDocument,
@@ -23,16 +25,17 @@ export const GraphTabs: React.FC = () => {
   const { openGraph } = useArgueActions();
 
   return (
-    <Stack direction="row" sx={{ alignItems: "center", borderBottom: 1, borderColor: "divider" }}>
-      <Tabs
-        aria-label="Graphs"
-        value={active}
-        onChange={(_event, id: string) => showDocument(workspace, id)}
-        variant="scrollable"
-        scrollButtons="auto"
-        sx={{ flexGrow: 1, minHeight: 40 }}
-      >
-        {documents.map((doc) => (
+    <TabBar
+      label="Graphs"
+      value={active}
+      onChange={(id) => showDocument(workspace, id)}
+      actions={
+        !readOnly && (
+          <TooltipIconButton title="New graph" icon={AddIcon} onClick={() => openGraph()} />
+        )
+      }
+    >
+      {documents.map((doc) => (
           <Tab
             key={doc.id}
             value={doc.id}
@@ -41,18 +44,10 @@ export const GraphTabs: React.FC = () => {
             label={<GraphTabLabel doc={doc} />}
             // a middle click closes the tab like in browsers
             onAuxClick={(event) => event.button === 1 && closeDocument(workspace, doc.id)}
-            sx={{ minHeight: 40, py: 0, pr: 0.5, textTransform: "none" }}
+            sx={{ py: 0, pr: 0.5 }}
           />
         ))}
-      </Tabs>
-      {!readOnly && (
-        <Tooltip title="New graph">
-          <IconButton onClick={() => openGraph()}>
-            <AddIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Stack>
+    </TabBar>
   );
 };
 

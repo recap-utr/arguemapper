@@ -1,7 +1,6 @@
 import type { XYPosition } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import type { RefObject } from "react";
-import { getErrorMessage } from "react-error-boundary";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import { commit, redo, undo } from "@/store/history.js";
@@ -60,7 +59,9 @@ export interface ActionsContext {
   /** Convert client coordinates to flow coordinates, e.g. `useReactFlow().screenToFlowPosition`. */
   readonly screenToFlow: (position: XYPosition) => XYPosition;
   /** The ReactFlow wrapper element of the editor for its geometry. */
-  readonly wrapperRef: RefObject<HTMLElement | null> | null;
+  readonly wrapperRef: RefObject<HTMLElement | null>;
+  /** Ignore edits of the graph, e.g. by hotkeys. */
+  readonly readOnly: boolean;
 }
 
 /** Build the action helpers bound to a graph of a workspace, consumed via the `useArgueActions` hook. */
@@ -69,12 +70,17 @@ export function createActions({
   doc,
   screenToFlow,
   wrapperRef,
+  readOnly,
 }: ActionsContext): ArgueActions {
   const { getState, setState } = doc;
 
   const show: ArgueActions["notify"] = (message, severity) => notify(workspace, message, severity);
 
   const editGraph: ArgueActions["editGraph"] = (edit) => {
+    if (readOnly) {
+      return;
+    }
+
     const state = getState();
     const issue = arguebuf.catchGraphError(() => {
       let changes: Partial<DocumentState> = {};
@@ -106,12 +112,7 @@ export function createActions({
           }
         },
         (error: unknown) => {
-          // invalid input throws a `GraphError` listing all problems with a hint
-          const reason =
-            error instanceof arguebuf.GraphError
-              ? model.describeIssue(error.issue)
-              : (getErrorMessage(error) ?? String(error));
-          show(`The graph could not be loaded: ${reason}`, "error");
+          show(`The graph could not be loaded: ${model.describeError(error)}`, "error");
         },
       );
   };
@@ -123,7 +124,7 @@ export function createActions({
   };
 
   const canvasCenter = (): XYPosition => {
-    const el = wrapperRef?.current;
+    const el = wrapperRef.current;
     if (el) {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
@@ -151,7 +152,7 @@ export function createActions({
   const openPanel = (panel: Panel) => {
     workspace.setState((state) =>
       state.panels.at(-1) === panel
-        ? {}
+        ? state
         : { panels: [...state.panels.filter((current) => current !== panel), panel] },
     );
   };
@@ -160,6 +161,12 @@ export function createActions({
     workspace.setState((state) => ({
       panels: state.panels.filter((panel) => !panels.includes(panel)),
     }));
+  };
+
+  const travel = (move: typeof undo) => () => {
+    if (!readOnly) {
+      move(doc);
+    }
   };
 
   const deleteSelection = () => {
@@ -175,8 +182,8 @@ export function createActions({
     setWorkspace: workspace.setState,
     editGraph,
     openGraph,
-    undo: () => undo(doc),
-    redo: () => redo(doc),
+    undo: travel(undo),
+    redo: travel(redo),
     arrange,
     openPanel,
     closePanels,

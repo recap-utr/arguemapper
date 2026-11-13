@@ -7,24 +7,11 @@
     <link rel="apple-touch-icon" href="/logo.svg" />
     <link rel="manifest" href="/manifest.json" />
     <title>ArgueMapper</title>
-    <style>
-      :root {
-        --app-height: 100%;
-      }
-    </style>
-    <script>
-      // Vite does not inject the variables `global` and `g`, thus we define them here
-      window.global ||= window;
-      window.g ||= window;
-    </script>
   </head>
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div
-      id="root"
-      style="margin: 0; padding: 0; height: 100vh; height: -webkit-fill-available"
-    ></div>
+    <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>

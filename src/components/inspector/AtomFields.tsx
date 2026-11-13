@@ -19,26 +19,21 @@ import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Fields of the selected atom node. */
 export const AtomFields: React.FC = () => {
-  const id = useDocument((state) => state.selection.nodes[0]);
-  const atom = useDocument((state) => state.graph.nodes[id]);
-  const isMajorClaim = useDocument((state) => state.graph.majorClaim === id);
+  const atom = useDocument(model.selectedAtom);
+  const majorClaim = useDocument((state) => state.graph.majorClaim);
   const participants = useDocument((state) => state.graph.participants);
   const hasText = useDocument((state) => Object.keys(state.graph.resources).length > 0);
   const { readOnly, panels } = useArgueConfig();
   const { editGraph, openPanel } = useArgueActions();
 
-  if (atom?.type !== "atom") {
+  if (atom === undefined) {
     return null;
   }
 
-  const update = (changes: (current: model.AtomNode) => arguebuf.AtomChanges<model.NodeUserdata>) =>
-    editGraph((graph) => {
-      const current = graph.nodes[id];
+  const { id } = atom;
 
-      if (current?.type === "atom") {
-        graph.updateAtom(id, changes(current));
-      }
-    });
+  const update = (changes: arguebuf.AtomChanges<model.NodeUserdata>) =>
+    editGraph((graph) => graph.updateAtom(id, changes));
 
   return (
     <>
@@ -53,7 +48,7 @@ export const AtomFields: React.FC = () => {
         value={atom.text}
         onChange={(event) => {
           const text = event.target.value;
-          update(() => ({ text }));
+          update({ text });
         }}
       />
       {atom.reference ? (
@@ -89,13 +84,13 @@ export const AtomFields: React.FC = () => {
         disabled={readOnly}
         control={
           <Switch
-            checked={isMajorClaim}
+            checked={id === majorClaim}
             onChange={() => editGraph((graph) => model.toggleMajorClaim(graph, id))}
           />
         }
         label="Main claim, the conclusion of the whole text"
       />
-      <AdvancedSection id={atom.id}>
+      <AdvancedSection id={id}>
         <ExplanationField node={atom} />
         <NotesField
           value={atom.userdata.notes ?? ""}
@@ -109,7 +104,7 @@ export const AtomFields: React.FC = () => {
             value={atom.participant ?? ""}
             onChange={(event) => {
               const { value } = event.target;
-              update(() => ({ participant: value === "" ? undefined : value }));
+              update({ participant: value === "" ? undefined : value });
             }}
           >
             <MenuItem value="">Unknown</MenuItem>

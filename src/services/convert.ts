@@ -27,7 +27,7 @@ export const importSuffixes: readonly string[] = Object.values(arguebuf.load.suf
  * Load a graph from a file in any format supported by arguebuf, derived from its suffix.
  * Throws if the file cannot be parsed, repairs are reported to `onIssue`.
  */
-export async function importFile(file: File, onIssue?: arguebuf.Reporter): Promise<model.Graph> {
+async function importFile(file: File, onIssue?: arguebuf.Reporter): Promise<model.Graph> {
   const options = { codecs: model.codecs, onIssue };
 
   if (arguebuf.load.fileFormat(file.name) !== "argdown") {

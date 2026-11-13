@@ -1,27 +1,23 @@
 import { ReactFlowProvider } from "@xyflow/react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { shallow } from "zustand/shallow";
 import type { AssistantSettings } from "@/assistant/config.js";
 import { useContainerBreakpoint } from "@/components/breakpoints.js";
 import { NoticeSnackbar } from "@/components/NoticeSnackbar.js";
 import { GraphEditorLayout } from "@/GraphEditorLayout.js";
+import type * as model from "@/model.js";
 import {
   type ArgueConfig,
   ArgueConfigProvider,
   type EditorSlots,
-  FlowWrapperProvider,
-  InstanceFocusProvider,
-  SlotsProvider,
-  useFocusWithin,
+  subscribeDocuments,
   WorkspaceProvider,
   type WorkspaceStore,
 } from "@/store.js";
 
-const EMPTY_SLOTS: EditorSlots = {};
-
 /** Props shared by the editor of one graph and the workspace of several. */
 export interface EditorProps extends React.PropsWithChildren {
-  /** Disable all editing — pure viewer. */
+  /** Disable all editing, a pure viewer. */
   readOnly?: boolean;
   /** Show the file menu, the settings, and the undo, redo, and layout controls. */
   toolbar?: boolean;
@@ -37,7 +33,7 @@ export interface EditorProps extends React.PropsWithChildren {
    * The given settings are fixed, the user chooses the others in the settings of the assistant.
    */
   assistant?: boolean | Partial<AssistantSettings>;
-  /** Unique id; namespaces the ReactFlow instance and its SVG markers. Defaults to a generated id. */
+  /** Unique id that namespaces React Flow and its SVG markers, a generated one by default. */
   id?: string;
   /** Host content added to the file menu and the settings. */
   slots?: EditorSlots;
@@ -49,6 +45,24 @@ interface EditorShellProps extends EditorProps {
   workspace: WorkspaceStore;
 }
 
+/** Call the latest listener of the host with the id and the new graph after each change. */
+export function useGraphChanges(
+  workspace: WorkspaceStore,
+  listener: ((id: string, graph: model.Graph) => void) | undefined,
+): void {
+  const emit = useEffectEvent((id: string, graph: model.Graph) => listener?.(id, graph));
+
+  useEffect(
+    () =>
+      subscribeDocuments(workspace, (doc, state, previous) => {
+        if (state.graph !== previous.graph) {
+          emit(doc.id, state.graph);
+        }
+      }),
+    [workspace],
+  );
+}
+
 /** The editor of a workspace, shared by `<GraphEditor>` and `<GraphWorkspace>`. */
 export function EditorShell({
   workspace,
@@ -57,17 +71,14 @@ export function EditorShell({
   panels = false,
   guide = false,
   assistant,
-  id: idProp,
-  slots,
+  id,
+  slots = {},
   style,
   className,
   children,
 }: EditorShellProps): React.JSX.Element {
-  const generatedId = useId();
-  const id = idProp ?? generatedId;
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const focused = useFocusWithin(rootRef);
   const breakpoint = useContainerBreakpoint(rootRef);
 
   // The assistant edits the graph, so read-only instances hide it.
@@ -79,18 +90,18 @@ export function EditorShell({
     setFixed(requested);
   }
 
-  const config = useMemo(
-    (): ArgueConfig => ({
-      id,
-      readOnly,
-      toolbar,
-      panels,
-      guide: guide && !readOnly,
-      assistant: fixed,
-      breakpoint,
-    }),
-    [id, readOnly, toolbar, panels, guide, fixed, breakpoint],
-  );
+  const config: ArgueConfig = {
+    id,
+    readOnly,
+    toolbar,
+    panels,
+    guide: guide && !readOnly,
+    assistant: fixed,
+    slots,
+    breakpoint,
+    rootRef,
+    wrapperRef,
+  };
 
   return (
     <div
@@ -106,17 +117,11 @@ export function EditorShell({
     >
       <ReactFlowProvider>
         <WorkspaceProvider value={workspace}>
-          <FlowWrapperProvider value={wrapperRef}>
-            <ArgueConfigProvider value={config}>
-              <InstanceFocusProvider value={focused}>
-                <SlotsProvider value={slots ?? EMPTY_SLOTS}>
-                  <GraphEditorLayout />
-                  <NoticeSnackbar />
-                  {children}
-                </SlotsProvider>
-              </InstanceFocusProvider>
-            </ArgueConfigProvider>
-          </FlowWrapperProvider>
+          <ArgueConfigProvider value={config}>
+            <GraphEditorLayout />
+            <NoticeSnackbar />
+            {children}
+          </ArgueConfigProvider>
         </WorkspaceProvider>
       </ReactFlowProvider>
     </div>

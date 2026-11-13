@@ -7,49 +7,39 @@ import {
   Alert,
   Box,
   Button,
-  IconButton,
   Paper,
   Popper,
   Stack,
   Tab,
-  Tabs,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { alpha, styled } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import { useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
 import type React from "react";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useGuideStep } from "@/components/canvas/Guide.js";
+import { TabBar } from "@/components/TabBar.js";
+import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import * as model from "@/model.js";
 import { generateDemo } from "@/services/demo.js";
-import { type DocumentState, useArgueActions, useArgueConfig, useDocument } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDeepEqual, useDocument } from "@/store.js";
 
-/** The atom if it is the only selected element. */
-function selectedAtom({ graph, selection }: DocumentState): model.AtomNode | undefined {
-  const node = model.selectedNode(graph, selection);
-
-  return node?.type === "atom" ? node : undefined;
+/** Passage of a text that the atom with the id quotes. */
+interface Annotation {
+  id: string;
+  start: number;
+  end: number;
 }
-
-type Annotations = readonly arguebuf.Annotation<model.Schema>[];
-
-/** Whether the annotations cover the same passages by the same atoms, e.g. after moving nodes. */
-const sameAnnotations = (a: Annotations, b: Annotations): boolean =>
-  a.length === b.length &&
-  a.every(
-    ({ node, start, end }, index) =>
-      node.id === b[index].node.id && start === b[index].start && end === b[index].end,
-  );
 
 /** Text panel: read the texts, annotate passages as claims, and edit them. */
 export const TextPane: React.FC = () => {
   const resources = useDocument((state) => state.graph.resources);
   const shown = useDocument((state) => model.shownResource(state.graph, state.selectedResource));
   // graph edits keep unchanged elements, so references are compared by identity
-  const selectedReference = useDocument((state) => selectedAtom(state)?.reference);
+  const selectedReference = useDocument((state) => model.selectedAtom(state)?.reference);
   const { readOnly } = useArgueConfig();
   const { editGraph, setState } = useArgueActions();
   const [editing, setEditing] = useState(false);
@@ -76,46 +66,30 @@ export const TextPane: React.FC = () => {
   return (
     <Stack sx={{ flex: "1 1 0", minHeight: 0 }}>
       {shown !== undefined && (
-        <Stack
-          direction="row"
-          sx={{ alignItems: "center", pr: 0.5, borderBottom: 1, borderColor: "divider" }}
-        >
-          <Tabs
-            value={shown}
-            onChange={(_event, value: string) => setState({ selectedResource: value })}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{ flexGrow: 1, minHeight: 40 }}
-          >
-            {ids.map((id, index) => (
-              <Tab
-                key={id}
-                value={id}
-                label={resources[id].title || `Text ${index + 1}`}
-                sx={{ minHeight: 40, textTransform: "none" }}
-              />
-            ))}
-          </Tabs>
-          {!readOnly && (
-            <>
-              <Tooltip title="Add another text">
-                <IconButton onClick={() => addText()}>
-                  <AddIcon />
-                </IconButton>
-              </Tooltip>
-              {!empty && (
-                <Tooltip title={editing ? "Done editing" : "Edit text"}>
-                  <IconButton
+        <TabBar
+          label="Texts"
+          value={shown}
+          onChange={(value) => setState({ selectedResource: value })}
+          actions={
+            !readOnly && (
+              <>
+                <TooltipIconButton title="Add another text" icon={AddIcon} onClick={() => addText()} />
+                {!empty && (
+                  <TooltipIconButton
+                    title={editing ? "Done editing" : "Edit text"}
+                    icon={editing ? CheckIcon : EditIcon}
                     color={editing ? "primary" : "default"}
                     onClick={() => setEditing((current) => !current)}
-                  >
-                    {editing ? <CheckIcon /> : <EditIcon />}
-                  </IconButton>
-                </Tooltip>
-              )}
-            </>
-          )}
-        </Stack>
+                  />
+                )}
+              </>
+            )
+          }
+        >
+          {ids.map((id, index) => (
+            <Tab key={id} value={id} label={resources[id].title || `Text ${index + 1}`} />
+          ))}
+        </TabBar>
       )}
       <Box sx={{ flex: "1 1 0", minHeight: 0, overflowY: "auto", p: 2 }}>
         {shown === undefined ? (
@@ -236,7 +210,7 @@ interface Segment {
   atoms: string[];
 }
 
-function segments(text: string, annotations: Annotations): Segment[] {
+function segments(text: string, annotations: readonly Annotation[]): Segment[] {
   const bounds = [
     ...new Set([0, text.length, ...annotations.flatMap(({ start, end }) => [start, end])]),
   ].toSorted((a, b) => a - b);
@@ -246,7 +220,7 @@ function segments(text: string, annotations: Annotations): Segment[] {
     const atoms = annotations
       .filter((annotation) => annotation.start <= start && annotation.end >= end)
       .toSorted((a, b) => a.end - a.start - (b.end - b.start))
-      .map(({ node }) => node.id);
+      .map(({ id }) => id);
 
     return { start, end, atoms };
   });
@@ -258,7 +232,7 @@ const Mark = styled("mark", { shouldForwardProp: (prop) => prop !== "selected" }
   color: "inherit",
   cursor: "pointer",
   borderRadius: 2,
-  backgroundColor: alpha(
+  backgroundColor: theme.alpha(
     selected ? theme.palette.primary.main : theme.palette.warning.main,
     selected ? 0.4 : 0.25,
   ),
@@ -300,13 +274,16 @@ function selectedSpan(container: HTMLElement): Span | undefined {
 /** The text with its annotated passages, which select their claims. */
 const ResourceView: React.FC<{ id: string }> = ({ id }) => {
   const resource = useDocument((state) => state.graph.resources[id]);
-  // the resource may be removed before this view
+  // the resource may be removed before this view, and moving nodes keeps the passages
   const annotations = useDocument(
-    ({ graph }) => (Object.hasOwn(graph.resources, id) ? graph.annotations(id) : []),
-    sameAnnotations,
+    useDeepEqual(({ graph }) =>
+      Object.hasOwn(graph.resources, id)
+        ? graph.annotations(id).map(({ node, start, end }) => ({ id: node.id, start, end }))
+        : [],
+    ),
   );
   const selected = useDocument((state) => state.selection.nodes);
-  const selectedId = useDocument((state) => selectedAtom(state)?.id);
+  const selectedId = useDocument((state) => model.selectedAtom(state)?.id);
   const guideStep = useGuideStep();
   const { readOnly } = useArgueConfig();
   const { setState } = useArgueActions();
@@ -315,7 +292,7 @@ const ResourceView: React.FC<{ id: string }> = ({ id }) => {
   const popperRef = useRef<HTMLDivElement>(null);
   const [span, setSpan] = useState<Span>();
 
-  const parts = useMemo(() => segments(resource.text, annotations), [resource.text, annotations]);
+  const parts = segments(resource.text, annotations);
 
   // Scroll to the passage of a selected claim.
   useEffect(() => {
@@ -425,7 +402,7 @@ const PassageActions: React.FC<ActionsProps> = ({ resource, span, onDone }) => {
   const text = useDocument((state) =>
     state.graph.resources[resource].text.slice(span.start, span.end),
   );
-  const target = useDocument(selectedAtom);
+  const target = useDocument(model.selectedAtom);
   const { editGraph, addNode } = useArgueActions();
   const reference = new arguebuf.Reference({ text, resource, offset: span.start });
   const atom = model.newAtom().with({ text, reference });

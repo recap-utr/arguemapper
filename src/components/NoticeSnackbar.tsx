@@ -1,8 +1,7 @@
 import { Alert, Button, Snackbar } from "@mui/material";
 import type React from "react";
 import { useState } from "react";
-import { useWorkspace } from "@/store.js";
-import type { Notice } from "@/store/types.js";
+import { type Notice, useWorkspace } from "@/store.js";
 
 /** Shows the current notice of the editor at the bottom of its area. */
 export const NoticeSnackbar: React.FC = () => {

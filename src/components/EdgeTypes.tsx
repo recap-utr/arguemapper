@@ -1,4 +1,3 @@
-import * as color from "@mui/material/colors";
 import { useTheme } from "@mui/material";
 import {
   BaseEdge,
@@ -28,7 +27,7 @@ const EdgeComponent: React.FC<EdgeProps> = (props) => {
         markerEnd={markerEnd}
         interactionWidth={coarse ? 32 : 20}
         style={{
-          stroke: selected ? theme.palette.text.primary : color.grey[500],
+          stroke: selected ? theme.palette.text.primary : theme.palette.grey[500],
           strokeWidth: coarse ? 4 : 2.5,
         }}
       />
@@ -45,5 +44,3 @@ const EdgeComponent: React.FC<EdgeProps> = (props) => {
 export const EdgeTypes: FlowEdgeTypes = {
   default: EdgeComponent,
 };
-
-export default EdgeTypes;

@@ -1,10 +1,10 @@
 import { Button, Container, Stack, TextField, Typography } from "@mui/material";
 import type React from "react";
 import { Suspense, use } from "react";
-import { type FallbackProps, getErrorMessage } from "react-error-boundary";
-import { PERSIST_KEY } from "@/App.js";
-import { resetApp } from "@/standalone/ClearCacheButton.js";
-import { type GraphRecord, readBackups } from "@/store/persistence.js";
+import type { FallbackProps } from "react-error-boundary";
+import { describeError } from "@/model.js";
+import { PERSIST_KEY, resetApp } from "@/standalone/storage.js";
+import { type GraphRecord, readBackups } from "@/store.js";
 
 // read once, as the stored state does not change while the app is broken
 let backups: Promise<GraphRecord[]> | undefined;
@@ -35,7 +35,7 @@ export const Recovery: React.FC<FallbackProps> = ({ error }) => (
     <Stack spacing={4}>
       <Stack spacing={1}>
         <Typography variant="h3">Something went wrong</Typography>
-        <Typography variant="h6">{getErrorMessage(error) ?? "Unknown error"}</Typography>
+        <Typography variant="h6">{describeError(error)}</Typography>
       </Stack>
       <Suspense>
         <Backups />

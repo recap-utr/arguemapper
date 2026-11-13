@@ -2,70 +2,33 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import StarIcon from "@mui/icons-material/Star";
-import type { SvgIconComponent } from "@mui/icons-material";
-import { IconButton, Paper, Tooltip } from "@mui/material";
 import { NodeToolbar } from "@xyflow/react";
 import type React from "react";
-import { useMemo } from "react";
+import { ToolbarButton, ToolbarPaper } from "@/components/canvas/Toolbar.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { SchemeTypeToggle } from "@/components/inspector/SchemeTypeToggle.js";
 import * as model from "@/model.js";
 import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
-interface ButtonProps {
-  title: string;
-  icon: SvgIconComponent;
-  onClick: () => void;
-  color?: "primary" | "error";
-}
-
-/** Icon button of a canvas toolbar, larger for touch input. */
-export const ToolbarButton: React.FC<ButtonProps> = ({ title, icon: Icon, onClick, color }) => {
-  const { coarse } = useGraphRender();
-
-  return (
-    <Tooltip title={title}>
-      <IconButton
-        aria-label={title}
-        color={color}
-        size={coarse ? "large" : "medium"}
-        onClick={onClick}
-      >
-        <Icon />
-      </IconButton>
-    </Tooltip>
-  );
-};
-
-/** Paper holding the buttons of a canvas toolbar. */
-export const ToolbarPaper: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <Paper elevation={4} sx={{ display: "flex", alignItems: "center", gap: 0.5, p: 0.5 }}>
-    {children}
-  </Paper>
-);
-
 /** Actions for the selected nodes, shown above them on all devices. */
 export const SelectionToolbar: React.FC = () => {
   const ids = useDocument((state) => state.selection.nodes);
-  const node = useDocument(({ graph, selection }) => model.selectedNode(graph, selection));
-  const schemes = useDocument(
-    ({ graph, selection }) => model.selectionType(graph, selection) === "schemes",
-  );
-  const isMajorClaim = useDocument(
-    (state) => node !== undefined && state.graph.majorClaim === node.id,
-  );
+  const atom = useDocument(model.selectedAtom);
+  const schemes = useDocument((state) => model.selectionType(state) === "schemes");
+  const majorClaim = useDocument((state) => state.graph.majorClaim);
   const { readOnly, panels } = useArgueConfig();
   const { coarse } = useGraphRender();
   const { editGraph, deleteSelection, openPanel } = useArgueActions();
-  // xyflow takes a mutable array
-  const toolbarIds = useMemo(() => [...ids], [ids]);
 
   if (ids.length === 0) {
     return null;
   }
 
+  const isMajorClaim = atom !== undefined && atom.id === majorClaim;
+
+  // xyflow takes a mutable array
   return (
-    <NodeToolbar nodeId={toolbarIds} isVisible>
+    <NodeToolbar nodeId={[...ids]} isVisible>
       <ToolbarPaper>
         {schemes && !readOnly && (
           <SchemeTypeToggle
@@ -74,15 +37,15 @@ export const SelectionToolbar: React.FC = () => {
             size={coarse ? "medium" : "small"}
           />
         )}
-        {node?.type === "atom" && !readOnly && (
+        {atom && !readOnly && (
           <ToolbarButton
             title={isMajorClaim ? "Unset main claim" : "Set as main claim"}
             icon={StarIcon}
             color={isMajorClaim ? "primary" : undefined}
-            onClick={() => editGraph((graph) => model.toggleMajorClaim(graph, node.id))}
+            onClick={() => editGraph((graph) => model.toggleMajorClaim(graph, atom.id))}
           />
         )}
-        {node?.type === "atom" && node.reference !== undefined && panels && (
+        {atom?.reference !== undefined && panels && (
           <ToolbarButton
             title="Show in text"
             icon={FormatQuoteIcon}
@@ -90,7 +53,11 @@ export const SelectionToolbar: React.FC = () => {
           />
         )}
         {panels && (
-          <ToolbarButton title="Edit details" icon={EditIcon} onClick={() => openPanel("inspector")} />
+          <ToolbarButton
+            title="Edit details"
+            icon={EditIcon}
+            onClick={() => openPanel("inspector")}
+          />
         )}
         {!readOnly && (
           <ToolbarButton

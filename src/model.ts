@@ -5,7 +5,7 @@ import {
   type Node as FlowNode,
   type XYPosition,
 } from "@xyflow/react";
-import { type Graph, type Node, position } from "@/graph.js";
+import { type AtomNode, type Graph, type Node, position } from "@/graph.js";
 
 // the editor model extends the graph model, which is free of React for the assistant
 export * from "@/graph.js";
@@ -43,10 +43,16 @@ export function pruneSelection(graph: Graph, selection: Selection): Selection {
     : { nodes, edges };
 }
 
+/** The selection together with its graph, e.g. the state of a document. */
+export interface SelectionState {
+  readonly graph: Graph;
+  readonly selection: Selection;
+}
+
 /** What is selected, "schemes" are one or more scheme nodes that are edited together. */
 export type SelectionType = "graph" | "atom" | "schemes" | "edge" | "multiple";
 
-export function selectionType(graph: Graph, { nodes, edges }: Selection): SelectionType {
+export function selectionType({ graph, selection: { nodes, edges } }: SelectionState): SelectionType {
   if (nodes.length === 0) {
     return edges.length === 0 ? "graph" : edges.length === 1 ? "edge" : "multiple";
   }
@@ -59,8 +65,15 @@ export function selectionType(graph: Graph, { nodes, edges }: Selection): Select
 }
 
 /** The node if it is the only selected element. */
-export const selectedNode = (graph: Graph, { nodes, edges }: Selection): Node | undefined =>
+const selectedNode = ({ graph, selection: { nodes, edges } }: SelectionState): Node | undefined =>
   nodes.length === 1 && edges.length === 0 ? graph.nodes[nodes[0]] : undefined;
+
+/** The atom if it is the only selected element. */
+export function selectedAtom(state: SelectionState): AtomNode | undefined {
+  const node = selectedNode(state);
+
+  return node?.type === "atom" ? node : undefined;
+}
 
 /** The value shared by all items, otherwise undefined. */
 export function shared<T>(values: readonly T[]): T | undefined {

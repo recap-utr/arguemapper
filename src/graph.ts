@@ -200,3 +200,16 @@ export const shownResource = (graph: Graph, selected: string | undefined): strin
 /** Message of the issue for the user, followed by its hint. */
 export const describeIssue = ({ message, hint }: arguebuf.Issue): string =>
   hint === undefined ? message : `${message} ${hint}`;
+
+/**
+ * Message of the error for the user, graph errors list their issues with hints.
+ * arguebuf's `GraphError` passes only `issue.message` to `Error` and drops the hint (`dist/issue.js`),
+ * so its `message` lacks the hint. Once arguebuf includes it, `error.message` suffices for all errors.
+ */
+export function describeError(error: unknown): string {
+  if (error instanceof arguebuf.GraphError) {
+    return describeIssue(error.issue);
+  }
+
+  return error instanceof Error ? error.message : String(error);
+}

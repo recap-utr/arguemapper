@@ -8,33 +8,23 @@ import { Button, Divider, ListSubheader, Menu } from "@mui/material";
 import { useReactFlow } from "@xyflow/react";
 import type React from "react";
 import { Fragment, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import { useAnalystGuard } from "@/components/AnalystDialog.js";
 import { useGraphRender } from "@/components/GraphRenderContext.js";
 import { IconMenuItem } from "@/components/IconMenuItem.js";
+import { useEditorHotkeys } from "@/components/useEditorHotkeys.js";
 import * as model from "@/model.js";
 import * as convert from "@/services/convert.js";
 import { generateDemo } from "@/services/demo.js";
-import {
-  useArgueActions,
-  useArgueConfig,
-  useFlowWrapperRef,
-  useInstanceFocused,
-  useSlots,
-  useWorkspace,
-} from "@/store.js";
+import { useArgueActions, useArgueConfig, useWorkspace } from "@/store.js";
 
 /** Menu to start, open, and download graphs. */
 export const FileMenu: React.FC = () => {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { readOnly } = useArgueConfig();
+  const { readOnly, slots, wrapperRef } = useArgueConfig();
   const tabs = useWorkspace((state) => state.tabs);
   const { coarse } = useGraphRender();
-  const slots = useSlots();
   const flow = useReactFlow();
-  const wrapperRef = useFlowWrapperRef();
-  const focused = useInstanceFocused();
   const { getState, getWorkspace, openGraph } = useArgueActions();
   const [guard, analystDialog] = useAnalystGuard();
 
@@ -53,7 +43,7 @@ export const FileMenu: React.FC = () => {
   };
 
   const downloadImage = (format: convert.ImgFormat) => {
-    const element = wrapperRef?.current;
+    const element = wrapperRef.current;
 
     if (element) {
       void flow.fitView(model.fitViewOptions);
@@ -65,11 +55,7 @@ export const FileMenu: React.FC = () => {
     }
   };
 
-  useHotkeys("mod+s", () => downloadGraph("arguebuf"), {
-    preventDefault: true,
-    useKey: true,
-    enabled: focused,
-  });
+  useEditorHotkeys("mod+s", () => downloadGraph("arguebuf"));
 
   return (
     <>

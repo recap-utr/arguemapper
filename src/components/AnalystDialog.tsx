@@ -1,6 +1,6 @@
-import { Stack, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog.js";
 import { useArgueActions, useWorkspace } from "@/store.js";
 
@@ -10,10 +10,9 @@ export const AnalystFields: React.FC = () => {
   const { setWorkspace } = useArgueActions();
 
   return (
-    <Stack spacing={2}>
+    <>
       <TextField
         label="Your name"
-        fullWidth
         value={analyst.name ?? ""}
         onChange={(event) => {
           const name = event.target.value;
@@ -23,14 +22,13 @@ export const AnalystFields: React.FC = () => {
       <TextField
         label="Your email"
         type="email"
-        fullWidth
         value={analyst.email ?? ""}
         onChange={(event) => {
           const email = event.target.value;
           setWorkspace((state) => ({ analyst: { ...state.analyst, email } }));
         }}
       />
-    </Stack>
+    </>
   );
 };
 
@@ -44,10 +42,7 @@ export function useAnalystGuard(): [guard: (action: () => void) => void, dialog:
   const known = Boolean(analyst.name && analyst.email);
   const close = () => setPending(undefined);
 
-  const guard = useCallback(
-    (action: () => void) => (known ? action() : setPending(() => action)),
-    [known],
-  );
+  const guard = (action: () => void) => (known ? action() : setPending(() => action));
 
   const dialog = (
     <ConfirmDialog

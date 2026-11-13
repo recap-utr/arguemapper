@@ -1,5 +1,5 @@
 import { type Edge, type Node, useReactFlow, type XYPosition } from "@xyflow/react";
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 import * as model from "@/model.js";
 import { layout } from "@/services/layout.js";
 
@@ -11,17 +11,17 @@ export interface AutoLayoutOptions {
   shouldLayout: boolean;
   /** When `true`, fit the graph into view once any pending layout has settled. */
   shouldFitView: boolean;
-  /** Write the computed positions. Must be referentially stable. */
+  /** Write the computed positions. */
   setPositions: (positions: ReadonlyMap<string, XYPosition>) => void;
   setShouldLayout: (value: boolean) => void;
   setShouldFitView: (value: boolean) => void;
 }
 
 /**
- * The auto-layout / fit-view choreography shared by the editor (`Graph`, backed by the zustand
- * store) and the read-only `GraphViewer` (backed by local state). It lays the graph out once every
- * node has been measured, then fits the result into view. The caller decides where the request flags
- * live; this hook only reacts to them and writes back through the supplied (stable) setters.
+ * The auto-layout and fit-view choreography shared by the editor (`Graph`, backed by the store)
+ * and the read-only `GraphViewer` (backed by local state). It lays the graph out once every node
+ * has been measured, then fits the result into view. The caller decides where the request flags
+ * live, this hook only reacts to them and writes back through the latest setters.
  */
 export function useAutoLayout({
   nodes,
@@ -34,24 +34,26 @@ export function useAutoLayout({
   setShouldFitView,
 }: AutoLayoutOptions): void {
   const flow = useReactFlow();
+  const onPositions = useEffectEvent(setPositions);
+  const onLaidOut = useEffectEvent(() => setShouldLayout(false));
+  const onFitted = useEffectEvent(() => setShouldFitView(false));
 
   useEffect(() => {
     if (shouldLayout && nodes.length > 0 && nodes.every((node) => node.measured)) {
       void layout(nodes, edges, layoutAlgorithm)
-        .then(setPositions)
-        .catch((error) => {
-          // A layout failure must not become an unhandled rejection; keep the current positions and
-          // clear the request (in `finally`) so the app stays usable instead of getting stuck.
+        .then(onPositions)
+        .catch((error: unknown) => {
+          // a failed layout keeps the current positions, the request is cleared nonetheless
           console.error("Graph layout failed:", error);
         })
-        .finally(() => setShouldLayout(false));
+        .finally(onLaidOut);
     }
-  }, [shouldLayout, nodes, edges, layoutAlgorithm, setPositions, setShouldLayout]);
+  }, [shouldLayout, nodes, edges, layoutAlgorithm]);
 
   useEffect(() => {
     if (!shouldLayout && shouldFitView) {
       void flow.fitView(model.fitViewOptions);
-      setShouldFitView(false);
+      onFitted();
     }
-  }, [shouldLayout, shouldFitView, flow, setShouldFitView]);
+  }, [shouldLayout, shouldFitView, flow]);
 }
