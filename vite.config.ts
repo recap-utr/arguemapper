@@ -29,7 +29,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       // The React plugin makes Vite's Oxc transform every file matching its filter,
       // regardless of `oxc.exclude`, so declarations are excluded here as well.
-      react({ exclude: [/\/node_modules\//, declarations] }),
+      react({
+        exclude: [/\/node_modules\//, declarations],
+        // Functions the compiler cannot optimize fail the build instead of losing their memoization.
+        compiler: { panicThreshold: "all_errors", reportDiagnostics: true },
+      }),
       ...(isLib
         ? [
             // Bundles the declarations that Oxc emits thanks to `isolatedDeclarations`,
