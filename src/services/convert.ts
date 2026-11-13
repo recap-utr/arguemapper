@@ -113,11 +113,15 @@ function generateFilename(name: string | undefined): string {
   return `arguemapper-${timestamp}`;
 }
 
-// https://stackoverflow.com/a/55613750/7626878
 export function downloadJson(data: unknown, prettify: boolean, name?: string): void {
   const json = JSON.stringify(data, undefined, prettify ? 2 : undefined);
-  const blob = new Blob([json], { type: "application/json" });
-  downloadFile(URL.createObjectURL(blob), `${generateFilename(name)}.json`);
+  const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${generateFilename(name)}.json`;
+  link.click();
+  // revoked once the download has started
+  setTimeout(() => URL.revokeObjectURL(url));
 }
 
 export type ImgFormat = "png" | "jpg";
@@ -143,12 +147,3 @@ export async function downloadImage(
   });
   await capture.download({ format, scale, quality: 1, filename: generateFilename(name) });
 }
-
-const downloadFile = (href: string, filename: string) => {
-  const link = document.createElement("a");
-  link.href = href;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
