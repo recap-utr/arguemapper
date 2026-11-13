@@ -11,7 +11,9 @@ export function useEditorHotkeys(keys: Keys, callback: () => void): void {
   const focused = () => {
     const active = document.activeElement;
 
-    return active === null || active === document.body || rootRef.current?.contains(active) === true;
+    return (
+      active === null || active === document.body || rootRef.current?.contains(active) === true
+    );
   };
 
   useHotkeys(keys, callback, { enabled: focused, preventDefault: focused, useKey: true });

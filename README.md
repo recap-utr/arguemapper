@@ -49,14 +49,7 @@ function Example({ graphs, json }: { graphs: Graph[]; json: GraphJson }) {
 
       {/* A full editor that reports changes back to the host */}
       <div style={{ height: 600 }}>
-        <GraphEditor
-          ref={ref}
-          graph={graph}
-          onGraphChange={setGraph}
-          toolbar
-          panels
-          assistant
-        />
+        <GraphEditor ref={ref} graph={graph} onGraphChange={setGraph} toolbar panels assistant />
       </div>
     </>
   );

@@ -52,7 +52,10 @@ export interface SelectionState {
 /** What is selected, "schemes" are one or more scheme nodes that are edited together. */
 export type SelectionType = "graph" | "atom" | "schemes" | "edge" | "multiple";
 
-export function selectionType({ graph, selection: { nodes, edges } }: SelectionState): SelectionType {
+export function selectionType({
+  graph,
+  selection: { nodes, edges },
+}: SelectionState): SelectionType {
   if (nodes.length === 0) {
     return edges.length === 0 ? "graph" : edges.length === 1 ? "edge" : "multiple";
   }

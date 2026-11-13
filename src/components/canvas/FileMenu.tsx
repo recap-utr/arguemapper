@@ -89,7 +89,12 @@ export const FileMenu: React.FC = () => {
         onClick={() => setAnchor(null)}
       >
         {!readOnly && [
-          <IconMenuItem key="new" icon={NoteAddIcon} text="New graph" onClick={() => openGraph()} />,
+          <IconMenuItem
+            key="new"
+            icon={NoteAddIcon}
+            text="New graph"
+            onClick={() => openGraph()}
+          />,
           <IconMenuItem
             key="open"
             icon={FolderOpenIcon}
@@ -112,7 +117,11 @@ export const FileMenu: React.FC = () => {
           text="Arguebuf (JSON, Ctrl+S)"
           onClick={() => downloadGraph("arguebuf")}
         />
-        <IconMenuItem icon={DataObjectIcon} text="AIF (JSON)" onClick={() => downloadGraph("aif")} />
+        <IconMenuItem
+          icon={DataObjectIcon}
+          text="AIF (JSON)"
+          onClick={() => downloadGraph("aif")}
+        />
         <IconMenuItem icon={ImageIcon} text="PNG image" onClick={() => downloadImage("png")} />
         <IconMenuItem icon={ImageIcon} text="JPG image" onClick={() => downloadImage("jpg")} />
       </Menu>

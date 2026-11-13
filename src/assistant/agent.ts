@@ -1,11 +1,5 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import {
-  isStepCount,
-  tool,
-  ToolLoopAgent,
-  type ToolLoopAgentSettings,
-  type ToolSet,
-} from "ai";
+import { isStepCount, tool, ToolLoopAgent, type ToolLoopAgentSettings, type ToolSet } from "ai";
 import { mapValues } from "es-toolkit";
 import type { AssistantSettings } from "@/assistant/config.js";
 import { INSTRUCTIONS } from "@/assistant/instructions.js";

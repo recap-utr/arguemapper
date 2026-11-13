@@ -73,7 +73,11 @@ export const TextPane: React.FC = () => {
           actions={
             !readOnly && (
               <>
-                <TooltipIconButton title="Add another text" icon={AddIcon} onClick={() => addText()} />
+                <TooltipIconButton
+                  title="Add another text"
+                  icon={AddIcon}
+                  onClick={() => addText()}
+                />
                 {!empty && (
                   <TooltipIconButton
                     title={editing ? "Done editing" : "Edit text"}
@@ -132,10 +136,7 @@ const TextStart: React.FC<{ onStart: (text: string) => void }> = ({ onStart }) =
         <Button variant="contained" disabled={text.trim() === ""} onClick={() => onStart(text)}>
           Start annotating
         </Button>
-        <Button
-          startIcon={<LightbulbIcon />}
-          onClick={() => openGraph(generateDemo())}
-        >
+        <Button startIcon={<LightbulbIcon />} onClick={() => openGraph(generateDemo())}>
           See an example
         </Button>
       </Stack>

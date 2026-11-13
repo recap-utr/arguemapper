@@ -88,11 +88,14 @@ export type Edge = arguebuf.Edge<ElementUserdata>;
 export type AtomNode = arguebuf.AtomNode<NodeUserdata>;
 export type SchemeNode = arguebuf.SchemeNode<NodeUserdata>;
 
-export const newGraph = (name?: string): Graph => new arguebuf.Graph<Schema>({ name, userdata: {} });
+export const newGraph = (name?: string): Graph =>
+  new arguebuf.Graph<Schema>({ name, userdata: {} });
 
 /** Title of the graph for the analyst, its name or the title of its first resource. */
 export const graphTitle = (graph: Graph): string =>
-  graph.name || Object.values(graph.resources).find((resource) => resource.title)?.title || "Untitled graph";
+  graph.name ||
+  Object.values(graph.resources).find((resource) => resource.title)?.title ||
+  "Untitled graph";
 
 /** Whether the graph has neither nodes nor resources, e.g. a new one. */
 export const isEmptyGraph = (graph: Graph): boolean =>

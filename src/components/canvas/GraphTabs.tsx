@@ -36,17 +36,17 @@ export const GraphTabs: React.FC = () => {
       }
     >
       {documents.map((doc) => (
-          <Tab
-            key={doc.id}
-            value={doc.id}
-            // a div, since the tab contains the close button
-            component="div"
-            label={<GraphTabLabel doc={doc} />}
-            // a middle click closes the tab like in browsers
-            onAuxClick={(event) => event.button === 1 && closeDocument(workspace, doc.id)}
-            sx={{ py: 0, pr: 0.5 }}
-          />
-        ))}
+        <Tab
+          key={doc.id}
+          value={doc.id}
+          // a div, since the tab contains the close button
+          component="div"
+          label={<GraphTabLabel doc={doc} />}
+          // a middle click closes the tab like in browsers
+          onAuxClick={(event) => event.button === 1 && closeDocument(workspace, doc.id)}
+          sx={{ py: 0, pr: 0.5 }}
+        />
+      ))}
     </TabBar>
   );
 };

@@ -89,7 +89,6 @@ function GraphViewerInner({
     setShouldFitView,
   });
 
-
   useImperativeHandle(
     ref,
     (): GraphViewerHandle => ({

@@ -37,7 +37,11 @@ export const AifdbImport: React.FC = () => {
 
   return (
     <>
-      <IconMenuItem icon={CloudDownloadIcon} text="Open from AIFdb…" onClick={() => setOpen(true)} />
+      <IconMenuItem
+        icon={CloudDownloadIcon}
+        text="Open from AIFdb…"
+        onClick={() => setOpen(true)}
+      />
       <ConfirmDialog
         open={open}
         title="Open from AIFdb"

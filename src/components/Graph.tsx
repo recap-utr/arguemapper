@@ -54,7 +54,12 @@ const EdgeActions: React.FC = () => {
 
   return (
     <ToolbarPaper>
-      <ToolbarButton title="Delete (Del)" icon={DeleteIcon} color="error" onClick={deleteSelection} />
+      <ToolbarButton
+        title="Delete (Del)"
+        icon={DeleteIcon}
+        color="error"
+        onClick={deleteSelection}
+      />
     </ToolbarPaper>
   );
 };

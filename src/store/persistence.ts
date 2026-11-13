@@ -126,8 +126,7 @@ function readHistory(name: string): HistoryRecord {
 
 /** Keep the most recent undo steps of the graphs for a reload of the page. */
 function writeHistory(name: string, { documents }: WorkspaceState): void {
-  const dump = (graphs: readonly model.Graph[]) =>
-    graphs.slice(-HISTORY_LIMIT).map(toRecord);
+  const dump = (graphs: readonly model.Graph[]) => graphs.slice(-HISTORY_LIMIT).map(toRecord);
   const history: HistoryRecord = Object.fromEntries(
     documents.map((doc) => {
       const { past, future } = doc.getState();
@@ -249,11 +248,7 @@ function persist(name: string, workspace: WorkspaceStore, lock: Lock): void {
       workspaceChanged = false;
 
       Promise.all([setMany(entries, db), delMany(deleted, db)]).catch((error: unknown) => {
-        notify(
-          workspace,
-          `Your graphs could not be saved: ${model.describeError(error)}`,
-          "error",
-        );
+        notify(workspace, `Your graphs could not be saved: ${model.describeError(error)}`, "error");
       });
     },
     500,
