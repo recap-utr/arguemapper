@@ -38,7 +38,7 @@
     "zustand": "^5"
   },
   "devDependencies": {
-    "@fontsource/roboto": "^5",
+    "@fontsource-variable/roboto": "^5",
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
