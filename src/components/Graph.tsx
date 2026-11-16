@@ -1,18 +1,14 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  applyEdgeChanges,
-  applyNodeChanges,
-  type EdgeChange,
   type IsValidConnection,
-  type NodeChange,
   type NodeMouseHandler,
-  type NodePositionChange,
   type OnConnect,
   type OnConnectEnd,
   type OnEdgesChange,
   type OnNodesChange,
   type OnReconnect,
   Panel,
+  type PositionChange,
   useReactFlow,
   type XYPosition,
 } from "@xyflow/react";
@@ -39,14 +35,12 @@ import {
   useWorkspace,
 } from "@/store.js";
 
-type CanvasChange = NodeChange<model.CanvasNode> | EdgeChange<model.CanvasEdge>;
-type Move = NodePositionChange & { position: XYPosition };
+type Move = PositionChange & { position: XYPosition };
 
 const idsOfSelected = (elements: readonly { id: string; selected?: boolean }[]): string[] =>
   elements.filter((element) => element.selected).map((element) => element.id);
 
-const isMove = (change: CanvasChange): change is Move =>
-  change.type === "position" && change.position !== undefined;
+const isMove = (change: PositionChange): change is Move => change.position !== undefined;
 
 /** Toolbar of a selected edge. */
 const EdgeActions: React.FC = () => {
@@ -132,11 +126,11 @@ export const Graph: React.FC = () => {
   };
 
   /**
-   * Add a claim at the position on the screen and show its details.
+   * Add a claim at the position on the canvas and show its details.
    * New nodes are hidden until they are measured, so their text cannot be edited in place right away.
    */
-  const addClaimAt = (x: number, y: number, link?: NodePlacement["link"]) => {
-    addNode(model.newAtom(), { position: screenToFlowPosition({ x, y }), link });
+  const addClaimAt = (position: XYPosition, link?: NodePlacement["link"]) => {
+    addNode(model.newAtom(), { position, link });
     openPanel("inspector");
   };
 
@@ -145,11 +139,11 @@ export const Graph: React.FC = () => {
    * `selected` are the ids selected after the changes if they select anything.
    */
   const applyChanges = (
-    changes: readonly CanvasChange[],
+    finished: readonly Move[],
     kind: keyof model.Selection,
     selected?: string[],
   ) => {
-    const moves = changes.filter(isMove).filter((change) => !change.dragging);
+    const moves = finished.filter((change) => !change.dragging);
 
     if (moves.length > 0) {
       editGraph((graph, state) => {
@@ -172,11 +166,12 @@ export const Graph: React.FC = () => {
   };
 
   const onNodesChange: OnNodesChange<model.CanvasNode> = (changes) => {
-    const selects = changes.some((change) => change.type === "select");
-    const resizes = changes.some((change) => change.type === "dimensions");
+    const selects = changes.getByType("select").length > 0;
+    const resizes = changes.getByType("dimensions").length > 0;
     // dragging changes only positions, which need no copy of all nodes
-    const next = selects || resizes ? applyNodeChanges(changes, nodes) : nodes;
-    const dragging = changes.filter(isMove).filter((change) => change.dragging);
+    const next = selects || resizes ? changes.applyTo(nodes) : nodes;
+    const moves = changes.getByType("position").filter(isMove);
+    const dragging = moves.filter((change) => change.dragging);
 
     if (resizes) {
       setMeasured(
@@ -193,16 +188,14 @@ export const Graph: React.FC = () => {
       }));
     }
 
-    applyChanges(changes, "nodes", selects ? idsOfSelected(next) : undefined);
+    applyChanges(moves, "nodes", selects ? idsOfSelected(next) : undefined);
   };
 
   const onEdgesChange: OnEdgesChange<model.CanvasEdge> = (changes) =>
     applyChanges(
-      changes,
+      [],
       "edges",
-      changes.some((change) => change.type === "select")
-        ? idsOfSelected(applyEdgeChanges(changes, edges))
-        : undefined,
+      changes.getByType("select").length > 0 ? idsOfSelected(changes.applyTo(edges)) : undefined,
     );
 
   const isValidConnection: IsValidConnection = ({ source, target }) =>
@@ -212,13 +205,15 @@ export const Graph: React.FC = () => {
     editGraph((graph) => linkAndSelect(graph, source, target));
 
   // A connection dropped on the empty canvas creates a claim there and connects it.
-  const onConnectEnd: OnConnectEnd = (event, { isValid, fromNode, fromHandle, toNode }) => {
-    if (isValid || toNode !== null || fromNode === null || fromHandle === null) {
+  const onConnectEnd: OnConnectEnd = (_event, connection) => {
+    if (connection.fromHandle === null || connection.isValid || connection.toNode !== null) {
       return;
     }
 
-    const { clientX, clientY } = "changedTouches" in event ? event.changedTouches[0] : event;
-    addClaimAt(clientX, clientY, { node: fromNode.id, incoming: fromHandle.type === "source" });
+    addClaimAt(connection.to, {
+      node: connection.fromNode.id,
+      incoming: connection.fromHandle.type === "source",
+    });
   };
 
   // moving an end of an edge replaces it, atoms are connected through a new scheme node
@@ -233,7 +228,7 @@ export const Graph: React.FC = () => {
   // a double click on the empty canvas adds a claim there
   const onPaneClick = (event: React.MouseEvent) => {
     if (event.detail === 2) {
-      addClaimAt(event.clientX, event.clientY);
+      addClaimAt(screenToFlowPosition({ x: event.clientX, y: event.clientY }));
     }
   };
 

@@ -16,8 +16,9 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useReactFlow } from "@xyflow/react";
+import { useEqualSelector, useReactFlow } from "@xyflow/react";
 import * as arguebuf from "arguebuf";
+import { isEqual } from "es-toolkit";
 import type React from "react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useGuideStep } from "@/components/canvas/Guide.js";
@@ -25,7 +26,7 @@ import { TabBar } from "@/components/TabBar.js";
 import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import * as model from "@/model.js";
 import { generateDemo } from "@/services/demo.js";
-import { useArgueActions, useArgueConfig, useDeepEqual, useDocument } from "@/store.js";
+import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
 /** Passage of a text that the atom with the id quotes. */
 interface Annotation {
@@ -277,10 +278,12 @@ const ResourceView: React.FC<{ id: string }> = ({ id }) => {
   const resource = useDocument((state) => state.graph.resources[id]);
   // the resource may be removed before this view, and moving nodes keeps the passages
   const annotations = useDocument(
-    useDeepEqual(({ graph }) =>
-      Object.hasOwn(graph.resources, id)
-        ? graph.annotations(id).map(({ node, start, end }) => ({ id: node.id, start, end }))
-        : [],
+    useEqualSelector(
+      ({ graph }) =>
+        Object.hasOwn(graph.resources, id)
+          ? graph.annotations(id).map(({ node, start, end }) => ({ id: node.id, start, end }))
+          : [],
+      isEqual,
     ),
   );
   const selected = useDocument((state) => state.selection.nodes);

@@ -5,7 +5,8 @@ import {
   type NodeProps,
   type NodeTypes as FlowNodeTypes,
   Position,
-  useStore,
+  useConnection,
+  useOptionsStore,
 } from "@xyflow/react";
 import type React from "react";
 import type * as model from "@/model.js";
@@ -66,11 +67,11 @@ const NodeComponent: React.FC<NodeProps<model.CanvasNode>> = ({ id, data, select
   const { bg } = node.color({ majorClaim: isMajorClaim });
   const size = (coarse ? 16 : 10) * (selected ? 1.4 : 1);
   // primitive selections, so nodes only render again when a connection starts or ends
-  const from = useStore((s) => (s.connection.inProgress ? s.connection.fromNode.id : undefined));
-  const outgoing = useStore(
-    (s) => s.connection.inProgress && s.connection.fromHandle.type === "source",
+  const from = useConnection((c) => (c.inProgress ? c.fromNode.id : undefined));
+  const outgoing = useConnection((c) => c.inProgress && c.fromHandle.type === "source");
+  const isValidConnection = useOptionsStore((s) =>
+    s.nodesConnectable ? s.isValidConnection : undefined,
   );
-  const isValidConnection = useStore((s) => (s.nodesConnectable ? s.isValidConnection : undefined));
   // while connecting, the nodes that the connection cannot end at are dimmed
   const unreachable =
     from !== undefined &&

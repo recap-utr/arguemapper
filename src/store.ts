@@ -11,13 +11,7 @@ export {
 } from "@/store/context.js";
 export { createDocumentStore, createWorkspaceStore } from "@/store/createStore.js";
 export { canRedo, canUndo, commit, redo, undo } from "@/store/history.js";
-export {
-  useArgueActions,
-  useDeepEqual,
-  useDocument,
-  useDocumentApi,
-  useWorkspace,
-} from "@/store/hooks.js";
+export { useArgueActions, useDocument, useDocumentApi, useWorkspace } from "@/store/hooks.js";
 export { clearSession, type GraphRecord, openSession, readBackups } from "@/store/persistence.js";
 export type {
   AnalystIdentity,

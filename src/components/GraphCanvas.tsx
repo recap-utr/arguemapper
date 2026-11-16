@@ -16,7 +16,7 @@ import {
   ReactFlow,
   type Viewport,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+import "@xyflow/react/style.css";
 import { type ReactNode, type RefObject, useId } from "react";
 import * as model from "@/model.js";
 import { EdgeTypes } from "@/components/EdgeTypes.js";
@@ -96,6 +96,8 @@ export function GraphCanvas({
   const theme = useTheme();
   const coarse = useMediaQuery("(pointer: coarse)");
   const buttonSize = coarse ? 44 : 32;
+  // taps on touch screens tolerate larger movements before they drag
+  const dragThreshold = coarse ? 10 : 2;
 
   return (
     <GraphRenderProvider value={{ edgeStyle, coarse, edgeToolbar, finishEditing }}>
@@ -123,20 +125,19 @@ export function GraphCanvas({
           deleteKeyCode={null}
           fitView={viewport === undefined}
           fitViewOptions={model.fitViewOptions}
-          onInit={(instance) => viewport && void instance.setViewport(viewport)}
+          defaultViewport={viewport}
           selectNodesOnDrag
           nodeTypes={NodeTypes}
           edgeTypes={EdgeTypes}
           minZoom={0.01}
           maxZoom={3}
-          elevateEdgesOnSelect
           onlyRenderVisibleElements={nodes.length > 100}
           connectionLineType={connectionLineTypes[edgeStyle]}
           connectionRadius={coarse ? 40 : 20}
-          nodeClickDistance={coarse ? 10 : 2}
-          paneClickDistance={coarse ? 10 : 2}
+          nodeDragThreshold={dragThreshold}
+          paneDragThreshold={dragThreshold}
           attributionPosition="bottom-center"
-          colorMode={theme.palette.mode}
+          forceColorMode={theme.palette.mode}
         >
           {minimap && <MiniMap pannable zoomable />}
           {controls && <Controls showInteractive={false} fitViewOptions={model.fitViewOptions} />}

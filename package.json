@@ -52,7 +52,7 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@mui/material": "^9",
-    "@xyflow/react": "^12",
+    "@xyflow/react": "^13",
     "arguebuf": "^3",
     "react": "^19",
     "react-dom": "^19"
