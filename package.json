@@ -60,7 +60,7 @@
 		"node-sass": "^9",
 		"typescript": "^5",
 		"vite": "^7.0.0",
-		"vite-plugin-checker": "^0.9",
+		"vite-plugin-checker": "^1.0.0",
 		"web-worker": "^1"
 	}
 }
