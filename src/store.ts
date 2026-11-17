@@ -13,14 +13,15 @@ export { createDocumentStore, createWorkspaceStore } from "@/store/createStore.j
 export { canRedo, canUndo, commit, redo, undo } from "@/store/history.js";
 export { useArgueActions, useDocument, useDocumentApi, useWorkspace } from "@/store/hooks.js";
 export { clearSession, type GraphRecord, openSession, readBackups } from "@/store/persistence.js";
-export type {
-  AnalystIdentity,
-  DocumentState,
-  DocumentStore,
-  Notice,
-  Panel,
-  WorkspaceState,
-  WorkspaceStore,
+export {
+  type AnalystIdentity,
+  allPanels,
+  type DocumentState,
+  type DocumentStore,
+  type Notice,
+  type Panel,
+  type WorkspaceState,
+  type WorkspaceStore,
 } from "@/store/types.js";
 export {
   assistantWorkspace,

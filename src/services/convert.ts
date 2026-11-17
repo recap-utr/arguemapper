@@ -6,7 +6,7 @@ import type { AnalystIdentity } from "@/store/types.js";
 
 export type ExportFormat = "aif" | "arguebuf";
 
-/** Whether exports in the format record the analyst, who is then asked for first. */
+/** Whether exports in the format record the analyst. */
 export const recordsAnalyst = (format: ExportFormat): format is "arguebuf" => format === "arguebuf";
 
 /**

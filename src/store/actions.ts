@@ -48,8 +48,8 @@ export interface ArgueActions {
   deleteSelection: () => void;
   /** Add the node, connect it as given, and select it. */
   addNode: (node: model.Node, placement?: NodePlacement) => void;
-  /** Show the message to the user, replacing the current one. */
-  notify: (message: string, severity: Notice["severity"]) => void;
+  /** Show the message to the user, replacing the current one, optionally with an action. */
+  notify: (message: string, severity: Notice["severity"], action?: Notice["action"]) => void;
 }
 
 export interface ActionsContext {
@@ -74,7 +74,7 @@ export function createActions({
 }: ActionsContext): ArgueActions {
   const { getState, setState } = doc;
 
-  const show: ArgueActions["notify"] = (message, severity) => notify(workspace, message, severity);
+  const show: ArgueActions["notify"] = (...args) => notify(workspace, ...args);
 
   const editGraph: ArgueActions["editGraph"] = (edit) => {
     if (readOnly) {

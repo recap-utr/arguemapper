@@ -1,10 +1,11 @@
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import type React from "react";
 import { AtomFields } from "@/components/inspector/AtomFields.js";
 import { EdgeFields } from "@/components/inspector/EdgeFields.js";
 import { GraphFields } from "@/components/inspector/GraphFields.js";
 import { SchemeFields } from "@/components/inspector/SchemeFields.js";
+import { PanelBody } from "@/components/panels/PanelArea.js";
 import * as model from "@/model.js";
 import { useArgueActions, useArgueConfig, useDocument } from "@/store.js";
 
@@ -16,7 +17,7 @@ export const Inspector: React.FC = () => {
   const { deleteSelection } = useArgueActions();
 
   return (
-    <Stack spacing={2} sx={{ p: 2, flex: "1 1 0", minHeight: 0, overflowY: "auto" }}>
+    <PanelBody>
       {selectionType === "graph" && <GraphFields />}
       {selectionType === "atom" && <AtomFields />}
       {selectionType === "schemes" && <SchemeFields />}
@@ -36,6 +37,6 @@ export const Inspector: React.FC = () => {
           Delete
         </Button>
       )}
-    </Stack>
+    </PanelBody>
   );
 };

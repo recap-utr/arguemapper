@@ -103,7 +103,7 @@ const GuideCard: React.FC = () => {
 
   const hide = () => {
     setWorkspace({ guide: false });
-    notify("You can show the guide again in the settings.", "info");
+    notify("You can show the guide again in the View menu.", "info");
   };
 
   return (

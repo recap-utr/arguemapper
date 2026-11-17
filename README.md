@@ -17,7 +17,7 @@ docker run -p 8080:8080 ghcr.io/recap-utr/arguemapper
 ArgueMapper ships three embeddable components, layered on a shared rendering core, for different needs:
 
 - **`<GraphViewer>`**: a pure, externally **controlled** viewer. The `graph` prop is the single source of truth (updating it re-renders the view); there is no editing. Built for presenting many small argument graphs at once, with an optional minimap, zoom/fit controls, auto-layout for unpositioned graphs, and selection/click callbacks.
-- **`<GraphEditor>`**: the full embeddable editor of a single graph. It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), the getting started guide (`guide`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings.
+- **`<GraphEditor>`**: the full embeddable editor of a single graph. It edits the `graph` prop and reports each new graph via `onGraphChange`. Editing, the toolbar (`toolbar`), the text and details panels (`panels`), the getting started guide (`guide`), and the AI assistant are opt-in props, and `slots` adds host content to the file menu and the settings panel.
 - **`<GraphWorkspace>`**: the same editor for several graphs, which are opened as tabs (the standalone ArgueMapper app is one configuration of it). It starts with the `graphs` prop, reports changes via `onGraphChange(id, graph)`, and optionally persists itself in the browser under `persistKey`.
   The same components adapt to desktops, tablets, and phones: wide editors show the panels beside the canvas, narrow ones below it, and touch input enlarges the interactive elements.
 
@@ -62,7 +62,7 @@ Graphs are immutable arguebuf graphs, so sharing them between the host and the e
 `codecs` passes the userdata of ArgueMapper to the functions of arguebuf, e.g. `applyPatch(graph, patch, { codecs })` to build a graph whose claims are anchored in its texts.
 The imperative `ref` of `<GraphEditor>` (`exportGraph`, `fitView`, `undo`/`redo`, …) offers explicit actions, the one of `<GraphWorkspace>` lists, opens, closes, and exports its graphs.
 A persisted workspace is stored in IndexedDB, and only one browser tab edits it at a time, the others offer to take it over.
-`assistant` enables the AI assistant, settings passed as an object (e.g. `assistant={{ baseURL, model }}`) are fixed and hidden from its settings dialog.
+`assistant` enables the AI assistant, settings passed as an object (e.g. `assistant={{ baseURL, model }}`) are fixed and hidden from the settings panel.
 The `peerDependencies` in `package.json` (React, MUI, emotion, xyflow, arguebuf, …) must be provided by the host, so its copies are reused.
 
 ## Tutorial
@@ -86,21 +86,23 @@ Each graph has its own tab above the canvas: the plus starts a new graph, the cr
 
 Clicking a highlighted passage selects its claim on the canvas, and **Show in text** in the toolbar of a claim scrolls to its passage.
 The **Getting started** guide on the canvas checks off these steps as you go and offers a small finished example.
-It can be hidden and shown again in the settings.
+It can be hidden and shown again in the **View** menu.
 
 ### Panels
 
-The buttons at the top right of the canvas open the closed panels.
-An open panel is switched with the tabs in its header and hidden with its close button.
+The icons at the top right of the canvas open the closed panels.
+An open panel is switched with the icon tabs in its header and hidden with its close button.
+Panels never block the canvas, changes in them take effect right away.
 
 - **Text**: the texts of the graph with their annotated passages. The plus adds another text and the pen switches to editing the title, the text, and its source.
 - **Details**: the fields of the selected elements, with rarely needed ones such as notes and IDs under **More**. While nothing is selected, it shows the name, the notes, and the authors of the graph. The name is the title of its tab.
-- **Assistant**: an AI assistant that can extract claims and relations from the text, if enabled. It works on the shown graph, and on the other open graphs or new ones if asked to.
+- **Assistant**: an AI assistant that can extract claims and relations from the text, if enabled. It works on the shown graph, and on the other open graphs or new ones if asked to. The model name below its input opens its settings.
+- **Settings**: your name and email, which downloaded Arguebuf files record, the image resolution, readable JSON files, and the connection of the assistant.
 
-### File menu and settings
+### File and View menus
 
-- **File** starts a new graph, opens files as new tabs (Arguebuf, AIF, xAIF, OVA, SADFace, or Argdown as JSON, Argdown source, brat standoff, or a Kialo export), loads the example, and downloads the graph as Arguebuf or AIF (JSON) or as an image (PNG or JPG). Exports ask once for your name and email, which are saved in the file.
-- The gear opens the settings for the arrangement of the graph, the style of connections, the image resolution, and readable JSON files.
+- **File** starts a new graph, opens files as new tabs (Arguebuf, AIF, xAIF, OVA, SADFace, or Argdown as JSON, Argdown source, brat standoff, or a Kialo export), loads the example, and downloads the graph as Arguebuf or AIF (JSON) or as an image (PNG or JPG). Arguebuf files record your name and email from the settings, a notice reminds you to enter them.
+- **View** chooses the arrangement of the graph and the style of connections, and shows or hides the getting started guide. It stays open, so the options can be compared on the canvas.
 
 ### Canvas controls
 

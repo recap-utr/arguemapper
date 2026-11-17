@@ -7,7 +7,7 @@ import type { WorkspaceStore } from "@/store/types.js";
 export interface EditorSlots {
   /** Menu items appended to the file menu, e.g. further import sources. */
   fileMenu?: ReactNode;
-  /** Content appended to the settings dialog. */
+  /** Content appended to the settings panel. */
   settings?: ReactNode;
 }
 
@@ -17,9 +17,9 @@ export interface ArgueConfig {
   id?: string;
   /** When true, all editing is disabled (pure viewer). */
   readOnly: boolean;
-  /** Show the file menu, the settings, and the undo, redo, and layout controls. */
+  /** Show the file and view menus, the settings panel, and the undo, redo, and layout controls. */
   toolbar: boolean;
-  /** Show the text and inspector panels. */
+  /** Show the text and inspector panels, and the assistant panel if it is enabled. */
   panels: boolean;
   /** Offer the getting started guide, never while read-only. */
   guide: boolean;

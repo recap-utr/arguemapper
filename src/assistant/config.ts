@@ -36,3 +36,14 @@ export function resolveAssistantConfig({
     reasoning: reasoning ?? defaultAssistantConfig.reasoning,
   };
 }
+
+const settingKeys = [
+  "apiKey",
+  "model",
+  "baseURL",
+  "reasoning",
+] as const satisfies readonly (keyof AssistantSettings)[];
+
+/** Whether the assistant is enabled with settings that the host does not fix, which the user edits. */
+export const hasEditableSettings = (fixed: Partial<AssistantSettings> | undefined): boolean =>
+  fixed !== undefined && settingKeys.some((key) => fixed[key] === undefined);

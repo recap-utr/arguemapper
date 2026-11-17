@@ -1,13 +1,11 @@
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { ChatBox, ChatComposerToolbar, type ChatComposerToolbarProps } from "@mui/x-chat";
 import type { ChatSuggestion } from "@mui/x-chat/headless";
 import type React from "react";
-import { useState } from "react";
-import type { AssistantSettings } from "@/assistant/config.js";
+import { type AssistantSettings, hasEditableSettings } from "@/assistant/config.js";
 import { PROMPTS } from "@/assistant/instructions.js";
-import { AssistantSettingsDialog } from "@/components/panels/AssistantSettingsDialog.js";
 import { createAssistantAdapter } from "@/components/panels/chatAdapter.js";
 import { TooltipIconButton } from "@/components/TooltipIconButton.js";
 import {
@@ -23,19 +21,13 @@ const SUGGESTIONS: ChatSuggestion[] = PROMPTS.map(({ title, text }) => ({
   value: text,
 }));
 
-const settingKeys = [
-  "apiKey",
-  "model",
-  "baseURL",
-  "reasoning",
-] as const satisfies readonly (keyof AssistantSettings)[];
-
 /**
  * The settings of the assistant, the ones fixed by the host take precedence over the user's,
  * who can edit the settings if the host does not fix all of them.
  */
 function useAssistantSettings(): { settings: AssistantSettings; editable: boolean } {
-  const { assistant: fixed = {} } = useArgueConfig();
+  const { assistant } = useArgueConfig();
+  const fixed = assistant ?? {};
   const config = useWorkspace((state) => state.assistantConfig);
   const apiKey = useWorkspace((state) => state.assistantApiKey);
 
@@ -46,7 +38,7 @@ function useAssistantSettings(): { settings: AssistantSettings; editable: boolea
       baseURL: fixed.baseURL ?? config.baseURL,
       reasoning: fixed.reasoning ?? config.reasoning,
     },
-    editable: settingKeys.some((key) => fixed[key] === undefined),
+    editable: hasEditableSettings(assistant),
   };
 }
 
@@ -58,7 +50,7 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
     settings: { model },
     editable,
   } = useAssistantSettings();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { openPanel } = useArgueActions();
 
   return (
     <ChatComposerToolbar {...props}>
@@ -75,9 +67,9 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
           <Button
             size="small"
             color="inherit"
-            endIcon={editable && <ExpandMoreIcon />}
+            endIcon={editable && <SettingsIcon />}
             disabled={!editable}
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => openPanel("settings")}
             sx={{ minWidth: 0, textTransform: "none" }}
           >
             <Typography variant="inherit" noWrap>
@@ -86,7 +78,6 @@ const ComposerToolbar: React.FC<ChatComposerToolbarProps> = ({ children, ...prop
           </Button>
         </Tooltip>
       </Stack>
-      <AssistantSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       {children}
     </ChatComposerToolbar>
   );

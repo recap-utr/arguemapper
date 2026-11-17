@@ -7,10 +7,11 @@ import type * as model from "@/model.js";
 
 /**
  * A panel beside the canvas.
- * Wide editors show the text on the left and the inspector or assistant on the right,
+ * Wide editors show the text on the left and the inspector, assistant, or settings on the right,
  * narrow ones show the last opened panel below the canvas.
  */
-export type Panel = "text" | "inspector" | "assistant";
+export const allPanels = ["text", "inspector", "assistant", "settings"] as const;
+export type Panel = (typeof allPanels)[number];
 
 /** Person using the editor, exported graphs record them as analyst. */
 export type AnalystIdentity = Readonly<{ id: string; name?: string; email?: string }>;

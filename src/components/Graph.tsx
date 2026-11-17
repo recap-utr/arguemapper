@@ -20,8 +20,8 @@ import { FileMenu } from "@/components/canvas/FileMenu.js";
 import { Guide } from "@/components/canvas/Guide.js";
 import { PanelToggles } from "@/components/canvas/PanelToggles.js";
 import { SelectionToolbar } from "@/components/canvas/SelectionToolbar.js";
-import { SettingsButton } from "@/components/canvas/SettingsButton.js";
 import { ToolbarButton, ToolbarPaper } from "@/components/canvas/Toolbar.js";
+import { ViewMenu } from "@/components/canvas/ViewMenu.js";
 import { GraphCanvas } from "@/components/GraphCanvas.js";
 import { useAutoLayout } from "@/components/useAutoLayout.js";
 import { useEditorHotkeys } from "@/components/useEditorHotkeys.js";
@@ -271,20 +271,16 @@ export const Graph: React.FC = () => {
           <Panel position="top-left">
             <ToolbarPaper>
               <FileMenu />
-              <SettingsButton />
+              <ViewMenu />
             </ToolbarPaper>
           </Panel>
           <EditorControls />
         </>
       )}
-      {panels && (
-        <>
-          <Panel position="top-right">
-            <PanelToggles />
-          </Panel>
-          <Guide />
-        </>
-      )}
+      <Panel position="top-right">
+        <PanelToggles />
+      </Panel>
+      {panels && <Guide />}
     </GraphCanvas>
   );
 };

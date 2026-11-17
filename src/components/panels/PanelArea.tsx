@@ -19,7 +19,7 @@ interface Props {
  * Hidden panels stay mounted, so chats, text selections, and scroll positions survive.
  */
 export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
-  const { wide, shown, hide } = usePanelLayout();
+  const { shown, hide } = usePanelLayout();
   const { openPanel } = useArgueActions();
   const [expanded, setExpanded] = useState(false);
   const active = shown(area);
@@ -49,17 +49,17 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
           alignItems: "center",
           minHeight: 48,
           pl: area.length > 1 ? 0 : 2,
+          gap: 1,
           pr: 0.5,
           borderBottom: 1,
           borderColor: "divider",
         }}
       >
-        {area.length > 1 ? (
+        {area.length > 1 && (
           <Tabs
             value={active ?? false}
             onChange={(_event, value: Panel) => openPanel(value)}
-            variant="fullWidth"
-            sx={{ flexGrow: 1 }}
+            sx={{ flexShrink: 0 }}
           >
             {area.map((panel) => {
               const { label, icon: Icon } = PANELS[panel];
@@ -68,20 +68,18 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
                 <Tab
                   key={panel}
                   value={panel}
-                  label={label}
-                  // narrow screens lack the room for icons
-                  icon={wide ? <Icon /> : undefined}
-                  iconPosition="start"
-                  sx={{ minHeight: 48 }}
+                  aria-label={label}
+                  icon={<Icon />}
+                  sx={{ minWidth: 48, minHeight: 48 }}
                 />
               );
             })}
           </Tabs>
-        ) : (
-          <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-            {PANELS[area[0]].label}
-          </Typography>
         )}
+        {/* below the canvas, the tabs of all panels leave no room for the title */}
+        <Typography variant="subtitle1" noWrap sx={{ flexGrow: 1, minWidth: 0 }}>
+          {active && (area.length === 1 || placement !== "bottom") && PANELS[active].label}
+        </Typography>
         {placement === "bottom" && (
           <TooltipIconButton
             title={expanded ? "Show the graph" : "Expand"}
@@ -107,3 +105,10 @@ export const PanelArea: React.FC<Props> = ({ area, placement, render }) => {
     </Paper>
   );
 };
+
+/** Scrolling content of a panel with its items stacked, e.g. fields. */
+export const PanelBody: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <Stack spacing={2} sx={{ p: 2, flex: "1 1 0", minHeight: 0, overflowY: "auto" }}>
+    {children}
+  </Stack>
+);
