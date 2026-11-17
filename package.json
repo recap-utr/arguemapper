@@ -28,7 +28,7 @@
 		"@mui/lab": "^7.0.0-beta",
 		"@mui/material": "^7",
 		"@xyflow/react": "^12",
-		"arguebuf": "^2",
+		"arguebuf": "^3.0.0",
 		"dequal": "^2",
 		"draft-js": "^0.11",
 		"elkjs": "^0.10",
