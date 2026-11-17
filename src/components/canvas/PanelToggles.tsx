@@ -1,20 +1,15 @@
-import { Button, Tooltip } from "@mui/material";
 import type React from "react";
-import { useEditorUp } from "@/components/breakpoints.js";
-import { ToolbarPaper } from "@/components/canvas/Toolbar.js";
-import { useGraphRender } from "@/components/GraphRenderContext.js";
+import { ToolbarButton, ToolbarPaper } from "@/components/canvas/Toolbar.js";
 import { PANELS, usePanelLayout } from "@/components/panels/layout.js";
 import { useArgueActions } from "@/store.js";
 
 /**
- * Buttons to open the panels whose area is closed, labeled if the canvas has room for it.
+ * Buttons to open the panels whose area is closed.
  * Open areas switch and close their panels in their own header.
  */
 export const PanelToggles: React.FC = () => {
   const { areas, shown } = usePanelLayout();
-  const labeled = useEditorUp("lg");
   const { openPanel } = useArgueActions();
-  const { coarse } = useGraphRender();
   const closed = areas.filter((area) => shown(area) === undefined).flat();
 
   if (closed.length === 0) {
@@ -23,25 +18,14 @@ export const PanelToggles: React.FC = () => {
 
   return (
     <ToolbarPaper>
-      {closed.map((panel) => {
-        const { label, icon: Icon } = PANELS[panel];
-        const iconElement = <Icon />;
-
-        return (
-          <Tooltip key={panel} title={labeled ? "" : label}>
-            <Button
-              size={coarse ? "medium" : "small"}
-              color="inherit"
-              aria-label={label}
-              startIcon={labeled && iconElement}
-              onClick={() => openPanel(panel)}
-              sx={{ minWidth: 0 }}
-            >
-              {labeled ? label : iconElement}
-            </Button>
-          </Tooltip>
-        );
-      })}
+      {closed.map((panel) => (
+        <ToolbarButton
+          key={panel}
+          title={PANELS[panel].label}
+          icon={PANELS[panel].icon}
+          onClick={() => openPanel(panel)}
+        />
+      ))}
     </ToolbarPaper>
   );
 };
