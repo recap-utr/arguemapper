@@ -56,5 +56,8 @@
     "arguebuf": "^3",
     "react": "^19",
     "react-dom": "^19"
+  },
+  "overrides": {
+    "lodash-es": "^4"
   }
 }
