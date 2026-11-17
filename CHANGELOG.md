@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.1](https://github.com/recap-utr/arguemapper/compare/v3.0.0...v3.0.1) (2026-11-17)
+
+### Bug Fixes
+
+* **ci:** build images on native runners ([5a636df](https://github.com/recap-utr/arguemapper/commit/5a636df5df461eb8bd43c5826ab8ce80593895be))
+
 ## [3.0.0](https://github.com/recap-utr/arguemapper/compare/v2.4.3...v3.0.0) (2026-11-17)
 
 ### ⚠ BREAKING CHANGES
