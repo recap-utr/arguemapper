@@ -1,5 +1,48 @@
 # Changelog
 
+## [3.0.0](https://github.com/recap-utr/arguemapper/compare/v2.4.3...v3.0.0) (2026-11-17)
+
+### ⚠ BREAKING CHANGES
+
+* **editor:** edit multiple graphs in tabs
+* **editor:** redesign editor for novice users on all devices
+
+### Features
+
+* **assistant:** add wikipedia tools ([24d1e72](https://github.com/recap-utr/arguemapper/commit/24d1e7268e85ac3342bdfaeb5c1ec7b676952b0b))
+* **assistant:** keep api key for browser session ([bf5e226](https://github.com/recap-utr/arguemapper/commit/bf5e2262a7eb68a34b6db4c2b2ea9569096296c3))
+* **assistant:** keep conversation when graph is replaced ([e6ff950](https://github.com/recap-utr/arguemapper/commit/e6ff950652bd22e66f2832cfedbb67d93ebd8af4))
+* **assistant:** persist conversations and render markdown replies ([515dd36](https://github.com/recap-utr/arguemapper/commit/515dd369c5e0e86630a05e65469bb268bd794a1d))
+* **assistant:** replace prompt actions with an agent that edits the graph ([ff5136a](https://github.com/recap-utr/arguemapper/commit/ff5136a678960665aa9512918fdceb42d4a63b35))
+* **assistant:** store provenance in arguemapper userdata ([4c9d220](https://github.com/recap-utr/arguemapper/commit/4c9d220c3f2871ca487be7167848f50f8feb1f72))
+* **canvas:** edit claims in place, reconnect edges, and dim invalid targets ([351461b](https://github.com/recap-utr/arguemapper/commit/351461bc07f2861654e91ca4c5d5d9bb04c63cd9))
+* **editor:** disable editing controls in read-only mode ([66b98d0](https://github.com/recap-utr/arguemapper/commit/66b98d0375b94616d814aeb26c11042d2ae449ac))
+* **editor:** edit multiple graphs in tabs ([83879f5](https://github.com/recap-utr/arguemapper/commit/83879f53b15134f5b62b1ab65f5c59e34e15fc70))
+* **editor:** let host lock assistant settings ([ef4f8f4](https://github.com/recap-utr/arguemapper/commit/ef4f8f4cb281b7e46400ea51e665e3d9b19ba4d0))
+* **editor:** redesign editor for novice users on all devices ([20e2140](https://github.com/recap-utr/arguemapper/commit/20e214044d46348178981411eee55f8b9954b5db))
+* **import:** open all arguebuf formats and report load errors ([9b48f09](https://github.com/recap-utr/arguemapper/commit/9b48f09accfc87ef328db9c1b5699cd9557efee2))
+* **lib:** adapt layout to editor width ([2ea2116](https://github.com/recap-utr/arguemapper/commit/2ea2116c2d1275e202f7edb4005c13689bb4beed))
+* **lib:** add embeddable graph editor component ([c9736e4](https://github.com/recap-utr/arguemapper/commit/c9736e4b89dff9f41554227be8b6a8aa3e326ee6))
+* **lib:** add read-only graph viewer component ([27d7e04](https://github.com/recap-utr/arguemapper/commit/27d7e04173eda9e860567b0356a71926146fe8ef))
+* **lib:** export userdata codecs ([7585667](https://github.com/recap-utr/arguemapper/commit/7585667ff2083bddbb66db5d9c5b83a3ccab3048))
+* **lib:** make getting started guide opt-in ([4c7e11a](https://github.com/recap-utr/arguemapper/commit/4c7e11a68b6d1a5643f2327a5d463eb6ffe313ef))
+* migrate to xyflow v13 ([f0ded38](https://github.com/recap-utr/arguemapper/commit/f0ded38c5eebd56fc0c457c79d4861770432c078))
+* **panels:** show panel toggles as icons only ([147b145](https://github.com/recap-utr/arguemapper/commit/147b14565544100e60755fc895b0b88090636d1f))
+* **settings:** replace modal dialogs with settings panel and view menu ([70eba98](https://github.com/recap-utr/arguemapper/commit/70eba98a6c8ad6dce61fee870726c5d7665ac475))
+
+### Bug Fixes
+
+* **export:** revoke object url of json downloads ([5ccc435](https://github.com/recap-utr/arguemapper/commit/5ccc43562c3375d4fe764fef4c414483316ec00c))
+* **export:** skip analyst prompt for aif files ([3e73c4f](https://github.com/recap-utr/arguemapper/commit/3e73c4ff1c0fa18c83d57a32bb7e264e426157df))
+* **inspector:** show shared notes of selected relations ([9176cb3](https://github.com/recap-utr/arguemapper/commit/9176cb325a2884a80478b1fbae1d937e84e81b32))
+* **lib:** import temporal polyfill instead of relying on global ([e0e3e20](https://github.com/recap-utr/arguemapper/commit/e0e3e20eb7a0234f2daaead5f4dd3d6588812a29))
+* **server:** validate caddyfile at build time and drop open cors headers ([6b12fb7](https://github.com/recap-utr/arguemapper/commit/6b12fb7afca1e878820444398039ce8b3d1bfa0d))
+* **store:** skip persistence if browser blocks storage ([5f68ed3](https://github.com/recap-utr/arguemapper/commit/5f68ed3dafd37590a11b4c74cd0d559f4d0c0950))
+
+### Performance Improvements
+
+* **layout:** run elk in web worker ([3cc3144](https://github.com/recap-utr/arguemapper/commit/3cc3144d9d05d2d11321c5f7130156b9537df6c7))
+
 ## [2.4.3](https://github.com/recap-utr/arguemapper/compare/v2.4.2...v2.4.3) (2025-06-24)
 
 ### Bug Fixes
