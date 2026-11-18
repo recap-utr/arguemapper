@@ -1,3 +1,5 @@
+// arguebuf relies on the global Temporal, which some browsers such as Safari lack.
+import "temporal-polyfill/global";
 export { GraphEditor, type GraphEditorHandle, type GraphEditorProps } from "@/GraphEditor.js";
 export {
   GraphWorkspace,

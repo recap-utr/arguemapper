@@ -1,3 +1,5 @@
+// arguebuf relies on the global Temporal, which some browsers such as Safari lack.
+import "temporal-polyfill/global";
 import "@fontsource-variable/roboto";
 import { CssBaseline, createTheme, ThemeProvider } from "@mui/material";
 import { StrictMode } from "react";
