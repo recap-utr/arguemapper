@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.2](https://github.com/recap-utr/arguemapper/compare/v3.0.1...v3.0.2) (2026-11-18)
+
+### Bug Fixes
+
+* polyfill global temporal for browsers lacking it ([3787c72](https://github.com/recap-utr/arguemapper/commit/3787c7216528dd818320fbd286fdb2ac13520a9e))
+
 ## [3.0.1](https://github.com/recap-utr/arguemapper/compare/v3.0.0...v3.0.1) (2026-11-17)
 
 ### Bug Fixes
